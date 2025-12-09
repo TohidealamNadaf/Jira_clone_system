@@ -1,0 +1,12 @@
+# Allow image files in avatars directory
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    <RequireAll>
+        Require all granted
+    </RequireAll>
+</FilesMatch>
+
+# Deny direct access to other uploaded files
+# Files should be served through the attachment controller
+<RequireAll>
+    Require all denied
+</RequireAll>

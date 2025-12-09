@@ -1,0 +1,25 @@
+=== JSON ENCODING TEST ===
+
+FlowData length: 3612 characters
+FlowData is valid JSON: YES
+
+Statuses length: 516 characters
+Statuses is valid JSON: YES
+
+=== CHECKING FOR PROBLEMATIC CHARACTERS ===
+Contains quotes: YES
+Contains newlines: NO
+Contains < or >: NO
+
+=== SIMULATED VIEW OUTPUT ===
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flowData = [{"date":"2025-11-07","Open":3,"To Do":2,"In Progress":8,"In Review":4,"Testing":3,"Done":4,"Closed":4,"Reopened":0},{"date":"2025-11-08","Open":3,"To Do":2,"In Progress":8,"In Review":4,"Testing":4,"Done":4,"Closed":4,"Reopened":0},{"date":"2025-11-09","Open":3,"To Do":3,"In Progress":8,"In Review":4,"Testing":4,"Done":4,"Closed":4,"Reopened":0},{"date":"2025-11-10","Open":3,"To Do":3,"In Progress":8,"In Review":4,"Testing":4,"Done":4,"Closed":4,"Reopened":0},{"date":"2025-11-11","Open":3,"To Do":3,"In Progress":8,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-12","Open":4,"To Do":3,"In Progress":9,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-13","Open":4,"To Do":3,"In Progress":9,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-14","Open":4,"To Do":4,"In Progress":9,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-15","Open":4,"To Do":4,"In Progress":9,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-16","Open":4,"To Do":5,"In Progress":9,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-17","Open":4,"To Do":5,"In Progress":9,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-18","Open":5,"To Do":5,"In Progress":9,"In Review":4,"Testing":4,"Done":5,"Closed":4,"Reopened":0},{"date":"2025-11-19","Open":5,"To Do":5,"In Progress":9,"In Review":4,"Testing":4,"Done":6,"Closed":4,"Reopened":0},{"date":"2025-11-20","Open":6,"To Do":5,"In Progress":9,"In Review":4,"Testing":4,"Done":7,"Closed":4,"Reopened":0},{"date":"2025-11-21","Open":6,"To Do":5,"In Progress":9,"In Review":5,"Testing":4,"Done":7,"Closed":4,"Reopened":0},{"date":"2025-11-22","Open":6,"To Do":5,"In Progress":9,"In Review":5,"Testing":4,"Done":7,"Closed":5,"Reopened":0},{"date":"2025-11-23","Open":6,"To Do":5,"In Progress":10,"In Review":5,"Testing":4,"Done":7,"Closed":5,"Reopened":0},{"date":"2025-11-24","Open":6,"To Do":5,"In Progress":10,"In Review":5,"Testing":4,"Done":7,"Closed":5,"Reopened":0},{"date":"2025-11-25","Open":6,"To Do":5,"In Progress":11,"In Review":6,"Testing":4,"Done":7,"Closed":5,"Reopened":0},{"date":"2025-11-26","Open":6,"To Do":5,"In Progress":12,"In Review":6,"Testing":4,"Done":7,"Closed":5,"Reopened":0},{"date":"2025-11-27","Open":6,"To Do":6,"In Progress":12,"In Review":6,"Testing":4,"Done":7,"Closed":5,"Reopened":0},{"date":"2025-11-28","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":5,"Reopened":0},{"date":"2025-11-29","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-11-30","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-12-01","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-12-02","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-12-03","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-12-04","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-12-05","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-12-06","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0},{"date":"2025-12-07","Open":6,"To Do":8,"In Progress":12,"In Review":7,"Testing":4,"Done":7,"Closed":6,"Reopened":0}];
+    const statuses = [{"id":1,"name":"Open","color":"#42526E","category":"todo"},{"id":2,"name":"To Do","color":"#42526E","category":"todo"},{"id":3,"name":"In Progress","color":"#0052CC","category":"in_progress"},{"id":4,"name":"In Review","color":"#FF991F","category":"in_progress"},{"id":5,"name":"Testing","color":"#36B37E","category":"in_progress"},{"id":6,"name":"Done","color":"#00875A","category":"done"},{"id":7,"name":"Closed","color":"#6B778C","category":"done"},{"id":8,"name":"Reopened","color":"#FF5630","category":"todo"}];
+    
+    console.log('flowData type:', typeof flowData);
+    console.log('flowData is array:', Array.isArray(flowData));
+    console.log('flowData length:', flowData.length);
+    console.log('flowData first:', flowData[0]);
+});
+</script>

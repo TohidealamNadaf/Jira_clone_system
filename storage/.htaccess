@@ -1,0 +1,6 @@
+# Deny direct access to storage files
+# These are internal application files
+
+<RequireAll>
+    Require all denied
+</RequireAll>

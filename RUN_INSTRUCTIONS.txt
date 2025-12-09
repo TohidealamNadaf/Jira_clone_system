@@ -1,0 +1,300 @@
+================================================================================
+JIRA CLONE - ENTERPRISE ISSUE TRACKING SYSTEM
+RUN INSTRUCTIONS FOR XAMPP (Port 8080)
+================================================================================
+
+PROJECT DETAILS:
+- Location: C:\xampp\htdocs\jira_clone_system
+- Database: jiira_clonee_system
+- Apache Port: 8080
+- PHP Required: 8.2+
+- MySQL Required: 8.0+
+
+================================================================================
+STEP 1: START XAMPP
+================================================================================
+
+1. Open XAMPP Control Panel (C:\xampp\xampp-control.exe)
+2. Click "Start" button next to "Apache"
+3. Click "Start" button next to "MySQL"
+4. Wait for both to show green "Running" status
+
+Verify Apache is listening on port 8080:
+- Check XAMPP Apache config shows "Running" on port 8080
+- If not, see SETUP_AND_RUN_INSTRUCTIONS.md for port configuration
+
+================================================================================
+STEP 2: CREATE DATABASE & IMPORT SCHEMA
+================================================================================
+
+OPTION A: Using phpMyAdmin (EASIEST - Recommended)
+--------
+
+1. Open browser: http://localhost/phpmyadmin
+2. Click "SQL" tab at top
+3. Open file: C:\xampp\htdocs\jira_clone_system\database\schema.sql
+4. Copy ALL contents of schema.sql
+5. Paste into phpMyAdmin SQL box
+6. Click "Go" button at bottom
+7. Wait for success message
+
+8. Repeat for seed data:
+   - Open: C:\xampp\htdocs\jira_clone_system\database\seed.sql
+   - Copy ALL contents
+   - Paste into phpMyAdmin SQL box
+   - Click "Go"
+
+OPTION B: Using MySQL Command Prompt
+------
+
+1. Open Command Prompt (cmd.exe)
+2. Type commands:
+
+   cd C:\xampp\mysql\bin
+   
+   mysql -u root jiira_clonee_system < "C:\xampp\htdocs\jira_clone_system\database\schema.sql"
+   
+   mysql -u root jiira_clonee_system < "C:\xampp\htdocs\jira_clone_system\database\seed.sql"
+
+3. If asked for password, leave blank and press Enter (unless MySQL password set)
+
+================================================================================
+STEP 3: CONFIGURE APPLICATION
+================================================================================
+
+1. Navigate to: C:\xampp\htdocs\jira_clone_system\config\
+
+2. Copy file: config.php
+   Rename to: config.local.php
+
+3. Edit config.local.php with Notepad:
+
+   Find these sections and verify:
+
+   DATABASE SECTION:
+   'database' => [
+       'host' => 'localhost',
+       'port' => 3306,
+       'name' => 'jiira_clonee_system',
+       'username' => 'root',
+       'password' => '',  // Add password if set in MySQL
+   ],
+
+   APP SECTION:
+   'app' => [
+       'url' => 'http://localhost:8080/jira_clone_system/public',
+       'env' => 'development',
+       'debug' => true,
+   ],
+
+4. Save the file
+
+================================================================================
+STEP 4: ACCESS THE APPLICATION
+================================================================================
+
+Open your web browser and go to:
+
+http://localhost:8080/jira_clone_system/public/
+
+You should see the LOGIN page.
+
+================================================================================
+STEP 5: LOGIN WITH DEFAULT CREDENTIALS
+================================================================================
+
+Admin Account (Full Access):
+- Email: admin@example.com
+- Password: Admin@123
+
+Test User Accounts:
+- Email: john.smith@example.com | Password: User@123
+- Email: jane.doe@example.com | Password: User@123
+
+⚠️ IMPORTANT: Change these passwords immediately!
+
+================================================================================
+STEP 6: START USING THE SYSTEM
+================================================================================
+
+After login, you can:
+
+✅ View Dashboard with statistics
+✅ Create new projects
+✅ Create issues (bugs, tasks, stories, epics)
+✅ Create and manage sprints
+✅ Use Kanban and Scrum boards
+✅ Assign issues to team members
+✅ Add comments and attachments
+✅ Generate reports
+✅ Manage users and permissions
+✅ View audit logs
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+PROBLEM: 404 Not Found error
+SOLUTION:
+- Verify Apache is running in XAMPP (should show green)
+- Check mod_rewrite is enabled
+- Try accessing: http://localhost:8080/jira_clone_system/public/index.php
+- See SETUP_AND_RUN_INSTRUCTIONS.md for Apache configuration
+
+PROBLEM: Database connection error
+SOLUTION:
+- Verify MySQL is running in XAMPP (should show green)
+- Check database "jiira_clonee_system" exists in phpMyAdmin
+- Verify username/password in config.local.php
+- Check schema and seed SQL files were imported successfully
+
+PROBLEM: Login fails with any credentials
+SOLUTION:
+- Verify config.local.php database settings are correct
+- Check that seed.sql was imported (creates user accounts)
+- Verify database connection works
+
+PROBLEM: Can't upload files
+SOLUTION:
+- Create folder: C:\xampp\htdocs\jira_clone_system\public\uploads\
+- Verify folder has write permissions
+
+PROBLEM: Pages show white screen or errors
+SOLUTION:
+- Check C:\xampp\htdocs\jira_clone_system\storage\logs\ for error logs
+- Verify PHP version is 8.2 or higher: http://localhost/xampp/phpinfo.php
+- Check config.local.php for syntax errors
+
+PROBLEM: Can't find application on port 8080
+SOLUTION:
+- Verify Apache config: C:\xampp\apache\conf\httpd.conf
+- Search for: Listen 8080
+- If not found, see SETUP_AND_RUN_INSTRUCTIONS.md
+
+================================================================================
+OPTIONAL: VIRTUAL HOST SETUP (Cleaner URLs)
+================================================================================
+
+To access via: http://localhost:8080/ instead of /jira_clone_system/public/
+
+1. Open: C:\xampp\apache\conf\extra\httpd-vhosts.conf
+
+2. Add at the end:
+
+<VirtualHost *:8080>
+    ServerName localhost
+    DocumentRoot "C:\xampp\htdocs\jira_clone_system\public"
+    
+    <Directory "C:\xampp\htdocs\jira_clone_system\public">
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+3. Save file
+
+4. Restart Apache from XAMPP Control Panel
+
+================================================================================
+API USAGE (For Developers)
+================================================================================
+
+Get JWT Authentication Token:
+curl -X POST http://localhost:8080/api/v1/auth/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"email\":\"admin@example.com\",\"password\":\"Admin@123\"}"
+
+This returns:
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expires_in": 3600
+}
+
+Use token in API requests:
+curl http://localhost:8080/api/v1/projects ^
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+See README.md and docs/ folder for full API documentation.
+
+================================================================================
+IMPORTANT FILES & FOLDERS
+================================================================================
+
+Configuration:
+- config/config.php - Main configuration template
+- config/config.local.php - Your local configuration (create by copying)
+
+Database:
+- database/schema.sql - Database structure
+- database/seed.sql - Sample data
+
+Application Code:
+- src/Controllers/ - Request handlers
+- src/Core/ - Framework core classes
+- src/Services/ - Business logic
+- src/Middleware/ - HTTP middleware
+- routes/ - Route definitions
+
+Views & Assets:
+- views/ - HTML templates
+- public/assets/ - CSS, JavaScript, images
+
+Logs & Cache:
+- storage/logs/ - Application error logs
+- storage/cache/ - Cache files
+
+================================================================================
+SECURITY REMINDERS
+================================================================================
+
+✓ Already Implemented:
+  - Argon2id password hashing
+  - CSRF token protection
+  - SQL injection prevention
+  - XSS output encoding
+  - Rate limiting
+  - Secure session handling
+
+⚠️ You Should Do:
+  - Change all default passwords immediately
+  - Set app.debug to false for production
+  - Enable HTTPS before production
+  - Keep PHP and MySQL updated
+  - Review user permissions regularly
+  - Back up database regularly
+  - Monitor audit logs
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Log in with admin account
+2. Change admin password immediately
+3. Create your first project
+4. Invite team members
+5. Configure project settings
+6. Set up custom workflows
+7. Start tracking issues
+
+For detailed documentation, see:
+- README.md - Full project documentation
+- QUICK_START.md - 5-minute quick start
+- SETUP_AND_RUN_INSTRUCTIONS.md - Detailed setup guide
+
+================================================================================
+SUPPORT
+================================================================================
+
+Documentation: See README.md and docs/ folder
+Database Schema: database/schema.sql
+Error Logs: storage/logs/ directory
+API Docs: docs/ folder (OpenAPI 3.0 format)
+
+================================================================================
+
+Ready to use! If you followed all steps above, the application is now running.
+
+Access: http://localhost:8080/jira_clone_system/public/
+Admin: admin@example.com / Admin@123
+
+================================================================================

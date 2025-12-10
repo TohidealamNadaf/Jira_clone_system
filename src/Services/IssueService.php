@@ -704,13 +704,34 @@ class IssueService
 
     private function isTransitionAllowed(int $fromStatusId, int $toStatusId, int $projectId): bool
     {
+        // Get the default workflow
+        $defaultWorkflow = Database::selectOne(
+            "SELECT id FROM workflows WHERE is_default = 1"
+        );
+
+        if (!$defaultWorkflow) {
+            // No default workflow - allow any transition
+            return true;
+        }
+
+        // Check if ANY workflow transitions are configured
+        $transitionCount = Database::selectOne(
+            "SELECT COUNT(*) as count FROM workflow_transitions WHERE workflow_id = ?",
+            [$defaultWorkflow['id']]
+        );
+
+        // If NO transitions configured at all, allow all transitions (setup phase)
+        if ($transitionCount['count'] == 0) {
+            return true;
+        }
+
+        // Transitions ARE configured, so check if this specific transition exists
         $transition = Database::selectOne(
-            "SELECT 1 FROM workflow_transitions wt
-             JOIN workflows w ON wt.workflow_id = w.id
-             WHERE w.is_default = 1 
-             AND (wt.from_status_id = ? OR wt.from_status_id IS NULL)
-             AND wt.to_status_id = ?",
-            [$fromStatusId, $toStatusId]
+            "SELECT 1 FROM workflow_transitions
+             WHERE workflow_id = ?
+             AND (from_status_id = ? OR from_status_id IS NULL)
+             AND to_status_id = ?",
+            [$defaultWorkflow['id'], $fromStatusId, $toStatusId]
         );
 
         return $transition !== null;

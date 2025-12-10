@@ -2,109 +2,151 @@
 
 <?php \App\Core\View::section('content'); ?>
 
-<div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="<?= url('/') ?>">Home</a></li>
-            <li class="breadcrumb-item"><a href="<?= url('/projects') ?>">Projects</a></li>
-            <li class="breadcrumb-item"><a href="<?= url("/projects/{$project['key']}") ?>"><?= e($project['name']) ?></a></li>
-            <li class="breadcrumb-item active">Backlog</li>
+<div class="container-fluid px-5 py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" style="background-color: transparent; padding: 0; gap: 8px;">
+            <li class="breadcrumb-item"><a href="<?= url('/') ?>" style="color: var(--jira-blue); text-decoration: none;">Home</a></li>
+            <li class="breadcrumb-item"><a href="<?= url('/projects') ?>" style="color: var(--jira-blue); text-decoration: none;">Projects</a></li>
+            <li class="breadcrumb-item"><a href="<?= url("/projects/{$project['key']}") ?>" style="color: var(--jira-blue); text-decoration: none;"><?= e($project['name']) ?></a></li>
+            <li class="breadcrumb-item active" style="color: #626F86;">Backlog</li>
         </ol>
     </nav>
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4" style="gap: 24px;">
         <div>
-            <h1 class="h3 mb-0">Backlog</h1>
-            <p class="text-muted mb-0"><?= e($project['name']) ?></p>
+            <h1 style="font-size: 32px; font-weight: 700; color: #161B22; margin: 0 0 4px 0; letter-spacing: -0.2px;">Backlog</h1>
+            <p style="font-size: 15px; color: #626F86; margin: 0;">Manage and prioritize issues for upcoming sprints</p>
         </div>
-        <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> Create Issue
+        <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" 
+           class="btn" 
+           style="background-color: var(--jira-blue); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 500; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s;">
+            <i class="bi bi-plus-lg"></i> Create Issue
         </a>
     </div>
 
-    <!-- Backlog Issues -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Backlog Items (<?= count($backlogIssues) ?>)</h5>
+    <!-- Backlog Section -->
+    <div style="background: white; border: 1px solid #DFE1E6; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);">
+        <!-- Header -->
+        <div style="padding: 16px 20px; background-color: #F7F8FA; border-bottom: 1px solid #DFE1E6; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 15px; font-weight: 600; color: #161B22; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                Backlog Items
+                <span style="background: #DEEAFE; color: var(--jira-blue); padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 500; margin-left: 8px; display: inline-block;">
+                    <?= count($backlogIssues) ?>
+                </span>
+            </h2>
         </div>
-        <div class="card-body p-0">
-            <?php if (empty($backlogIssues)): ?>
-            <div class="p-5 text-center text-muted">
-                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                <p>No backlog items yet.</p>
-                <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="btn btn-sm btn-primary">
-                    Create First Issue
-                </a>
-            </div>
-            <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Key</th>
-                            <th>Summary</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Priority</th>
-                            <th>Assignee</th>
-                            <th style="width: 100px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($backlogIssues as $issue): ?>
-                        <tr>
-                            <td>
-                                <a href="<?= url("/issue/{$issue['issue_key']}") ?>" class="text-decoration-none fw-medium">
-                                    <?= e($issue['issue_key']) ?>
-                                </a>
-                            </td>
-                            <td>
-                                <a href="<?= url("/issue/{$issue['issue_key']}") ?>" class="text-decoration-none text-dark">
-                                    <?= e(substr($issue['summary'], 0, 60)) ?><?= strlen($issue['summary']) > 60 ? '...' : '' ?>
-                                </a>
-                            </td>
-                            <td>
-                                <span class="badge" style="background-color: <?= e($issue['issue_type_color']) ?>">
-                                    <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
-                                    <?= e($issue['issue_type_name']) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge" style="background-color: <?= e($issue['status_color']) ?>">
-                                    <?= e($issue['status_name']) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge" style="background-color: <?= e($issue['priority_color']) ?>">
-                                    <?= e($issue['priority_name']) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <?php if ($issue['assignee_name']): ?>
-                                <div class="d-flex align-items-center">
-                                    <img src="<?= e($issue['assignee_avatar'] ?? '/images/default-avatar.png') ?>" 
-                                         class="rounded-circle" width="24" height="24" title="<?= e($issue['assignee_name']) ?>">
-                                    <span class="ms-2 small"><?= e($issue['assignee_name']) ?></span>
-                                </div>
-                                <?php else: ?>
-                                <span class="text-muted small">Unassigned</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <a href="<?= url("/issue/{$issue['issue_key']}") ?>" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            <?php endif; ?>
+
+        <!-- Content -->
+        <?php if (empty($backlogIssues)): ?>
+        <div style="padding: 60px 20px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+            <p style="font-size: 15px; color: #626F86; margin-bottom: 20px;">No backlog items yet. Create your first issue to get started.</p>
+            <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" 
+               class="btn" 
+               style="background-color: var(--jira-blue); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 500; font-size: 14px; cursor: pointer; text-decoration: none;">
+                Create First Issue
+            </a>
         </div>
+        <?php else: ?>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; margin: 0;">
+                <thead>
+                    <tr style="background-color: #F7F8FA; border-bottom: 1px solid #DFE1E6;">
+                        <th style="padding: 12px 20px; font-size: 13px; font-weight: 600; color: #626F86; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; width: 100px;">Key</th>
+                        <th style="padding: 12px 20px; font-size: 13px; font-weight: 600; color: #626F86; text-align: left; text-transform: uppercase; letter-spacing: 0.5px;">Summary</th>
+                        <th style="padding: 12px 20px; font-size: 13px; font-weight: 600; color: #626F86; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Type</th>
+                        <th style="padding: 12px 20px; font-size: 13px; font-weight: 600; color: #626F86; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Status</th>
+                        <th style="padding: 12px 20px; font-size: 13px; font-weight: 600; color: #626F86; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; width: 100px;">Priority</th>
+                        <th style="padding: 12px 20px; font-size: 13px; font-weight: 600; color: #626F86; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Assignee</th>
+                        <th style="padding: 12px 20px; font-size: 13px; font-weight: 600; color: #626F86; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; width: 60px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($backlogIssues as $issue): ?>
+                    <tr style="border-bottom: 1px solid #DFE1E6; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#F7F8FA'" onmouseout="this.style.backgroundColor=''">
+                        <!-- Key -->
+                        <td style="padding: 12px 20px; font-size: 14px;">
+                            <a href="<?= url("/issue/{$issue['issue_key']}") ?>" 
+                               style="color: var(--jira-blue); text-decoration: none; font-weight: 600;">
+                                <?= e($issue['issue_key']) ?>
+                            </a>
+                        </td>
+
+                        <!-- Summary -->
+                        <td style="padding: 12px 20px; font-size: 14px;">
+                            <a href="<?= url("/issue/{$issue['issue_key']}") ?>" 
+                               style="color: #161B22; text-decoration: none; display: block;">
+                                <?= e(substr($issue['summary'], 0, 80)) ?><?= strlen($issue['summary']) > 80 ? '...' : '' ?>
+                            </a>
+                        </td>
+
+                        <!-- Type Badge -->
+                        <td style="padding: 12px 20px; font-size: 13px;">
+                            <span style="background-color: <?= e($issue['issue_type_color']) ?>; color: white; padding: 4px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
+                                <i class="bi bi-<?= e($issue['issue_type_icon']) ?>" style="font-size: 12px;"></i>
+                                <?= e($issue['issue_type_name']) ?>
+                            </span>
+                        </td>
+
+                        <!-- Status Badge -->
+                        <td style="padding: 12px 20px; font-size: 13px;">
+                            <span style="background-color: <?= e($issue['status_color']) ?>; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; font-weight: 500;">
+                                <?= e($issue['status_name']) ?>
+                            </span>
+                        </td>
+
+                        <!-- Priority Badge -->
+                        <td style="padding: 12px 20px; font-size: 13px;">
+                            <span style="background-color: <?= e($issue['priority_color']) ?>; color: white; padding: 4px 8px; border-radius: 4px; display: inline-block; font-weight: 500;">
+                                <?= e($issue['priority_name']) ?>
+                            </span>
+                        </td>
+
+                        <!-- Assignee -->
+                        <td style="padding: 12px 20px; font-size: 13px;">
+                            <?php if ($issue['assignee_name']): ?>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <img src="<?= e($issue['assignee_avatar'] ?? '/images/default-avatar.png') ?>" 
+                                     style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;"
+                                     title="<?= e($issue['assignee_name']) ?>" 
+                                     alt="<?= e($issue['assignee_name']) ?>">
+                                <span style="color: #161B22;"><?= e($issue['assignee_name']) ?></span>
+                            </div>
+                            <?php else: ?>
+                            <span style="color: #626F86;">Unassigned</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <!-- Action -->
+                        <td style="padding: 12px 20px; text-align: center;">
+                            <a href="<?= url("/issue/{$issue['issue_key']}") ?>" 
+                               style="color: var(--jira-blue); text-decoration: none; font-size: 16px; display: inline-block; padding: 4px; transition: transform 0.2s;"
+                               onmouseover="this.style.transform='scale(1.15)'"
+                               onmouseout="this.style.transform='scale(1)'">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
+
+<style>
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "/";
+        color: #626F86;
+        margin: 0 8px;
+    }
+    
+    a:hover {
+        opacity: 0.8;
+    }
+</style>
 
 <?php \App\Core\View::endSection(); ?>

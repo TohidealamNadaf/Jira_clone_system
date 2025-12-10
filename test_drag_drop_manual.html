@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Board Drag & Drop Manual Test</title>
+    <meta name="csrf-token" content="test-token">
+    <style>
+        .board-column {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            min-height: 200px;
+            background: #f9f9f9;
+            float: left;
+            width: 20%;
+        }
+        .board-card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 5px 0;
+            cursor: move;
+        }
+        .board-card.dragging {
+            opacity: 0.5;
+        }
+        .board-column.drag-over {
+            background: #e3f2fd;
+        }
+        body { font-family: Arial; }
+        h1 { clear: both; }
+    </style>
+</head>
+<body>
+    <h1>Board Drag & Drop Manual Test</h1>
+    
+    <div class="board-column" data-status-id="1">
+        <h3>To Do</h3>
+        <div class="board-card" draggable="true" data-issue-id="1" data-issue-key="BP-1">BP-1: Test Issue</div>
+    </div>
+    
+    <div class="board-column" data-status-id="2">
+        <h3>In Progress</h3>
+    </div>
+    
+    <div class="board-column" data-status-id="3">
+        <h3>Done</h3>
+    </div>
+
+    <script>
+    let draggedCard = null;
+
+    // Initialize drag events
+    document.querySelectorAll('.board-card').forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+            console.log('✓ DRAGSTART fired for', card.dataset.issueKey);
+            draggedCard = card;
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        card.addEventListener('dragend', (e) => {
+            console.log('✓ DRAGEND fired');
+            card.classList.remove('dragging');
+            document.querySelectorAll('.board-column').forEach(col => {
+                col.classList.remove('drag-over');
+            });
+        });
+    });
+
+    // Initialize drop zones
+    document.querySelectorAll('.board-column').forEach(column => {
+        column.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            column.classList.add('drag-over');
+            console.log('✓ DRAGOVER column', column.dataset.statusId);
+        });
+
+        column.addEventListener('dragleave', (e) => {
+            if (e.target === column) {
+                column.classList.remove('drag-over');
+                console.log('✓ DRAGLEAVE column', column.dataset.statusId);
+            }
+        });
+
+        column.addEventListener('drop', async (e) => {
+            console.log('✓ DROP fired on column', column.dataset.statusId);
+            e.preventDefault();
+            column.classList.remove('drag-over');
+
+            if (!draggedCard) {
+                console.log('✗ No card being dragged');
+                return;
+            }
+
+            const issueKey = draggedCard.dataset.issueKey;
+            const statusId = column.dataset.statusId;
+            console.log(`Moving ${issueKey} to status ${statusId}`);
+
+            // Move in UI
+            column.appendChild(draggedCard);
+
+            // Test API call
+            try {
+                const apiUrl = `/jira_clone_system/public/api/v1/issues/${issueKey}/transitions`;
+                console.log(`📡 Calling API: ${apiUrl}`);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': 'test-token'
+                    },
+                    body: JSON.stringify({
+                        status_id: parseInt(statusId)
+                    })
+                });
+
+                const data = await response.json();
+                console.log('📦 API Response:', data);
+                
+                if (!response.ok) {
+                    console.error('✗ API Error:', data);
+                    alert('Error: ' + (data.error || 'Unknown'));
+                } else {
+                    console.log('✓ Success!', data);
+                }
+            } catch (error) {
+                console.error('✗ Fetch Error:', error);
+                alert('Fetch error: ' + error.message);
+            }
+        });
+    });
+
+    console.log('✓ Drag & Drop listeners initialized');
+    </script>
+</body>
+</html>

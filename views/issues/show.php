@@ -8,340 +8,294 @@ $authUser = auth();
 $currentUserId = $authUser ? $authUser['id'] : null;
 ?>
 
-<div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="<?= url('/') ?>">Home</a></li>
-            <li class="breadcrumb-item"><a href="<?= url('/projects') ?>">Projects</a></li>
-            <li class="breadcrumb-item"><a href="<?= url("/projects/{$issue['project_key']}") ?>"><?= e($issue['project_name']) ?></a></li>
-            <li class="breadcrumb-item active"><?= e($issue['issue_key']) ?></li>
-        </ol>
-    </nav>
+<div class="issue-detail-wrapper">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-section">
+        <div class="breadcrumb">
+            <a href="<?= url('/') ?>" class="breadcrumb-link">
+                <i class="bi bi-house-door"></i> Home
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="<?= url('/projects') ?>" class="breadcrumb-link">Projects</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="<?= url("/projects/{$issue['project_key']}") ?>" class="breadcrumb-link">
+                <?= e($issue['project_name']) ?>
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current"><?= e($issue['issue_key']) ?></span>
+        </div>
+    </div>
 
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-lg-9">
-            <!-- Issue Header -->
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <span class="badge me-2" style="background-color: <?= e($issue['issue_type_color']) ?>">
+    <!-- Main Content -->
+    <div class="issue-main-container">
+        <!-- Left Content -->
+        <div class="issue-left-panel">
+            <!-- Issue Header Card -->
+            <div class="issue-header-card">
+                <!-- Issue Key, Type, Status -->
+                <div class="issue-header-top">
+                    <div class="issue-key-group">
+                        <div class="issue-type-icon" style="background-color: <?= e($issue['issue_type_color']) ?>">
                             <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
-                        </span>
-                        <h4 class="mb-0 me-3"><?= e($issue['issue_key']) ?></h4>
-                        <span class="badge" style="background-color: <?= e($issue['status_color']) ?>">
+                        </div>
+                        <h1 class="issue-key"><?= e($issue['issue_key']) ?></h1>
+                        <span class="issue-status-badge" style="background-color: <?= e($issue['status_color']) ?>">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </div>
-                    <div class="btn-group">
+                    <div class="issue-actions-group">
                         <?php if (can('issues.edit', $issue['project_id'])): ?>
-                        <a href="<?= url("/issue/{$issue['issue_key']}/edit") ?>" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-pencil me-1"></i> Edit
+                        <a href="<?= url("/issue/{$issue['issue_key']}/edit") ?>" class="btn btn-sm btn-outline">
+                            <i class="bi bi-pencil"></i> Edit
                         </a>
                         <?php endif; ?>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                        <div class="dropdown-container">
+                            <button class="btn btn-sm btn-outline" onclick="toggleMenu(this)">
                                 <i class="bi bi-three-dots"></i>
                             </button>
-                            <ul class="dropdown-menu">
+                            <div class="dropdown-menu" style="display: none;">
                                 <?php if (can('issues.assign', $issue['project_id'])): ?>
-                                <li><a class="dropdown-item" href="#" onclick="assignIssue()">
-                                    <i class="bi bi-person me-2"></i> Assign
-                                </a></li>
+                                <a href="#" onclick="assignIssue(); return false;" class="dropdown-item">
+                                    <i class="bi bi-person"></i> Assign
+                                </a>
                                 <?php endif; ?>
-                                <li><a class="dropdown-item" href="#" onclick="watchIssue(<?= $isWatching ? 'true' : 'false' ?>)">
-                                    <i class="bi bi-eye<?= $isWatching ? '-slash' : '' ?> me-2"></i>
+                                <a href="#" onclick="watchIssue(<?= $isWatching ? 'true' : 'false' ?>); return false;" class="dropdown-item">
+                                    <i class="bi bi-eye<?= $isWatching ? '-slash' : '' ?>"></i>
                                     <?= $isWatching ? 'Unwatch' : 'Watch' ?>
-                                </a></li>
+                                </a>
                                 <?php if ($issue['reporter_id'] !== user_id()): ?>
-                                <li><a class="dropdown-item" href="#" onclick="voteIssue(<?= $hasVoted ? 'true' : 'false' ?>)">
-                                    <i class="bi bi-hand-thumbs-<?= $hasVoted ? 'down' : 'up' ?> me-2"></i>
+                                <a href="#" onclick="voteIssue(<?= $hasVoted ? 'true' : 'false' ?>); return false;" class="dropdown-item">
+                                    <i class="bi bi-hand-thumbs-<?= $hasVoted ? 'down' : 'up' ?>"></i>
                                     <?= $hasVoted ? 'Remove Vote' : 'Vote' ?>
-                                </a></li>
+                                </a>
                                 <?php endif; ?>
                                 <?php if (can('issues.link', $issue['project_id'])): ?>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#" onclick="linkIssue()">
-                                    <i class="bi bi-link me-2"></i> Link Issue
-                                </a></li>
+                                <hr class="dropdown-divider">
+                                <a href="#" onclick="linkIssue(); return false;" class="dropdown-item">
+                                    <i class="bi bi-link"></i> Link Issue
+                                </a>
                                 <?php endif; ?>
                                 <?php if (can('issues.log_work', $issue['project_id'])): ?>
-                                <li><a class="dropdown-item" href="#" onclick="logWork()">
-                                    <i class="bi bi-clock me-2"></i> Log Work
-                                </a></li>
+                                <a href="#" onclick="logWork(); return false;" class="dropdown-item">
+                                    <i class="bi bi-clock"></i> Log Work
+                                </a>
                                 <?php endif; ?>
-                            </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <h5 class="card-title mb-3"><?= e($issue['summary']) ?></h5>
 
-                    <?php if ($issue['description']): ?>
-                    <div class="mb-4">
-                        <h6>Description</h6>
-                        <div class="markdown-content">
-                            <?= nl2br(e($issue['description'])) ?>
+                <!-- Issue Summary/Title -->
+                <h2 class="issue-summary"><?= e($issue['summary']) ?></h2>
+
+                <!-- Description -->
+                <?php if ($issue['description']): ?>
+                <div class="description-section">
+                    <h3 class="section-label">Description</h3>
+                    <div class="description-content">
+                        <?= nl2br(e($issue['description'])) ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- Details Grid -->
+                <div class="details-grid">
+                    <?php if ($issue['assignee_name']): ?>
+                    <div class="detail-cell">
+                        <div class="detail-label">Assignee</div>
+                        <div class="detail-value">
+                            <?php if ($issue['assignee_avatar']): ?>
+                            <img src="<?= e($issue['assignee_avatar']) ?>" class="avatar-sm" alt="Avatar">
+                            <?php else: ?>
+                            <div class="avatar-initial-sm"><?= strtoupper(substr($issue['assignee_name'], 0, 1)) ?></div>
+                            <?php endif; ?>
+                            <span><?= e($issue['assignee_name']) ?></span>
                         </div>
                     </div>
                     <?php endif; ?>
 
-                    <!-- Issue Details -->
-                    <div class="row g-4">
-                        <?php if ($issue['assignee_name']): ?>
-                        <div class="col-md-6">
-                            <h6>Assignee</h6>
-                            <div class="d-flex align-items-center">
-                                <?php if ($issue['assignee_avatar']): ?>
-                                <img src="<?= e($issue['assignee_avatar']) ?>" class="rounded-circle me-2" width="32" height="32">
-                                <?php else: ?>
-                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                     style="width: 32px; height: 32px; font-size: 14px;">
-                                    <?= strtoupper(substr($issue['assignee_name'], 0, 1)) ?>
-                                </div>
-                                <?php endif; ?>
-                                <span><?= e($issue['assignee_name']) ?></span>
-                            </div>
+                    <div class="detail-cell">
+                        <div class="detail-label">Reporter</div>
+                        <div class="detail-value">
+                            <?php if ($issue['reporter_avatar']): ?>
+                            <img src="<?= e($issue['reporter_avatar']) ?>" class="avatar-sm" alt="Avatar">
+                            <?php else: ?>
+                            <div class="avatar-initial-sm"><?= strtoupper(substr($issue['reporter_name'], 0, 1)) ?></div>
+                            <?php endif; ?>
+                            <span><?= e($issue['reporter_name']) ?></span>
                         </div>
-                        <?php endif; ?>
+                    </div>
 
-                        <div class="col-md-6">
-                            <h6>Reporter</h6>
-                            <div class="d-flex align-items-center">
-                                <?php if ($issue['reporter_avatar']): ?>
-                                <img src="<?= e($issue['reporter_avatar']) ?>" class="rounded-circle me-2" width="32" height="32">
-                                <?php else: ?>
-                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
-                                     style="width: 32px; height: 32px; font-size: 14px;">
-                                    <?= strtoupper(substr($issue['reporter_name'], 0, 1)) ?>
-                                </div>
-                                <?php endif; ?>
-                                <span><?= e($issue['reporter_name']) ?></span>
-                            </div>
-                        </div>
-
-                        <?php if ($issue['priority_name']): ?>
-                        <div class="col-md-6">
-                            <h6>Priority</h6>
+                    <?php if ($issue['priority_name']): ?>
+                    <div class="detail-cell">
+                        <div class="detail-label">Priority</div>
+                        <div class="detail-value">
                             <span class="badge" style="background-color: <?= e($issue['priority_color']) ?>">
                                 <?= e($issue['priority_name']) ?>
                             </span>
                         </div>
-                        <?php endif; ?>
-
-                        <?php if ($issue['labels']): ?>
-                        <div class="col-md-6">
-                            <h6>Labels</h6>
-                            <div>
-                                <?php foreach ($issue['labels'] as $label): ?>
-                                <span class="badge me-1" style="background-color: <?= e($label['color']) ?>">
-                                    <?= e($label['name']) ?>
-                                </span>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if ($issue['due_date']): ?>
-                        <div class="col-md-6">
-                            <h6>Due Date</h6>
-                            <span class="badge bg-warning text-dark">
-                                <i class="bi bi-calendar me-1"></i>
-                                <?= format_date($issue['due_date']) ?>
-                            </span>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if ($issue['story_points']): ?>
-                        <div class="col-md-6">
-                            <h6>Story Points</h6>
-                            <span class="badge bg-info">
-                                <i class="bi bi-hash me-1"></i>
-                                <?= e($issue['story_points']) ?>
-                            </span>
-                        </div>
-                        <?php endif; ?>
                     </div>
+                    <?php endif; ?>
+
+                    <?php if ($issue['due_date']): ?>
+                    <div class="detail-cell">
+                        <div class="detail-label">Due Date</div>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar"></i>
+                            <span><?= format_date($issue['due_date']) ?></span>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($issue['story_points']): ?>
+                    <div class="detail-cell">
+                        <div class="detail-label">Story Points</div>
+                        <div class="detail-value">
+                            <i class="bi bi-hash"></i> <?= e($issue['story_points']) ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($issue['labels']): ?>
+                    <div class="detail-cell">
+                        <div class="detail-label">Labels</div>
+                        <div class="detail-value labels-row">
+                            <?php foreach ($issue['labels'] as $label): ?>
+                            <span class="label-badge" style="background-color: <?= e($label['color']) ?>">
+                                <?= e($label['name']) ?>
+                            </span>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
             <!-- Comments Section -->
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center" style="gap: 10px;">
-                    <div class="d-flex align-items-center">
-                        <h6 class="mb-0">
-                            <i class="bi bi-chat-left-text me-2"></i>
-                            Comments
-                            <?php if (!empty($issue['comments'])): ?>
-                            <span class="badge bg-primary ms-2"><?= count($issue['comments']) ?></span>
-                            <?php endif; ?>
-                        </h6>
-                    </div>
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="bi bi-chat-left-text"></i> Comments
+                        <?php if (!empty($issue['comments'])): ?>
+                        <span class="section-badge"><?= count($issue['comments']) ?></span>
+                        <?php endif; ?>
+                    </h3>
                     <?php if (!empty($issue['comments'])): ?>
-                    <button class="btn btn-sm btn-outline-secondary flex-shrink-0" id="toggle-all-comments" type="button" style="white-space: nowrap;">
-                        <i class="bi bi-chevron-up me-1"></i>Collapse All
+                    <button id="toggle-all-comments" class="btn btn-sm btn-outline" title="Collapse/Expand all comments">
+                        <i class="bi bi-chevron-up"></i> Collapse
                     </button>
                     <?php endif; ?>
                 </div>
-                <div class="card-body">
-                    <!-- Add Comment Form (Sticky) -->
+                <div class="section-content">
+                    <!-- Add Comment Form -->
                     <?php if (can('issues.comment', $issue['project_id'])): ?>
-                    <div id="comment-form-container" class="sticky-comment-form mb-4">
-                        <form id="comment-form" class="p-3 bg-light rounded border">
-                            <div class="mb-3 mb-0">
-                                <label class="form-label d-flex align-items-center">
-                                    <i class="bi bi-pencil-square me-2"></i> Add a comment
-                                </label>
-                                <textarea class="form-control" name="body" rows="3" placeholder="Write your comment here..." required></textarea>
-                            </div>
-                            <div class="mt-3 d-flex gap-2">
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-check-circle me-1"></i> Post Comment
-                                </button>
-                                <button type="reset" class="btn btn-light btn-sm">
-                                    <i class="bi bi-x-circle me-1"></i> Clear
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    <hr class="my-3">
+                    <form id="comment-form" class="comment-form">
+                        <div class="form-group">
+                            <label class="form-label"><i class="bi bi-pencil-square"></i> Add a comment</label>
+                            <textarea class="form-control" name="body" rows="3" placeholder="Write your comment here..." required></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Post Comment
+                            </button>
+                            <button type="reset" class="btn btn-outline">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+                    <div class="divider"></div>
                     <?php endif; ?>
 
-                    <!-- Comments List with Pagination -->
+                    <!-- Comments List -->
                     <div id="comments-list">
                         <?php if (empty($issue['comments'])): ?>
-                        <div class="alert alert-info text-center py-4">
-                            <i class="bi bi-chat-left-quote me-2"></i>
-                            No comments yet. Be the first to comment!
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="bi bi-chat-left-quote"></i></div>
+                            <p class="empty-text">No comments yet. Be the first to comment!</p>
                         </div>
                         <?php else: ?>
                         <div class="comments-container" id="comments-container">
-                            <!-- Comments will be loaded with pagination -->
                             <?php 
                             $commentsPerPage = 5;
                             $totalComments = count($issue['comments']);
                             $showInitial = min($commentsPerPage, $totalComments);
                             ?>
-                            
                             <?php for ($i = 0; $i < $showInitial; $i++): 
                                 $comment = $issue['comments'][$i];
                             ?>
-                            <div class="comment mb-4 p-3 border rounded comment-item" id="comment-<?= $comment['id'] ?>">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0 me-3">
+                            <div class="comment-item" id="comment-<?= $comment['id'] ?>">
+                                <div class="comment-header-row">
+                                    <div class="comment-user-info">
                                         <?php if (($comment['user']['avatar'] ?? null)): ?>
-                                        <img src="<?= e($comment['user']['avatar']) ?>" class="rounded-circle" width="48" height="48" alt="Avatar">
+                                        <img src="<?= e($comment['user']['avatar']) ?>" class="avatar-md" alt="Avatar">
                                         <?php else: ?>
-                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                             style="width: 48px; height: 48px; font-weight: bold; font-size: 20px;">
-                                            <?= strtoupper(substr(($comment['user']['first_name'] ?? 'U'), 0, 1)) ?>
+                                        <div class="avatar-initial-md"><?= strtoupper(substr(($comment['user']['first_name'] ?? 'U'), 0, 1)) ?></div>
+                                        <?php endif; ?>
+                                        <div class="user-meta">
+                                            <strong class="user-name"><?= e($comment['user']['display_name'] ?? 'Unknown User') ?></strong>
+                                            <span class="comment-time"><?= time_ago($comment['created_at']) ?><?php if ($comment['updated_at'] !== $comment['created_at']): ?> <em>(edited)</em><?php endif; ?></span>
                                         </div>
+                                    </div>
+                                    <div class="comment-actions">
+                                        <?php 
+                                        $canEditDelete = ($comment['user_id'] === $currentUserId) || 
+                                                       can('comments.edit_all', $issue['project_id']) ||
+                                                       can('comments.delete_all', $issue['project_id']);
+                                        ?>
+                                        <?php if ($canEditDelete): ?>
+                                        <button class="action-btn edit-comment-btn" data-comment-id="<?= $comment['id'] ?>" data-issue-key="<?= $issue['issue_key'] ?>" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="action-btn delete-comment-btn" data-comment-id="<?= $comment['id'] ?>" data-issue-key="<?= $issue['issue_key'] ?>" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                         <?php endif; ?>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex align-items-center mb-2 justify-content-between">
-                                            <div>
-                                                <strong class="me-2"><?= e($comment['user']['display_name'] ?? 'Unknown User') ?></strong>
-                                                <small class="text-muted"><?= time_ago($comment['created_at']) ?></small>
-                                                <?php if ($comment['updated_at'] !== $comment['created_at']): ?>
-                                                <small class="text-muted ms-2"><em>(edited)</em></small>
-                                                <?php endif; ?>
-                                            </div>
-                                            <!-- Edit & Delete Buttons -->
-                                             <div class="comment-actions">
-                                                 <?php 
-                                                 $canEditDelete = ($comment['user_id'] === $currentUserId) || 
-                                                                  can('comments.edit_all', $issue['project_id']) ||
-                                                                  can('comments.delete_all', $issue['project_id']);
-                                                 ?>
-                                                 <?php if ($canEditDelete): ?>
-                                                <button class="btn btn-sm btn-link text-primary edit-comment-btn" 
-                                                        data-comment-id="<?= $comment['id'] ?>" 
-                                                        data-issue-key="<?= $issue['issue_key'] ?>"
-                                                        title="Edit comment">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-link text-danger delete-comment-btn" 
-                                                        data-comment-id="<?= $comment['id'] ?>" 
-                                                        data-issue-key="<?= $issue['issue_key'] ?>"
-                                                        title="Delete comment">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <div class="comment-body lh-lg">
-                                            <?= nl2br(e($comment['body'])) ?>
-                                        </div>
-                                    </div>
                                 </div>
+                                <div class="comment-body"><?= nl2br(e($comment['body'])) ?></div>
                             </div>
                             <?php endfor; ?>
 
-                            <!-- Load More Button -->
                             <?php if ($totalComments > $showInitial): ?>
-                            <div class="text-center mb-3">
-                                <button class="btn btn-outline-secondary btn-sm" id="load-more-comments">
-                                    <i class="bi bi-arrow-down me-1"></i>
-                                    Load More Comments (<?= $totalComments - $showInitial ?> remaining)
+                            <div class="load-more-section">
+                                <button id="load-more-comments" class="btn btn-outline">
+                                    <i class="bi bi-arrow-down"></i> Load More (<?= $totalComments - $showInitial ?> remaining)
                                 </button>
                             </div>
-                            
-                            <!-- Hidden comments data -->
                             <div id="comments-data" style="display:none;">
                                 <?php for ($i = $showInitial; $i < $totalComments; $i++): 
                                     $comment = $issue['comments'][$i];
                                 ?>
-                                <div class="comment mb-4 p-3 border rounded comment-item" id="comment-<?= $comment['id'] ?>">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0 me-3">
+                                <div class="comment-item" id="comment-<?= $comment['id'] ?>">
+                                    <div class="comment-header-row">
+                                        <div class="comment-user-info">
                                             <?php if (($comment['user']['avatar'] ?? null)): ?>
-                                            <img src="<?= e($comment['user']['avatar']) ?>" class="rounded-circle" width="48" height="48" alt="Avatar">
+                                            <img src="<?= e($comment['user']['avatar']) ?>" class="avatar-md" alt="Avatar">
                                             <?php else: ?>
-                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                                 style="width: 48px; height: 48px; font-weight: bold; font-size: 20px;">
-                                                <?= strtoupper(substr(($comment['user']['first_name'] ?? 'U'), 0, 1)) ?>
+                                            <div class="avatar-initial-md"><?= strtoupper(substr(($comment['user']['first_name'] ?? 'U'), 0, 1)) ?></div>
+                                            <?php endif; ?>
+                                            <div class="user-meta">
+                                                <strong class="user-name"><?= e($comment['user']['display_name'] ?? 'Unknown User') ?></strong>
+                                                <span class="comment-time"><?= time_ago($comment['created_at']) ?><?php if ($comment['updated_at'] !== $comment['created_at']): ?> <em>(edited)</em><?php endif; ?></span>
                                             </div>
+                                        </div>
+                                        <div class="comment-actions">
+                                            <?php 
+                                            $canEditDelete = ($comment['user_id'] === $currentUserId) || 
+                                                           can('comments.edit_all', $issue['project_id']) ||
+                                                           can('comments.delete_all', $issue['project_id']);
+                                            ?>
+                                            <?php if ($canEditDelete): ?>
+                                            <button class="action-btn edit-comment-btn" data-comment-id="<?= $comment['id'] ?>" data-issue-key="<?= $issue['issue_key'] ?>" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="action-btn delete-comment-btn" data-comment-id="<?= $comment['id'] ?>" data-issue-key="<?= $issue['issue_key'] ?>" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex align-items-center mb-2 justify-content-between">
-                                                <div>
-                                                    <strong class="me-2"><?= e($comment['user']['display_name'] ?? 'Unknown User') ?></strong>
-                                                    <small class="text-muted"><?= time_ago($comment['created_at']) ?></small>
-                                                    <?php if ($comment['updated_at'] !== $comment['created_at']): ?>
-                                                    <small class="text-muted ms-2"><em>(edited)</em></small>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <!-- Edit & Delete Buttons -->
-                                                 <div class="comment-actions">
-                                                     <?php 
-                                                     $canEditDelete = ($comment['user_id'] === $currentUserId) || 
-                                                                      can('comments.edit_all', $issue['project_id']) ||
-                                                                      can('comments.delete_all', $issue['project_id']);
-                                                     ?>
-                                                     <?php if ($canEditDelete): ?>
-                                                     <button class="btn btn-sm btn-link text-primary edit-comment-btn" 
-                                                             data-comment-id="<?= $comment['id'] ?>" 
-                                                             data-issue-key="<?= $issue['issue_key'] ?>"
-                                                             title="Edit comment">
-                                                         <i class="bi bi-pencil"></i>
-                                                     </button>
-                                                     <button class="btn btn-sm btn-link text-danger delete-comment-btn" 
-                                                             data-comment-id="<?= $comment['id'] ?>" 
-                                                             data-issue-key="<?= $issue['issue_key'] ?>"
-                                                             title="Delete comment">
-                                                         <i class="bi bi-trash"></i>
-                                                     </button>
-                                                     <?php endif; ?>
-                                                 </div>
-                                            </div>
-                                            <div class="comment-body lh-lg">
-                                                <?= nl2br(e($comment['body'])) ?>
-                                            </div>
-                                        </div>
                                     </div>
+                                    <div class="comment-body"><?= nl2br(e($comment['body'])) ?></div>
                                 </div>
                                 <?php endfor; ?>
                             </div>
@@ -354,26 +308,22 @@ $currentUserId = $authUser ? $authUser['id'] : null;
 
             <!-- Attachments Section -->
             <?php if (!empty($issue['attachments'])): ?>
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">Attachments</h6>
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="bi bi-file-earmark"></i> Attachments</h3>
                 </div>
-                <div class="card-body">
-                    <div class="row g-3">
+                <div class="section-content">
+                    <div class="attachments-grid">
                         <?php foreach ($issue['attachments'] as $attachment): ?>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center p-2 border rounded">
-                                <i class="bi bi-file-earmark me-3 fs-4 text-muted"></i>
-                                <div class="flex-grow-1">
-                                    <a href="<?= url("/attachments/{$attachment['id']}") ?>" target="_blank" class="text-decoration-none">
-                                        <?= e($attachment['filename']) ?>
-                                    </a>
-                                    <br>
-                                    <small class="text-muted">
-                                        <?= format_file_size($attachment['size']) ?> •
-                                        <?= time_ago($attachment['created_at']) ?>
-                                    </small>
-                                </div>
+                        <div class="attachment-item">
+                            <i class="bi bi-file-earmark"></i>
+                            <div class="attachment-info">
+                                <a href="<?= url("/attachments/{$attachment['id']}") ?>" target="_blank" class="attachment-name">
+                                    <?= e($attachment['filename']) ?>
+                                </a>
+                                <span class="attachment-meta">
+                                    <?= format_file_size($attachment['size']) ?> • <?= time_ago($attachment['created_at']) ?>
+                                </span>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -384,134 +334,114 @@ $currentUserId = $authUser ? $authUser['id'] : null;
 
             <!-- Work Logs Section -->
             <?php if (!empty($issue['worklogs'])): ?>
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">Work Log</h6>
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="bi bi-clock-history"></i> Work Log</h3>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Time Spent</th>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($issue['worklogs'] ?? [] as $worklog): ?>
-                                <tr>
-                                    <td><?= e(($worklog['user']['display_name'] ?? 'Unknown')) ?></td>
-                                    <td><?= format_time($worklog['time_spent'] ?? 0) ?></td>
-                                    <td><?= format_date($worklog['started_at'] ?? '') ?></td>
-                                    <td><?= e($worklog['description'] ?? '') ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="section-content">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Time Spent</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($issue['worklogs'] ?? [] as $worklog): ?>
+                            <tr>
+                                <td><?= e(($worklog['user']['display_name'] ?? 'Unknown')) ?></td>
+                                <td><?= format_time($worklog['time_spent'] ?? 0) ?></td>
+                                <td><?= format_date($worklog['started_at'] ?? '') ?></td>
+                                <td><?= e($worklog['description'] ?? '') ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <?php endif; ?>
 
-            <!-- Issue Links -->
+            <!-- Linked Issues Section -->
             <?php if (!empty(($links['outward'] ?? [])) || !empty(($links['inward'] ?? []))): ?>
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">Linked Issues</h6>
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="bi bi-link"></i> Linked Issues</h3>
                 </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
+                <div class="section-content">
+                    <div class="links-list">
                         <?php if (!empty($links['outward'] ?? [])): ?>
                             <?php foreach ($links['outward'] as $link): ?>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="badge me-2" style="background-color: <?= e($link['issue_type_color'] ?? '#ccc') ?>">
-                                        <i class="bi bi-<?= e($link['issue_type_icon'] ?? 'link') ?>"></i>
-                                    </span>
-                                    <a href="<?= url("/issue/{$link['issue_key']}") ?>" class="text-decoration-none">
-                                        <?= e($link['issue_key'] ?? 'Unknown') ?>
-                                    </a>
-                                    <span class="text-muted ms-2">
-                                        <?= e($link['description'] ?? '') ?>
-                                    </span>
-                                </div>
-                                <span class="badge" style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>">
+                            <div class="link-item">
+                                <span class="link-badge" style="background-color: <?= e($link['issue_type_color'] ?? '#ccc') ?>">
+                                    <i class="bi bi-<?= e($link['issue_type_icon'] ?? 'link') ?>"></i>
+                                </span>
+                                <a href="<?= url("/issue/{$link['issue_key']}") ?>" class="link-key">
+                                    <?= e($link['issue_key'] ?? 'Unknown') ?>
+                                </a>
+                                <span class="link-desc"><?= e($link['description'] ?? '') ?></span>
+                                <span class="link-status" style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>">
                                     <?= e($link['status_name'] ?? 'Unknown') ?>
                                 </span>
-                            </li>
+                            </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
                         <?php if (!empty($links['inward'] ?? [])): ?>
                             <?php foreach ($links['inward'] as $link): ?>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="badge me-2" style="background-color: <?= e($link['issue_type_color'] ?? '#ccc') ?>">
-                                        <i class="bi bi-<?= e($link['issue_type_icon'] ?? 'link') ?>"></i>
-                                    </span>
-                                    <a href="<?= url("/issue/{$link['issue_key']}") ?>" class="text-decoration-none">
-                                        <?= e($link['issue_key'] ?? 'Unknown') ?>
-                                    </a>
-                                    <span class="text-muted ms-2">
-                                        <?= e($link['description'] ?? '') ?>
-                                    </span>
-                                </div>
-                                <span class="badge" style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>">
+                            <div class="link-item">
+                                <span class="link-badge" style="background-color: <?= e($link['issue_type_color'] ?? '#ccc') ?>">
+                                    <i class="bi bi-<?= e($link['issue_type_icon'] ?? 'link') ?>"></i>
+                                </span>
+                                <a href="<?= url("/issue/{$link['issue_key']}") ?>" class="link-key">
+                                    <?= e($link['issue_key'] ?? 'Unknown') ?>
+                                </a>
+                                <span class="link-desc"><?= e($link['description'] ?? '') ?></span>
+                                <span class="link-status" style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>">
                                     <?= e($link['status_name'] ?? 'Unknown') ?>
                                 </span>
-                            </li>
+                            </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
-                    </ul>
+                    </div>
                 </div>
             </div>
             <?php endif; ?>
 
-            <!-- Activity History -->
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center activity-header" style="cursor: pointer;">
-                    <h6 class="mb-0">
-                        <i class="bi bi-clock-history me-2"></i>
-                        Activity
+            <!-- Activity Section -->
+            <div class="section-card">
+                <div class="section-header activity-header" onclick="toggleActivity(this)">
+                    <h3 class="section-title">
+                        <i class="bi bi-clock-history"></i> Activity
                         <?php if (!empty($history)): ?>
-                        <span class="badge bg-secondary ms-2"><?= count($history) ?></span>
+                        <span class="section-badge"><?= count($history) ?></span>
                         <?php endif; ?>
-                    </h6>
-                    <button class="btn btn-sm btn-outline-secondary activity-toggle" type="button" title="Click to expand/collapse">
+                    </h3>
+                    <button class="btn btn-sm btn-outline activity-toggle-btn" type="button">
                         <i class="bi bi-chevron-up"></i>
                     </button>
                 </div>
-                <div class="card-body activity-body" id="activity-body">
+                <div class="section-content activity-content">
                     <?php if (empty($history)): ?>
-                    <div class="alert alert-info text-center py-4">
-                        <i class="bi bi-info-circle me-2"></i>
-                        No activity yet. Changes will appear here.
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="bi bi-info-circle"></i></div>
+                        <p class="empty-text">No activity yet. Changes will appear here.</p>
                     </div>
                     <?php else: ?>
                     <div class="timeline">
                         <?php foreach ($history as $entry): ?>
-                        <div class="timeline-item mb-3 activity-item">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                                         style="width: 32px; height: 32px;">
-                                        <i class="bi bi-arrow-repeat text-primary"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="small">
-                                        <strong><?= e($entry['user_name'] ?? 'System') ?></strong>
-                                        changed <strong><?= e($entry['field']) ?></strong>
-                                        <?php if ($entry['old_value']): ?>
-                                        from <em>"<?= e($entry['old_value']) ?>"</em>
-                                        <?php endif; ?>
-                                        <?php if ($entry['new_value']): ?>
-                                        to <em>"<?= e($entry['new_value']) ?>"</em>
-                                        <?php endif; ?>
-                                    </div>
-                                    <small class="text-muted"><?= time_ago($entry['created_at']) ?></small>
-                                </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <strong><?= e($entry['user_name'] ?? 'System') ?></strong>
+                                changed <strong><?= e($entry['field']) ?></strong>
+                                <?php if ($entry['old_value']): ?>
+                                from <em>"<?= e($entry['old_value']) ?>"</em>
+                                <?php endif; ?>
+                                <?php if ($entry['new_value']): ?>
+                                to <em>"<?= e($entry['new_value']) ?>"</em>
+                                <?php endif; ?>
+                                <div class="timeline-time"><?= time_ago($entry['created_at']) ?></div>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -519,26 +449,20 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                     <?php endif; ?>
                 </div>
             </div>
-
-            <!-- Scroll to Top Button -->
-            <button id="scroll-to-top" class="btn btn-primary btn-lg rounded-circle" style="position: fixed; bottom: 30px; right: 30px; display: none; z-index: 99;">
-                <i class="bi bi-arrow-up"></i>
-            </button>
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-3">
+        <!-- Right Sidebar -->
+        <div class="issue-right-panel">
             <!-- Status Transitions -->
             <?php if (!empty($transitions)): ?>
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">Status</h6>
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <h4 class="sidebar-title">Status</h4>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
+                <div class="sidebar-content">
+                    <div class="button-group">
                         <?php foreach ($transitions as $transition): ?>
-                        <button class="btn btn-outline-primary btn-sm"
-                                onclick="transitionIssue(<?= $transition['status_id'] ?>, '<?= e($transition['status_name']) ?>')">
+                        <button class="btn btn-block btn-primary" onclick="transitionIssue(<?= $transition['status_id'] ?>, '<?= e($transition['status_name']) ?>')">
                             <?= e($transition['status_name']) ?>
                         </button>
                         <?php endforeach; ?>
@@ -547,118 +471,88 @@ $currentUserId = $authUser ? $authUser['id'] : null;
             </div>
             <?php endif; ?>
 
-            <!-- Issue Details -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">Details</h6>
+            <!-- Details Card -->
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <h4 class="sidebar-title">Details</h4>
                 </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <strong>Type:</strong>
-                        <span class="badge ms-1" style="background-color: <?= e($issue['issue_type_color']) ?>">
+                <div class="sidebar-content">
+                    <div class="detail-row">
+                        <span class="detail-label">Type</span>
+                        <span class="detail-badge" style="background-color: <?= e($issue['issue_type_color']) ?>">
                             <?= e($issue['issue_type_name']) ?>
                         </span>
                     </div>
-                    <div class="mb-2">
-                        <strong>Priority:</strong>
-                        <span class="badge ms-1" style="background-color: <?= e($issue['priority_color']) ?>">
+                    <div class="detail-row">
+                        <span class="detail-label">Priority</span>
+                        <span class="detail-badge" style="background-color: <?= e($issue['priority_color']) ?>">
                             <?= e($issue['priority_name']) ?>
                         </span>
                     </div>
-                    <div class="mb-2">
-                        <strong>Status:</strong>
-                        <span class="badge ms-1" style="background-color: <?= e($issue['status_color']) ?>">
+                    <div class="detail-row">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-badge" style="background-color: <?= e($issue['status_color']) ?>">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </div>
-                    <div class="mb-2">
-                        <strong>Created:</strong>
-                        <span class="text-muted ms-1"><?= format_date($issue['created_at']) ?></span>
+                    <div class="detail-row">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value"><?= format_date($issue['created_at']) ?></span>
                     </div>
-                    <div class="mb-2">
-                        <strong>Updated:</strong>
-                        <span class="text-muted ms-1"><?= format_date($issue['updated_at']) ?></span>
+                    <div class="detail-row">
+                        <span class="detail-label">Updated</span>
+                        <span class="detail-value"><?= format_date($issue['updated_at']) ?></span>
                     </div>
                     <?php if ($issue['resolved_at']): ?>
-                    <div class="mb-2">
-                        <strong>Resolved:</strong>
-                        <span class="text-muted ms-1"><?= format_date($issue['resolved_at']) ?></span>
+                    <div class="detail-row">
+                        <span class="detail-label">Resolved</span>
+                        <span class="detail-value"><?= format_date($issue['resolved_at']) ?></span>
                     </div>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <!-- People -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0">People</h6>
+            <!-- People Card -->
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <h4 class="sidebar-title">People</h4>
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong>Assignee:</strong><br>
+                <div class="sidebar-content">
+                    <div class="people-field">
+                        <span class="detail-label">Assignee</span>
                         <?php if ($issue['assignee_name']): ?>
-                        <div class="d-flex align-items-center mt-1">
+                        <div class="people-value">
                             <?php if ($issue['assignee_avatar']): ?>
-                            <img src="<?= e($issue['assignee_avatar']) ?>" class="rounded-circle me-2" width="24" height="24">
+                            <img src="<?= e($issue['assignee_avatar']) ?>" class="avatar-sm" alt="Avatar">
                             <?php else: ?>
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                 style="width: 24px; height: 24px; font-size: 10px;">
-                                <?= strtoupper(substr($issue['assignee_name'], 0, 1)) ?>
-                            </div>
+                            <div class="avatar-initial-sm"><?= strtoupper(substr($issue['assignee_name'], 0, 1)) ?></div>
                             <?php endif; ?>
-                            <span class="small"><?= e($issue['assignee_name']) ?></span>
+                            <span><?= e($issue['assignee_name']) ?></span>
                         </div>
                         <?php else: ?>
-                        <span class="text-muted small">Unassigned</span>
+                        <div class="people-value unassigned">Unassigned</div>
                         <?php endif; ?>
                     </div>
-                    <div class="mb-3">
-                        <strong>Reporter:</strong><br>
-                        <div class="d-flex align-items-center mt-1">
+                    <div class="people-field">
+                        <span class="detail-label">Reporter</span>
+                        <div class="people-value">
                             <?php if ($issue['reporter_avatar']): ?>
-                            <img src="<?= e($issue['reporter_avatar']) ?>" class="rounded-circle me-2" width="24" height="24">
+                            <img src="<?= e($issue['reporter_avatar']) ?>" class="avatar-sm" alt="Avatar">
                             <?php else: ?>
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
-                                 style="width: 24px; height: 24px; font-size: 10px;">
-                                <?= strtoupper(substr($issue['reporter_name'], 0, 1)) ?>
-                            </div>
+                            <div class="avatar-initial-sm"><?= strtoupper(substr($issue['reporter_name'], 0, 1)) ?></div>
                             <?php endif; ?>
-                            <span class="small"><?= e($issue['reporter_name']) ?></span>
+                            <span><?= e($issue['reporter_name']) ?></span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Dates -->
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">Dates</h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <strong>Created:</strong><br>
-                        <span class="text-muted small"><?= format_date($issue['created_at']) ?></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Updated:</strong><br>
-                        <span class="text-muted small"><?= format_date($issue['updated_at']) ?></span>
-                    </div>
-                    <?php if ($issue['due_date']): ?>
-                    <div class="mb-2">
-                        <strong>Due Date:</strong><br>
-                        <span class="text-muted small"><?= format_date($issue['due_date']) ?></span>
-                    </div>
-                    <?php endif; ?>
-                    <?php if ($issue['resolved_at']): ?>
-                    <div class="mb-2">
-                        <strong>Resolved:</strong><br>
-                        <span class="text-muted small"><?= format_date($issue['resolved_at']) ?></span>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scroll-to-top" class="scroll-to-top-btn">
+        <i class="bi bi-arrow-up"></i>
+    </button>
 </div>
 
 <!-- Modals -->
@@ -672,10 +566,10 @@ $currentUserId = $authUser ? $authUser['id'] : null;
             </div>
             <form id="transition-form">
                 <div class="modal-body">
-                    <p>Transition issue to: <strong id="transition-status"></strong></p>
+                    <p>Transition to: <strong id="transition-status"></strong></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Transition</button>
                 </div>
             </form>
@@ -683,7 +577,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
     </div>
 </div>
 
-<!-- Assign Issue Modal -->
+<!-- Assign Modal -->
 <div class="modal fade" id="assignModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -693,15 +587,15 @@ $currentUserId = $authUser ? $authUser['id'] : null;
             </div>
             <form id="assign-form">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="assignee" class="form-label">Assignee</label>
+                    <div class="form-group">
+                        <label class="form-label">Assignee</label>
                         <select class="form-control" id="assignee" name="assignee_id" required>
                             <option value="">Select a user...</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Assign</button>
                 </div>
             </form>
@@ -709,7 +603,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
     </div>
 </div>
 
-<!-- Link Issue Modal -->
+<!-- Link Modal -->
 <div class="modal fade" id="linkModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -719,19 +613,19 @@ $currentUserId = $authUser ? $authUser['id'] : null;
             </div>
             <form id="link-form">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="link-type-id" class="form-label">Link Type</label>
+                    <div class="form-group">
+                        <label class="form-label">Link Type</label>
                         <select class="form-control" id="link-type-id" name="link_type_id" required>
                             <option value="">Select link type...</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="target-issue-key" class="form-label">Issue Key</label>
+                    <div class="form-group">
+                        <label class="form-label">Target Issue</label>
                         <input type="text" class="form-control" id="target-issue-key" name="target_issue_key" placeholder="e.g., BP-1" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Link</button>
                 </div>
             </form>
@@ -749,21 +643,21 @@ $currentUserId = $authUser ? $authUser['id'] : null;
             </div>
             <form id="logwork-form">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="time-spent" class="form-label">Time Spent (hours)</label>
+                    <div class="form-group">
+                        <label class="form-label">Time Spent (hours)</label>
                         <input type="number" class="form-control" id="time-spent" name="time_spent" step="0.5" min="0" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="started-at" class="form-label">Started At</label>
+                    <div class="form-group">
+                        <label class="form-label">Started At</label>
                         <input type="datetime-local" class="form-control" id="started-at" name="started_at" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="work-description" class="form-label">Description</label>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
                         <textarea class="form-control" id="work-description" name="description" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Log Work</button>
                 </div>
             </form>
@@ -772,24 +666,544 @@ $currentUserId = $authUser ? $authUser['id'] : null;
 </div>
 
 <style>
-/* Sticky Comment Form */
-.sticky-comment-form {
-    position: relative;
-    background: white;
-    border-radius: 0.375rem;
-    z-index: 1;
+/* ========================================
+   Root Variables & Base Styles
+   ======================================== */
+:root {
+    /* Brand Colors */
+    --jira-blue: #0052CC;
+    --jira-blue-dark: #003DA5;
+    --jira-blue-light: #DEEBFF;
+    
+    /* Text Colors */
+    --text-primary: #161B22;
+    --text-secondary: #57606A;
+    --text-tertiary: #738496;
+    --text-muted: #97A0AF;
+    --text-white: #FFFFFF;
+    
+    /* Background Colors */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F7F8FA;
+    --bg-tertiary: #ECEDF0;
+    
+    /* Borders & Dividers */
+    --border-color: #DFE1E6;
+    --border-light: #EBECF0;
+    
+    /* Functional Colors */
+    --color-success: #36B37E;
+    --color-warning: #FFAB00;
+    --color-error: #FF5630;
+    
+    /* Transitions */
+    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Comments Container with Max Height */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+/* ========================================
+   Breadcrumb
+   ======================================== */
+.breadcrumb-section {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 32px;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    list-style: none;
+}
+
+.breadcrumb-link {
+    color: var(--jira-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.breadcrumb-link:hover {
+    color: var(--jira-blue-dark);
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    color: var(--text-secondary);
+    margin: 0 2px;
+}
+
+.breadcrumb-current {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ========================================
+   Main Layout
+   ======================================== */
+.issue-detail-wrapper {
+    background: var(--bg-secondary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.issue-main-container {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    padding: 24px 32px;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
+}
+
+.issue-left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+.issue-right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ========================================
+   Issue Header Card
+   ======================================== */
+.issue-header-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);
+}
+
+.issue-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.issue-key-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.issue-type-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.issue-key {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.issue-status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+
+.issue-actions-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--text-secondary);
+}
+
+.btn-primary {
+    background: var(--jira-blue);
+    color: var(--text-white);
+    border-color: var(--jira-blue);
+}
+
+.btn-primary:hover {
+    background: var(--jira-blue-dark);
+    border-color: var(--jira-blue-dark);
+}
+
+.btn-outline {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-block {
+    width: 100%;
+    text-align: center;
+}
+
+/* Dropdown */
+.dropdown-container {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(9, 30, 66, 0.15);
+    z-index: 100;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all var(--transition);
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: var(--bg-secondary);
+}
+
+.dropdown-divider {
+    border: none;
+    border-top: 1px solid var(--border-light);
+    margin: 4px 0;
+    height: 0;
+}
+
+/* Issue Title & Description */
+.issue-summary {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 24px 0;
+    letter-spacing: -0.3px;
+    line-height: 1.3;
+}
+
+.description-section {
+    margin-bottom: 24px;
+}
+
+.section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.description-content {
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    border-left: 3px solid var(--jira-blue);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Details Grid */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    margin: 24px 0;
+}
+
+.detail-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.detail-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    background: var(--jira-blue);
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+}
+
+.label-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    margin-right: 4px;
+}
+
+.labels-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* Avatars */
+.avatar-sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-md {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-initial-sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--jira-blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.avatar-initial-md {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--jira-blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ========================================
+   Section Cards
+   ======================================== */
+.section-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);
+}
+
+.section-header {
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.section-header.activity-header {
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.section-header.activity-header:hover {
+    background: #EBECF0;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-badge {
+    display: inline-block;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.section-content {
+    padding: 16px;
+}
+
+/* ========================================
+   Comments
+   ======================================== */
+.comment-form {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 16px;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    font-family: inherit;
+    transition: border-color var(--transition);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--jira-blue);
+    box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--border-light);
+    margin: 12px 0;
+}
+
 .comments-container {
-    max-height: 600px;
+    max-height: 800px;
     overflow-y: auto;
     padding-right: 8px;
-    transition: max-height 0.3s ease, overflow 0.3s ease;
-    will-change: max-height;
-    contain: layout style paint;
-    position: relative;
-    z-index: 0;
 }
 
 .comments-container::-webkit-scrollbar {
@@ -797,27 +1211,27 @@ $currentUserId = $authUser ? $authUser['id'] : null;
 }
 
 .comments-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+    background: transparent;
 }
 
 .comments-container::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
+    background: var(--border-color);
+    border-radius: 3px;
 }
 
-.comments-container::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* Comment Item Animation */
 .comment-item {
-    animation: slideIn 0.3s ease-in-out;
-    transition: all 0.2s ease;
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    margin-bottom: 12px;
+    background: var(--bg-primary);
+    transition: all var(--transition);
+    animation: slideIn 0.3s ease-out;
 }
 
 .comment-item:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: var(--border-color);
+    box-shadow: 0 4px 12px rgba(9, 30, 66, 0.08);
 }
 
 @keyframes slideIn {
@@ -831,161 +1245,553 @@ $currentUserId = $authUser ? $authUser['id'] : null;
     }
 }
 
-/* Activity Section */
-.activity-header {
-    user-select: none;
+.comment-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
-.activity-header:hover {
-    background-color: #f8f9fa;
+.comment-user-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
 }
 
-.activity-body {
-    transition: max-height 0.3s ease, overflow 0.3s ease, padding 0.3s ease, margin 0.3s ease;
-    max-height: 400px;
-    overflow-y: auto;
-    will-change: max-height;
-    contain: layout style paint;
+.user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
-.activity-body.collapsed {
-    max-height: 0;
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
+.user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-.activity-body::-webkit-scrollbar {
-    width: 6px;
+.comment-time {
+    font-size: 12px;
+    color: var(--text-secondary);
 }
 
-.activity-body::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.activity-body::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-}
-
-.activity-body::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-.activity-item {
-    border-left: 2px solid #e9ecef;
-    padding-left: 12px;
-    margin-left: 8px;
-    transition: all 0.2s ease;
-}
-
-.activity-item:hover {
-    border-left-color: #0d6efd;
-    padding-left: 16px;
-}
-
-/* Scroll to Top Button */
-#scroll-to-top {
-    opacity: 0.8;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-#scroll-to-top:hover {
-    opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-}
-
-/* Comment Actions (Edit & Delete Buttons) */
 .comment-actions {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--transition);
 }
 
-.comment:hover .comment-actions,
 .comment-item:hover .comment-actions {
     opacity: 1;
 }
 
-.comment-actions .btn-link {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    text-decoration: none;
-    transition: all 0.2s ease;
+.action-btn {
+    padding: 4px 6px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all var(--transition);
 }
 
-.comment-actions .btn-link:hover {
-    transform: scale(1.2);
-}
-
-.edit-comment-btn {
-    color: #0d6efd !important;
-}
-
-.edit-comment-btn:hover {
-    color: #0b5ed7 !important;
-}
-
-.delete-comment-btn {
-    color: #dc3545 !important;
+.action-btn:hover {
+    color: var(--text-primary);
 }
 
 .delete-comment-btn:hover {
-    color: #bb2d3b !important;
+    color: var(--color-error);
 }
 
-/* Better load more button */
-#load-more-comments {
-    transition: all 0.2s ease;
+.comment-body {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    word-wrap: break-word;
 }
 
-#load-more-comments:hover {
-    background-color: #e7f1ff;
-    border-color: #0d6efd;
+.empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-secondary);
 }
 
-/* Collapse all button */
-#toggle-all-comments {
-    transition: all 0.2s ease;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.85rem;
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-text {
+    font-size: 13px;
+    margin: 0;
+}
+
+.load-more-section {
+    text-align: center;
+    margin: 16px 0;
+}
+
+/* ========================================
+   Attachments
+   ======================================== */
+.attachments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.attachment-item {
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: all var(--transition);
+}
+
+.attachment-item:hover {
+    border-color: var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.attachment-item i {
+    font-size: 24px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.attachment-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.attachment-name {
+    display: block;
+    color: var(--jira-blue);
+    text-decoration: none;
     font-weight: 500;
-    white-space: nowrap;
-    min-width: auto;
+    font-size: 13px;
+    word-break: break-word;
+    transition: color var(--transition);
+}
+
+.attachment-name:hover {
+    color: var(--jira-blue-dark);
+    text-decoration: underline;
+}
+
+.attachment-meta {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* ========================================
+   Tables
+   ======================================== */
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.logs-table thead {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.logs-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.logs-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
+}
+
+.logs-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* ========================================
+   Links
+   ======================================== */
+.links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.link-item {
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all var(--transition);
+}
+
+.link-item:hover {
+    border-color: var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.link-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 13px;
     flex-shrink: 0;
 }
 
-#toggle-all-comments:hover {
-    background-color: #e7f1ff;
-    border-color: #0d6efd;
-    color: #0d6efd;
+.link-key {
+    color: var(--jira-blue);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    transition: color var(--transition);
 }
 
-#toggle-all-comments i {
-    transition: transform 0.3s ease;
+.link-key:hover {
+    color: var(--jira-blue-dark);
+    text-decoration: underline;
 }
 
-#toggle-all-comments:active i {
-    transform: rotate(180deg);
+.link-desc {
+    color: var(--text-secondary);
+    font-size: 12px;
+    flex: 1;
 }
 
-/* Comment badge styling */
-.comment mb-4 p-3 {
-    border-left: 3px solid #0d6efd;
+.link-status {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
 }
 
-/* Header icons animation */
-.comment-header i,
-.activity-toggle i {
-    transition: transform 0.3s ease;
+/* ========================================
+   Activity/Timeline
+   ======================================== */
+.activity-content {
+    transition: max-height 0.3s ease, overflow 0.3s ease;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.activity-content.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+.activity-toggle-btn {
+    padding: 4px 8px;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-light);
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 16px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -8px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--jira-blue);
+}
+
+.timeline-content {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.timeline-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* ========================================
+   Sidebar Cards
+   ======================================== */
+.sidebar-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);
+}
+
+.sidebar-header {
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-content {
+    padding: 12px;
+}
+
+.button-group {
+    display: grid;
+    gap: 8px;
+}
+
+.detail-row {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.people-field {
+    margin-bottom: 16px;
+}
+
+.people-field:last-child {
+    margin-bottom: 0;
+}
+
+.people-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.people-value.unassigned {
+    color: var(--text-secondary);
+}
+
+/* ========================================
+   Scroll to Top Button
+   ======================================== */
+.scroll-to-top-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--jira-blue);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
+    transition: all var(--transition);
+    z-index: 99;
+    font-size: 18px;
+}
+
+.scroll-to-top-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 82, 204, 0.4);
+    background: var(--jira-blue-dark);
+}
+
+/* ========================================
+   Modals
+   ======================================== */
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+}
+
+.modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    transition: color var(--transition);
+}
+
+.btn-close:hover {
+    color: var(--text-primary);
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 1024px) {
+    .issue-main-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px 20px;
+    }
+    
+    .issue-right-panel {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .issue-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .issue-actions-group {
+        width: 100%;
+    }
+    
+    .issue-summary {
+        font-size: 18px;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-wrap: wrap;
+    }
+    
+    .comments-container {
+        max-height: 400px;
+    }
+    
+    .attachments-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .issue-main-container {
+        padding: 12px 16px;
+    }
+    
+    .issue-header-card,
+    .section-card,
+    .sidebar-card {
+        border-radius: 6px;
+    }
+    
+    .issue-summary {
+        font-size: 16px;
+    }
+    
+    .scroll-to-top-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
 }
 </style>
 
 <script>
 let currentTransitionStatusId = null;
+
+function toggleMenu(btn) {
+    const menu = btn.nextElementSibling;
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-container')) {
+            menu.style.display = 'none';
+        }
+    }, { once: true });
+}
+
+function toggleActivity(header) {
+    const content = header.nextElementSibling;
+    const toggleBtn = header.querySelector('.activity-toggle-btn i');
+    content.classList.toggle('collapsed');
+    
+    if (content.classList.contains('collapsed')) {
+        toggleBtn.className = 'bi bi-chevron-down';
+    } else {
+        toggleBtn.className = 'bi bi-chevron-up';
+    }
+}
 
 function transitionIssue(statusId, statusName) {
     currentTransitionStatusId = statusId;
@@ -993,152 +1799,10 @@ function transitionIssue(statusId, statusName) {
     new bootstrap.Modal(document.getElementById('transitionModal')).show();
 }
 
-document.getElementById('transition-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-        // Get base URL from the current location
-        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
-        const response = await fetch(`${baseUrl}/issue/${issueKey}/transition`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({ status_id: currentTransitionStatusId })
-        });
-        
-        const text = await response.text();
-        console.log('Response status:', response.status);
-        console.log('Response text:', text);
-        
-        if (!response.ok) {
-            alert('Failed to transition issue (HTTP ' + response.status + '): ' + text);
-            return;
-        }
-        
-        const data = JSON.parse(text);
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert('Failed to transition issue: ' + (data.error || 'Unknown error'));
-        }
-    } catch (error) {
-        console.error('Transition error:', error);
-        alert('Failed to transition issue: ' + error.message);
-    }
-});
-
-function watchIssue(isWatching) {
-    const action = isWatching ? 'unwatch' : 'watch';
-    const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
-    fetch(`${baseUrl}/issue/${issueKey}/${action}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({})
-    }).then(() => window.location.reload())
-      .catch(err => {
-          console.error('Watch error:', err);
-          alert('Failed to update watch status');
-      });
-}
-
-function voteIssue(hasVoted) {
-    const action = hasVoted ? 'unvote' : 'vote';
-    const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
-    fetch(`${baseUrl}/issue/${issueKey}/${action}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({})
-    }).then(() => window.location.reload())
-      .catch(err => {
-          console.error('Vote error:', err);
-          alert('Failed to update vote');
-      });
-}
-
-document.getElementById('comment-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const commentBody = formData.get('body');
-    
-    if (!commentBody || !commentBody.trim()) {
-        alert('Please enter a comment');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${baseUrl}/issue/${issueKey}/comments`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({ body: commentBody })
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('Comment error response:', response.status, errorData);
-            alert(errorData.error || 'Failed to add comment');
-            return;
-        }
-        
-        window.location.reload();
-    } catch (error) {
-        console.error('Comment fetch error:', error);
-        alert('Failed to add comment: ' + error.message);
-    }
-});
-
-// Global variables for issue and project
-const issueKey = '<?= $issue['issue_key'] ?>';
-const projectKey = '<?= $issue['project_key'] ?>';
-const projectId = '<?= $issue['project_id'] ?>';
-
-// Helper function to show notifications
-function showNotification(message, type = 'info') {
-    const alertClass = `alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
-    const alert = document.createElement('div');
-    alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-    alert.style.zIndex = '9999';
-    alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(alert);
-
-    // Auto-dismiss after 3 seconds
-    setTimeout(() => {
-        alert.remove();
-    }, 3000);
-}
-
-// ============== ASSIGN ISSUE FUNCTIONALITY ==============
 function assignIssue() {
     const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
     
-    // Load project members for assignee dropdown
-    fetch(`${baseUrl}/api/v1/projects/${projectKey}/members`, {
+    fetch(`${baseUrl}/api/v1/projects/<?= $issue['project_key'] ?>/members`, {
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
             'Accept': 'application/json',
@@ -1165,11 +1829,9 @@ function assignIssue() {
     });
 }
 
-// ============== LINK ISSUE FUNCTIONALITY ==============
 function linkIssue() {
     const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
     
-    // Load link types from API
     fetch(`${baseUrl}/api/v1/link-types`, {
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
@@ -1197,277 +1859,95 @@ function linkIssue() {
     });
 }
 
-// ============== LOG WORK FUNCTIONALITY ==============
 function logWork() {
-    // Set default started_at to now
     const now = new Date();
     const localDateTime = now.toISOString().slice(0, 16);
     document.getElementById('started-at').value = localDateTime;
     new bootstrap.Modal(document.getElementById('logWorkModal')).show();
 }
 
-// ============== ACTIVITY SECTION COLLAPSE/EXPAND ==============
+function showNotification(message, type = 'info') {
+    const alertClass = `alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+
+    setTimeout(() => {
+        alert.remove();
+    }, 3000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    const activityHeader = document.querySelector('.activity-header');
-    const activityBody = document.getElementById('activity-body');
-    const activityToggle = document.querySelector('.activity-toggle i');
-    
-    if (activityHeader && activityBody && activityToggle) {
-        activityHeader.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Toggle collapsed state
-            activityBody.classList.toggle('collapsed');
-            
-            // Update icon
-            if (activityBody.classList.contains('collapsed')) {
-                activityToggle.className = 'bi bi-chevron-down';
-            } else {
-                activityToggle.className = 'bi bi-chevron-up';
-            }
-            
-            // Console log for debugging
-            console.log('Activity toggled. Collapsed:', activityBody.classList.contains('collapsed'));
-        });
-    }
-
-    // ============== LOAD MORE COMMENTS ==============
-    const loadMoreBtn = document.getElementById('load-more-comments');
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            const commentsData = document.getElementById('comments-data');
-            const container = document.getElementById('comments-container');
-            
-            if (commentsData) {
-                // Move all hidden comments to the container
-                const hiddenComments = commentsData.innerHTML;
-                container.innerHTML += hiddenComments;
-                
-                // Animate new comments
-                const newComments = container.querySelectorAll('.comment-item');
-                newComments.forEach(comment => {
-                    if (!comment.hasAttribute('data-loaded')) {
-                        comment.setAttribute('data-loaded', 'true');
-                    }
-                });
-                
-                // Remove load more button and hidden data
-                loadMoreBtn.parentElement.remove();
-                commentsData.remove();
-            }
-        });
-    }
-
-    // ============== SCROLL TO TOP FUNCTIONALITY ==============
-    const scrollTopBtn = document.getElementById('scroll-to-top');
-    
-    window.addEventListener('scroll', function() {
-        if (window.pageYOffset > 300) {
-            scrollTopBtn.style.display = 'block';
-        } else {
-            scrollTopBtn.style.display = 'none';
-        }
-    });
-
-    if (scrollTopBtn) {
-        scrollTopBtn.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
-
-    // ============== TOGGLE ALL COMMENTS COLLAPSE ==============
-    const toggleAllCommentsBtn = document.getElementById('toggle-all-comments');
-    if (toggleAllCommentsBtn) {
-        let commentsExpanded = true;  // Start expanded
-        
-        toggleAllCommentsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const container = document.getElementById('comments-container');
-            commentsExpanded = !commentsExpanded;
-            
-            if (commentsExpanded) {
-                // Expand all comments - calculate full height
-                container.style.maxHeight = 'none';
-                container.style.overflow = 'visible';
-                toggleAllCommentsBtn.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Collapse All';
-                console.log('Comments expanded');
-            } else {
-                // Collapse to default height
-                container.style.maxHeight = '600px';
-                container.style.overflow = 'auto';
-                toggleAllCommentsBtn.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Expand All';
-                console.log('Comments collapsed');
-            }
-        });
-    }
-
-    // ============== SMOOTH SCROLL ANCHOR LINKS ==============
-    // Auto-scroll to comment if in URL hash
-    if (window.location.hash) {
-        setTimeout(function() {
-            const element = document.querySelector(window.location.hash);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-                element.classList.add('highlight');
-            }
-        }, 100);
-    }
-
-    // ============== EDIT COMMENT FUNCTIONALITY ==============
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.edit-comment-btn')) {
-            e.preventDefault();
-            const btn = e.target.closest('.edit-comment-btn');
-            const commentId = btn.dataset.commentId;
-            const issueKey = btn.dataset.issueKey;
-            const commentElement = document.getElementById('comment-' + commentId);
-            const commentBody = commentElement.querySelector('.comment-body');
-            const currentText = commentBody.innerText;
-
-            // Create edit form
-            const editForm = document.createElement('div');
-            editForm.className = 'comment-edit-form mt-3';
-            editForm.innerHTML = `
-                <div class="form-group">
-                    <textarea class="form-control" id="edit-comment-text-${commentId}" rows="4">${currentText}</textarea>
-                </div>
-                <div class="mt-2 d-flex gap-2">
-                    <button class="btn btn-primary btn-sm save-edit-btn" data-comment-id="${commentId}" data-issue-key="${issueKey}">
-                        <i class="bi bi-check-circle me-1"></i> Save
-                    </button>
-                    <button class="btn btn-secondary btn-sm cancel-edit-btn" data-comment-id="${commentId}">
-                        <i class="bi bi-x-circle me-1"></i> Cancel
-                    </button>
-                </div>
-            `;
-
-            // Hide comment body and show edit form
-            commentBody.style.display = 'none';
-            commentElement.querySelector('.comment-actions').parentElement.insertAdjacentElement('afterend', editForm);
-
-            // Cancel edit
-            editForm.querySelector('.cancel-edit-btn').addEventListener('click', function() {
-                commentBody.style.display = '';
-                editForm.remove();
-            });
-
-            // Save edit
-            editForm.querySelector('.save-edit-btn').addEventListener('click', function() {
-                const newText = document.getElementById('edit-comment-text-' + commentId).value;
-
-                if (!newText.trim()) {
-                    alert('Comment cannot be empty');
-                    return;
-                }
-
-                // Submit form via fetch
-                 fetch(`/jira_clone_system/public/comments/${commentId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ body: newText })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const contentType = response.headers.get('content-type');
-                    if (!contentType || !contentType.includes('application/json')) {
-                        throw new Error('Response is not JSON');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        commentBody.innerHTML = newText.replace(/\n/g, '<br>');
-                        commentBody.style.display = '';
-                        editForm.remove();
-                        showNotification('Comment updated successfully', 'success');
-                    } else {
-                        showNotification('Error: ' + (data.error || 'Failed to update comment'), 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('Error updating comment: ' + error.message, 'error');
-                });
-            });
-        }
-    });
-
-    // ============== DELETE COMMENT FUNCTIONALITY ==============
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-comment-btn')) {
-            e.preventDefault();
-            const btn = e.target.closest('.delete-comment-btn');
-            const commentId = btn.dataset.commentId;
-            const issueKey = btn.dataset.issueKey;
-
-            if (!confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
-                return;
-            }
-
-            // Submit delete via fetch
-            fetch(`/jira_clone_system/public/comments/${commentId}`, {
-                method: 'DELETE',
+    // Form submissions
+    document.getElementById('transition-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
+        try {
+            const response = await fetch(`${baseUrl}/api/v1/issues/<?= $issue['issue_key'] ?>/transitions`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Response is not JSON');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    const commentElement = document.getElementById('comment-' + commentId);
-                    commentElement.style.transition = 'opacity 0.3s ease';
-                    commentElement.style.opacity = '0';
-                    setTimeout(() => {
-                        commentElement.remove();
-                        showNotification('Comment deleted successfully', 'success');
-                    }, 300);
-                } else {
-                    showNotification('Error: ' + (data.error || 'Failed to delete comment'), 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error deleting comment: ' + error.message, 'error');
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ status_id: currentTransitionStatusId })
             });
+            const data = await response.json();
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('transitionModal')).hide();
+                showNotification('Issue transitioned successfully', 'success');
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                showNotification(data.error || 'Failed to transition issue', 'error');
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
         }
     });
 
-
+    document.getElementById('comment-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = document.querySelector('[name="body"]').value;
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
+        try {
+            const response = await fetch(`${baseUrl}/issue/<?= $issue['issue_key'] ?>/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ body })
+            });
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                showNotification('Failed to add comment', 'error');
+            }
+        } catch (error) {
+            showNotification('Error: ' + error.message, 'error');
+        }
+    });
 
     document.getElementById('assign-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const assigneeId = document.getElementById('assignee').value;
-        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
-        
         if (!assigneeId) {
             showNotification('Please select an assignee', 'error');
             return;
         }
-
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
         try {
-            const response = await fetch(`${baseUrl}/issue/${issueKey}/assign`, {
+            const response = await fetch(`${baseUrl}/issue/<?= $issue['issue_key'] ?>/assign`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1478,36 +1958,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 credentials: 'same-origin',
                 body: JSON.stringify({ assignee_id: assigneeId })
             });
-
             const data = await response.json();
             if (data.success) {
                 bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
                 showNotification('Issue assigned successfully', 'success');
-                window.location.reload();
+                setTimeout(() => window.location.reload(), 500);
             } else {
                 showNotification(data.error || 'Failed to assign issue', 'error');
             }
         } catch (error) {
-            console.error('Assign error:', error);
-            showNotification('Error assigning issue: ' + error.message, 'error');
+            showNotification('Error: ' + error.message, 'error');
         }
     });
-
-
 
     document.getElementById('link-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const linkTypeId = document.getElementById('link-type-id').value;
         const targetIssueKey = document.getElementById('target-issue-key').value;
-        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
-
         if (!linkTypeId || !targetIssueKey) {
             showNotification('Please fill in all fields', 'error');
             return;
         }
-
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
         try {
-            const response = await fetch(`${baseUrl}/issue/${issueKey}/link`, {
+            const response = await fetch(`${baseUrl}/issue/<?= $issue['issue_key'] ?>/link`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1516,42 +1990,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Accept': 'application/json',
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({
-                    link_type_id: parseInt(linkTypeId),
-                    target_issue_key: targetIssueKey
-                })
+                body: JSON.stringify({ link_type_id: parseInt(linkTypeId), target_issue_key: targetIssueKey })
             });
-
             const data = await response.json();
             if (data.success) {
                 bootstrap.Modal.getInstance(document.getElementById('linkModal')).hide();
                 showNotification('Issue linked successfully', 'success');
-                window.location.reload();
+                setTimeout(() => window.location.reload(), 500);
             } else {
                 showNotification(data.error || 'Failed to link issue', 'error');
             }
         } catch (error) {
-            console.error('Link error:', error);
-            showNotification('Error linking issue: ' + error.message, 'error');
+            showNotification('Error: ' + error.message, 'error');
         }
     });
-
-
 
     document.getElementById('logwork-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const timeSpent = document.getElementById('time-spent').value;
         const startedAt = document.getElementById('started-at').value;
         const description = document.getElementById('work-description').value;
-        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
-
         if (!timeSpent || !startedAt) {
             showNotification('Please fill in required fields', 'error');
             return;
         }
-
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
         try {
-            const response = await fetch(`${baseUrl}/issue/${issueKey}/logwork`, {
+            const response = await fetch(`${baseUrl}/issue/<?= $issue['issue_key'] ?>/logwork`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1560,26 +2025,200 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Accept': 'application/json',
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({
-                    time_spent: parseFloat(timeSpent) * 3600, // Convert hours to seconds
-                    started_at: startedAt,
-                    description: description
-                })
+                body: JSON.stringify({ time_spent: parseFloat(timeSpent) * 3600, started_at: startedAt, description })
             });
-
             const data = await response.json();
             if (data.success) {
                 bootstrap.Modal.getInstance(document.getElementById('logWorkModal')).hide();
                 showNotification('Work logged successfully', 'success');
-                window.location.reload();
+                setTimeout(() => window.location.reload(), 500);
             } else {
                 showNotification(data.error || 'Failed to log work', 'error');
             }
         } catch (error) {
-            console.error('Log work error:', error);
-            showNotification('Error logging work: ' + error.message, 'error');
+            showNotification('Error: ' + error.message, 'error');
         }
     });
+
+    // Load more comments
+    document.getElementById('load-more-comments')?.addEventListener('click', function() {
+        const data = document.getElementById('comments-data');
+        const container = document.getElementById('comments-container');
+        if (data) {
+            container.innerHTML += data.innerHTML;
+            this.parentElement.remove();
+            data.remove();
+        }
+    });
+
+    // Toggle all comments
+    document.getElementById('toggle-all-comments')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const container = document.getElementById('comments-container');
+        const isExpanded = container.style.maxHeight !== '0px';
+        container.style.maxHeight = isExpanded ? '0' : 'none';
+        container.style.overflow = isExpanded ? 'hidden' : 'visible';
+        this.innerHTML = isExpanded ? 
+            '<i class="bi bi-chevron-down"></i> Expand' : 
+            '<i class="bi bi-chevron-up"></i> Collapse';
+    });
+
+    // Scroll to top
+    const scrollBtn = document.getElementById('scroll-to-top');
+    window.addEventListener('scroll', function() {
+        scrollBtn.style.display = window.pageYOffset > 300 ? 'flex' : 'none';
+    });
+    
+    scrollBtn?.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Comment edit/delete
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.edit-comment-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.edit-comment-btn');
+            const commentId = btn.dataset.commentId;
+            const commentItem = document.getElementById('comment-' + commentId);
+            const commentBody = commentItem.querySelector('.comment-body');
+            const originalText = commentBody.textContent.trim();
+            
+            // Replace comment body with edit form
+            commentBody.innerHTML = `
+                <textarea class="form-control" id="edit-textarea-${commentId}" rows="3" style="margin-bottom: 8px;">${originalText}</textarea>
+                <div class="form-actions" style="display: flex; gap: 8px;">
+                    <button class="btn btn-sm btn-primary" onclick="saveCommentEdit(${commentId})">
+                        <i class="bi bi-check-circle"></i> Save
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="cancelCommentEdit(${commentId}, '${originalText.replace(/'/g, "\\'")}')">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                </div>
+            `;
+            
+            // Focus textarea
+            document.getElementById(`edit-textarea-${commentId}`).focus();
+        }
+        if (e.target.closest('.delete-comment-btn')) {
+            e.preventDefault();
+            const btn = e.target.closest('.delete-comment-btn');
+            
+            // Show confirmation dialog
+            if (!confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
+                return;
+            }
+            
+            const commentId = btn.dataset.commentId;
+            const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
+            
+            fetch(`${baseUrl}/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success || response.ok) {
+                    const commentElement = document.getElementById('comment-' + commentId);
+                    if (commentElement) {
+                        commentElement.style.opacity = '0.5';
+                        setTimeout(() => {
+                            commentElement.remove();
+                            showNotification('Comment deleted successfully', 'success');
+                        }, 200);
+                    }
+                } else {
+                    showNotification(data.error || 'Failed to delete comment', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Delete error:', error);
+                showNotification('Error deleting comment: ' + error.message, 'error');
+            });
+        }
+    });
+    
+    // Comment edit functions
+    window.saveCommentEdit = async function(commentId) {
+        const textarea = document.getElementById(`edit-textarea-${commentId}`);
+        const newBody = textarea.value.trim();
+        
+        if (!newBody) {
+            showNotification('Comment cannot be empty', 'error');
+            return;
+        }
+        
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
+        
+        try {
+            const response = await fetch(`${baseUrl}/comments/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ body: newBody })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success || response.ok) {
+                const commentItem = document.getElementById('comment-' + commentId);
+                commentItem.querySelector('.comment-body').innerHTML = `${newBody}<br><em style="color: #999; font-size: 12px;">(edited)</em>`;
+                showNotification('Comment updated successfully', 'success');
+            } else {
+                showNotification(data.error || 'Failed to update comment', 'error');
+            }
+        } catch (error) {
+            console.error('Edit error:', error);
+            showNotification('Error updating comment: ' + error.message, 'error');
+        }
+    };
+    
+    window.cancelCommentEdit = function(commentId, originalText) {
+        const commentItem = document.getElementById('comment-' + commentId);
+        commentItem.querySelector('.comment-body').textContent = originalText;
+    };
+
+    // Watch/Vote helpers
+    window.watchIssue = function(isWatching) {
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
+        const action = isWatching ? 'unwatch' : 'watch';
+        fetch(`${baseUrl}/issue/<?= $issue['issue_key'] ?>/${action}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin'
+        }).then(() => {
+            showNotification(`Issue ${action}ed`, 'success');
+            setTimeout(() => window.location.reload(), 500);
+        });
+    };
+
+    window.voteIssue = function(hasVoted) {
+        const baseUrl = window.location.pathname.split('/public/')[0] + '/public';
+        const action = hasVoted ? 'unvote' : 'vote';
+        fetch(`${baseUrl}/issue/<?= $issue['issue_key'] ?>/${action}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin'
+        }).then(() => {
+            showNotification(`Vote ${action}d`, 'success');
+            setTimeout(() => window.location.reload(), 500);
+        });
+    };
 });
 </script>
 

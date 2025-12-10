@@ -1,0 +1,85 @@
+================================================================================
+COMMENT EDIT/DELETE BUG FIX - QUICK REFERENCE
+================================================================================
+
+FILE MODIFIED: views/issues/show.php
+LINES CHANGED: 2076-2188 (JavaScript)
+
+================================================================================
+3 CRITICAL BUGS FIXED
+================================================================================
+
+BUG #1: EDIT COMMENT NOT WORKING
+  Issue: Click edit icon → nothing happens
+  Fix: Implemented full inline edit form (textarea + Save/Cancel buttons)
+  Status: ✅ FIXED
+
+BUG #2: DELETE URL HARDCODED
+  Issue: Uses `/jira_clone_system/public/comments/{id}` (breaks on other paths)
+  Fix: Changed to dynamic base URL: `window.location.pathname.split('/public/')[0] + '/public'`
+  Status: ✅ FIXED
+
+BUG #3: DELETE CONFIRMATION BROKEN
+  Issue: No confirmation dialog, page shows 404 after delete
+  Fix: Proper confirm() dialog + early return + correct endpoint
+  Status: ✅ FIXED
+
+================================================================================
+TEST BEFORE DEPLOYING
+================================================================================
+
+EDIT TEST:
+  ✓ Click edit icon → textarea appears with original text
+  ✓ Change text → click Save → comment updates, shows "(edited)"
+  ✓ Click edit → click Cancel → reverts to original text
+
+DELETE TEST:
+  ✓ Click delete icon → browser confirm dialog appears
+  ✓ Click OK → green notification, comment disappears
+  ✓ Refresh page → comment is gone, issue still loads (no 404)
+
+PERSISTENCE TEST:
+  ✓ Edit comment → refresh → edit shows up
+  ✓ Delete comment → refresh → deletion persists
+
+================================================================================
+IMPLEMENTATION DETAILS
+================================================================================
+
+NEW FUNCTIONS ADDED:
+  • saveCommentEdit(commentId)      - Saves edited comment via PUT
+  • cancelCommentEdit(commentId, text) - Reverts edit without API call
+
+ROUTES USED:
+  • PUT /comments/{id}   → CommentController::update()
+  • DELETE /comments/{id} → CommentController::destroy()
+
+ERROR HANDLING:
+  • Empty comment validation
+  • Network error handling
+  • User-friendly notifications
+  • Console logging for debugging
+
+================================================================================
+DEPLOYMENT
+================================================================================
+
+1. Deploy modified views/issues/show.php
+2. No database changes needed
+3. No migrations needed
+4. Test edit/delete on live issue
+
+STATUS: ✅ PRODUCTION READY
+RISK: LOW (isolated functionality, no breaking changes)
+TIMELINE: Deploy immediately
+
+================================================================================
+DOCUMENTATION
+================================================================================
+
+TECHNICAL DETAIL:      COMMENT_EDIT_DELETE_BUG_FIX.md
+TEST CASES:            TEST_COMMENT_FIX.md (10 tests)
+SUMMARY:               THREAD_8_COMMENT_FIX_SUMMARY.md
+THIS FILE:             QUICK_FIX_REFERENCE_COMMENT_BUG.txt
+
+================================================================================

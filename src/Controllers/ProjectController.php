@@ -29,14 +29,16 @@ class ProjectController extends Controller
     {
         $filters = [
             'search' => $request->input('search'),
-            'is_archived' => $request->input('archived') === '1' ? true : ($request->input('archived') === '0' ? false : null),
-            'category_id' => $request->input('category_id'),
-            'lead_id' => $request->input('lead_id'),
+            'category' => $request->input('category'),
+            'status' => $request->input('status'),
         ];
 
         $page = (int) ($request->input('page') ?? 1);
         $perPage = (int) ($request->input('per_page') ?? 25);
         $projects = $this->projectService->getAllProjects(array_filter($filters), $page, $perPage);
+
+        // Get categories for filter dropdown
+        $categories = Database::select("SELECT * FROM project_categories ORDER BY name ASC");
 
         if ($request->wantsJson()) {
             $this->json($projects);
@@ -45,13 +47,14 @@ class ProjectController extends Controller
         return $this->view('projects.index', [
             'projects' => $projects,
             'filters' => $filters,
+            'categories' => $categories,
         ]);
     }
 
     /**
      * Get all projects for quick create dropdown (no filtering)
      */
-    public function quickCreateList(Request $request): never
+    public function quickCreateList(Request $request): void
     {
         // Return ALL projects with issue types for quick create modal
         $projects = $this->projectService->getAllProjects([], 1, 1000);

@@ -134,226 +134,745 @@
     <?php \App\Core\View::yield('styles') ?>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" style="z-index: 2000;">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="<?= url('/') ?>">
-                <i class="bi bi-kanban me-2"></i>
-                <?= e(config('app.name')) ?>
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-folder me-1"></i> Projects
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?= url('/projects') ?>">View All Projects</a></li>
-                            <?php if (can('create-projects')): ?>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="<?= url('/projects/create') ?>">Create Project</a></li>
-                            <?php endif; ?>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-list-task me-1"></i> Issues
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?= url('/search?assignee=currentUser()') ?>">Assigned to Me</a></li>
-                            <li><a class="dropdown-item" href="<?= url('/search?reporter=currentUser()') ?>">Reported by Me</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="<?= url('/search') ?>">Search Issues</a></li>
-                            <li><a class="dropdown-item" href="<?= url('/filters') ?>">Saved Filters</a></li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-bar-chart me-1"></i> Reports
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="<?= url('/reports') ?>">All Reports</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="<?= url('/reports?type=burndown') ?>">Burndown Chart</a></li>
-                            <li><a class="dropdown-item" href="<?= url('/reports?type=velocity') ?>">Velocity Chart</a></li>
-                        </ul>
-                    </li>
-                    
-                    <?php if ($user['is_admin'] ?? false): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= url('/admin') ?>">
-                            <i class="bi bi-gear me-1"></i> Admin
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
-                
-                <!-- Search -->
-                <form class="d-flex me-3" action="<?= url('/search') ?>" method="GET">
-                    <div class="input-group">
-                        <input type="text" class="form-control" name="q" placeholder="Search issues..." 
-                               style="min-width: 200px;">
-                        <button class="btn btn-outline-light" type="submit">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </form>
-                
-                <!-- Quick Create -->
-                <a href="#" class="btn btn-light me-3" data-bs-toggle="modal" data-bs-target="#quickCreateModal">
-                    <i class="bi bi-plus-lg"></i> Create
+    <!-- Navigation - Enterprise Jira-Like Design -->
+    <nav class="navbar-enterprise sticky-top" style="z-index: 2000;">
+        <div class="navbar-container">
+            <!-- Left Section: Brand & Primary Menu -->
+            <div class="navbar-left">
+                <!-- Brand -->
+                <a class="navbar-brand" href="<?= url('/') ?>">
+                    <i class="bi bi-kanban"></i>
+                    <span class="brand-text"><?= e(config('app.name')) ?></span>
                 </a>
                 
-                <!-- Notifications Bell Icon -->
-                <div class="dropdown me-3">
-                    <a class="nav-link text-white position-relative" href="#" id="notificationBell" data-bs-toggle="dropdown">
-                        <i class="bi bi-bell fs-5"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="unreadBadge" style="display: none;">
-                            0
-                        </span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end" style="width: 360px; max-height: 450px; overflow-y: auto;" id="notificationDropdown">
-                        <h6 class="dropdown-header">
-                            <i class="bi bi-bell-fill"></i> Notifications
-                        </h6>
-                        <div id="notificationList" style="max-height: 350px; overflow-y: auto;">
-                            <div class="px-3 py-3 text-center text-muted">
-                                <small>Loading notifications...</small>
-                            </div>
+                <!-- Primary Navigation -->
+                <div class="navbar-menu">
+                    <!-- Projects -->
+                    <div class="nav-dropdown">
+                        <button class="nav-dropdown-btn">
+                            <i class="bi bi-folder"></i>
+                            <span>Projects</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-panel">
+                            <a href="<?= url('/projects') ?>" class="dropdown-item">
+                                <i class="bi bi-collection"></i>
+                                <div class="item-content">
+                                    <div class="item-title">View All Projects</div>
+                                    <div class="item-desc">Browse all projects</div>
+                                </div>
+                            </a>
+                            <?php if (can('create-projects')): ?>
+                            <div class="dropdown-divider"></div>
+                            <a href="<?= url('/projects/create') ?>" class="dropdown-item">
+                                <i class="bi bi-plus-circle"></i>
+                                <div class="item-content">
+                                    <div class="item-title">Create Project</div>
+                                    <div class="item-desc">Start a new project</div>
+                                </div>
+                            </a>
+                            <?php endif; ?>
                         </div>
-                        <hr class="dropdown-divider my-0">
-                        <a class="dropdown-item text-center py-2" href="<?= url('/notifications') ?>" style="font-size: 13px;">
-                            View All Notifications
-                        </a>
+                    </div>
+                    
+                    <!-- Issues -->
+                    <div class="nav-dropdown">
+                        <button class="nav-dropdown-btn">
+                            <i class="bi bi-list-task"></i>
+                            <span>Issues</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-panel">
+                            <a href="<?= url('/search?assignee=currentUser()') ?>" class="dropdown-item">
+                                <i class="bi bi-person-check"></i>
+                                <div class="item-content">
+                                    <div class="item-title">Assigned to Me</div>
+                                    <div class="item-desc">Your tasks</div>
+                                </div>
+                            </a>
+                            <a href="<?= url('/search?reporter=currentUser()') ?>" class="dropdown-item">
+                                <i class="bi bi-person-fill"></i>
+                                <div class="item-content">
+                                    <div class="item-title">Reported by Me</div>
+                                    <div class="item-desc">Your reports</div>
+                                </div>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="<?= url('/search') ?>" class="dropdown-item">
+                                <i class="bi bi-search"></i>
+                                <div class="item-content">
+                                    <div class="item-title">Search Issues</div>
+                                    <div class="item-desc">Find issues</div>
+                                </div>
+                            </a>
+                            <a href="<?= url('/filters') ?>" class="dropdown-item">
+                                <i class="bi bi-funnel"></i>
+                                <div class="item-content">
+                                    <div class="item-title">Saved Filters</div>
+                                    <div class="item-desc">Your filters</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Reports -->
+                    <div class="nav-dropdown">
+                        <button class="nav-dropdown-btn">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Reports</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-panel">
+                            <a href="<?= url('/reports') ?>" class="dropdown-item">
+                                <i class="bi bi-graph-up"></i>
+                                <div class="item-content">
+                                    <div class="item-title">All Reports</div>
+                                    <div class="item-desc">View analytics</div>
+                                </div>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="<?= url('/reports/burndown') ?>" class="dropdown-item">
+                                <i class="bi bi-graph-down"></i>
+                                <div class="item-content">
+                                    <div class="item-title">Burndown</div>
+                                    <div class="item-desc">Sprint progress</div>
+                                </div>
+                            </a>
+                            <a href="<?= url('/reports/velocity') ?>" class="dropdown-item">
+                                <i class="bi bi-speedometer2"></i>
+                                <div class="item-content">
+                                    <div class="item-title">Velocity</div>
+                                    <div class="item-desc">Team metrics</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin -->
+                    <?php if ($user['is_admin'] ?? false): ?>
+                    <a href="<?= url('/admin') ?>" class="nav-link-simple">
+                        <i class="bi bi-gear"></i>
+                        <span>Admin</span>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <!-- Right Section: Actions -->
+            <div class="navbar-right">
+                <!-- Search Box -->
+                <form class="search-box d-none d-lg-flex" action="<?= url('/search') ?>" method="GET">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" placeholder="Search issues..." autocomplete="off">
+                </form>
+                
+                <!-- Quick Create Button -->
+                <button class="navbar-action-btn create-btn" data-bs-toggle="modal" data-bs-target="#quickCreateModal" title="Create issue">
+                    <i class="bi bi-plus-lg"></i>
+                    <span class="d-none d-md-inline">Create</span>
+                </button>
+                
+                <!-- Notifications -->
+                <div class="navbar-action-dropdown">
+                    <button class="navbar-action-btn notification-btn" id="notificationBell" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-badge" id="unreadBadge" style="display: none;">0</span>
+                    </button>
+                    <div class="dropdown-panel notification-panel" id="notificationDropdown">
+                        <div class="panel-header">
+                            <i class="bi bi-bell-fill"></i>
+                            <span>Notifications</span>
+                        </div>
+                        <div class="panel-content" id="notificationList">
+                            <div class="text-center text-muted">Loading...</div>
+                        </div>
+                        <a href="<?= url('/notifications') ?>" class="panel-footer">View All</a>
                     </div>
                 </div>
-
-                <script>
-                // Load notifications on bell click
-                document.getElementById('notificationBell').addEventListener('click', function(e) {
-                    if (this.getAttribute('aria-expanded') === 'true') {
-                        loadNotifications();
-                    }
-                });
-
-                function loadNotifications() {
-                    const appUrl = '<?= url("/") ?>';
-                    fetch(appUrl + 'api/v1/notifications?limit=5', {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        const unreadBadge = document.getElementById('unreadBadge');
-                        const notificationList = document.getElementById('notificationList');
-                        
-                        // Update badge
-                        if (data.unread_count > 0) {
-                            unreadBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                            unreadBadge.style.display = 'inline-block';
-                        } else {
-                            unreadBadge.style.display = 'none';
-                        }
-                        
-                        // Update notification list
-                        if (!data.data || data.data.length === 0) {
-                            notificationList.innerHTML = '<div class="px-3 py-3 text-center text-muted"><small>No notifications</small></div>';
-                            return;
-                        }
-                        
-                        notificationList.innerHTML = data.data.map(n => `
-                            <a href="${n.action_url || '#'}" class="dropdown-item d-flex align-items-start py-2 ${n.is_read ? '' : 'bg-light'}" style="text-decoration: none; border-left: 3px solid ${n.is_read ? 'transparent' : '#0052cc'};">
-                                <div style="flex: 1;">
-                                    <div class="small fw-semibold text-dark">${escapeHtml(n.title)}</div>
-                                    <div class="text-muted" style="font-size: 12px;">
-                                        ${n.message ? escapeHtml(n.message).substring(0, 60) + '...' : ''}
-                                    </div>
-                                    <div class="text-muted" style="font-size: 11px; margin-top: 4px;">
-                                        ${formatTime(n.created_at)}
-                                    </div>
-                                </div>
-                                ${!n.is_read ? '<span class="badge bg-primary ms-2">New</span>' : ''}
-                            </a>
-                        `).join('');
-                    })
-                    .catch(err => {
-                        console.error('Error loading notifications:', err);
-                        document.getElementById('notificationList').innerHTML = '<div class="px-3 py-3 text-center text-danger"><small>Error loading notifications</small></div>';
-                    });
-                }
-
-                // Initial load
-                loadNotifications();
-                
-                // Refresh every 30 seconds
-                setInterval(loadNotifications, 30000);
-
-                function escapeHtml(text) {
-                    const map = {
-                        '&': '&amp;',
-                        '<': '&lt;',
-                        '>': '&gt;',
-                        '"': '&quot;',
-                        "'": '&#039;'
-                    };
-                    return text.replace(/[&<>"']/g, m => map[m]);
-                }
-
-                function formatTime(timestamp) {
-                    const date = new Date(timestamp);
-                    const now = new Date();
-                    const diff = now - date;
-                    const minutes = Math.floor(diff / 60000);
-                    const hours = Math.floor(diff / 3600000);
-                    const days = Math.floor(diff / 86400000);
-
-                    if (minutes < 1) return 'Just now';
-                    if (minutes < 60) return minutes + 'm ago';
-                    if (hours < 24) return hours + 'h ago';
-                    if (days < 7) return days + 'd ago';
-                    
-                    return date.toLocaleDateString();
-                }
-                </script>
                 
                 <!-- User Menu -->
-                <div class="dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" data-bs-toggle="dropdown">
-                        <?php if ($user['avatar'] ?? null): ?>
-                        <img src="<?= e($user['avatar']) ?>" class="rounded-circle me-2" width="32" height="32" alt="">
-                        <?php else: ?>
-                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2" 
-                             style="width: 32px; height: 32px;">
-                            <?= strtoupper(substr($user['first_name'] ?? 'U', 0, 1)) ?>
+                <div class="navbar-action-dropdown">
+                    <button class="navbar-action-btn user-btn" id="userMenu" title="User menu">
+                        <img src="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['name'] ?? 'User')) ?>" 
+                             alt="<?= e($user['name'] ?? 'User') ?>" class="user-avatar">
+                        <i class="bi bi-chevron-down d-none d-md-inline"></i>
+                    </button>
+                    <div class="dropdown-panel user-panel">
+                        <div class="panel-header user-header">
+                            <img src="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['name'] ?? 'User')) ?>" 
+                                 alt="<?= e($user['name'] ?? 'User') ?>" class="user-avatar-large">
+                            <div>
+                                <div class="user-name"><?= e($user['name'] ?? 'User') ?></div>
+                                <div class="user-email"><?= e($user['email'] ?? '') ?></div>
+                            </div>
                         </div>
-                        <?php endif; ?>
-                        <span><?= e($user['display_name'] ?? 'User') ?></span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="<?= url('/profile') ?>"><i class="bi bi-person me-2"></i> Profile</a></li>
-                        <li><a class="dropdown-item" href="<?= url('/profile/tokens') ?>"><i class="bi bi-key me-2"></i> API Tokens</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form action="<?= url('/logout') ?>" method="POST">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right me-2"></i> Logout
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+                        <a href="<?= url('/profile') ?>" class="dropdown-item">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="<?= url('/profile/settings') ?>" class="dropdown-item">
+                            <i class="bi bi-gear"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="<?= url('/profile/notifications') ?>" class="dropdown-item">
+                            <i class="bi bi-bell"></i>
+                            <span>Notification Preferences</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form action="<?= url('/logout') ?>" method="POST">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="dropdown-item danger">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle d-lg-none" id="mobileMenuToggle" title="Menu">
+                    <i class="bi bi-list"></i>
+                </button>
             </div>
         </div>
     </nav>
+    
+    <!-- Navbar Styles - Enterprise Design -->
+    <style>
+    /* Navbar Container */
+    .navbar-enterprise {
+        position: relative;
+        background: #FFFFFF;
+        border-bottom: 1px solid #DFE1E6;
+        box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13);
+        height: 60px;
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .navbar-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        height: 100%;
+        padding: 0 20px;
+        gap: 20px;
+    }
+    
+    /* Left Section */
+    .navbar-left {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* Brand */
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: #0052CC;
+        font-weight: 600;
+        font-size: 16px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+        line-height: 1;
+    }
+    
+    .navbar-brand:hover {
+        color: #003DA5;
+    }
+    
+    .navbar-brand i {
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .brand-text {
+        display: none;
+    }
+    
+    @media (min-width: 992px) {
+        .brand-text {
+            display: inline;
+        }
+    }
+    
+    /* Navigation Menu */
+    .navbar-menu {
+        display: none;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    @media (min-width: 992px) {
+        .navbar-menu {
+            display: flex;
+        }
+    }
+    
+    /* Nav Dropdown */
+    .nav-dropdown {
+        position: relative;
+    }
+    
+    .nav-dropdown-btn,
+    .nav-link-simple {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: none;
+        border: none;
+        color: #626F86;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+    
+    .nav-dropdown-btn {
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    .nav-dropdown-btn:hover,
+    .nav-link-simple:hover {
+        background-color: #F7F8FA;
+        color: #0052CC;
+    }
+    
+    .nav-dropdown-btn i:last-child {
+        font-size: 12px;
+        margin-left: 4px;
+    }
+    
+    /* Dropdown Panel */
+    .dropdown-panel {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #FFFFFF;
+        border: 1px solid #DFE1E6;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(9, 30, 66, 0.15);
+        min-width: 280px;
+        margin-top: 8px;
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        overflow: hidden;
+    }
+    
+    .nav-dropdown:hover .dropdown-panel,
+    .navbar-action-dropdown:hover .dropdown-panel {
+        display: flex;
+    }
+    
+    .panel-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #F7F8FA;
+        border-bottom: 1px solid #DFE1E6;
+        font-size: 13px;
+        font-weight: 600;
+        color: #161B22;
+    }
+    
+    .panel-header i {
+        color: #0052CC;
+        font-size: 16px;
+    }
+    
+    /* Dropdown Items */
+    .dropdown-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 16px;
+        color: #161B22;
+        text-decoration: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #F7F8FA;
+        color: #0052CC;
+    }
+    
+    .dropdown-item i {
+        flex-shrink: 0;
+        width: 20px;
+        font-size: 16px;
+    }
+    
+    .item-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .item-title {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+    
+    .item-desc {
+        font-size: 12px;
+        color: #626F86;
+    }
+    
+    .dropdown-divider {
+        height: 1px;
+        background: #DFE1E6;
+        margin: 4px 0;
+    }
+    
+    .panel-footer {
+        display: block;
+        padding: 10px 16px;
+        text-align: center;
+        border-top: 1px solid #DFE1E6;
+        color: #0052CC;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .panel-footer:hover {
+        background-color: #F7F8FA;
+    }
+    
+    /* Right Section */
+    .navbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    
+    /* Search Box */
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #F7F8FA;
+        border: 1px solid #DFE1E6;
+        border-radius: 6px;
+        padding: 0 12px;
+        height: 36px;
+        flex: 0 1 200px;
+    }
+    
+    .search-box i {
+        color: #626F86;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    
+    .search-box input {
+        background: none;
+        border: none;
+        outline: none;
+        color: #161B22;
+        font-size: 13px;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .search-box input::placeholder {
+        color: #626F86;
+    }
+    
+    .search-box:focus-within {
+        background: #FFFFFF;
+        border-color: #0052CC;
+        box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.1);
+    }
+    
+    /* Action Buttons */
+    .navbar-action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: none;
+        border: none;
+        color: #626F86;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        position: relative;
+        white-space: nowrap;
+        height: 36px;
+    }
+    
+    .navbar-action-btn:hover {
+        background-color: #F7F8FA;
+        color: #161B22;
+    }
+    
+    .navbar-action-btn i {
+        font-size: 16px;
+    }
+    
+    .create-btn {
+        background: #0052CC;
+        color: #FFFFFF;
+    }
+    
+    .create-btn:hover {
+        background: #003DA5;
+        color: #FFFFFF;
+    }
+    
+    /* Notification Badge */
+    .notification-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        background: #ED3C32;
+        color: #FFFFFF;
+        border-radius: 9px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+    
+    /* Notification Dropdown */
+    .navbar-action-dropdown {
+        position: relative;
+    }
+    
+    .notification-panel {
+        right: 0 !important;
+        left: auto !important;
+        min-width: 320px;
+    }
+    
+    .panel-content {
+        padding: 0;
+        max-height: 360px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    
+    .panel-content .dropdown-item {
+        border-bottom: 1px solid #F1F2F4;
+    }
+    
+    .panel-content .dropdown-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* User Panel */
+    .user-panel {
+        right: 0 !important;
+        left: auto !important;
+        min-width: 260px;
+    }
+    
+    .user-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: #FFFFFF;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    
+    .user-avatar-large {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: #161B22;
+        font-size: 14px;
+    }
+    
+    .user-email {
+        font-size: 12px;
+        color: #626F86;
+    }
+    
+    .dropdown-item.danger:hover {
+        background: #FFECEB;
+        color: #AE2A19;
+    }
+    
+    /* Mobile Menu Toggle */
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: none;
+        border: none;
+        color: #626F86;
+        cursor: pointer;
+        font-size: 20px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+    
+    .mobile-menu-toggle:hover {
+        background-color: #F7F8FA;
+        color: #161B22;
+    }
+    
+    /* Responsive */
+    @media (max-width: 991px) {
+        .navbar-container {
+            padding: 0 16px;
+            gap: 12px;
+        }
+        
+        .navbar-left {
+            gap: 16px;
+        }
+        
+        .search-box {
+            display: none;
+        }
+        
+        .brand-text {
+            display: none;
+        }
+    }
+    </style>
+    
+    <!-- Notification JavaScript -->
+    <script>
+    // Load notifications on bell click
+    document.getElementById('notificationBell').addEventListener('click', function(e) {
+        if (this.getAttribute('aria-expanded') === 'true') {
+            loadNotifications();
+        }
+    });
+
+    function loadNotifications() {
+        const appUrl = '<?= url("/") ?>';
+        fetch(appUrl + 'api/v1/notifications?limit=5', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const unreadBadge = document.getElementById('unreadBadge');
+            const notificationList = document.getElementById('notificationList');
+            
+            // Update badge
+            if (data.unread_count > 0) {
+                unreadBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                unreadBadge.style.display = 'inline-block';
+            } else {
+                unreadBadge.style.display = 'none';
+            }
+            
+            // Update notification list
+            if (!data.data || data.data.length === 0) {
+                notificationList.innerHTML = '<div class="px-3 py-3 text-center text-muted"><small>No notifications</small></div>';
+                return;
+            }
+            
+            notificationList.innerHTML = data.data.map(n => `
+                <a href="${n.action_url || '#'}" class="dropdown-item d-flex align-items-start gap-2 py-2" style="text-decoration: none;">
+                    <div style="flex: 1; border-left: 3px solid ${n.is_read ? 'transparent' : 'var(--jira-blue)'}; padding-left: 8px;">
+                        <div class="small fw-semibold text-dark">${escapeHtml(n.title)}</div>
+                        <div class="text-muted" style="font-size: 12px;">
+                            ${n.message ? escapeHtml(n.message).substring(0, 60) + '...' : ''}
+                        </div>
+                        <div class="text-muted" style="font-size: 11px; margin-top: 4px;">
+                            ${formatTime(n.created_at)}
+                        </div>
+                    </div>
+                    ${!n.is_read ? '<span class="badge bg-primary ms-2">New</span>' : ''}
+                </a>
+            `).join('');
+        })
+        .catch(err => {
+            console.error('Error loading notifications:', err);
+            document.getElementById('notificationList').innerHTML = '<div class="px-3 py-3 text-center text-danger"><small>Error loading notifications</small></div>';
+        });
+    }
+
+    // Initial load
+    loadNotifications();
+    
+    // Refresh every 30 seconds
+    setInterval(loadNotifications, 30000);
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return minutes + 'm ago';
+        if (hours < 24) return hours + 'h ago';
+        if (days < 7) return days + 'd ago';
+        
+        return date.toLocaleDateString();
+    }
+    </script>
     
     <!-- Flash Messages -->
     <?php foreach (['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'info' => 'info'] as $type => $class): ?>
@@ -366,20 +885,16 @@
     <?php endforeach; ?>
     
     <!-- Main Content -->
-    <main class="py-4">
+    <main class="py-4" id="mainContent">
         <?= \App\Core\View::yield('content') ?>
     </main>
     
     <!-- Footer -->
-    <footer class="bg-light border-top py-3 mt-auto">
+    <footer class="bg-light border-top mt-auto" style="padding: 0.5rem 0;">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6 text-muted small">
-                    &copy; <?= date('Y') ?> <?= e(config('app.name')) ?>. All rights reserved.
-                </div>
-                <div class="col-md-6 text-md-end text-muted small">
-                    Version 1.0.0
-                </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #626F86; padding: 0 1rem;">
+                <span>&copy; <?= date('Y') ?> <?= e(config('app.name')) ?>. All rights reserved.</span>
+                <span>Version 1.0.0</span>
             </div>
         </div>
     </footer>

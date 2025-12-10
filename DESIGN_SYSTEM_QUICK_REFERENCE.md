@@ -1,345 +1,347 @@
-# Design System Quick Reference
+# Design System - Quick Reference Card
 
-Fast lookup for design tokens and component styling.
+**One-page reference for applying Jira design to all pages**
 
-## Color Palette
+---
 
-### Primary Brand
-```
---jira-blue:        #0052CC  (Brand Blue)
---jira-blue-dark:   #003DA5  (Darker variant)
---jira-blue-light:  #2684FF  (Lighter variant)
---jira-blue-lighter: #DEEBFF (Very light, for backgrounds)
-```
+## Colors (Use These Variables!)
 
-### Functional Status
-```
---color-success:      #36B37E   (Green)
---color-success-light: #DFFCF0  (Light green bg)
---color-warning:      #FFAB00   (Amber)
---color-warning-light: #FFF3C1  (Light amber bg)
---color-error:        #FF5630   (Red)
---color-error-light:  #FFECEB  (Light red bg)
---color-info:         #00B8D9   (Teal)
+```css
+--jira-blue: #0052CC          (primary/links)
+--jira-blue-dark: #003DA5     (hover state)
+--text-primary: #161B22       (main text)
+--text-secondary: #626F86     (secondary text)
+--bg-primary: #FFFFFF         (cards/white)
+--bg-secondary: #F7F8FA       (page background)
+--border-color: #DFE1E6       (borders)
 ```
 
-### Text
-```
---text-primary:   #161B22  (Darkest, headlines)
---text-secondary: #57606A  (Dark, body text)
---text-tertiary:  #738496  (Medium, secondary info)
---text-muted:     #97A0AF  (Light, disabled/hints)
-```
+---
 
-### Backgrounds
-```
---bg-primary:   #FFFFFF   (Main white)
---bg-secondary: #F7F8FA   (Light gray)
---bg-tertiary:  #ECEDF0   (Medium gray)
---border-color: #DFE1E6   (Border lines)
-```
+## Typography
 
-## Sizing & Radius
+| Purpose | Size | Weight | Usage |
+|---------|------|--------|-------|
+| Page Title | 32px | 700 | Main headings |
+| Section | 24px | 700 | Major sections |
+| Card Title | 15px | 700 | Card headers |
+| Body | 14px | 400 | Main content |
+| Label | 12px | 600 | Badges, labels |
 
-### Border Radius
-```
---radius-sm: 3px   (Inputs, badges, small elements)
---radius-md: 6px   (Buttons, form elements)
---radius-lg: 8px   (Cards, larger containers)
---radius-xl: 12px  (Modals, dialogs)
+```css
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+letter-spacing: -0.2px;
+line-height: 1.5;
 ```
 
-### Dimensions
-```
---sidebar-width: 256px
---navbar-height: 56px
---container-max-width: 1400px
-```
+---
 
-## Shadows
-
-### Box Shadows
-```
---shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06)
---shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08)
---shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12)
---shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.15)
-```
-
-## Animations & Transitions
+## Spacing (Use Multiples of 4)
 
 ```
---transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1)
---transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1)
---transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1)
+4px   → micro
+8px   → extra small
+12px  → small
+16px  → medium
+20px  → large
+24px  → extra large (section gaps)
+32px  → page padding
 ```
 
-## Status Colors (Issue Tracking)
+**Key Rule**: `gap: 24px;` between major sections
 
-| Status | Background | Text Color | Badge Class |
-|--------|-----------|-----------|-------------|
-| To Do | #DFE1E6 | #42526E | `.status-todo` |
-| In Progress | #DEEBFF | #0052CC | `.status-in-progress` |
-| In Review | #FCE2B6 | #7F5F01 | `.status-in-review` |
-| Done | #E3FCEF | #006644 | `.status-done` |
+---
 
-## Issue Type Colors
+## Components
 
-| Type | Color | Badge Class |
-|------|-------|-------------|
-| Story | #6554C0 (Purple) | `.issue-type-story` |
-| Bug | #FF5630 (Red) | `.issue-type-bug` |
-| Task | #0052CC (Blue) | `.issue-type-task` |
-| Epic | #6554C0 (Purple) | `.issue-type-epic` |
-| Subtask | #00875A (Green) | `.issue-type-subtask` |
-
-## Priority Colors
-
-| Priority | Color | Icon Class |
-|----------|-------|-----------|
-| Highest | #FF5630 (Red) | `.priority-highest` |
-| High | #FF8B00 (Orange) | `.priority-high` |
-| Medium | #FFAB00 (Amber) | `.priority-medium` |
-| Low | #0052CC (Blue) | `.priority-low` |
-| Lowest | #626F86 (Gray) | `.priority-lowest` |
-
-## Typography Sizes
-
-| Element | Size | Weight | Letter-Spacing |
-|---------|------|--------|-----------------|
-| H1 | 2rem (32px) | 700 | -0.3px |
-| H2 | 1.75rem (28px) | 700 | -0.3px |
-| H3 | 1.5rem (24px) | 600 | -0.3px |
-| H4 | 1.25rem (20px) | 600 | -0.3px |
-| H5 | 1.125rem (18px) | 600 | -0.3px |
-| H6 | 1rem (16px) | 600 | +0.5px |
-| Body | 0.9375rem (15px) | 400 | -0.2px |
-| Small | 0.875rem (14px) | 400 | -0.2px |
-| XSmall | 0.8125rem (13px) | 400 | -0.2px |
-
-## Component Height/Padding Quick Chart
-
-### Buttons
-| Size | Height | Padding | Font Size |
-|------|--------|---------|-----------|
-| SM | 32px | 0.5rem 0.75rem | 0.8125rem |
-| Regular | 40px | 0.65rem 1rem | 0.9375rem |
-| LG | 48px | 0.875rem 1.5rem | 1rem |
-
-### Form Controls
-| Type | Height | Padding |
-|------|--------|---------|
-| Regular | 40px | 0.75rem 1rem |
-| Large | 48px | 0.875rem 1.25rem |
-
-### Avatars
-| Size | Dimension |
-|------|-----------|
-| SM | 24px × 24px |
-| Regular | 32px × 32px |
-| LG | 48px × 48px |
-| XL | 64px × 64px |
-
-## Spacing Scale
-
+### Card
+```css
+background: var(--bg-primary);
+border: 1px solid var(--border-color);
+border-radius: 8px;
+padding: 20px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 ```
-0.25rem = 4px
-0.5rem = 8px
-0.75rem = 12px
-1rem = 16px
-1.25rem = 20px
-1.5rem = 24px
-2rem = 32px
-2.5rem = 40px
-3rem = 48px
+
+### Button
+```css
+padding: 10px 20px;
+border-radius: 6px;
+font-weight: 600;
+transition: all 0.2s ease;
 ```
+
+### Badge
+```css
+padding: 4px 12px;
+border-radius: 12px;
+font-size: 11px;
+font-weight: 600;
+text-transform: uppercase;
+```
+
+### List Item
+```css
+padding: 16px 20px;
+border-bottom: 1px solid var(--border-color);
+transition: all 0.15s ease;
+```
+On hover: `background: var(--bg-secondary);`
+
+---
 
 ## Responsive Breakpoints
 
-| Screen | Width | Use Case |
-|--------|-------|----------|
-| Mobile | < 576px | Phones |
-| Tablet | 576px - 768px | Small tablets |
-| Desktop | > 768px | Laptops/desktops |
-| Large | > 1200px | Wide screens |
+```css
+Mobile:   < 576px
+Tablet:   576px - 1024px
+Laptop:   1024px - 1400px
+Desktop:  > 1400px
+```
+
+**Mobile-first**: Default styles = mobile, then use @media for larger screens
+
+---
 
 ## Hover Effects
 
-### Standard Hover
+**Lift Effect** (cards, components):
 ```css
 transform: translateY(-2px);
-box-shadow: var(--shadow-md);
+box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 ```
 
-### Link Hover
+**Highlight** (lists):
+```css
+background: var(--bg-secondary);
+```
+
+**Color Change** (links):
 ```css
 color: var(--jira-blue-dark);
 text-decoration: underline;
 ```
 
-### Button Hover
-```css
-background: darker shade;
-transform: translateY(-1px);
-box-shadow: var(--shadow-md);
-```
+---
 
-### Card Hover
-```css
-box-shadow: var(--shadow-md);
-border-color: var(--border-color-light);
-```
-
-## Common CSS Patterns
-
-### Flex Center
-```html
-<div class="d-flex justify-content-center align-items-center"></div>
-```
-
-### Space Between
-```html
-<div class="d-flex justify-content-between align-items-center"></div>
-```
-
-### Text Truncate (1 line)
-```html
-<span class="text-truncate-1"></span>
-```
-
-### Text Truncate (2 lines)
-```html
-<span class="text-truncate-2"></span>
-```
-
-### Gap Between Items
-```html
-<div class="d-flex gap-1"><!-- 8px gap --></div>
-<div class="d-flex gap-2"><!-- 16px gap --></div>
-<div class="d-flex gap-3"><!-- 24px gap --></div>
-```
-
-## Modal Layout
-
-```html
-<div class="modal">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">Header</div>
-            <div class="modal-body">Content</div>
-            <div class="modal-footer">Footer</div>
-        </div>
-    </div>
-</div>
-```
-
-## Alert Variants
-
-```html
-<div class="alert alert-info">Info</div>
-<div class="alert alert-success">Success</div>
-<div class="alert alert-warning">Warning</div>
-<div class="alert alert-danger">Error</div>
-```
-
-## Badge System
-
-### Status Badges
-```html
-<span class="status-badge status-todo">To Do</span>
-<span class="status-badge status-in-progress">In Progress</span>
-<span class="status-badge status-done">Done</span>
-```
-
-### Type Badges
-```html
-<span class="badge badge-primary">Primary</span>
-<span class="badge badge-success">Success</span>
-<span class="badge badge-warning">Warning</span>
-<span class="badge badge-danger">Danger</span>
-```
-
-## Issue Card Example
-
-```html
-<div class="board-card">
-    <div class="board-card-key">PROJ-123</div>
-    <div class="board-card-summary">Issue summary here</div>
-    <div class="board-card-footer">
-        <img class="board-card-avatar" src="avatar.jpg">
-        <span class="badge badge-primary">Priority</span>
-    </div>
-</div>
-```
-
-## Focus States
-
-All interactive elements have:
-```css
-outline: 2px solid var(--jira-blue);
-outline-offset: 2px;
-```
-
-## Accessibility Checklist
-
-- ✅ Color contrast ≥ 4.5:1 for text
-- ✅ Focus states visible on all interactive elements
-- ✅ ARIA labels on icons
-- ✅ Form labels associated with inputs
-- ✅ Semantic HTML structure
-- ✅ Keyboard navigation support
-
-## Performance Tips
-
-1. Use CSS variables for theme changes (no recompile)
-2. Utilize transitions (avoid animations on large elements)
-3. Hardware-accelerated transforms (translateY, translateX)
-4. Minimal shadow depth (max 4 levels)
-5. Defer non-critical animations
-
-## Browser Support
-
-| Browser | Min Version |
-|---------|------------|
-| Chrome | Latest |
-| Firefox | Latest |
-| Safari | 13+ |
-| Edge | Latest |
-| IE 11 | Not supported |
-
-## File Organization
-
-```
-public/assets/css/
-├── app.css (1100+ lines, all styles)
-└── (future) theme variations
-```
-
-## Custom Property Override Example
+## Shadows
 
 ```css
-:root {
-    --jira-blue: #0052CC;       /* Change primary color */
-    --text-primary: #161B22;    /* Change text color */
-    --radius-lg: 12px;          /* Increase border radius */
-}
+Subtle:    0 1px 3px rgba(0,0,0,0.08);
+Elevated:  0 4px 12px rgba(0,0,0,0.08);
+Strong:    0 8px 24px rgba(0,0,0,0.12);
 ```
-
-## Common Issues & Solutions
-
-### Modal appearing behind navbar
-✓ **Already fixed**: Z-index: modal 2050, backdrop 2040, navbar 2000
-
-### Button text misaligned
-✓ Use `d-flex align-items-center justify-content-center` on buttons
-
-### Dropdown cut off
-✓ Use `dropdown-menu-end` for right-aligned dropdowns
-
-### Mobile sidebar overlapping
-✓ Already handled with `position: fixed` and `z-index: 1050`
 
 ---
 
-**Last Updated**: December 2025  
-**Version**: 1.0.0
+## Transitions
+
+```css
+Fast:  150ms cubic-bezier(0.4, 0, 0.2, 1)
+Base:  200ms cubic-bezier(0.4, 0, 0.2, 1)
+Slow:  300ms cubic-bezier(0.4, 0, 0.2, 1)
+
+/* Use 0.2s for most interactions */
+transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+---
+
+## Page Structure Template
+
+```html
+<?php \App\Core\View::extends('layouts.app'); ?>
+<?php \App\Core\View::section('content'); ?>
+
+<div class="page-wrapper">
+    <!-- 1. Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="..." class="breadcrumb-link">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Current</span>
+    </div>
+
+    <!-- 2. Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">Page Title</h1>
+        <div class="header-actions"><!-- buttons --></div>
+    </div>
+
+    <!-- 3. Main Content -->
+    <div class="page-content">
+        <div class="content-main">
+            <!-- cards, lists -->
+        </div>
+        <div class="content-sidebar">
+            <!-- sidebar cards -->
+        </div>
+    </div>
+</div>
+
+<style>
+/* Embedded CSS */
+</style>
+
+<?php \App\Core\View::endSection(); ?>
+```
+
+---
+
+## CSS Template
+
+```css
+/* 1. Variables */
+:root {
+    --jira-blue: #0052CC;
+    --text-primary: #161B22;
+    /* ... */
+}
+
+/* 2. Main Layout */
+.page-wrapper { }
+.page-header { }
+.page-content { }
+
+/* 3. Components */
+.card { }
+.btn { }
+.badge { }
+
+/* 4. Responsive */
+@media (max-width: 1024px) { }
+@media (max-width: 768px) { }
+```
+
+---
+
+## Do's & Don'ts
+
+### ✅ DO
+
+- Use CSS variables for colors
+- Apply 24px gaps between sections
+- Add hover effects (lift + shadow)
+- Use flexbox/grid layouts
+- Mobile-first responsive design
+- Follow typography scale
+- Add breadcrumbs for navigation
+- Use semantic HTML
+
+### ❌ DON'T
+
+- Use Bootstrap classes
+- Hardcode colors
+- Use pixel-based spacing inconsistently
+- Skip hover effects
+- Forget responsive design
+- Mix fonts/sizes randomly
+- Use nested tables for layout
+- Skip accessibility
+
+---
+
+## Implementation Checklist
+
+For each page:
+
+- [ ] Add breadcrumb navigation
+- [ ] Use CSS variables for colors
+- [ ] Apply consistent spacing
+- [ ] Add hover effects
+- [ ] Test responsive design
+- [ ] Semantic HTML structure
+- [ ] Proper heading hierarchy
+- [ ] No console errors
+- [ ] All links working
+- [ ] Mobile tested
+
+---
+
+## Example: Complete Card Component
+
+```html
+<div class="stat-card">
+    <div class="stat-value">42</div>
+    <div class="stat-label">Total Issues</div>
+</div>
+```
+
+```css
+.stat-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 24px;
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    border-color: #B6C2CF;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+```
+
+---
+
+## Common Patterns
+
+### Breadcrumb
+Class: `.breadcrumb`, `.breadcrumb-link`, `.breadcrumb-current`
+
+### Cards
+Class: `.card`, `.card-header`, `.card-title`, `.card-body`
+
+### Lists
+Class: `.list-item`, `.item-key`, `.item-title`, `.item-badge`
+
+### Buttons
+Class: `.btn`, `.btn-primary`, `.btn-secondary`
+
+### Forms
+Class: `.form-input`, `.form-textarea`, `.form-select`
+
+### Badges
+Class: `.badge`, `.badge-success`, `.badge-error`
+
+---
+
+## Files to Reference
+
+- `views/projects/board.php` - Board design example
+- `views/projects/show.php` - Project page example
+- `JIRA_DESIGN_SYSTEM_COMPLETE.md` - Full guide
+- `AGENTS.md` - Development standards
+
+---
+
+## Quick Commands
+
+Create new page with design:
+
+1. Copy page template
+2. Replace Bootstrap with custom CSS
+3. Use color variables
+4. Apply spacing rules
+5. Add hover effects
+6. Test responsive
+7. Verify accessibility
+
+---
+
+**Use this card as your daily reference when designing pages!**
+
+Full guide: `JIRA_DESIGN_SYSTEM_COMPLETE.md`

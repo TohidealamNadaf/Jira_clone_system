@@ -21,14 +21,17 @@ class ProjectService
             $params['search'] = '%' . $filters['search'] . '%';
         }
 
-        if (isset($filters['is_archived'])) {
+        // Handle status filter (active/archived)
+        if (!empty($filters['status'])) {
             $where[] = "p.is_archived = :is_archived";
-            $params['is_archived'] = $filters['is_archived'] ? 1 : 0;
+            $params['is_archived'] = $filters['status'] === 'archived' ? 1 : 0;
         }
 
-        if (!empty($filters['category_id'])) {
+        // Handle category filter (support both 'category' and 'category_id')
+        $categoryId = $filters['category'] ?? $filters['category_id'] ?? null;
+        if (!empty($categoryId)) {
             $where[] = "p.category_id = :category_id";
-            $params['category_id'] = $filters['category_id'];
+            $params['category_id'] = $categoryId;
         }
 
         if (!empty($filters['lead_id'])) {

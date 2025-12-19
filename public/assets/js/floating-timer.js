@@ -147,8 +147,35 @@ const FloatingTimer = (() => {
      */
     async function checkExistingTimer() {
         try {
-            const response = await fetch(`${config.apiBaseUrl}/status`);
+            // Use deployment-aware base path
+            const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+            const url = basePath.replace(/\/$/, '') + config.apiBaseUrl + '/status';
+            
+            console.log('[FloatingTimer] Checking for existing timer at:', url);
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                credentials: 'include'
+            });
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.warn('[FloatingTimer] Status endpoint returned non-JSON response (status: ' + response.status + ', type: ' + contentType + ')');
+                return;
+            }
+            
+            if (!response.ok) {
+                console.warn('[FloatingTimer] Status endpoint returned error: ' + response.status);
+                return;
+            }
+            
             const data = await response.json();
+            console.log('[FloatingTimer] Status response:', data);
 
             if (data.status === 'running') {
                 state.isRunning = true;
@@ -161,13 +188,17 @@ const FloatingTimer = (() => {
                 state.rateType = data.rate_type;
                 state.rateAmount = data.rate_amount;
 
+                console.log('[FloatingTimer] Found active timer for issue:', state.issueKey);
                 updateDisplay();
                 showTimer();
                 startTimerTick();
                 startSync();
+            } else {
+                console.log('[FloatingTimer] No active timer running');
             }
         } catch (error) {
-            console.warn('[FloatingTimer] Could not check existing timer:', error);
+            console.error('[FloatingTimer] Could not check existing timer:', error.message);
+            // Don't fail silently - log but continue
         }
     }
 

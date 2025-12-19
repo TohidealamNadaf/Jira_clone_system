@@ -76,7 +76,12 @@ class RealtimeNotifications {
 
         console.log(`🔌 [REALTIME] Connecting to notification stream... (attempt ${this.reconnectAttempts + 1})`);
 
-        const url = `/jira_clone_system/public/notifications/stream?lastId=${this.lastEventId}`;
+        // Get base path from meta tag (handles deployment in subdirectories)
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        const url = basePath.replace(/\/$/, '') + `/notifications/stream?lastId=${this.lastEventId}`;
+
+        console.log(`🔌 [REALTIME] Base path: ${basePath}`);
+        console.log(`🔌 [REALTIME] Stream URL: ${url}`);
 
         this.eventSource = new EventSource(url);
 
@@ -207,10 +212,13 @@ class RealtimeNotifications {
             return;
         }
 
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        const basePathClean = basePath.replace(/\/$/, '');
+        
         const notification = new Notification('Jira Clone', {
             body: data.message,
-            icon: '/jira_clone_system/public/assets/images/logo.png',
-            badge: '/jira_clone_system/public/assets/images/badge.png',
+            icon: basePathClean + '/assets/images/logo.png',
+            badge: basePathClean + '/assets/images/badge.png',
             tag: `notification-${data.id}`,
             requireInteraction: false,
         });
@@ -219,7 +227,7 @@ class RealtimeNotifications {
         notification.addEventListener('click', () => {
             window.focus();
             if (data.issueId) {
-                window.location.href = `/jira_clone_system/public/issues/${data.issueId}`;
+                window.location.href = basePathClean + `/issues/${data.issueId}`;
             }
             notification.close();
         });
@@ -231,21 +239,25 @@ class RealtimeNotifications {
      * Update notification count badge
      */
     updateNotificationCount() {
-        fetch('/jira_clone_system/public/notifications/unread-count')
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        const url = basePath.replace(/\/$/, '') + '/api/v1/notifications/stats';
+        
+        fetch(url)
             .then(res => res.json())
             .then(data => {
+                const unreadCount = data.unread_count || data.unreadCount || 0;
                 const badge = document.getElementById('notificationBadge');
                 if (badge) {
-                    badge.textContent = data.unreadCount;
-                    badge.style.display = data.unreadCount > 0 ? 'flex' : 'none';
+                    badge.textContent = unreadCount;
+                    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
                 }
 
                 const dropdown = document.getElementById('notificationDropdown');
                 if (dropdown) {
-                    dropdown.setAttribute('data-unread', data.unreadCount);
+                    dropdown.setAttribute('data-unread', unreadCount);
                 }
 
-                console.log(`📊 [REALTIME] Updated notification count: ${data.unreadCount}`);
+                console.log(`📊 [REALTIME] Updated notification count: ${unreadCount}`);
             })
             .catch(err => console.error('❌ [REALTIME] Error updating count:', err));
     }
@@ -278,10 +290,16 @@ class RealtimeNotifications {
      * Load recent notifications on init
      */
     loadRecentNotifications() {
-        fetch('/jira_clone_system/public/notifications/recent?limit=10')
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        const url = basePath.replace(/\/$/, '') + '/api/v1/notifications?limit=10';
+        
+        fetch(url)
             .then(res => res.json())
             .then(data => {
-                if (data.notifications && data.notifications.length > 0) {
+                if (data.data && data.data.length > 0) {
+                    this.lastEventId = Math.max(...data.data.map(n => n.id)) || 0;
+                    console.log(`📥 [REALTIME] Loaded ${data.data.length} recent notifications (lastId: ${this.lastEventId})`);
+                } else if (data.notifications && data.notifications.length > 0) {
                     this.lastEventId = Math.max(...data.notifications.map(n => n.id)) || 0;
                     console.log(`📥 [REALTIME] Loaded ${data.notifications.length} recent notifications (lastId: ${this.lastEventId})`);
                 }

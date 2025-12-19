@@ -27,14 +27,11 @@ class TimeTrackingController extends Controller
     private IssueService $issueService;
     private ProjectService $projectService;
 
-    public function __construct(
-        TimeTrackingService $timeTrackingService,
-        IssueService $issueService,
-        ProjectService $projectService
-    ) {
-        $this->timeTrackingService = $timeTrackingService;
-        $this->issueService = $issueService;
-        $this->projectService = $projectService;
+    public function __construct()
+    {
+        $this->timeTrackingService = new TimeTrackingService();
+        $this->issueService = new IssueService();
+        $this->projectService = new ProjectService();
     }
 
     /**
@@ -42,18 +39,25 @@ class TimeTrackingController extends Controller
      */
     public function dashboard(): string
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            throw new Exception("User session not found. Please log in.");
+        }
+
+        $userId = (int)$user['id'];
 
         // Get user's current active timer
         $activeTimer = null;
         try {
-            $activeTimer = $this->timeTrackingService->getActiveTimer($user['id']);
+            $activeTimer = $this->timeTrackingService->getActiveTimer($userId);
         } catch (Exception $e) {
             // No active timer
         }
 
         // Get user's today's logs
-        $todayLogs = $this->timeTrackingService->getUserTimeLogs($user['id'], [
+        $todayLogs = $this->timeTrackingService->getUserTimeLogs($userId, [
             'start_date' => date('Y-m-d'),
             'end_date' => date('Y-m-d')
         ]);
@@ -82,7 +86,14 @@ class TimeTrackingController extends Controller
      */
     public function issueTimer(int $issueId): string
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            throw new Exception("User session not found. Please log in.");
+        }
+
+        $userId = (int)$user['id'];
 
         // Get issue details
         $issue = $this->issueService->getIssue($issueId);
@@ -122,7 +133,7 @@ class TimeTrackingController extends Controller
         // Check if user has active timer on this issue
         $activeTimer = null;
         try {
-            $activeTimer = $this->timeTrackingService->getActiveTimer($user['id']);
+            $activeTimer = $this->timeTrackingService->getActiveTimer($userId);
             if ($activeTimer && $activeTimer['issue_id'] !== $issueId) {
                 $activeTimer = null; // Active timer is on different issue
             }
@@ -135,7 +146,7 @@ class TimeTrackingController extends Controller
             'time_logs' => $timeLogs,
             'totals' => $totals,
             'active_timer' => $activeTimer,
-            'current_user_id' => $user['id']
+            'current_user_id' => $userId
         ]);
     }
 
@@ -144,10 +155,18 @@ class TimeTrackingController extends Controller
      */
     public function getTimerStatus(Request $request): void
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            $this->json(['error' => 'User session not found. Please log in.'], 401);
+            return;
+        }
+
+        $userId = (int)$user['id'];
 
         try {
-            $activeTimer = $this->timeTrackingService->getActiveTimer($user['id']);
+            $activeTimer = $this->timeTrackingService->getActiveTimer($userId);
 
             if (!$activeTimer) {
                 $this->json(['status' => 'stopped']);
@@ -187,7 +206,15 @@ class TimeTrackingController extends Controller
      */
     public function startTimer(Request $request): void
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            $this->json(['error' => 'User session not found. Please log in.'], 401);
+            return;
+        }
+
+        $userId = (int)$user['id'];
 
         try {
             $issueId = (int)$request->input('issue_id');
@@ -200,7 +227,7 @@ class TimeTrackingController extends Controller
             // Verify user has access to this project
             // (Skip for now - add authorization check as needed)
 
-            $result = $this->timeTrackingService->startTimer($issueId, $user['id'], $projectId);
+            $result = $this->timeTrackingService->startTimer($issueId, $userId, $projectId);
 
             $this->json($result);
         } catch (Exception $e) {
@@ -213,10 +240,18 @@ class TimeTrackingController extends Controller
      */
     public function pauseTimer(Request $request): void
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            $this->json(['error' => 'User session not found. Please log in.'], 401);
+            return;
+        }
+
+        $userId = (int)$user['id'];
 
         try {
-            $result = $this->timeTrackingService->pauseTimer($user['id']);
+            $result = $this->timeTrackingService->pauseTimer($userId);
             $this->json($result);
         } catch (Exception $e) {
             $this->json(['error' => $e->getMessage()], 400);
@@ -228,10 +263,18 @@ class TimeTrackingController extends Controller
      */
     public function resumeTimer(Request $request): void
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            $this->json(['error' => 'User session not found. Please log in.'], 401);
+            return;
+        }
+
+        $userId = (int)$user['id'];
 
         try {
-            $result = $this->timeTrackingService->resumeTimer($user['id']);
+            $result = $this->timeTrackingService->resumeTimer($userId);
             $this->json($result);
         } catch (Exception $e) {
             $this->json(['error' => $e->getMessage()], 400);
@@ -243,12 +286,20 @@ class TimeTrackingController extends Controller
      */
     public function stopTimer(Request $request): void
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            $this->json(['error' => 'User session not found. Please log in.'], 401);
+            return;
+        }
+
+        $userId = (int)$user['id'];
 
         try {
             $description = $request->input('description');
 
-            $result = $this->timeTrackingService->stopTimer($user['id'], $description);
+            $result = $this->timeTrackingService->stopTimer($userId, $description);
 
             $this->json($result);
         } catch (Exception $e) {
@@ -261,7 +312,15 @@ class TimeTrackingController extends Controller
      */
     public function getUserTimeLogs(Request $request): void
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            $this->json(['error' => 'User session not found. Please log in.'], 401);
+            return;
+        }
+
+        $userId = (int)$user['id'];
 
         try {
             $filters = [
@@ -274,7 +333,7 @@ class TimeTrackingController extends Controller
                     : null
             ];
 
-            $logs = $this->timeTrackingService->getUserTimeLogs($user['id'], $filters);
+            $logs = $this->timeTrackingService->getUserTimeLogs($userId, $filters);
 
             $this->json([
                 'success' => true,
@@ -291,7 +350,15 @@ class TimeTrackingController extends Controller
      */
     public function setUserRate(Request $request): void
     {
-        $user = Session::get('user');
+        $user = Session::user();
+
+        // Validate user session
+        if (!$user || !isset($user['id'])) {
+            $this->json(['error' => 'User session not found. Please log in.'], 401);
+            return;
+        }
+
+        $userId = (int)$user['id'];
 
         try {
             $request->validate([
@@ -301,7 +368,7 @@ class TimeTrackingController extends Controller
             ]);
 
             $result = $this->timeTrackingService->setUserRate(
-                $user['id'],
+                $userId,
                 $request->input('rate_type'),
                 (float)$request->input('rate_amount'),
                 $request->input('currency')
@@ -316,10 +383,17 @@ class TimeTrackingController extends Controller
     /**
      * Get project time tracking report
      */
-    public function projectReport(int $projectId): string
+    public function projectReport($projectId = null): string
     {
         try {
-            $project = $this->projectService->getProject($projectId);
+            // Handle parameter extraction from Request if needed
+            if ($projectId instanceof \App\Core\Request) {
+                $projectId = (int) $projectId->param('projectId');
+            } else {
+                $projectId = (int) $projectId;
+            }
+
+            $project = $this->projectService->getProjectById($projectId);
             if (!$project) {
                 throw new Exception("Project not found");
             }
@@ -365,9 +439,16 @@ class TimeTrackingController extends Controller
     /**
      * Get user time tracking report
      */
-    public function userReport(int $userId): string
+    public function userReport($userId = null): string
     {
         try {
+            // Handle parameter extraction from Request if needed
+            if ($userId instanceof \App\Core\Request) {
+                $userId = (int) $userId->param('userId');
+            } else {
+                $userId = (int) $userId;
+            }
+
             $logs = $this->timeTrackingService->getUserTimeLogs($userId);
 
             // Calculate totals

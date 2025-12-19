@@ -110,6 +110,32 @@ function url(string $path = ''): string
 }
 
 /**
+ * Get application base path (for JavaScript use)
+ * Returns just the path part, not the full URL
+ * Examples: '/jira_clone_system/public', '/', '/apps/jira/public'
+ */
+function basePath(): string
+{
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    
+    // Determine the base path from the request
+    if (preg_match('#^(/[^/]+/[^/]+)(/|$)#', $requestUri, $matches)) {
+        return $matches[1]; // /jira_clone_system/public
+    } elseif (preg_match('#^/[^/\.]+(/|$)#', $requestUri) && strpos($requestUri, '/index.php') === false) {
+        $parts = explode('/', trim($requestUri, '/'));
+        if (count($parts) > 0 && !in_array($parts[0], ['login', 'dashboard', 'projects', 'issues', 'api', 'admin', 'search', 'reports'])) {
+            $basePath = '/' . $parts[0];
+            if (is_dir($_SERVER['DOCUMENT_ROOT'] . $basePath . '/public')) {
+                return $basePath . '/public';
+            }
+            return $basePath;
+        }
+    }
+    
+    return '/'; // Default root path
+}
+
+/**
  * Generate asset URL
  */
 function asset(string $path): string

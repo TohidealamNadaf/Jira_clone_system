@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+    <meta name="app-base-path" content="<?= e(basePath()) ?>">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -28,6 +29,10 @@
     <link href="<?= asset('css/design-consistency.css') ?>" rel="stylesheet">
     <!-- Real-Time Notifications CSS -->
     <link href="<?= asset('css/realtime-notifications.css') ?>" rel="stylesheet">
+    <!-- Time Tracking CSS -->
+    <link rel="stylesheet" href="<?= url('/assets/css/floating-timer.css') ?>">
+    <!-- Time Tracking Dashboard CSS -->
+    <link rel="stylesheet" href="<?= url('/assets/css/time-tracking.css') ?>">
 
     <!-- Apply theme colors from settings -->
     <?php
@@ -2828,6 +2833,14 @@
     <script src="<?= asset('js/realtime-notifications.js') ?>"></script>
 
     <script src="<?= asset('js/app.js') ?>"></script>
+
+    <!-- Time Tracking Widget -->
+    <script src="<?= url('/assets/js/floating-timer.js') ?>"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        FloatingTimer.init({syncInterval: 5000, debug: false});
+    });
+    </script>
 
     <?= \App\Core\View::yield('scripts') ?>
 </body>

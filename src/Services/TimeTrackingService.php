@@ -21,15 +21,9 @@ use DateTime;
  */
 class TimeTrackingService
 {
-    private Database $db;
     private const TABLE_TIME_LOGS = 'issue_time_logs';
     private const TABLE_ACTIVE_TIMERS = 'active_timers';
     private const TABLE_USER_RATES = 'user_rates';
-
-    public function __construct(Database $db)
-    {
-        $this->db = $db;
-    }
 
     /**
      * Start a new timer for an issue
@@ -52,9 +46,6 @@ class TimeTrackingService
                 throw new Exception("User rate not configured. Please contact administrator.");
             }
 
-            // Start transaction
-            $this->db->beginTransaction();
-
             // Create new time log entry
             $startTime = new DateTime();
             $sql = "
@@ -67,7 +58,7 @@ class TimeTrackingService
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
 
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $issueId, $userId, $projectId,
                 'running', $startTime->format('Y-m-d H:i:s'), $startTime->format('Y-m-d H:i:s'),
                 0, 0,
@@ -75,7 +66,7 @@ class TimeTrackingService
                 0.00, $userRate['currency'], 1
             ]);
 
-            $timeLogId = $this->db->lastInsertId();
+            $timeLogId = Database::lastInsertId();
 
             // Create active timer entry
             $sql = "
@@ -85,12 +76,10 @@ class TimeTrackingService
                 ) VALUES (?, ?, ?, ?, ?, ?)
             ";
 
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $userId, $timeLogId, $issueId, $projectId,
                 $startTime->format('Y-m-d H:i:s'), $startTime->format('Y-m-d H:i:s')
             ]);
-
-            $this->db->commit();
 
             return [
                 'success' => true,
@@ -101,7 +90,6 @@ class TimeTrackingService
                 'cost' => 0.00
             ];
         } catch (Exception $e) {
-            $this->db->rollBack();
             throw $e;
         }
     }
@@ -142,7 +130,7 @@ class TimeTrackingService
                 (float)$timeLog['user_rate_amount']
             );
 
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $pausedAt->format('Y-m-d H:i:s'),
                 $elapsedSeconds,
                 $totalCost,
@@ -150,7 +138,7 @@ class TimeTrackingService
             ]);
 
             // Remove from active timers
-            $this->db->execute(
+            Database::execute(
                 "DELETE FROM " . self::TABLE_ACTIVE_TIMERS . " WHERE user_id = ?",
                 [$userId]
             );
@@ -184,7 +172,7 @@ class TimeTrackingService
                 LIMIT 1
             ";
 
-            $timeLog = $this->db->selectOne($sql, [$userId]);
+            $timeLog = Database::selectOne($sql, [$userId]);
             if (!$timeLog) {
                 throw new Exception("No paused timer found for this user.");
             }
@@ -198,7 +186,7 @@ class TimeTrackingService
                 WHERE id = ?
             ";
 
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $resumedAt->format('Y-m-d H:i:s'),
                 $timeLog['id']
             ]);
@@ -211,7 +199,7 @@ class TimeTrackingService
                 ) VALUES (?, ?, ?, ?, ?, ?)
             ";
 
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $userId, $timeLog['id'], $timeLog['issue_id'], $timeLog['project_id'],
                 $resumedAt->format('Y-m-d H:i:s'), $resumedAt->format('Y-m-d H:i:s')
             ]);
@@ -244,8 +232,6 @@ class TimeTrackingService
                 throw new Exception("No running timer found for this user.");
             }
 
-            $this->db->beginTransaction();
-
             $timeLogId = $activeTimer['issue_time_log_id'];
             $timeLog = $this->getTimeLog($timeLogId);
 
@@ -270,7 +256,7 @@ class TimeTrackingService
                 WHERE id = ?
             ";
 
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $stoppedAt->format('Y-m-d H:i:s'),
                 $totalElapsedSeconds,
                 $totalCost,
@@ -279,15 +265,13 @@ class TimeTrackingService
             ]);
 
             // Remove from active timers
-            $this->db->execute(
+            Database::execute(
                 "DELETE FROM " . self::TABLE_ACTIVE_TIMERS . " WHERE user_id = ?",
                 [$userId]
             );
 
             // Update project budget if exists
             $this->updateProjectBudget($timeLog['project_id'], $totalCost);
-
-            $this->db->commit();
 
             return [
                 'success' => true,
@@ -298,7 +282,6 @@ class TimeTrackingService
                 'end_time' => $stoppedAt->getTimestamp()
             ];
         } catch (Exception $e) {
-            $this->db->rollBack();
             throw $e;
         }
     }
@@ -317,17 +300,17 @@ class TimeTrackingService
             LIMIT 1
         ";
 
-        $result = $this->db->selectOne($sql, [$userId]);
+        $result = Database::selectOne($sql, [$userId]);
         return $result ?: null;
     }
 
     /**
-     * Get time log details
-     * 
-     * @param int $timeLogId The time log ID
-     * @return array Time log data
-     * @throws Exception
-     */
+      * Get time log details
+      * 
+      * @param int $timeLogId The time log ID
+      * @return array Time log data
+      * @throws Exception
+      */
     public function getTimeLog(int $timeLogId): array
     {
         $sql = "
@@ -336,7 +319,7 @@ class TimeTrackingService
             LIMIT 1
         ";
 
-        $result = $this->db->selectOne($sql, [$timeLogId]);
+        $result = Database::selectOne($sql, [$timeLogId]);
         if (!$result) {
             throw new Exception("Time log not found.");
         }
@@ -356,7 +339,7 @@ class TimeTrackingService
             SELECT 
                 tl.*,
                 u.display_name, u.avatar,
-                i.key as issue_key, i.summary
+                i.issue_key, i.summary
             FROM " . self::TABLE_TIME_LOGS . " tl
             LEFT JOIN users u ON tl.user_id = u.id
             LEFT JOIN issues i ON tl.issue_id = i.id
@@ -364,22 +347,22 @@ class TimeTrackingService
             ORDER BY tl.created_at DESC
         ";
 
-        return $this->db->select($sql, [$issueId]);
+        return Database::select($sql, [$issueId]);
     }
 
     /**
-     * Get all time logs for a user with optional filters
-     * 
-     * @param int $userId The user ID
-     * @param array $filters Optional filters (project_id, start_date, end_date, status)
-     * @return array Array of time logs
-     */
+      * Get all time logs for a user with optional filters
+      * 
+      * @param int $userId The user ID
+      * @param array $filters Optional filters (project_id, start_date, end_date, status)
+      * @return array Array of time logs
+      */
     public function getUserTimeLogs(int $userId, array $filters = []): array
     {
         $sql = "
             SELECT 
                 tl.*,
-                i.key as issue_key, i.summary,
+                i.issue_key, i.summary,
                 p.name as project_name
             FROM " . self::TABLE_TIME_LOGS . " tl
             LEFT JOIN issues i ON tl.issue_id = i.id
@@ -416,7 +399,7 @@ class TimeTrackingService
 
         $sql .= " ORDER BY tl.created_at DESC";
 
-        return $this->db->select($sql, $params);
+        return Database::select($sql, $params);
     }
 
     /**
@@ -434,20 +417,20 @@ class TimeTrackingService
             LIMIT 1
         ";
 
-        $result = $this->db->selectOne($sql, [$userId]);
+        $result = Database::selectOne($sql, [$userId]);
         return $result ?: null;
     }
 
     /**
-     * Set user's rate (creates new rate or updates existing)
-     * 
-     * @param int $userId The user ID
-     * @param string $rateType 'hourly', 'minutely', or 'secondly'
-     * @param float $rateAmount Amount per unit
-     * @param string $currency Currency code
-     * @return array Created/updated rate
-     * @throws Exception
-     */
+      * Set user's rate (creates new rate or updates existing)
+      * 
+      * @param int $userId The user ID
+      * @param string $rateType 'hourly', 'minutely', or 'secondly'
+      * @param float $rateAmount Amount per unit
+      * @param string $currency Currency code
+      * @return array Created/updated rate
+      * @throws Exception
+      */
     public function setUserRate(
         int $userId,
         string $rateType,
@@ -463,15 +446,13 @@ class TimeTrackingService
         }
 
         try {
-            $this->db->beginTransaction();
-
             // Deactivate any existing rates of this type
             $sql = "
                 UPDATE " . self::TABLE_USER_RATES . "
                 SET is_active = 0
                 WHERE user_id = ? AND rate_type = ?
             ";
-            $this->db->execute($sql, [$userId, $rateType]);
+            Database::execute($sql, [$userId, $rateType]);
 
             // Create new rate
             $sql = "
@@ -481,13 +462,11 @@ class TimeTrackingService
             ";
 
             $today = (new DateTime())->format('Y-m-d');
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $userId, $rateType, $rateAmount, $currency, 1, $today
             ]);
 
-            $rateId = $this->db->lastInsertId();
-
-            $this->db->commit();
+            $rateId = Database::lastInsertId();
 
             return [
                 'id' => $rateId,
@@ -498,7 +477,6 @@ class TimeTrackingService
                 'is_active' => 1
             ];
         } catch (Exception $e) {
-            $this->db->rollBack();
             throw $e;
         }
     }
@@ -558,7 +536,7 @@ class TimeTrackingService
                 WHERE project_id = ?
             ";
 
-            $this->db->execute($sql, [$additionalCost, $projectId]);
+            Database::execute($sql, [$additionalCost, $projectId]);
 
             // Check if we need to trigger alerts
             $this->checkBudgetAlerts($projectId);
@@ -568,11 +546,11 @@ class TimeTrackingService
     }
 
     /**
-     * Check and trigger budget alerts if threshold exceeded
-     * 
-     * @param int $projectId The project ID
-     * @return void
-     */
+      * Check and trigger budget alerts if threshold exceeded
+      * 
+      * @param int $projectId The project ID
+      * @return void
+      */
     private function checkBudgetAlerts(int $projectId): void
     {
         try {
@@ -581,7 +559,7 @@ class TimeTrackingService
                 WHERE project_id = ? AND total_budget > 0
             ";
 
-            $budget = $this->db->selectOne($sql, [$projectId]);
+            $budget = Database::selectOne($sql, [$projectId]);
             if (!$budget) {
                 return;
             }
@@ -610,7 +588,7 @@ class TimeTrackingService
                 WHERE project_budget_id = ? AND alert_type = ? AND is_acknowledged = 0
             ";
 
-            $existingAlert = $this->db->selectOne($sql, [$budget['id'], $alertType]);
+            $existingAlert = Database::selectOne($sql, [$budget['id'], $alertType]);
             if ($existingAlert) {
                 return; // Alert already exists
             }
@@ -624,7 +602,7 @@ class TimeTrackingService
                 ) VALUES (?, ?, ?, ?, ?, ?, ?)
             ";
 
-            $this->db->execute($sql, [
+            Database::execute($sql, [
                 $budget['id'], $projectId, $alertType,
                 $budget['alert_threshold'], $percentageUsed,
                 $budget['total_cost'],
@@ -658,24 +636,24 @@ class TimeTrackingService
             WHERE project_id = ?
         ";
 
-        $result = $this->db->selectOne($sql, [$projectId]);
+        $result = Database::selectOne($sql, [$projectId]);
         return $result ?: [];
     }
 
     /**
-     * Get all time logs for a project with totals
-     * 
-     * @param int $projectId The project ID
-     * @param array $filters Optional filters
-     * @return array Time logs with totals
-     */
+      * Get all time logs for a project with totals
+      * 
+      * @param int $projectId The project ID
+      * @param array $filters Optional filters
+      * @return array Time logs with totals
+      */
     public function getProjectTimeLogs(int $projectId, array $filters = []): array
     {
         $sql = "
             SELECT 
                 tl.*,
                 u.display_name, u.avatar,
-                i.key as issue_key, i.summary
+                i.issue_key, i.summary
             FROM " . self::TABLE_TIME_LOGS . " tl
             LEFT JOIN users u ON tl.user_id = u.id
             LEFT JOIN issues i ON tl.issue_id = i.id
@@ -701,16 +679,16 @@ class TimeTrackingService
 
         $sql .= " ORDER BY tl.created_at DESC";
 
-        return $this->db->select($sql, $params);
+        return Database::select($sql, $params);
     }
 
     /**
-     * Get cost summary statistics
-     * 
-     * @param int $projectId The project ID
-     * @param array $filters Optional filters
-     * @return array Statistics
-     */
+      * Get cost summary statistics
+      * 
+      * @param int $projectId The project ID
+      * @param array $filters Optional filters
+      * @return array Statistics
+      */
     public function getCostStatistics(int $projectId, array $filters = []): array
     {
         $sql = "
@@ -739,6 +717,6 @@ class TimeTrackingService
             $params[] = $filters['end_date'];
         }
 
-        return $this->db->selectOne($sql, $params) ?: [];
+        return Database::selectOne($sql, $params) ?: [];
     }
 }

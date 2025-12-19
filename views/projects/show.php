@@ -65,6 +65,10 @@
                 <i class="bi bi-bar-chart"></i>
                 <span>Reports</span>
             </a>
+            <a href="<?= url("/time-tracking/project/{$project['id']}") ?>" class="action-button">
+                <i class="bi bi-hourglass-split"></i>
+                <span>Time Tracking</span>
+            </a>
             <?php if (can('edit-project', $project['id'])): ?>
             <a href="<?= url("/projects/{$project['key']}/settings") ?>" class="action-button">
                 <i class="bi bi-gear"></i>

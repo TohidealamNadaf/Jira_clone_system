@@ -167,6 +167,13 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/roadmap', [RoadmapController::class, 'index'])->name('roadmap.index');
     $router->get('/projects/{key}/roadmap', [RoadmapController::class, 'show'])->name('roadmap.project');
     
+    // Time Tracking Routes
+    $router->get('/time-tracking', [\App\Controllers\TimeTrackingController::class, 'dashboard'])->name('time-tracking.dashboard');
+    $router->get('/time-tracking/user/{userId}', [\App\Controllers\TimeTrackingController::class, 'userReport'])->name('time-tracking.user');
+    $router->get('/time-tracking/project/{projectId}', [\App\Controllers\TimeTrackingController::class, 'projectReport'])->name('time-tracking.project');
+    $router->get('/time-tracking/budgets', [\App\Controllers\TimeTrackingController::class, 'budgetDashboard'])->name('time-tracking.budgets');
+    $router->get('/time-tracking/issue/{issueId}', [\App\Controllers\TimeTrackingController::class, 'issueLogs'])->name('time-tracking.issue');
+    
     // User Profile
     $router->get('/profile', [UserController::class, 'profile'])->name('profile');
     $router->put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');

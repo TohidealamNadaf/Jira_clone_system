@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Time Tracking Diagnostics</title>
+    <meta name="app-base-path" content="/jira_clone_system/public/">
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .section { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #8B1956; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: #0066cc; }
+        .test { padding: 10px; background: #f9f9f9; margin: 5px 0; border: 1px solid #ddd; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; background: #8B1956; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #6F123F; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>⏱️ Time Tracking System Diagnostics</h1>
+    
+    <div class="section">
+        <h2>1. Configuration Check</h2>
+        <div class="test">
+            <p>App Base Path (from meta tag): <span id="basePath" class="info">loading...</span></p>
+        </div>
+        <div class="test">
+            <p>Current URL: <span id="currentUrl" class="info">loading...</span></p>
+        </div>
+        <div class="test">
+            <p>Document Root: <span id="docRoot" class="info">loading...</span></p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>2. API Endpoint Tests</h2>
+        
+        <div class="test">
+            <h3>Test: /api/v1/issues (with project_id=1)</h3>
+            <button onclick="testIssuesAPI()">Test Issues API</button>
+            <div id="issuesResult"></div>
+        </div>
+
+        <div class="test">
+            <h3>Test: /notifications/stream</h3>
+            <button onclick="testNotificationStream()">Test Notification Stream</button>
+            <div id="streamResult"></div>
+        </div>
+
+        <div class="test">
+            <h3>Test: /api/v1/time-tracking/status</h3>
+            <button onclick="testTimerStatus()">Test Timer Status</button>
+            <div id="timerResult"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>3. Realtime Notifications Debug</h2>
+        <div id="notificationsDebug">
+            <p>Open browser console (F12) to see real-time notifications debug logs</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>4. Time Tracking Modal Test</h2>
+        <div class="test">
+            <h3>Modal Issues Dropdown</h3>
+            <p>If you see this, the page loads correctly. Check the Time Tracking page at:</p>
+            <pre>/time-tracking/project/1</pre>
+            <p>Open console (F12) and look for logs starting with <span class="info">[TIMER]</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Get base path
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        document.getElementById('basePath').textContent = basePath;
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('docRoot').textContent = 'See server logs';
+
+        async function testIssuesAPI() {
+            const resultDiv = document.getElementById('issuesResult');
+            resultDiv.innerHTML = '<p class="info">Testing...</p>';
+            
+            try {
+                const url = basePath.replace(/\/$/, '') + '/api/v1/issues?project_id=1';
+                console.log('[TEST] Fetching:', url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.data && data.data.length > 0) {
+                    resultDiv.innerHTML = `<p class="success">✓ SUCCESS: Found ${data.data.length} issues</p>
+                        <pre>${JSON.stringify(data.data.slice(0, 3), null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ NO ISSUES FOUND</p>
+                        <p>Response:</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ ERROR: ${error.message}</p>
+                    <p>URL: ${basePath.replace(/\/$/, '') + '/api/v1/issues?project_id=1'}</p>`;
+            }
+        }
+
+        async function testNotificationStream() {
+            const resultDiv = document.getElementById('streamResult');
+            resultDiv.innerHTML = '<p class="info">Testing Stream Connection...</p>';
+            
+            try {
+                const url = basePath.replace(/\/$/, '') + '/notifications/stream?lastId=0';
+                console.log('[TEST] Stream URL:', url);
+                
+                const eventSource = new EventSource(url);
+                let connected = false;
+                
+                eventSource.addEventListener('open', () => {
+                    connected = true;
+                    resultDiv.innerHTML = '<p class="success">✓ STREAM CONNECTED</p>';
+                    eventSource.close();
+                });
+                
+                eventSource.addEventListener('error', (e) => {
+                    if (!connected) {
+                        resultDiv.innerHTML = `<p class="error">✗ STREAM ERROR</p>
+                            <p>Status: ${e.target.readyState}</p>
+                            <p>This might be a CORS or authentication issue</p>`;
+                    }
+                    eventSource.close();
+                });
+                
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    if (!connected) {
+                        resultDiv.innerHTML += '<p class="error">✗ TIMEOUT: No response from stream</p>';
+                    }
+                    eventSource.close();
+                }, 5000);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ ERROR: ${error.message}</p>`;
+            }
+        }
+
+        async function testTimerStatus() {
+            const resultDiv = document.getElementById('timerResult');
+            resultDiv.innerHTML = '<p class="info">Testing Timer Status...</p>';
+            
+            try {
+                const url = basePath.replace(/\/$/, '') + '/api/v1/time-tracking/status';
+                console.log('[TEST] Timer API:', url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `<p class="success">✓ API RESPONDED</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ ERROR: ${error.message}</p>`;
+            }
+        }
+
+        // Log page load info
+        console.log('=== TIME TRACKING DIAGNOSTICS ===');
+        console.log('Base Path:', basePath);
+        console.log('Current URL:', window.location.href);
+        console.log('Realtime Notifications JS:', 'Check if realtime-notifications.js is loaded');
+    </script>
+
+    <!-- Load realtime notifications for debugging -->
+    <script src="/jira_clone_system/public/assets/js/realtime-notifications.js"></script>
+    <script>
+        // This will show debug logs in console from realtime-notifications.js
+        console.log('🔔 [REALTIME] Diagnostics page loaded - Check console for realtime-notifications logs');
+    </script>
+</body>
+</html>

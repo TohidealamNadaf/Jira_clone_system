@@ -13,6 +13,7 @@ use App\Controllers\Api\SprintApiController;
 use App\Controllers\Api\UserApiController;
 use App\Controllers\Api\SearchApiController;
 use App\Controllers\Api\HealthApiController;
+use App\Controllers\Api\TimeTrackingApiController;
 use App\Controllers\NotificationController;
 use App\Controllers\CalendarController;
 use App\Controllers\RoadmapController;
@@ -186,6 +187,19 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
          $router->get('/roadmap/version-issues', [RoadmapController::class, 'versionIssues']);
          $router->get('/roadmap/timeline-range', [RoadmapController::class, 'timelineRange']);
          $router->get('/roadmap/projects', [RoadmapController::class, 'projects']);
+         
+         // Time Tracking API v1
+         $router->post('/time-tracking/start', [TimeTrackingApiController::class, 'start']);
+         $router->post('/time-tracking/pause', [TimeTrackingApiController::class, 'pause']);
+         $router->post('/time-tracking/resume', [TimeTrackingApiController::class, 'resume']);
+         $router->post('/time-tracking/stop', [TimeTrackingApiController::class, 'stop']);
+         $router->get('/time-tracking/status', [TimeTrackingApiController::class, 'status']);
+         $router->get('/time-tracking/logs', [TimeTrackingApiController::class, 'logs']);
+         $router->get('/time-tracking/issue/{issueId}', [TimeTrackingApiController::class, 'issueTimeLogs']);
+         $router->post('/time-tracking/rate', [TimeTrackingApiController::class, 'setRate']);
+         $router->get('/time-tracking/rate', [TimeTrackingApiController::class, 'getRate']);
+         $router->get('/time-tracking/project/{projectId}/budget', [TimeTrackingApiController::class, 'projectBudget']);
+         $router->get('/time-tracking/project/{projectId}/statistics', [TimeTrackingApiController::class, 'projectStatistics']);
          
          // Webhooks info
          $router->get('/myself', [UserApiController::class, 'me']);

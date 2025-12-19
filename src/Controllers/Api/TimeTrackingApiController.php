@@ -19,9 +19,9 @@ class TimeTrackingApiController extends Controller
 {
     private TimeTrackingService $service;
 
-    public function __construct(TimeTrackingService $service)
+    public function __construct()
     {
-        $this->service = $service;
+        $this->service = new TimeTrackingService();
     }
 
     /**
@@ -322,7 +322,18 @@ class TimeTrackingApiController extends Controller
      */
     private function getCurrentUserId(): int
     {
-        // TODO: Extract from JWT token
-        return (int)($_SERVER['HTTP_X_USER_ID'] ?? 1);
+        // Get from session if available (fallback for non-JWT auth)
+        $session = \App\Core\Session::user();
+        if ($session && isset($session['id'])) {
+            return (int)$session['id'];
+        }
+        
+        // Get from custom header if present (for API clients)
+        if (!empty($_SERVER['HTTP_X_USER_ID'])) {
+            return (int)$_SERVER['HTTP_X_USER_ID'];
+        }
+        
+        // Fallback to user 1 (should not reach here in normal operation)
+        return 1;
     }
 }

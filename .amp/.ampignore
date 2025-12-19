@@ -1,0 +1,31 @@
+# Amp Ignore File - Prevents conflicts between Live Share users
+
+# Ignore local temporary files
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ignore user-specific debug files
+debug_*.php
+test_*.php
+
+# Ignore node_modules and vendor (not applicable here, but good practice)
+node_modules/
+vendor/
+
+# Ignore local environment files that might differ per user
+.env.local
+.env.*.local
+
+# Ignore storage/logs (user-specific)
+storage/logs/*
+storage/cache/*
+
+# Keep these files shared:
+# - AGENTS.md
+# - All source files in src/
+# - All views in views/
+# - All routes
+# - All config

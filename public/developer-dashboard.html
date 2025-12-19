@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Clone - Developer Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --jira-blue: #0052CC;
+            --text-primary: #161B22;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F6F8FA;
+            --border-color: #DFE1E6;
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius-lg: 8px;
+            --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            color: var(--text-primary);
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        }
+
+        .navbar {
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--jira-blue) !important;
+            margin-right: 2rem;
+        }
+
+        .navbar .nav-link {
+            color: var(--text-primary) !important;
+            margin: 0 0.5rem;
+            transition: color var(--transition-base);
+            font-weight: 500;
+        }
+
+        .navbar .nav-link:hover {
+            color: var(--jira-blue) !important;
+        }
+
+        .navbar .nav-link.active {
+            color: var(--jira-blue) !important;
+            border-bottom: 2px solid var(--jira-blue);
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 100px;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-right: 1.5rem;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-base);
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--bg-secondary);
+            border-left-color: var(--jira-blue);
+            color: var(--jira-blue);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--bg-secondary);
+            border-left-color: var(--jira-blue);
+            color: var(--jira-blue);
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #626F86;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            padding-left: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .content-area {
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: #626F86;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-base);
+            margin-bottom: 1.5rem;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all var(--transition-base);
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--jira-blue);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--jira-blue);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h6 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            font-size: 0.875rem;
+            color: #626F86;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .badge-success {
+            background-color: #E3FCEF;
+            color: #216E4E;
+        }
+
+        .badge-info {
+            background-color: #DFFCF0;
+            color: #0E6251;
+        }
+
+        .badge-warning {
+            background-color: #FFF7D6;
+            color: #974F0C;
+        }
+
+        .link-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .link-list li {
+            margin-bottom: 0.75rem;
+        }
+
+        .link-list a {
+            color: var(--jira-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-base);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .link-list a:hover {
+            color: #003D99;
+            text-decoration: underline;
+        }
+
+        .link-list i {
+            font-size: 0.8rem;
+        }
+
+        .table {
+            background-color: var(--bg-primary);
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background-color: var(--bg-secondary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table tr:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .btn-primary {
+            background-color: var(--jira-blue);
+            border-color: var(--jira-blue);
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-base);
+        }
+
+        .btn-primary:hover {
+            background-color: #003D99;
+            border-color: #003D99;
+            box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
+        }
+
+        .quick-links {
+            background-color: #F0F4F8;
+            border-left: 4px solid var(--jira-blue);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 2rem;
+        }
+
+        .quick-links h5 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .quick-links .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .quick-links a {
+            color: var(--jira-blue);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+
+        .alert-info {
+            background-color: #F0F4F8;
+            border: 1px solid #B3D4FF;
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-info i {
+            color: var(--jira-blue);
+            margin-right: 0.5rem;
+        }
+
+        .responsive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--jira-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: #626F86;
+            font-weight: 500;
+        }
+
+        .breadcrumb {
+            padding: 0;
+            margin-bottom: 1.5rem;
+            background-color: transparent;
+        }
+
+        .breadcrumb-item {
+            color: #626F86;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: #DFE1E6;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                top: 0;
+                height: auto;
+                margin-bottom: 2rem;
+                padding-right: 0;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-links .links {
+                grid-template-columns: 1fr;
+            }
+
+            .responsive-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .search-box {
+            margin-bottom: 2rem;
+        }
+
+        .search-box input {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all var(--transition-base);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--jira-blue);
+            box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="#dashboard">
+                <i class="fas fa-tasks"></i> Jira Clone Developer Dashboard
+            </a>
+            <ul class="nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#features">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#documentation">Docs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#getting-started">Start</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <nav class="col-lg-2 sidebar">
+                <div class="section-title">Navigation</div>
+                <a class="nav-link active" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</a>
+                <a class="nav-link" data-section="getting-started"><i class="fas fa-rocket"></i> Getting Started</a>
+                <a class="nav-link" data-section="features"><i class="fas fa-star"></i> All Features</a>
+                <a class="nav-link" data-section="admin"><i class="fas fa-lock"></i> Admin & Security</a>
+                <a class="nav-link" data-section="code"><i class="fas fa-code"></i> Code Standards</a>
+                <a class="nav-link" data-section="documentation"><i class="fas fa-book"></i> Documentation</a>
+                <a class="nav-link" data-section="quick-reference"><i class="fas fa-list"></i> Quick Reference</a>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="col-lg-10 content-area">
+
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Welcome to the Developer Dashboard!</strong> This is your central hub for navigating the Jira Clone system. Start with Getting Started or explore features.
+                    </div>
+
+                    <h1 class="page-title">Developer Dashboard</h1>
+                    <p class="page-subtitle">Your guide to the Jira Clone Enterprise System</p>
+
+                    <div class="quick-links">
+                        <h5><i class="fas fa-bolt"></i> Quick Links</h5>
+                        <div class="links">
+                            <a href="http://localhost/jira_clone_system/public/">🎯 Application</a>
+                            <a href="#documentation">📚 Full Documentation</a>
+                            <a href="#code">💻 Code Standards</a>
+                            <a href="#admin">🔒 Admin & Security</a>
+                            <a href="#getting-started">🚀 Getting Started</a>
+                            <a href="#quick-reference">⚡ Quick Reference</a>
+                        </div>
+                    </div>
+
+                    <div class="responsive-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">7</div>
+                            <div class="stat-label">Enterprise Reports</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">8+</div>
+                            <div class="stat-label">Admin Pages</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">Type-Safe Code</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Latest Features</h3>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                            <h6>Reports System</h6>
+                            <p>7 professional reports with Chart.js visualization: Created vs Resolved, Resolution Time, Priority Breakdown, Time Logged, Estimate Accuracy, Version Progress, Release Burndown.</p>
+                            <span class="badge badge-success">✓ Complete</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                            <h6>Admin Security</h6>
+                            <p>Multi-layer protection: Admin users cannot edit other admins, system roles are immutable, custom roles fully manageable.</p>
+                            <span class="badge badge-success">✓ Implemented</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-pen"></i></div>
+                            <h6>Comment Features</h6>
+                            <p>Full comment lifecycle: add, edit, delete with timestamps and edit history tracking.</p>
+                            <span class="badge badge-success">✓ Complete</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-palette"></i></div>
+                            <h6>Modern UI Design</h6>
+                            <p>Atlassian Jira-inspired design system with professional color palette, responsive components, and WCAG AA accessibility.</p>
+                            <span class="badge badge-success">✓ Redesigned</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-plus-circle"></i></div>
+                            <h6>Quick Create Modal</h6>
+                            <p>Create issues instantly from navbar with dynamic project/issue-type selection, mobile-responsive design.</p>
+                            <span class="badge badge-success">✓ Implemented</span>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon"><i class="fas fa-sliders-h"></i></div>
+                            <h6>Admin Management</h6>
+                            <p>Comprehensive admin dashboard: Users, Roles, Projects, Categories, Issue Types, Permissions, Workflows.</p>
+                            <span class="badge badge-success">✓ Complete</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Getting Started Section -->
+                <div id="getting-started" class="section hidden">
+                    <h1 class="page-title">Getting Started</h1>
+                    <p class="page-subtitle">Set up and start developing in 5 minutes</p>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>1. Installation</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Already installed in XAMPP at:</strong></p>
+                            <code>C:\xampp\htdocs\jira_clone_system\</code>
+                            <p style="margin-top: 1rem;"><strong>Access the application:</strong></p>
+                            <code>http://localhost/jira_clone_system/public/</code>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>2. Default Login Credentials</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Role</th>
+                                        <th>Email</th>
+                                        <th>Password</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Admin</strong></td>
+                                        <td>admin@example.com</td>
+                                        <td>Admin@123</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>User</strong></td>
+                                        <td>john.smith@example.com</td>
+                                        <td>User@123</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>User</strong></td>
+                                        <td>jane.doe@example.com</td>
+                                        <td>User@123</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>3. Database Seeding</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>If database needs fresh data:</p>
+                            <pre style="background-color: #f4f4f4; padding: 1rem; border-radius: 4px;">php scripts/verify-and-seed.php</pre>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>4. Running Tests</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre style="background-color: #f4f4f4; padding: 1rem; border-radius: 4px;">php tests/TestRunner.php</pre>
+                            <p style="margin-top: 1rem;"><strong>Run specific suite:</strong></p>
+                            <pre style="background-color: #f4f4f4; padding: 1rem; border-radius: 4px;">php tests/TestRunner.php --suite=Unit</pre>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>5. Key Directories</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="link-list">
+                                <li><strong>Controllers:</strong> <code>src/Controllers/</code></li>
+                                <li><strong>Views:</strong> <code>views/</code></li>
+                                <li><strong>Database:</strong> <code>database/schema.sql</code></li>
+                                <li><strong>Routes:</strong> <code>routes/web.php</code> and <code>routes/api.php</code></li>
+                                <li><strong>Configuration:</strong> <code>config/config.php</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Section -->
+                <div id="features" class="section hidden">
+                    <h1 class="page-title">All System Features</h1>
+                    <p class="page-subtitle">Explore every feature in the Jira Clone system</p>
+
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Core Features</h3>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-folder"></i> Projects</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Create, manage, and organize projects</strong></p>
+                            <p>Create new projects, configure settings, manage members, view project statistics.</p>
+                            <p><strong>Location:</strong> <code>views/projects/</code>, <code>src/Controllers/ProjectController.php</code></p>
+                            <p><strong>Routes:</strong> /projects, /projects/create, /projects/{key}</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-tasks"></i> Issues</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Complete issue lifecycle management</strong></p>
+                            <p>Create issues (Epic, Story, Task, Bug, Sub-task), add comments, attach files, assign to users, track status changes.</p>
+                            <p><strong>Location:</strong> <code>views/issues/</code>, <code>src/Controllers/IssueController.php</code></p>
+                            <p><strong>Features:</strong> Comments with edit/delete, attachments, watchers, voting, estimation</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-columns"></i> Boards</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Agile board management</strong></p>
+                            <p>Scrum and Kanban boards with drag-and-drop issue management, sprint planning, backlog grooming.</p>
+                            <p><strong>Location:</strong> <code>views/boards/</code>, <code>src/Controllers/BoardController.php</code></p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-rocket"></i> Sprints</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Sprint planning and execution</strong></p>
+                            <p>Plan sprints, manage backlog, track velocity, review sprint reports.</p>
+                            <p><strong>Location:</strong> <code>views/sprints/</code>, <code>src/Controllers/SprintController.php</code></p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Enterprise Features</h3>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line"></i> Reports (7 Professional Reports)</h5>
+                        </div>
+                        <div class="card-body">
+                            <ol>
+                                <li><strong>Created vs Resolved</strong> - Line chart comparing creation/resolution rates</li>
+                                <li><strong>Resolution Time</strong> - Average time to resolve issues</li>
+                                <li><strong>Priority Breakdown</strong> - Pie chart of issues by priority</li>
+                                <li><strong>Time Logged</strong> - Team workload tracking</li>
+                                <li><strong>Estimate Accuracy</strong> - Estimated vs actual time</li>
+                                <li><strong>Version Progress</strong> - Release version tracking</li>
+                                <li><strong>Release Burndown</strong> - Burndown chart for releases</li>
+                            </ol>
+                            <p style="margin-top: 1rem;"><strong>Location:</strong> <code>views/reports/</code>, <code>src/Controllers/ReportController.php</code></p>
+                            <p><strong>Route:</strong> /reports/{report-name}</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-lock"></i> Admin Dashboard</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Complete system administration:</strong></p>
+                            <ul style="margin-bottom: 1rem;">
+                                <li>User Management - Create/edit/delete users</li>
+                                <li>Role Management - System and custom roles</li>
+                                <li>Projects Management - View all projects</li>
+                                <li>Project Categories - Organize projects</li>
+                                <li>Issue Types - Custom issue types with icons</li>
+                                <li>Global Permissions - System permissions</li>
+                                <li>Workflows - Status and transitions</li>
+                            </ul>
+                            <p><strong>Location:</strong> <code>views/admin/</code>, <code>src/Controllers/AdminController.php</code></p>
+                            <p><strong>Route:</strong> /admin/*</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-plus-circle"></i> Quick Create Modal</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Create issues instantly from navbar</strong></p>
+                            <p>Accessible from "Create" button in top-right, Select2 dropdowns for project/issue-type selection, mobile-responsive design.</p>
+                            <p><strong>Location:</strong> <code>views/layouts/app.php</code> (lines 190-230)</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-palette"></i> Modern UI Design System</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Atlassian Jira-inspired enterprise design:</strong></p>
+                            <ul style="margin-bottom: 1rem;">
+                                <li>Professional color palette with blue primary (#0052CC)</li>
+                                <li>Responsive Bootstrap 5 components</li>
+                                <li>Smooth animations and transitions</li>
+                                <li>WCAG AA accessibility compliance</li>
+                                <li>CSS variables for easy customization</li>
+                            </ul>
+                            <p><strong>Stylesheet:</strong> <code>public/assets/css/app.css</code> (1100+ lines)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin & Security Section -->
+                <div id="admin" class="section hidden">
+                    <h1 class="page-title">Admin & Security</h1>
+                    <p class="page-subtitle">User management, permissions, and security controls</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-shield-alt"></i>
+                        <strong>Security Model:</strong> Multi-layer protection prevents editing admin users and system roles. Server-side blocking is non-bypassable.
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Administrator Authority Model</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>Regular Users</th>
+                                        <th>Admin Users</th>
+                                        <th>Custom Roles</th>
+                                        <th>System Roles</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>View</strong></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Edit</strong></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                        <td><span class="badge badge-warning">✗ Protected</span></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                        <td><span class="badge badge-warning">✗ Protected</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Delete</strong></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                        <td><span class="badge badge-warning">✗ Protected</span></td>
+                                        <td><span class="badge badge-success">✓</span></td>
+                                        <td><span class="badge badge-warning">✗ Protected</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Security Protections</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul style="margin: 0;">
+                                <li><span class="badge badge-success">✓</span> Argon2id password hashing</li>
+                                <li><span class="badge badge-success">✓</span> CSRF token protection on all forms</li>
+                                <li><span class="badge badge-success">✓</span> XSS prevention with output encoding</li>
+                                <li><span class="badge badge-success">✓</span> SQL injection protection (prepared statements)</li>
+                                <li><span class="badge badge-success">✓</span> Secure session management</li>
+                                <li><span class="badge badge-success">✓</span> Content Security Policy headers</li>
+                                <li><span class="badge badge-success">✓</span> Admin user protection (cannot edit admins)</li>
+                                <li><span class="badge badge-success">✓</span> System role protection (immutable)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Test Admin Account</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Email:</strong> admin@example.com</p>
+                            <p><strong>Password:</strong> Admin@123</p>
+                            <p style="margin-bottom: 0;"><strong>Access:</strong> /admin/users, /admin/roles, /admin/projects</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Admin Pages</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="link-list">
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Dashboard (/admin)</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Users (/admin/users)</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Roles (/admin/roles)</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Projects (/admin/projects)</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Project Categories (/admin/project-categories)</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Issue Types (/admin/issue-types)</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Global Permissions (/admin/global-permissions)</a></li>
+                                <li><a href="#"><i class="fas fa-chevron-right"></i> Workflows (/admin/workflows)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Standards Section -->
+                <div id="code" class="section hidden">
+                    <h1 class="page-title">Code Standards & Conventions</h1>
+                    <p class="page-subtitle">How to write code for this project</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-code"></i>
+                        <strong>Authority:</strong> All standards are documented in <strong>AGENTS.md</strong> - refer to it as your development bible.
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>PHP Conventions</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul style="margin-bottom: 1rem;">
+                                <li><strong>Version:</strong> PHP 8.2+ with strict types</li>
+                                <li><strong>Strict Types:</strong> <code>declare(strict_types=1);</code> on all files</li>
+                                <li><strong>Namespaces:</strong> <code>App\{folder}\ClassName</code></li>
+                                <li><strong>Type Hints:</strong> All parameters and return types required</li>
+                                <li><strong>Naming:</strong> Classes: PascalCase, methods/properties: camelCase</li>
+                            </ul>
+
+                            <p style="margin-bottom: 1rem;"><strong>Example:</strong></p>
+                            <pre style="background-color: #f4f4f4; padding: 1rem; border-radius: 4px;">declare(strict_types=1);
+
+namespace App\Services;
+
+class UserService {
+    public function getUserById(int $id): ?array {
+        // Implementation
+    }
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Database Queries</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Always use prepared statements with PDO:</strong></p>
+                            <pre style="background-color: #f4f4f4; padding: 1rem; border-radius: 4px;">// SELECT
+$users = Database::select('SELECT * FROM users WHERE id = ?', [$id]);
+
+// INSERT
+$success = Database::insert('users', ['name' => $name, 'email' => $email]);
+
+// UPDATE
+$success = Database::update('users', ['name' => 'John'], 'id = ?', [1]);
+
+// DELETE
+$success = Database::delete('users', 'id = ?', [1]);</pre>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Controllers & Views</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Controllers extend App\Core\Controller:</strong></p>
+                            <pre style="background-color: #f4f4f4; padding: 1rem; border-radius: 4px;">class UserController extends Controller {
+    public function index(): string {
+        $users = UserService::all();
+        return $this->view('users.index', ['users' => $users]);
+    }
+    
+    public function store(): void {
+        $data = $this->request->validate(['email' => 'required|email']);
+        UserService::create($data);
+        $this->redirect('/users');
+    }
+}</pre>
+
+                            <p style="margin-top: 1rem;"><strong>Views use PHP short tags:</strong></p>
+                            <pre style="background-color: #f4f4f4; padding: 1rem; border-radius: 4px;">&lt;?= csrf_token() ?&gt;
+&lt;?= htmlspecialchars($user['name']) ?&gt;
+&lt;?php if ($user['active']): ?&gt;
+    Active user
+&lt;?php endif; ?&gt;</pre>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Directory Structure</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Folder</th>
+                                        <th>Purpose</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>src/Controllers/</code></td>
+                                        <td>HTTP request handlers</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>src/Core/</code></td>
+                                        <td>Framework core (Database, Request, Session)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>src/Services/</code></td>
+                                        <td>Business logic</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>src/Repositories/</code></td>
+                                        <td>Data access layer</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>views/</code></td>
+                                        <td>PHP templates</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>public/assets/</code></td>
+                                        <td>CSS, JS, images</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>database/</code></td>
+                                        <td>Schema & migrations</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>routes/</code></td>
+                                        <td>Route definitions</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation Section -->
+                <div id="documentation" class="section hidden">
+                    <h1 class="page-title">Documentation</h1>
+                    <p class="page-subtitle">Complete reference guides and documentation</p>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Core Documentation</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="link-list">
+                                <li><a href="../AGENTS.md" target="_blank"><i class="fas fa-external-link-alt"></i> AGENTS.md - Developer Guide (Authority)</a></li>
+                                <li><a href="../README.md" target="_blank"><i class="fas fa-external-link-alt"></i> README.md - Project Overview</a></li>
+                                <li><a href="../DEVELOPER_PORTAL.md" target="_blank"><i class="fas fa-external-link-alt"></i> DEVELOPER_PORTAL.md - Navigation Hub</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Feature Documentation</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="link-list">
+                                <li><a href="../ADMIN_PAGES_IMPLEMENTATION.md" target="_blank"><i class="fas fa-external-link-alt"></i> Admin Pages - Complete Implementation</a></li>
+                                <li><a href="../COMMENT_FEATURE_SUMMARY.md" target="_blank"><i class="fas fa-external-link-alt"></i> Comments - Edit/Delete Features</a></li>
+                                <li><a href="../REPORTS_QUICK_START.md" target="_blank"><i class="fas fa-external-link-alt"></i> Reports - Quick Start</a></li>
+                                <li><a href="../REPORT_UI_STANDARDS.md" target="_blank"><i class="fas fa-external-link-alt"></i> Reports - UI Standards</a></li>
+                                <li><a href="../UI_REDESIGN_COMPLETE.md" target="_blank"><i class="fas fa-external-link-alt"></i> UI Design - Complete System</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Security & Admin</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="link-list">
+                                <li><a href="../ADMIN_AUTHORITY_VERIFICATION.md" target="_blank"><i class="fas fa-external-link-alt"></i> Admin Authority - Permission Matrix</a></li>
+                                <li><a href="../ADMIN_PROTECTION_FINAL_SUMMARY.md" target="_blank"><i class="fas fa-external-link-alt"></i> Admin Protection - Implementation</a></li>
+                                <li><a href="../SYSTEM_ROLES_PROTECTION_FIX.md" target="_blank"><i class="fas fa-external-link-alt"></i> System Roles - Protection</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Setup & Deployment</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="link-list">
+                                <li><a href="../SETUP_AND_RUN_INSTRUCTIONS.md" target="_blank"><i class="fas fa-external-link-alt"></i> Setup & Run - Detailed Guide</a></li>
+                                <li><a href="../QUICK_START.md" target="_blank"><i class="fas fa-external-link-alt"></i> Quick Start - 5 Minute Setup</a></li>
+                                <li><a href="../DEPLOYMENT_CHECKLIST.md" target="_blank"><i class="fas fa-external-link-alt"></i> Deployment - Production Checklist</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Testing & Debugging</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="link-list">
+                                <li><a href="../COMPLETE_TEST_WORKFLOW.md" target="_blank"><i class="fas fa-external-link-alt"></i> Test Workflow - Complete Guide</a></li>
+                                <li><a href="../TESTING_CHECKLIST.md" target="_blank"><i class="fas fa-external-link-alt"></i> Testing Checklist - QA Reference</a></li>
+                                <li><a href="../TEST_COMMENT_EDIT_DELETE.md" target="_blank"><i class="fas fa-external-link-alt"></i> Test Comments - Feature Testing</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Reference Section -->
+                <div id="quick-reference" class="section hidden">
+                    <h1 class="page-title">Quick Reference</h1>
+                    <p class="page-subtitle">Handy reference for common tasks</p>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Common Commands</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Command</th>
+                                        <th>Purpose</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>php scripts/verify-and-seed.php</code></td>
+                                        <td>Seed database with test data</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>php tests/TestRunner.php</code></td>
+                                        <td>Run all tests</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>php tests/TestRunner.php --suite=Unit</code></td>
+                                        <td>Run unit tests only</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Database Tables</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul style="columns: 2; column-gap: 2rem;">
+                                <li>users</li>
+                                <li>roles</li>
+                                <li>projects</li>
+                                <li>issues</li>
+                                <li>issue_comments</li>
+                                <li>boards</li>
+                                <li>sprints</li>
+                                <li>workflows</li>
+                                <li>permissions</li>
+                                <li>issue_attachments</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Key Routes</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Route</th>
+                                        <th>Purpose</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>/</code></td>
+                                        <td>Dashboard</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/projects</code></td>
+                                        <td>Project listing</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/projects/{key}</code></td>
+                                        <td>Project detail</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/issues/{key}</code></td>
+                                        <td>Issue detail</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/boards/{id}</code></td>
+                                        <td>Board view</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/admin/*</code></td>
+                                        <td>Admin pages</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/reports/*</code></td>
+                                        <td>Reports</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>CSS Variables</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Value</th>
+                                        <th>Purpose</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>--jira-blue</code></td>
+                                        <td>#0052CC</td>
+                                        <td>Primary brand color</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>--text-primary</code></td>
+                                        <td>#161B22</td>
+                                        <td>Main text color</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>--bg-primary</code></td>
+                                        <td>#FFFFFF</td>
+                                        <td>White background</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>--shadow-md</code></td>
+                                        <td>0 4px 12px rgba(...)</td>
+                                        <td>Standard shadow</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>--radius-lg</code></td>
+                                        <td>8px</td>
+                                        <td>Card border radius</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Pro Tips</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul style="margin: 0;">
+                                <li>📖 <strong>Always check AGENTS.md</strong> first for any standard or convention</li>
+                                <li>🔍 <strong>Use prepared statements</strong> - never trust user input</li>
+                                <li>⌨️ <strong>Add type hints</strong> to all PHP parameters and return types</li>
+                                <li>✅ <strong>Run tests</strong> before committing: <code>php tests/TestRunner.php</code></li>
+                                <li>🎨 <strong>Use CSS variables</strong> for colors and spacing</li>
+                                <li>🔐 <strong>Escape output</strong> in views: <code>&lt;?= htmlspecialchars($var) ?&gt;</code></li>
+                                <li>📱 <strong>Test responsive</strong> on mobile, tablet, desktop</li>
+                                <li>📚 <strong>Bookmark this portal</strong> for quick navigation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Update active link
+                document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+                
+                // Show selected section
+                const sectionId = link.getAttribute('data-section');
+                document.getElementById(sectionId).classList.remove('hidden');
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+            });
+        });
+
+        // Handle hash navigation
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1) || 'dashboard';
+            const link = document.querySelector(`.sidebar .nav-link[data-section="${hash}"]`);
+            if (link) link.click();
+        });
+
+        // Initial load
+        if (window.location.hash) {
+            const hash = window.location.hash.slice(1);
+            const link = document.querySelector(`.sidebar .nav-link[data-section="${hash}"]`);
+            if (link) link.click();
+        }
+    </script>
+</body>
+</html>

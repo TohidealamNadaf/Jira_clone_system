@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Test Data</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #8B1956 0%, #6F123F 100%);
+            color: white;
+            border: none;
+            border-radius: 12px 12px 0 0;
+            padding: 30px;
+        }
+        .card-body {
+            padding: 30px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        .info-box {
+            background: #f0f4f8;
+            border-left: 4px solid #8B1956;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            color: #36B37E;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .btn-seed {
+            background: linear-gradient(135deg, #8B1956 0%, #6F123F 100%);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            width: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .btn-seed:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(139, 25, 86, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+        .btn-seed:active {
+            transform: translateY(0);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #8B1956;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+        .success-msg {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 15px;
+            display: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #8B1956;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <h1>🌱 Seed Test Data</h1>
+            <p class="subtitle">Create 32+ issues across 5 projects in 10 seconds</p>
+        </div>
+        <div class="card-body">
+            <div class="info-box">
+                <strong>📊 What Gets Created:</strong>
+                <ul class="feature-list" style="margin-top: 10px;">
+                    <li>5 test projects (ECOM, MOB, API, DEVOPS, QA)</li>
+                    <li>32 issues with different statuses</li>
+                    <li>10+ overdue issues (for testing)</li>
+                    <li>Issues with all due dates (past, today, future)</li>
+                    <li>30+ comments from team members</li>
+                    <li>20+ work logs with time tracking</li>
+                    <li>Formatted descriptions (bold, lists, code)</li>
+                </ul>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Projects</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">32</div>
+                    <div class="stat-label">Issues</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10+</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">30+</div>
+                    <div class="stat-label">Comments</div>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Note:</strong> If these projects already exist, they will be skipped. You can safely run this multiple times.
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p><strong>Creating test data...</strong></p>
+                <p style="font-size: 12px; color: #666;">This will take 10-15 seconds</p>
+            </div>
+
+            <div class="success-msg" id="success">
+                <strong>✅ Success!</strong> Test data created. Redirecting to dashboard...
+            </div>
+
+            <button class="btn-seed" id="seedBtn" onclick="seedData()">
+                🌱 Create Test Data
+            </button>
+
+            <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #666;">
+                After seeding, you can test: overdue issues, due dates, priorities, 
+                filtering, sorting, comments, work logs, and much more.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function seedData() {
+            const btn = document.getElementById('seedBtn');
+            const loading = document.getElementById('loading');
+            const success = document.getElementById('success');
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+
+            // Use fetch to call the seeding script
+            fetch('run-seed-now.php')
+                .then(response => response.text())
+                .then(data => {
+                    // Check if successful
+                    if (data.includes('SEEDING COMPLETE')) {
+                        success.style.display = 'block';
+                        loading.innerHTML = '<div class="spinner" style="border-top-color: #28a745;"></div><p><strong>✅ Done!</strong></p>';
+                        setTimeout(() => {
+                            window.location.href = '/jira_clone_system/public/';
+                        }, 2000);
+                    } else {
+                        alert('Error seeding data. Check browser console.');
+                        btn.disabled = false;
+                        loading.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                    btn.disabled = false;
+                    loading.style.display = 'none';
+                });
+        }
+    </script>
+</body>
+</html>

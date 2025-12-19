@@ -1,0 +1,419 @@
+/**
+ * Design Consistency - All User Roles
+ * Ensures layout, colors, and spacing are consistent for all users
+ * regardless of role (admin, user, etc.)
+ */
+
+/* ============================================
+   GLOBAL CONTAINER CONSISTENCY
+   ============================================ */
+
+/* All main content containers */
+#mainContent {
+    background: var(--bg-secondary);
+    min-height: calc(100vh - 200px);
+    padding: 0;
+}
+
+#mainContent > div {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px;
+    width: 100%;
+}
+
+/* ============================================
+   PAGE WRAPPER STANDARDIZATION
+   ============================================ */
+
+.dashboard-wrapper,
+.page-wrapper,
+.content-wrapper,
+.projects-wrapper,
+.issues-wrapper,
+.search-wrapper,
+.board-wrapper,
+.calendar-wrapper,
+.roadmap-wrapper {
+    background: transparent;
+    min-height: auto;
+    padding: 0;
+    margin: 0;
+}
+
+/* ============================================
+   CONSISTENT PADDING ACROSS ALL PAGES
+   ============================================ */
+
+.dashboard-content,
+.page-content,
+.main-content,
+.container-main {
+    padding: 0;
+    margin: 0;
+}
+
+/* ============================================
+   COLOR CONSISTENCY - PLUM THEME
+   ============================================ */
+
+/* Primary buttons - all users see same color */
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--jira-blue) !important;
+    border-color: var(--jira-blue) !important;
+    color: white !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--jira-blue-dark) !important;
+    border-color: var(--jira-blue-dark) !important;
+}
+
+/* All links - consistent plum color */
+a:not(.btn):not(.nav-link):not(.dropdown-item),
+.link-primary {
+    color: var(--jira-blue);
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):hover,
+.link-primary:hover {
+    color: var(--jira-blue-dark);
+}
+
+/* Breadcrumb links */
+.breadcrumb a,
+.breadcrumb-link,
+.breadcrumb-nav a {
+    color: var(--jira-blue) !important;
+}
+
+.breadcrumb a:hover,
+.breadcrumb-link:hover,
+.breadcrumb-nav a:hover {
+    color: var(--jira-blue-dark) !important;
+}
+
+/* Navigation items */
+.nav-item.active .nav-link,
+.nav-link.active {
+    color: var(--jira-blue) !important;
+    border-color: var(--jira-blue) !important;
+}
+
+/* Badges - consistent colors */
+.badge-primary {
+    background-color: var(--jira-blue) !important;
+}
+
+.badge-secondary {
+    background-color: var(--text-secondary) !important;
+}
+
+/* Pills and tags */
+.badge-pill {
+    background-color: var(--jira-blue) !important;
+}
+
+/* ============================================
+   SHADOW CONSISTENCY - LAYERED DEPTH
+   ============================================ */
+
+.card {
+    box-shadow: var(--shadow-md);
+}
+
+.dropdown-menu {
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-content {
+    box-shadow: var(--shadow-xl);
+}
+
+/* ============================================
+   SPACING CONSISTENCY - 4px MULTIPLES
+   ============================================ */
+
+/* Standard gaps between sections */
+.section-gap {
+    margin-bottom: 32px;
+}
+
+.section-gap-small {
+    margin-bottom: 24px;
+}
+
+.section-gap-tiny {
+    margin-bottom: 16px;
+}
+
+/* Standard padding for cards */
+.card {
+    padding: 24px;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* ============================================
+   NAVBAR CONSISTENCY - FIXED HEIGHT
+   ============================================ */
+
+.navbar {
+    height: 80px !important;
+    background: white !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 0 32px !important;
+}
+
+.navbar-brand,
+.navbar-nav {
+    display: flex;
+    align-items: center;
+}
+
+/* ============================================
+   TABLE STYLING - CONSISTENT FOR ALL USERS
+   ============================================ */
+
+table {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+table thead {
+    background-color: var(--bg-secondary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+table tbody tr:hover {
+    background-color: var(--bg-secondary);
+}
+
+table td,
+table th {
+    border-color: var(--border-color);
+    padding: 12px 16px;
+}
+
+/* ============================================
+   FORM STYLING - CONSISTENT ACROSS ROLES
+   ============================================ */
+
+.form-control,
+.form-select {
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--jira-blue);
+    box-shadow: 0 0 0 0.2rem rgba(139, 25, 86, 0.1);
+}
+
+.form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ============================================
+   RESPONSIVE CONSISTENCY - ALL BREAKPOINTS
+   ============================================ */
+
+@media (max-width: 1200px) {
+    #mainContent > div {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    #mainContent > div {
+        padding: 16px;
+    }
+    
+    .navbar {
+        height: 64px !important;
+        padding: 0 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #mainContent > div {
+        padding: 12px;
+    }
+    
+    .navbar {
+        height: 56px !important;
+        padding: 0 12px !important;
+    }
+}
+
+/* ============================================
+   HEADER CONSISTENCY - ALL PAGES
+   ============================================ */
+
+.page-header,
+.dashboard-header-section {
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 0;
+}
+
+.page-header-content,
+.dashboard-header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+/* ============================================
+   FOOTER CONSISTENCY
+   ============================================ */
+
+footer {
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 16px 32px;
+}
+
+/* ============================================
+   MODAL CONSISTENCY
+   ============================================ */
+
+.modal-content {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.modal-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 24px;
+}
+
+.modal-body {
+    padding: 24px;
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 16px 24px;
+}
+
+/* ============================================
+   ALERT CONSISTENCY
+   ============================================ */
+
+.alert {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px 20px;
+}
+
+.alert-primary {
+    background-color: #f0dce5;
+    border-color: var(--jira-blue);
+    color: var(--text-primary);
+}
+
+.alert-success {
+    background-color: var(--bg-success);
+    border-color: var(--color-success);
+}
+
+.alert-warning {
+    background-color: var(--bg-warning);
+    border-color: var(--color-warning);
+}
+
+.alert-danger {
+    background-color: var(--bg-error);
+    border-color: var(--color-error);
+}
+
+/* ============================================
+   SKELETON CONSISTENCY
+   ============================================ */
+
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--border-color) 50%, var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   TOOLTIP CONSISTENCY
+   ============================================ */
+
+.tooltip-inner {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.tooltip-arrow::after {
+    border-top-color: var(--text-primary);
+}
+
+/* ============================================
+   NO LAYOUT SHIFTS BETWEEN ROLES
+   ============================================ */
+
+/* Navbar items should not cause layout shifts */
+.nav-link {
+    height: 48px;
+    display: flex;
+    align-items: center;
+}
+
+/* Admin link visibility should not affect layout */
+.admin-link {
+    visibility: hidden;
+    height: 0;
+    width: 0;
+    display: none;
+}
+
+.admin-link.visible {
+    visibility: visible;
+    height: 48px;
+    width: auto;
+    display: flex;
+}
+
+/* ============================================
+   PRINT CONSISTENCY
+   ============================================ */
+
+@media print {
+    .navbar,
+    footer {
+        display: none;
+    }
+    
+    #mainContent > div {
+        max-width: 100%;
+        padding: 0;
+    }
+}

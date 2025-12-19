@@ -1,0 +1,8 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Allow directories and existing files to pass through normally
+    # Everything else routes to parent index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ ../index.php [L,QSA]
+</IfModule>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Notification Preferences Fix</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 40px auto; padding: 20px; }
+        h1 { color: #0052cc; }
+        .step { margin: 20px 0; padding: 15px; background: #f6f8fa; border-left: 4px solid #0052cc; }
+        .success { background: #dffcf0; border-left-color: #34d399; color: #216e4e; }
+        .error { background: #ffeceb; border-left-color: #f85149; color: #da3633; }
+        code { background: #eaeef2; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        button { padding: 10px 20px; background: #0052cc; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 10px 0; }
+        button:hover { background: #003d82; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 6px; }
+        .loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Notification Preferences Fix Verification</h1>
+    
+    <div class="step">
+        <h3>Step 1: Test API Call</h3>
+        <p>This will test if the API endpoint is working correctly.</p>
+        <button onclick="testAPI()">Test API Endpoint</button>
+        <div id="result"></div>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Manual Test</h3>
+        <p>After API test passes, go to:</p>
+        <p><code>/profile/notifications</code></p>
+        <p>Then:</p>
+        <ol>
+            <li>Modify some notification preferences</li>
+            <li>Click "Save Preferences"</li>
+            <li>You should see a green success message</li>
+            <li>Refresh the page - preferences should persist</li>
+        </ol>
+    </div>
+
+    <script>
+    async function testAPI() {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '<p class="loading">Testing API...</p>';
+        
+        try {
+            // Get base URL
+            const currentUrl = window.location.href;
+            const baseUrl = currentUrl.split('/public/')[0] + '/public/';
+            const apiUrl = baseUrl + 'api/v1/notifications/preferences';
+            
+            // Make test request
+            const response = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    preferences: {
+                        issue_created: {
+                            in_app: true,
+                            email: false,
+                            push: false
+                        }
+                    }
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ API Test Passed!</h4>
+                        <p>API endpoint is working correctly.</p>
+                        <p><strong>Response:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        <p>Now test the full notification preferences page.</p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ API Error</h4>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Error:</strong> ${data.error}</p>
+                        <p><strong>Details:</strong> ${data.details}</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `
+                <div class="error">
+                    <h4>❌ Connection Error</h4>
+                    <p>${error.message}</p>
+                    <p>Make sure you're logged in and have permission to access the API.</p>
+                </div>
+            `;
+        }
+    }
+    </script>
+</body>
+</html>

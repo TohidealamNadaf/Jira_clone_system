@@ -4,15 +4,15 @@
 
 <div class="search-page-wrapper">
     <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb-section">
-        <div class="breadcrumb-nav">
-            <a href="<?= url('/') ?>" class="breadcrumb-link">
-                <i class="bi bi-house-door"></i> Home
-            </a>
-            <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-current">Search</span>
-        </div>
-    </div>
+    <nav class="board-breadcrumb">
+        <a href="<?= url('/dashboard') ?>" class="breadcrumb-link">
+            <i class="bi bi-house-door"></i> Dashboard
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">
+            <i class="bi bi-search"></i> Search
+        </span>
+    </nav>
 
     <!-- Page Header -->
     <div class="page-header-section">
@@ -496,58 +496,61 @@
 }
 
 .search-page-wrapper {
-    background: var(--bg-secondary);
-    min-height: 100vh;
+    background: transparent;
+    min-height: auto;
+    padding: 0;
+    margin: 0;
 }
 
-/* Breadcrumb */
-.breadcrumb-section {
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
-    padding: 12px 32px;
-    box-shadow: var(--shadow-sm);
-}
-
-.breadcrumb-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-secondary);
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.breadcrumb-link {
-    color: var(--jira-blue);
-    text-decoration: none;
-    transition: color var(--transition);
+/* Breadcrumb - Matches other pages */
+.search-page-wrapper .board-breadcrumb {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-weight: 500;
+    padding: 12px 20px;
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+    flex-shrink: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    min-height: 30px;
 }
 
-.breadcrumb-link:hover {
+.search-page-wrapper .breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--jira-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all var(--transition);
+}
+
+.search-page-wrapper .breadcrumb-link:hover {
     color: var(--jira-dark);
 }
 
-.breadcrumb-separator {
-    color: var(--border-color);
-    margin: 0 4px;
+.search-page-wrapper .breadcrumb-separator {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    margin: 0 2px;
 }
 
-.breadcrumb-current {
-    color: var(--text-primary);
-    font-weight: 600;
+.search-page-wrapper .breadcrumb-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 /* Page Header */
 .page-header-section {
     background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    padding: 24px 32px;
+    border-bottom: 0;
+    box-shadow: none;
+    padding: 16px 32px;
 }
 
 .header-content {

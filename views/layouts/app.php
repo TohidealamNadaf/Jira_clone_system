@@ -1143,8 +1143,8 @@
     <?php endforeach; ?>
 
     <!-- Main Content - Consistent for All Users -->
-    <main class="p-0" id="mainContent" style="background: var(--bg-secondary); min-height: calc(100vh - 200px); padding: 0;">
-        <div style="max-width: 1400px; margin: 0 auto; padding: 32px; width: 100%;">
+    <main class="p-0" id="mainContent" style="background: transparent; min-height: calc(100vh - 200px); padding: 0;">
+        <div style="width: 100%;">
             <?= \App\Core\View::yield('content') ?>
         </div>
     </main>

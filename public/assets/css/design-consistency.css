@@ -10,17 +10,14 @@
 
 /* All main content containers */
 #mainContent {
-    background: var(--bg-secondary);
+    background: transparent;
     min-height: calc(100vh - 200px);
     padding: 0;
 }
 
-#mainContent > div {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 32px;
-    width: 100%;
-}
+/* REMOVED: #mainContent > div padding rule was creating gaps on all pages
+   Padding is now handled by individual page wrapper classes in app.css
+   This ensures seamless navbar-to-content transitions */
 
 /* ============================================
    PAGE WRAPPER STANDARDIZATION

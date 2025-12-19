@@ -1,0 +1,488 @@
+/**
+ * Floating Timer Widget Styles
+ * 
+ * Professional Bootstrap-compatible styling for the floating timer
+ * Includes responsive design and smooth animations
+ */
+
+/* ============================================
+   FLOATING TIMER CONTAINER
+   ============================================ */
+
+.floating-timer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 320px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    z-index: 9999;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Hidden state */
+.floating-timer--hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(20px);
+}
+
+/* Visible state */
+.floating-timer--visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* Minimized state */
+.floating-timer--minimized .floating-timer__body {
+    display: none;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.floating-timer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: linear-gradient(135deg, #8b1956 0%, #6b0f44 100%);
+    border-radius: 12px 12px 0 0;
+    cursor: move;
+}
+
+.floating-timer__issue {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.floating-timer__issue-key {
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.floating-timer__issue-summary {
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.floating-timer__minimize-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.floating-timer__minimize-btn:hover {
+    transform: scale(1.1);
+}
+
+/* ============================================
+   BODY / CONTENT
+   ============================================ */
+
+.floating-timer__body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ============================================
+   TIME DISPLAY
+   ============================================ */
+
+.floating-timer__time-display {
+    text-align: center;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.floating-timer__time {
+    font-size: 32px;
+    font-weight: 700;
+    color: #8b1956;
+    font-family: 'Monaco', 'Courier New', monospace;
+    letter-spacing: 2px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.floating-timer__status {
+    font-size: 12px;
+    color: #626f86;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+}
+
+/* ============================================
+   COST DISPLAY
+   ============================================ */
+
+.floating-timer__cost-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #f0dce5;
+    border-radius: 6px;
+    border: 1px solid #e0c4d1;
+}
+
+.floating-timer__cost-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b0f44;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.floating-timer__cost {
+    font-size: 16px;
+    font-weight: 700;
+    color: #8b1956;
+    font-family: 'Monaco', 'Courier New', monospace;
+}
+
+/* ============================================
+   CONTROLS
+   ============================================ */
+
+.floating-timer__controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.floating-timer__btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.floating-timer__btn:hover {
+    background: #e8e8e8;
+    border-color: #bbb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.floating-timer__btn:active {
+    transform: translateY(0);
+}
+
+.floating-timer__btn--start {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+}
+
+.floating-timer__btn--start:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.floating-timer__btn--pause {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+}
+
+.floating-timer__btn--pause:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.floating-timer__btn--resume {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+}
+
+.floating-timer__btn--resume:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.floating-timer__btn--stop {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+}
+
+.floating-timer__btn--stop:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================
+   NOTIFICATIONS/TOAST
+   ============================================ */
+
+.floating-timer__toast {
+    position: fixed;
+    bottom: 360px;
+    right: 20px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    z-index: 10000;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.floating-timer__toast--show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.floating-timer__toast--success {
+    border-left-color: #10b981;
+}
+
+.floating-timer__toast--success::before {
+    content: '✓';
+    color: #10b981;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+.floating-timer__toast--error {
+    border-left-color: #ef4444;
+}
+
+.floating-timer__toast--error::before {
+    content: '✕';
+    color: #ef4444;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+.floating-timer__toast--info {
+    border-left-color: #8b1956;
+}
+
+.floating-timer__toast--info::before {
+    content: 'ⓘ';
+    color: #8b1956;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .floating-timer {
+        width: 280px;
+        bottom: 16px;
+        right: 16px;
+    }
+
+    .floating-timer__time {
+        font-size: 28px;
+    }
+
+    .floating-timer__btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-timer {
+        width: calc(100% - 32px);
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+    }
+
+    .floating-timer__header {
+        padding: 10px 12px;
+    }
+
+    .floating-timer__body {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .floating-timer__time {
+        font-size: 24px;
+        letter-spacing: 1px;
+    }
+
+    .floating-timer__cost {
+        font-size: 14px;
+    }
+
+    .floating-timer__btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.floating-timer--visible {
+    animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pulse effect when running */
+.floating-timer__time {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.floating-timer__btn:focus {
+    outline: 2px solid #8b1956;
+    outline-offset: 2px;
+}
+
+.floating-timer__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.floating-timer__btn:disabled:hover {
+    box-shadow: none;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+    .floating-timer {
+        border-width: 2px;
+    }
+
+    .floating-timer__btn {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .floating-timer,
+    .floating-timer__btn,
+    .floating-timer__toast {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .floating-timer {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        border-color: #4a5568;
+    }
+
+    .floating-timer__header {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .floating-timer__time-display {
+        background: #1a202c;
+        border-color: #4a5568;
+    }
+
+    .floating-timer__cost-display {
+        background: rgba(139, 25, 86, 0.1);
+        border-color: rgba(139, 25, 86, 0.2);
+    }
+
+    .floating-timer__btn {
+        background: #4a5568;
+        color: #e2e8f0;
+        border-color: #5a6a78;
+    }
+
+    .floating-timer__btn:hover {
+        background: #5a6a78;
+    }
+
+    .floating-timer__toast {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+}

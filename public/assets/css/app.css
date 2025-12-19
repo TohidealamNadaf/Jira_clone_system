@@ -86,7 +86,7 @@ html {
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
     font-size: 0.9375rem;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
     display: flex;
@@ -103,7 +103,37 @@ body.modal-open {
 
 main {
     flex: 1;
-    padding: 2rem 0;
+    padding: 0;
+}
+
+/* ======================================
+   Page Wrapper Padding & Background (Seamless Layout Fix)
+   Removed main padding, added to individual wrappers
+   ====================================== */
+.board-page-wrapper,
+.jira-project-wrapper,
+.projects-page-wrapper,
+.issues-page-wrapper,
+.backlog-page-wrapper,
+.sprints-page-wrapper,
+.settings-page-wrapper,
+.calendar-page-wrapper,
+.roadmap-page-wrapper,
+.search-page-wrapper,
+.activity-page-wrapper,
+.profile-page-wrapper,
+.admin-dashboard-wrapper,
+.dashboard-wrapper,
+.create-issue-wrapper,
+.reports-page-wrapper,
+.members-page-wrapper,
+.notifications-page-wrapper,
+.auth-page-wrapper,
+.error-page-wrapper {
+    padding: 1.5rem 2rem;
+    background-color: var(--bg-primary);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 a {

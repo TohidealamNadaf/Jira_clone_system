@@ -144,6 +144,58 @@ function asset(string $path): string
 }
 
 /**
+ * Generate avatar URL
+ * Handles both relative and absolute avatar paths
+ */
+function avatar(?string $avatarPath, string $defaultName = 'U'): string
+{
+    if (empty($avatarPath)) {
+        // Return default avatar with initials
+        return '';
+    }
+    
+    // If avatar is already a full URL, use it as-is
+    if (filter_var($avatarPath, FILTER_VALIDATE_URL)) {
+        return $avatarPath;
+    }
+    
+    // If it's a relative path starting with /uploads/, convert to proper URL
+    if (str_starts_with($avatarPath, '/uploads/')) {
+        return url($avatarPath);
+    }
+    
+    // If it's just a filename, assume it's in uploads/avatars/
+    if (!str_contains($avatarPath, '/')) {
+        return url("/uploads/avatars/$avatarPath");
+    }
+    
+    // Otherwise, treat as relative path
+    return url($avatarPath);
+}
+
+/**
+ * Get avatar initials for default display
+ */
+function avatarInitials(string $name, string $email = ''): string
+{
+    $name = trim($name);
+    if (empty($name)) {
+        // Use email first part if name is empty
+        $emailParts = explode('@', $email);
+        return strtoupper(substr($emailParts[0] ?? 'U', 0, 1));
+    }
+    
+    $nameParts = explode(' ', $name);
+    if (count($nameParts) >= 2) {
+        // Take first letter of first and last name
+        return strtoupper(substr($nameParts[0], 0, 1) . substr(end($nameParts), 0, 1));
+    } else {
+        // Take first two letters of single name
+        return strtoupper(substr($name, 0, 2));
+    }
+}
+
+/**
  * Render a view
  */
 function view(string $name, array $data = []): string

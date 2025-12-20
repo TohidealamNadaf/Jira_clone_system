@@ -740,6 +740,10 @@ $formatTime = function($seconds) {
             <i class="bi bi-house-door"></i> Dashboard
         </a>
         <span class="breadcrumb-separator">/</span>
+        <a href="<?= url('/projects') ?>" class="breadcrumb-link">
+            <i class="bi bi-folder"></i> Projects
+        </a>
+        <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-current">Time Tracking Analytics</span>
     </div>
 

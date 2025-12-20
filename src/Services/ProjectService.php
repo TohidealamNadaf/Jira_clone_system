@@ -50,10 +50,24 @@ class ProjectService
         $projects = Database::select(
             "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
-                    pc.name as category_name
+                    pc.name as category_name,
+                    COALESCE(issue_counts.total_issues, 0) as issue_count,
+                    COALESCE(member_counts.total_members, 0) as member_count
              FROM projects p
              LEFT JOIN users u ON p.lead_id = u.id
              LEFT JOIN project_categories pc ON p.category_id = pc.id
+             LEFT JOIN (
+                 SELECT project_id, COUNT(*) as total_issues
+                 FROM issues
+                 GROUP BY project_id
+             ) issue_counts ON p.id = issue_counts.project_id
+             LEFT JOIN (
+                 SELECT project_id, COUNT(*) as total_members
+                 FROM project_members pm
+                 JOIN users u2 ON pm.user_id = u2.id
+                 WHERE u2.is_active = 1
+                 GROUP BY project_id
+             ) member_counts ON p.id = member_counts.project_id
              WHERE $whereClause
              ORDER BY p.name ASC
              LIMIT $perPage OFFSET $offset",

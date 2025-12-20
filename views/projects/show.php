@@ -161,8 +161,22 @@
                     <div class="activity-feed">
                         <?php foreach (array_slice($activities, 0, 6) as $activity): ?>
                         <div class="activity-entry">
-                            <img src="<?= e($activity['user']['avatar'] ?? '/images/default-avatar.png') ?>" 
-                                 class="activity-avatar" alt="<?= e($activity['user']['display_name']) ?>">
+                            <?php 
+                            $avatarUrl = avatar($activity['user']['avatar'] ?? null, $activity['user']['display_name'] ?? 'User');
+                            if (!empty($avatarUrl)): ?>
+                                <img src="<?= e($avatarUrl) ?>" 
+                                     class="activity-avatar" alt="<?= e($activity['user']['display_name']) ?>"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="activity-avatar-placeholder" style="display:none;" 
+                                     title="<?= e($activity['user']['display_name']) ?>">
+                                    <?= avatarInitials($activity['user']['display_name'] ?? 'User', $activity['user']['email'] ?? '') ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="activity-avatar-placeholder" 
+                                     title="<?= e($activity['user']['display_name']) ?>">
+                                    <?= avatarInitials($activity['user']['display_name'] ?? 'User', $activity['user']['email'] ?? '') ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="activity-details">
                                 <div class="activity-header">
                                     <span class="activity-user"><?= e($activity['user']['display_name']) ?></span>
@@ -250,8 +264,22 @@
                 <?php else: ?>
                 <div class="members-grid">
                     <?php foreach (array_slice($members ?? [], 0, 6) as $member): ?>
-                    <img src="<?= e($member['avatar'] ?? '/images/default-avatar.png') ?>" 
-                         class="member-avatar" title="<?= e($member['display_name']) ?>">
+                    <?php 
+                    $avatarUrl = avatar($member['avatar'] ?? null, $member['display_name'] ?? 'User');
+                    if (!empty($avatarUrl)): ?>
+                        <img src="<?= e($avatarUrl) ?>" 
+                             class="member-avatar" title="<?= e($member['display_name']) ?>"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="member-avatar-placeholder" style="display:none;" 
+                             title="<?= e($member['display_name']) ?>">
+                            <?= avatarInitials($member['display_name'] ?? 'User', $member['email'] ?? '') ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="member-avatar-placeholder" 
+                             title="<?= e($member['display_name']) ?>">
+                            <?= avatarInitials($member['display_name'] ?? 'User', $member['email'] ?? '') ?>
+                        </div>
+                    <?php endif; ?>
                     <?php endforeach; ?>
                     <?php if (count($members ?? []) > 6): ?>
                     <div class="member-avatar more-count">+<?= count($members ?? []) - 6 ?></div>
@@ -716,6 +744,21 @@
     object-fit: cover;
 }
 
+.activity-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--jira-blue) 0%, var(--jira-blue-dark) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
 .activity-details {
     flex: 1;
     min-width: 0;
@@ -903,6 +946,29 @@
 }
 
 .member-avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.member-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--jira-border);
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg, var(--jira-blue) 0%, var(--jira-blue-dark) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.member-avatar-placeholder:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

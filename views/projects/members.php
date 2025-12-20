@@ -119,11 +119,17 @@
                     <!-- Member Header -->
                     <div class="member-card-header">
                         <div class="member-avatar-wrapper">
-                             <?php if ($member['avatar'] ?? null): ?>
-                                 <img src="<?= e($member['avatar']) ?>" class="member-avatar" alt="<?= e($member['display_name']) ?>">
+                             <?php 
+                             $avatarUrl = avatar($member['avatar'] ?? null, $member['display_name'] ?? 'User');
+                             if (!empty($avatarUrl)): ?>
+                                 <img src="<?= e($avatarUrl) ?>" class="member-avatar" alt="<?= e($member['display_name']) ?>" 
+                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="member-avatar-placeholder" style="display:none;">
+                                     <?= avatarInitials($member['display_name'] ?? 'User', $member['email'] ?? '') ?>
+                                 </div>
                              <?php else: ?>
                                  <div class="member-avatar-placeholder">
-                                     <?= strtoupper(substr($member['first_name'] ?? 'U', 0, 1)) ?>
+                                     <?= avatarInitials($member['display_name'] ?? 'User', $member['email'] ?? '') ?>
                                  </div>
                              <?php endif; ?>
                              <?php if ($member['user_id'] === $project['lead_id']): ?>
@@ -621,15 +627,22 @@
     justify-content: center;
     font-size: 20px;
     font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
 .member-avatar {
     object-fit: cover;
+    width: 100%;
+    height: 100%;
 }
 
 .member-avatar-placeholder {
     background: linear-gradient(135deg, var(--jira-blue) 0%, var(--jira-blue-dark) 100%);
     color: white;
+    width: 100%;
+    height: 100%;
+    text-transform: uppercase;
 }
 
 .member-lead-badge {

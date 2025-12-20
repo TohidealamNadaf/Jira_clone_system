@@ -233,6 +233,9 @@ class ProjectController extends Controller
             ];
         }, $recentIssues);
 
+        // Get project members
+        $members = $this->projectService->getProjectMembers($project['id']);
+
         // Get recent activity
         $activities = $this->activityService->getProjectActivities($project['id'], 10);
 
@@ -240,6 +243,7 @@ class ProjectController extends Controller
             'project' => $project,
             'stats' => $stats,
             'recentIssues' => $recentIssues,
+            'members' => $members,
             'activities' => $activities,
         ]);
     }

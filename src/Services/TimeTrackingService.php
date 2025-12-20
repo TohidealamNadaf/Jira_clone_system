@@ -727,4 +727,202 @@ class TimeTrackingService
 
         return Database::selectOne($sql, $params) ?: [];
     }
+
+    /**
+     * Get top issues by time spent
+     */
+    public function getTopIssuesByTime(int $limit = 10, string $startDate = '', string $endDate = ''): array
+    {
+        $sql = "
+            SELECT 
+                itl.issue_id,
+                i.issue_key,
+                i.summary as issue_summary,
+                p.key as project_key,
+                p.name as project_name,
+                SUM(itl.duration_seconds) as total_seconds,
+                COUNT(itl.id) as log_count,
+                SUM(itl.total_cost) as total_cost
+            FROM " . self::TABLE_TIME_LOGS . " itl
+            JOIN issues i ON i.id = itl.issue_id
+            JOIN projects p ON p.id = itl.project_id
+        ";
+
+        $params = [];
+
+        if ($startDate) {
+            $sql .= " WHERE itl.created_at >= ?";
+            $params[] = $startDate;
+        }
+
+        if ($endDate) {
+            $sql .= (empty($params) ? " WHERE " : " AND ") . "itl.created_at <= ?";
+            $params[] = $endDate;
+        }
+
+        $sql .= " GROUP BY itl.issue_id, i.issue_key, i.summary, p.key, p.name
+                  ORDER BY total_seconds DESC
+                  LIMIT ?";
+        $params[] = $limit;
+
+        return Database::select($sql, $params) ?? [];
+    }
+
+    /**
+     * Get recent time log entries
+     */
+    public function getRecentLogs(int $limit = 10, string $startDate = '', string $endDate = ''): array
+    {
+        $sql = "
+            SELECT 
+                itl.id,
+                itl.issue_id,
+                itl.user_id,
+                itl.duration_seconds,
+                itl.total_cost,
+                itl.created_at,
+                i.issue_key,
+                i.summary as issue_summary,
+                p.key as project_key,
+                p.name as project_name,
+                u.display_name as user_name,
+                u.first_name,
+                u.last_name,
+                u.avatar
+            FROM " . self::TABLE_TIME_LOGS . " itl
+            JOIN issues i ON i.id = itl.issue_id
+            JOIN projects p ON p.id = itl.project_id
+            JOIN users u ON u.id = itl.user_id
+        ";
+
+        $params = [];
+
+        if ($startDate) {
+            $sql .= " WHERE itl.created_at >= ?";
+            $params[] = $startDate;
+        }
+
+        if ($endDate) {
+            $sql .= (empty($params) ? " WHERE " : " AND ") . "itl.created_at <= ?";
+            $params[] = $endDate;
+        }
+
+        $sql .= " ORDER BY itl.created_at DESC
+                  LIMIT ?";
+        $params[] = $limit;
+
+        return Database::select($sql, $params) ?? [];
+    }
+
+    /**
+     * Get weekly trend data
+     */
+    public function getWeeklyTrend(int $userId): array
+    {
+        $days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        $trend = [];
+
+        for ($i = 0; $i < 7; $i++) {
+            $date = new DateTime();
+            $date->modify('-' . (($date->format('w') ?: 7) - 1 - (6 - $i)) . ' days');
+            $dateStr = $date->format('Y-m-d');
+
+            $sql = "
+                SELECT SUM(duration_seconds) as seconds
+                FROM " . self::TABLE_TIME_LOGS . "
+                WHERE user_id = ? AND DATE(created_at) = ?
+            ";
+
+            $result = Database::selectOne($sql, [$userId, $dateStr]);
+            $seconds = (int)($result['seconds'] ?? 0);
+
+            $trend[] = [
+                'day' => $days[$i] ?? 'Unknown',
+                'date' => $dateStr,
+                'seconds' => $seconds
+            ];
+        }
+
+        return $trend;
+    }
+
+    /**
+     * Get project analysis by cost
+     */
+    public function getProjectAnalysis(int $userId, string $startDate = '', string $endDate = ''): array
+    {
+        $sql = "
+            SELECT 
+                p.id as project_id,
+                p.key as project_key,
+                p.name as project_name,
+                SUM(itl.duration_seconds) as total_seconds,
+                SUM(itl.total_cost) as total_cost,
+                COUNT(itl.id) as log_count,
+                'USD' as currency
+            FROM " . self::TABLE_TIME_LOGS . " itl
+            JOIN projects p ON p.id = itl.project_id
+            WHERE itl.user_id = ?
+        ";
+
+        $params = [$userId];
+
+        if ($startDate) {
+            $sql .= " AND itl.created_at >= ?";
+            $params[] = $startDate;
+        }
+
+        if ($endDate) {
+            $sql .= " AND itl.created_at <= ?";
+            $params[] = $endDate;
+        }
+
+        $sql .= " GROUP BY p.id, p.key, p.name
+                  ORDER BY total_cost DESC";
+
+        return Database::select($sql, $params) ?? [];
+    }
+
+    /**
+     * Get top users by time spent (for managers/admins)
+     */
+    public function getTopUsersByTime(int $limit = 10, string $startDate = '', string $endDate = ''): array
+    {
+        $sql = "
+            SELECT 
+                u.id as user_id,
+                u.display_name,
+                u.first_name,
+                u.last_name,
+                u.avatar,
+                u.email,
+                SUM(itl.duration_seconds) as total_seconds,
+                SUM(itl.total_cost) as total_cost,
+                SUM(CASE WHEN itl.is_billable = 1 THEN itl.duration_seconds ELSE 0 END) as billable_seconds,
+                SUM(CASE WHEN itl.is_billable = 1 THEN itl.total_cost ELSE 0 END) as billable_cost,
+                COUNT(itl.id) as log_count,
+                'USD' as currency
+            FROM " . self::TABLE_TIME_LOGS . " itl
+            JOIN users u ON u.id = itl.user_id
+        ";
+
+        $params = [];
+
+        if ($startDate) {
+            $sql .= " WHERE itl.created_at >= ?";
+            $params[] = $startDate;
+        }
+
+        if ($endDate) {
+            $sql .= (empty($params) ? " WHERE " : " AND ") . "itl.created_at <= ?";
+            $params[] = $endDate;
+        }
+
+        $sql .= " GROUP BY u.id, u.display_name, u.first_name, u.last_name, u.avatar, u.email
+                  ORDER BY total_seconds DESC
+                  LIMIT ?";
+        $params[] = $limit;
+
+        return Database::select($sql, $params) ?? [];
+    }
 }

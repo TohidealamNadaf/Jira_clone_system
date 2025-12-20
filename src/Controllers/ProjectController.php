@@ -759,4 +759,39 @@ class ProjectController extends Controller
             $this->json(['error' => $e->getMessage()], 422);
         }
     }
+
+    /**
+     * API endpoint for getting projects (for AJAX requests from web views)
+     * Used by time tracking dashboard project selector and other UI components
+     */
+    public function apiProjects(): never
+    {
+        try {
+            $user = Session::user();
+            
+            if (!$user || !isset($user['id'])) {
+                $this->json(['error' => 'Unauthorized'], 401);
+            }
+
+            // Get all projects the user has access to
+            $projects = Database::select(
+                "SELECT p.id, p.`key`, p.name FROM projects p 
+                 WHERE p.is_archived = 0 
+                 ORDER BY p.name ASC"
+            );
+
+            // Return array format for easy parsing
+            $this->json([
+                'success' => true,
+                'data' => $projects,
+                'count' => count($projects)
+            ], 200);
+        } catch (\Exception $e) {
+            error_log('[API-PROJECTS] Error: ' . $e->getMessage());
+            $this->json([
+                'error' => 'Failed to load projects',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

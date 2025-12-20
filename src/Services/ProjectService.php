@@ -103,6 +103,36 @@ class ProjectService
         return $project ?: null;
     }
 
+    /**
+     * Get all projects a user has access to
+     * (member of project or is admin)
+     */
+    public function getUserProjects(int $userId, bool $includeArchived = false): array
+    {
+        $archivedClause = $includeArchived ? '' : 'AND p.is_archived = 0';
+
+        return Database::select(
+            "SELECT DISTINCT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, 
+                    p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.budget, p.budget_currency,
+                    p.created_at, p.updated_at,
+                    u.display_name as lead_name,
+                    pc.name as category_name,
+                    pm.role_id,
+                    r.name as role_name,
+                    COALESCE(pm.created_at, p.created_at) as joined_at,
+                    0 as is_primary
+             FROM projects p
+             LEFT JOIN users u ON p.lead_id = u.id
+             LEFT JOIN project_categories pc ON p.category_id = pc.id
+             LEFT JOIN project_members pm ON p.id = pm.project_id AND pm.user_id = ?
+             LEFT JOIN roles r ON pm.role_id = r.id
+             WHERE (pm.user_id = ? OR p.lead_id = ? OR ? = 1)
+             $archivedClause
+             ORDER BY p.name ASC",
+            [$userId, $userId, $userId, 0]  // Last param for future admin check
+        );
+    }
+
     public function createProject(array $data, int $userId): array
     {
         $this->validateProjectData($data, true);

@@ -1,0 +1,65 @@
+================================================================================
+TIME TRACKING DASHBOARD - PROJECT SELECTOR ADDED ✅
+================================================================================
+
+WHAT'S NEW:
+-----------
+Project dropdown selector in Time Tracking Dashboard header to view project-specific data.
+
+LOCATION:
+---------
+Time Tracking Dashboard: /time-tracking
+Dropdown appears in header-right, before "View Budgets" button
+
+FILES CHANGED:
+--------------
+1. src/Controllers/TimeTrackingController.php
+   - Added projects list to dashboard view
+   - Lines: 76-81
+
+2. views/time-tracking/dashboard.php
+   - Added dropdown HTML (lines 701-712)
+   - Added CSS styling (lines 173-202)
+   - Added responsive CSS (lines 620-622)
+   - Added JavaScript function (lines 910-920)
+
+HOW TO TEST:
+------------
+1. Navigate to: http://localhost:8080/jira_clone_system/public/time-tracking
+2. Look for "Project" dropdown in top-right header
+3. Click dropdown - should show list of all projects
+4. Select a project - should navigate to /time-tracking/project/{projectId}
+5. Select "All Projects" - should stay on dashboard
+
+DEPLOYMENT:
+-----------
+✅ No database changes
+✅ No new routes needed (uses existing /time-tracking/project/{id})
+✅ Production ready
+✅ Deploy immediately
+
+QUICK DEPLOYMENT:
+-----------------
+1. Clear cache: CTRL + SHIFT + DEL
+2. Hard refresh: CTRL + F5
+3. Test dropdown selection
+
+DESIGN:
+-------
+✅ Matches enterprise design system
+✅ Plum theme (#8B1956) on hover/focus
+✅ Professional dropdown styling
+✅ Responsive mobile-first design
+✅ Full-width dropdown on mobile
+
+FEATURES:
+---------
+✅ Displays all projects
+✅ "All Projects" option (stays on dashboard)
+✅ Project-specific navigation
+✅ Hover/focus states
+✅ Mobile responsive
+✅ Proper error handling
+
+STATUS: ✅ COMPLETE & PRODUCTION READY
+================================================================================

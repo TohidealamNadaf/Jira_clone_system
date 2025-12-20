@@ -35,9 +35,73 @@ class TimeTrackingController extends Controller
     }
 
     /**
-     * Dashboard - Time tracking overview
+     * Global Dashboard - Company-wide analytics and insights
+     * 
+     * Shows aggregate time tracking data across all projects and team members
+     * Includes: team performance, cost analysis, billable breakdown, trends
      */
-    public function dashboard(): string
+    public function globalDashboard(Request $request): string
+    {
+        $user = Session::user();
+
+        if (!$user || !isset($user['id'])) {
+            throw new Exception("User session not found. Please log in.");
+        }
+
+        $userId = (int)$user['id'];
+        
+        // Get date range filter (default to this week)
+        $dateRange = $request->input('date_range') ?? 'week';
+        [$startDate, $endDate] = $this->getDateRange($dateRange);
+
+        // Get user stats for current user
+        $userStats = $this->timeTrackingService->getUserTimeLogs($userId);
+        $userAggregates = $this->aggregateTimeLogs($userStats);
+        $userAggregates['currency'] = $this->detectCurrency($userStats);
+
+        // Get team stats (if user is manager/admin)
+        $teamStats = [];
+        $topUsers = [];
+        if ($this->isManagerOrAdmin($user)) {
+            $topUsers = $this->timeTrackingService->getTopUsersByTime(10, $startDate, $endDate);
+            foreach ($topUsers as &$tu) {
+                $tu['avg_daily_hours'] = $this->calculateDailyAverage($tu['total_seconds'] ?? 0);
+            }
+        }
+
+        // Get top issues by time
+        $topIssues = $this->timeTrackingService->getTopIssuesByTime(10, $startDate, $endDate);
+
+        // Get recent logs
+        $recentLogs = $this->timeTrackingService->getRecentLogs(10, $startDate, $endDate);
+
+        // Get weekly trend data
+        $weeklyTrend = $this->timeTrackingService->getWeeklyTrend($userId);
+
+        // Get project analysis
+        $projectAnalysis = $this->timeTrackingService->getProjectAnalysis($userId, $startDate, $endDate);
+
+        return $this->view('time-tracking.global-dashboard', [
+            'userStats' => $userAggregates,
+            'teamStats' => $teamStats,
+            'topIssues' => $topIssues,
+            'recentLogs' => $recentLogs,
+            'weeklyTrend' => $weeklyTrend,
+            'topUsers' => $topUsers,
+            'projectAnalysis' => $projectAnalysis,
+            'dateRange' => $dateRange,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
+    }
+
+    /**
+     * Dashboard - User's time tracking overview (project-scoped if selected)
+     * 
+     * Shows consolidated time tracking data for the current user across all projects.
+     * If user wants to see a specific project, they should use /time-tracking/project/{id}
+     */
+    public function dashboard(Request $request): string
     {
         $user = Session::user();
 
@@ -48,37 +112,239 @@ class TimeTrackingController extends Controller
 
         $userId = (int)$user['id'];
 
-        // Get user's current active timer
-        $activeTimer = null;
-        try {
-            $activeTimer = $this->timeTrackingService->getActiveTimer($userId);
-        } catch (Exception $e) {
-            // No active timer
+        // Get user's available projects
+        $userProjects = $this->projectService->getUserProjects($userId);
+        
+        if (empty($userProjects)) {
+            // No projects assigned - show empty state
+            return $this->view('time-tracking.no-projects', [
+                'user' => $user
+            ]);
         }
 
-        // Get user's today's logs
-        $todayLogs = $this->timeTrackingService->getUserTimeLogs($userId, [
-            'start_date' => date('Y-m-d'),
-            'end_date' => date('Y-m-d')
-        ]);
+        // Get time logs across ALL projects
+        $allTimeLogs = $this->timeTrackingService->getUserTimeLogs($userId);
 
-        // Calculate today's totals
-        $todayStats = [
-            'total_seconds' => 0,
+        // Calculate consolidated statistics from time logs
+        $stats = [
+            'total_hours' => 0,
             'total_cost' => 0,
-            'log_count' => count($todayLogs)
+            'total_logs' => count($allTimeLogs),
+            'currency' => 'USD'
         ];
+        
+        foreach ($allTimeLogs as $log) {
+            $stats['total_cost'] += (float)($log['total_cost'] ?? 0);
+            $stats['total_hours'] += (int)($log['duration_seconds'] ?? 0) / 3600;
+            if (!$stats['currency'] || $stats['currency'] === 'USD') {
+                $stats['currency'] = $log['currency'] ?? 'USD';
+            }
+        }
 
-        foreach ($todayLogs as $log) {
-            $todayStats['total_seconds'] += (int)$log['duration_seconds'];
-            $todayStats['total_cost'] += (float)$log['total_cost'];
+        // Group time logs by project
+        $byProject = [];
+        foreach ($allTimeLogs as $log) {
+            $projectId = (int)($log['project_id'] ?? 0);
+            if (!isset($byProject[$projectId])) {
+                $byProject[$projectId] = [];
+            }
+            $byProject[$projectId][] = $log;
+        }
+
+        // Get project details for the logs
+        $projectDetails = [];
+        foreach (array_keys($byProject) as $projectId) {
+            $project = $this->projectService->getProjectById($projectId);
+            if ($project) {
+                $projectDetails[$projectId] = $project;
+            }
         }
 
         return $this->view('time-tracking.dashboard', [
-            'active_timer' => $activeTimer,
-            'today_logs' => $todayLogs,
-            'today_stats' => $todayStats
+            'user' => $user,
+            'timeLogs' => $allTimeLogs,
+            'byProject' => $byProject,
+            'projectDetails' => $projectDetails,
+            'stats' => $stats,
+            'projects' => $userProjects
         ]);
+    }
+
+    /**
+     * Helper: Aggregate time log data
+     */
+    private function aggregateTimeLogs(array $logs): array
+    {
+        $total_seconds = 0;
+        $total_cost = 0;
+        $billable_seconds = 0;
+        $billable_cost = 0;
+        $non_billable_seconds = 0;
+        $non_billable_cost = 0;
+        $log_count = count($logs);
+
+        foreach ($logs as $log) {
+            $seconds = (int)($log['duration_seconds'] ?? 0);
+            $cost = (float)($log['total_cost'] ?? 0);
+
+            $total_seconds += $seconds;
+            $total_cost += $cost;
+
+            if ($log['is_billable'] === 1 || $log['is_billable'] === '1') {
+                $billable_seconds += $seconds;
+                $billable_cost += $cost;
+            } else {
+                $non_billable_seconds += $seconds;
+                $non_billable_cost += $cost;
+            }
+        }
+
+        $workDays = max(1, intdiv($total_seconds, 8 * 3600)); // Assume 8-hour workdays
+
+        return [
+            'total_seconds' => $total_seconds,
+            'total_cost' => $total_cost,
+            'billable_seconds' => $billable_seconds,
+            'billable_cost' => $billable_cost,
+            'non_billable_seconds' => $non_billable_seconds,
+            'non_billable_cost' => $non_billable_cost,
+            'log_count' => $log_count,
+            'avg_daily_hours' => $this->calculateDailyAverage($total_seconds)
+        ];
+    }
+
+    /**
+     * Helper: Calculate daily average hours
+     */
+    private function calculateDailyAverage(int $totalSeconds): float
+    {
+        if ($totalSeconds === 0) return 0;
+        // Assume 5-day workweek, 8-hour days
+        $days = ceil($totalSeconds / (8 * 3600));
+        return round(($totalSeconds / 3600) / max($days, 1), 1);
+    }
+
+    /**
+     * Helper: Detect currency from logs
+     */
+    private function detectCurrency(array $logs): string
+    {
+        foreach ($logs as $log) {
+            if (!empty($log['currency'])) {
+                return $log['currency'];
+            }
+        }
+        return 'USD';
+    }
+
+    /**
+     * Helper: Check if user is manager or admin
+     */
+    private function isManagerOrAdmin(array $user): bool
+    {
+        $role = $user['role'] ?? '';
+        return in_array($role, ['admin', 'manager', 'team_lead'], true);
+    }
+
+    /**
+     * Helper: Get date range based on filter
+     */
+    private function getDateRange(string $range): array
+    {
+        $today = new \DateTime();
+        $startDate = clone $today;
+        $endDate = clone $today;
+
+        switch ($range) {
+            case 'today':
+                $startDate->setTime(0, 0, 0);
+                $endDate->setTime(23, 59, 59);
+                break;
+            case 'week':
+                $startDate->modify('-' . (($today->format('w') ?: 7) - 1) . ' days');
+                $startDate->setTime(0, 0, 0);
+                $endDate->setTime(23, 59, 59);
+                break;
+            case 'month':
+                $startDate->modify('first day of this month');
+                $startDate->setTime(0, 0, 0);
+                $endDate->setTime(23, 59, 59);
+                break;
+            case 'quarter':
+                $quarter = ceil($today->format('m') / 3);
+                $startMonth = ($quarter - 1) * 3 + 1;
+                $startDate->setDate($today->format('Y'), $startMonth, 1);
+                $startDate->setTime(0, 0, 0);
+                $endDate->setTime(23, 59, 59);
+                break;
+            case 'year':
+                $startDate->setDate($today->format('Y'), 1, 1);
+                $startDate->setTime(0, 0, 0);
+                $endDate->setTime(23, 59, 59);
+                break;
+            default:
+                // Default to this week
+                $startDate->modify('-' . (($today->format('w') ?: 7) - 1) . ' days');
+                $startDate->setTime(0, 0, 0);
+                $endDate->setTime(23, 59, 59);
+        }
+
+        return [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')];
+    }
+
+    /**
+     * Load and render project time tracking report
+     * (Used by both dashboard smart default and direct /project/{id} access)
+     */
+    private function loadProjectReport(int $projectId, array $user): string
+    {
+        try {
+            $userId = (int)$user['id'];
+            
+            // Store in session for future dashboard visits
+            Session::set('last_viewed_project_id', $projectId);
+
+            $project = $this->projectService->getProjectById($projectId);
+            if (!$project) {
+                throw new Exception("Project not found");
+            }
+
+            // Get budget information
+            $budgetStatus = $this->projectService->getBudgetStatus($projectId);
+
+            // Get time logs
+            $timeLogs = $this->timeTrackingService->getProjectTimeLogs($projectId);
+
+            // Get statistics
+            $stats = $this->timeTrackingService->getCostStatistics($projectId);
+
+            // Group by user
+            $byUser = [];
+            foreach ($timeLogs as $log) {
+                if (!isset($byUser[$log['user_id']])) {
+                    $byUser[$log['user_id']] = [
+                        'name' => $log['display_name'] ?? $log['user_name'] ?? 'Unknown',
+                        'avatar' => $log['avatar'] ?? null,
+                        'total_seconds' => 0,
+                        'total_cost' => 0,
+                        'log_count' => 0
+                    ];
+                }
+                $byUser[$log['user_id']]['total_seconds'] += (int)$log['duration_seconds'];
+                $byUser[$log['user_id']]['total_cost'] += (float)$log['total_cost'];
+                $byUser[$log['user_id']]['log_count']++;
+            }
+
+            return $this->view('time-tracking.project-report', [
+                'project' => $project,
+                'budget' => $budgetStatus,
+                'timeLogs' => $timeLogs,
+                'statistics' => $stats,
+                'byUser' => $byUser
+            ]);
+        } catch (Exception $e) {
+            return $this->view('errors.500', ['message' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -385,55 +651,20 @@ class TimeTrackingController extends Controller
      */
     public function projectReport($projectId = null): string
     {
-        try {
-            // Handle parameter extraction from Request if needed
-            if ($projectId instanceof \App\Core\Request) {
-                $projectId = (int) $projectId->param('projectId');
-            } else {
-                $projectId = (int) $projectId;
-            }
-
-            $project = $this->projectService->getProjectById($projectId);
-            if (!$project) {
-                throw new Exception("Project not found");
-            }
-
-            // Get budget information
-            $budgetStatus = $this->projectService->getBudgetStatus($projectId);
-
-            // Get time logs
-            $timeLogs = $this->timeTrackingService->getProjectTimeLogs($projectId);
-
-            // Get statistics
-            $stats = $this->timeTrackingService->getCostStatistics($projectId);
-
-            // Group by user
-            $byUser = [];
-            foreach ($timeLogs as $log) {
-                if (!isset($byUser[$log['user_id']])) {
-                    $byUser[$log['user_id']] = [
-                        'name' => $log['display_name'] ?? $log['user_name'] ?? 'Unknown',
-                        'avatar' => $log['avatar'] ?? null,
-                        'total_seconds' => 0,
-                        'total_cost' => 0,
-                        'log_count' => 0
-                    ];
-                }
-                $byUser[$log['user_id']]['total_seconds'] += (int)$log['duration_seconds'];
-                $byUser[$log['user_id']]['total_cost'] += (float)$log['total_cost'];
-                $byUser[$log['user_id']]['log_count']++;
-            }
-
-            return $this->view('time-tracking.project-report', [
-                'project' => $project,
-                'budget' => $budgetStatus,
-                'timeLogs' => $timeLogs,
-                'statistics' => $stats,
-                'byUser' => $byUser
-            ]);
-        } catch (Exception $e) {
-            return $this->view('errors.500', ['message' => $e->getMessage()]);
+        // Handle parameter extraction from Request if needed
+        if ($projectId instanceof \App\Core\Request) {
+            $projectId = (int) $projectId->param('projectId');
+        } else {
+            $projectId = (int) $projectId;
         }
+
+        $user = Session::user();
+        if (!$user) {
+            throw new Exception("User not authenticated");
+        }
+
+        // Use shared loadProjectReport method
+        return $this->loadProjectReport($projectId, $user);
     }
 
     /**
@@ -502,11 +733,17 @@ class TimeTrackingController extends Controller
     {
         try {
             // Get all projects (admin only - add check)
-            $projects = $this->projectService->getAllProjects();
+            $projectsData = $this->projectService->getAllProjects();
+            $projects = $projectsData['items'] ?? [];
 
             $budgets = [];
             foreach ($projects as $project) {
-                $budget = $this->timeTrackingService->getProjectBudgetSummary($project['id']);
+                $projectId = $project['id'] ?? null;
+                if (empty($projectId)) {
+                    continue;
+                }
+                
+                $budget = $this->timeTrackingService->getProjectBudgetSummary($projectId);
                 if (!empty($budget)) {
                     $budgets[] = array_merge($budget, ['project_name' => $project['name']]);
                 }

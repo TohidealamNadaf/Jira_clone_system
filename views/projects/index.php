@@ -21,6 +21,12 @@
             <p class="board-subtitle">Manage and organize your work across projects</p>
         </div>
         <div class="board-header-right">
+            <a href="<?= url('/time-tracking') ?>" class="btn btn-secondary" title="View time tracking dashboard">
+                <i class="bi bi-hourglass-split"></i> Time Tracking
+            </a>
+            <a href="<?= url('/time-tracking/budgets') ?>" class="btn btn-secondary" title="View budget dashboard">
+                <i class="bi bi-wallet2"></i> Budgets
+            </a>
             <?php if (can('create-projects')): ?>
             <a href="<?= url('/projects/create') ?>" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> Create Project
@@ -267,6 +273,9 @@
 
     .board-header-right {
         flex-shrink: 0;
+        display: flex;
+        gap: 8px;
+        align-items: center;
     }
 
     .board-title {

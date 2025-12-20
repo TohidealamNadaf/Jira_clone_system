@@ -2468,11 +2468,20 @@
                  btn.disabled = true;
                  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
 
-                 // Build data object - exclude create_another checkbox from API data
-                 const data = Object.fromEntries(
-                     Array.from(formData.entries()).filter(([key]) => key !== 'create_another')
-                 );
-                 console.log('[SUBMIT] Creating issue with data:', data);
+                 // ✅ FIX: Keep FormData as-is (don't convert to JSON - File objects can't be JSON serialized)
+                 // Remove the 'create_another' checkbox from FormData
+                 const formDataToSend = new FormData(form);
+                 formDataToSend.delete('create_another');
+                 
+                 // Log form data entries for debugging
+                 console.log('[SUBMIT] FormData entries:');
+                 for (const [key, value] of formDataToSend.entries()) {
+                     if (value instanceof File) {
+                         console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+                     } else {
+                         console.log(`  ${key}: ${value}`);
+                     }
+                 }
 
                 // Get project key from selected project
                 const projectSelect = document.getElementById('quickCreateProject');
@@ -2481,16 +2490,19 @@
                 // Create issue using web endpoint (uses session auth)
                 const webUrl = APP_BASE_PATH + '/projects/' + projectKey + '/issues';
 
+                // ✅ FIX: Send as FormData to preserve File objects
+                // Don't set Content-Type header - let browser set it with proper boundary
                 const response = await fetch(webUrl, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
                         'Accept': 'application/json',
-                        'Content-Type': 'application/json',
+                        // ✅ REMOVED: 'Content-Type': 'application/json' 
+                        // Browser will set: Content-Type: multipart/form-data; boundary=...
                         'X-CSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: JSON.stringify(data),
+                    body: formDataToSend,  // ✅ CHANGED: Use FormData instead of JSON.stringify()
                 });
 
                 console.log('Create response status:', response.status);

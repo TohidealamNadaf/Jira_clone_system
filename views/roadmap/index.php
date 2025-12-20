@@ -21,7 +21,7 @@ declare(strict_types=1);
                     </a>
                 </li>
                 <li class="breadcrumb-separator">/</li>
-                <li class="breadcrumb-current">Roadmap</li>
+                <li class="breadcrumb-current">Product Roadmap</li>
             </ol>
         </nav>
     </div>
@@ -42,6 +42,11 @@ declare(strict_types=1);
                 <select id="projectSelector" class="action-select">
                     <option value="">Choose a project...</option>
                 </select>
+            </div>
+            <div class="action-group" id="projectLinkGroup" style="display: none;">
+                <a id="projectRoadmapLink" href="#" class="action-select" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid #DFE1E6; border-radius: 6px; color: #161B22; font-size: 14px; cursor: pointer; transition: all 0.2s;">
+                    <i class="bi bi-arrow-right"></i> View Project Roadmap
+                </a>
             </div>
         </div>
     </div>
@@ -844,23 +849,32 @@ document.addEventListener('DOMContentLoaded', function() {
     loadingIndicator.style.display = 'none';
     emptyState.style.display = 'block';
     
+    // Get project from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectFromUrl = urlParams.get('project');
+    
     // Load projects for selector
-    loadProjects();
+    loadProjects(projectFromUrl);
     
     // Project selector change handler
     projectSelector.addEventListener('change', function() {
         currentProject = this.value;
         if (currentProject) {
+            // Show link to project-specific roadmap
+            document.getElementById('projectLinkGroup').style.display = 'block';
+            document.getElementById('projectRoadmapLink').href = `<?= url('/projects/') ?>${currentProject}/roadmap`;
+            
             loadRoadmap();
         } else {
             roadmapContainer.style.display = 'none';
             emptyState.style.display = 'block';
             loadingIndicator.style.display = 'none';
+            document.getElementById('projectLinkGroup').style.display = 'none';
         }
     });
     
     // Load projects
-    function loadProjects() {
+    function loadProjects(autoSelectProject = null) {
         fetch('<?= url('/api/v1/roadmap/projects') ?>', {
             method: 'GET',
             headers: {
@@ -877,6 +891,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.textContent = `${project.name} (${project.key})`;
                     projectSelector.appendChild(option);
                 });
+                
+                // Auto-select project from URL if provided
+                if (autoSelectProject) {
+                    projectSelector.value = autoSelectProject;
+                    currentProject = autoSelectProject;
+                    // Automatically load the roadmap
+                    loadRoadmap();
+                }
             }
         })
         .catch(error => console.error('Error loading projects:', error));

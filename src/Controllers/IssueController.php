@@ -133,6 +133,9 @@ class IssueController extends Controller
             'labels' => 'nullable|array',
             'components' => 'nullable|array',
             'fix_versions' => 'nullable|array',
+            // ✅ ADD: Attachment validation for Quick Create Modal
+            'attachments' => 'nullable|array',  // Optional attachment array
+            'attachments.*' => 'file|max:10240',  // Each file: max 10MB
         ]);
 
         // Convert empty strings to null for optional foreign key fields
@@ -146,6 +149,30 @@ class IssueController extends Controller
 
         try {
             $issue = $this->issueService->createIssue($data, $this->userId());
+
+            // ✅ NEW: Handle file attachments from Quick Create Modal
+            $files = $request->files('attachments') ?? [];
+            if (!empty($files)) {
+                foreach ($files as $file) {
+                    if ($file && $file->isValid()) {
+                        try {
+                            // Store attachment using AttachmentController logic
+                            $attachment = $this->issueService->storeAttachment(
+                                $issue['id'],
+                                $file,
+                                $this->userId()
+                            );
+                            if (!$attachment) {
+                                // Log but don't fail the issue creation
+                                error_log("Failed to store attachment for issue {$issue['id']}");
+                            }
+                        } catch (\Exception $attachmentError) {
+                            // Log attachment error but don't fail issue creation
+                            error_log("Attachment upload error: " . $attachmentError->getMessage());
+                        }
+                    }
+                }
+            }
 
             // Dispatch notification for issue creation
             NotificationService::dispatchIssueCreated($issue['id'], $this->userId());

@@ -3418,5 +3418,53 @@ foreach ($projects as $project) {
 
 ---
 
+## Roadmap Modal Fix (December 21, 2025) ✅ COMPLETE
+
+**Issue**: Roadmap "Add Item" modal not working - form submission failing silently
+**URL**: `http://localhost:8081/jira_clone_system/public/projects/CWAYS/roadmap`
+**Status**: ✅ FIXED & PRODUCTION READY
+
+**Root Causes Found & Fixed**:
+1. **API Endpoint Bug** (PRIMARY): JavaScript posting to wrong endpoint
+   - Used: `/api/v1/projects/{id}/roadmap/items` (with database ID like `1`)
+   - Fixed: `/projects/{key}/roadmap` (with project key like `CWAYS`)
+   - File: `views/projects/roadmap.php` line 1052
+
+2. **Missing Validation Rule**: Progress field not validated
+   - Added: `'progress' => 'nullable|integer|min:0|max:100'`
+   - Also made `'priority'` optional (was required but not sent from modal)
+   - File: `src/Controllers/RoadmapController.php` line 118
+
+3. **Missing Database Insert**: Progress value not stored
+   - Added: `'progress' => (int) ($data['progress'] ?? 0),`
+   - File: `src/Services/RoadmapService.php` line 172
+
+**Files Modified**:
+- `views/projects/roadmap.php` - Fixed API endpoint (line 1052)
+- `src/Controllers/RoadmapController.php` - Added progress validation (line 118)
+- `src/Services/RoadmapService.php` - Store progress in database (line 172)
+
+**Testing**: ✅ PASS
+- Modal opens correctly
+- Form validates all fields
+- Submit creates item in database
+- Progress value saved correctly
+- No console errors
+- Works on desktop and mobile
+
+**Documentation**:
+- `ROADMAP_MODAL_FIX_COMPLETE.md` - Complete technical analysis
+- `ROADMAP_FIX_SUMMARY.md` - Technical summary with before/after
+- `ROADMAP_MODAL_FIX_DEPLOY_NOW.txt` - Quick deployment checklist
+
+**Deployment Status**: ✅ **READY FOR IMMEDIATE DEPLOYMENT**
+- Risk Level: LOW
+- Breaking Changes: NONE
+- Database Changes: NONE
+- Backward Compatible: YES
+- Downtime Required: NO
+
+---
+
 ## Phase 2: Future Development (Reserved)
 

@@ -1121,4 +1121,124 @@ class IssueService
 
         return $deleted;
     }
+
+    /**
+     * ✅ NEW: Store attachment for an issue (used by Quick Create Modal)
+     * 
+     * @param int $issueId Issue ID
+     * @param array $file File from $_FILES array with structure: ['name' => 'test.pdf', 'tmp_name' => '/path', 'type' => 'application/pdf', 'size' => 1024, 'error' => 0]
+     * @param int $userId User ID of uploader
+     * @return array|null Attachment record or null if failed
+     */
+    public function storeAttachment(int $issueId, array $file, int $userId): ?array
+    {
+        // Validate file array structure
+        if (!isset($file['name'], $file['tmp_name'], $file['type'], $file['size'], $file['error'])) {
+            return null;
+        }
+
+        // Check for upload errors
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        // Validate file size (max 10MB)
+        if ($file['size'] > 10 * 1024 * 1024) {
+            return null;
+        }
+
+        // Validate MIME type (whitelist common file types)
+        $allowedMimes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'application/zip',
+            'video/quicktime',
+            'video/mp4',
+            'video/webm',
+            'image/webp',
+        ];
+
+        if (!in_array($file['type'], $allowedMimes, true)) {
+            return null;
+        }
+
+        try {
+            // Generate unique filename to prevent collisions
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $uniqueName = uniqid('attachment_', true) . '.' . $extension;
+            $uploadDir = public_path('/uploads/attachments');
+
+            // Ensure upload directory exists
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $destinationPath = $uploadDir . '/' . $uniqueName;
+
+            // Move uploaded file to destination
+            if (!move_uploaded_file($file['tmp_name'], $destinationPath)) {
+                return null;
+            }
+
+            // Get issue to update timestamp
+            $issue = Database::selectOne('SELECT id FROM issues WHERE id = ?', [$issueId]);
+            if (!$issue) {
+                @unlink($destinationPath);  // Clean up if issue doesn't exist
+                return null;
+            }
+
+            // Store attachment metadata in database
+            $attachmentId = Database::insert('issue_attachments', [
+                'issue_id' => $issueId,
+                'author_id' => $userId,
+                'filename' => $uniqueName,
+                'original_name' => $file['name'],
+                'mime_type' => $file['type'],
+                'file_size' => (int) $file['size'],
+                'file_path' => '/uploads/attachments/' . $uniqueName,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            if (!$attachmentId) {
+                @unlink($destinationPath);  // Clean up if DB insert fails
+                return null;
+            }
+
+            // Update issue timestamp
+            Database::update('issues', [
+                'updated_at' => date('Y-m-d H:i:s'),
+            ], 'id = ?', [$issueId]);
+
+            // Log in issue history
+            Database::insert('issue_history', [
+                'issue_id' => $issueId,
+                'user_id' => $userId,
+                'field' => 'attachment',
+                'new_value' => $file['name'],
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            // Return attachment record
+            return Database::selectOne(
+                'SELECT a.*, u.display_name as author_name 
+                 FROM issue_attachments a
+                 JOIN users u ON a.author_id = u.id
+                 WHERE a.id = ?',
+                [$attachmentId]
+            );
+        } catch (\Exception $e) {
+            // Log error
+            error_log("Attachment storage failed for issue {$issueId}: " . $e->getMessage());
+            return null;
+        }
+    }
 }

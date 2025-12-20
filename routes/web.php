@@ -23,6 +23,7 @@ use App\Controllers\NotificationStreamController;
 use App\Controllers\CalendarController;
 use App\Controllers\RoadmapController;
 use App\Controllers\PrintController;
+use App\Controllers\ProjectDocumentationController;
 
 $router = app()->getRouter();
 
@@ -71,9 +72,21 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/projects/{key}/sprints', [ProjectController::class, 'sprints'])->name('projects.sprints');
     $router->get('/projects/{key}/board', [ProjectController::class, 'board'])->name('projects.board');
     $router->get('/projects/{key}/reports', [ProjectController::class, 'reports'])->name('projects.reports');
+    $router->get('/projects/{key}/roadmap', [RoadmapController::class, 'show'])->name('projects.roadmap');
+    $router->post('/projects/{key}/roadmap', [RoadmapController::class, 'store'])->name('projects.roadmap.store');
+    $router->put('/projects/{key}/roadmap/{itemId}', [RoadmapController::class, 'update'])->name('projects.roadmap.update');
+    $router->delete('/projects/{key}/roadmap/{itemId}', [RoadmapController::class, 'destroy'])->name('projects.roadmap.destroy');
     $router->get('/projects/{key}/settings', [ProjectController::class, 'settings'])->name('projects.settings');
     $router->put('/projects/{key}', [ProjectController::class, 'update'])->name('projects.update');
     $router->delete('/projects/{key}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+
+    // Project Documentation
+    $router->get('/projects/{key}/documentation', [ProjectDocumentationController::class, 'index'])->name('projects.documentation');
+    $router->post('/projects/{key}/documentation/upload', [ProjectDocumentationController::class, 'upload'])->name('projects.documentation.upload');
+    $router->put('/projects/{key}/documentation/{documentId}', [ProjectDocumentationController::class, 'update'])->name('projects.documentation.update');
+    $router->delete('/projects/{key}/documentation/{documentId}', [ProjectDocumentationController::class, 'delete'])->name('projects.documentation.delete');
+    $router->get('/projects/{key}/documentation/{documentId}', [ProjectDocumentationController::class, 'getDocument'])->name('projects.documentation.get');
+    $router->get('/projects/{key}/documentation/{documentId}/download', [ProjectDocumentationController::class, 'download'])->name('projects.documentation.download');
 
     // Project Budget (moved from API routes for proper session auth)
     $router->get('/projects/{key}/budget', [\App\Controllers\Api\ProjectBudgetApiController::class, 'getBudget'])->name('projects.budget.get');

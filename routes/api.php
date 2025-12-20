@@ -185,13 +185,10 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
          $router->get('/calendar/projects', [CalendarController::class, 'projects']);
          
          // Roadmap API
-         $router->get('/roadmap/project', [RoadmapController::class, 'project']);
-         $router->get('/roadmap/epics', [RoadmapController::class, 'epics']);
-         $router->get('/roadmap/versions', [RoadmapController::class, 'versions']);
-         $router->get('/roadmap/epic-issues', [RoadmapController::class, 'epicIssues']);
-         $router->get('/roadmap/version-issues', [RoadmapController::class, 'versionIssues']);
-         $router->get('/roadmap/timeline-range', [RoadmapController::class, 'timelineRange']);
-         $router->get('/roadmap/projects', [RoadmapController::class, 'projects']);
+         $router->get('/projects/{key}/roadmap/items', [RoadmapController::class, 'getRoadmapItems']);
+         $router->get('/projects/{key}/roadmap/summary', [RoadmapController::class, 'getSummary']);
+         $router->get('/roadmap/{itemId}', [RoadmapController::class, 'getItem']);
+         $router->get('/projects/{key}/roadmap/risks', [RoadmapController::class, 'checkRisks']);
          
          // Time Tracking API v1
          $router->post('/time-tracking/start', [TimeTrackingApiController::class, 'start']);

@@ -65,6 +65,14 @@
                 <i class="bi bi-bar-chart"></i>
                 <span>Reports</span>
             </a>
+            <a href="<?= url("/projects/{$project['key']}/documentation") ?>" class="action-button">
+                <i class="bi bi-folder-fill"></i>
+                <span>Documentation</span>
+            </a>
+            <a href="<?= url("/projects/{$project['key']}/roadmap") ?>" class="action-button">
+                <i class="bi bi-signpost-2"></i>
+                <span>Roadmap</span>
+            </a>
             <a href="<?= url("/time-tracking/project/{$project['id']}") ?>" class="action-button">
                 <i class="bi bi-hourglass-split"></i>
                 <span>Time Tracking</span>
@@ -475,6 +483,8 @@
     display: flex;
     gap: 12px;
     flex-shrink: 0;
+    flex-wrap: wrap;
+    max-width: 600px;
 }
 
 .action-button {

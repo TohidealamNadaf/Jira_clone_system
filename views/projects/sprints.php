@@ -13,42 +13,6 @@
         </ol>
     </nav>
 
-    <!-- Project Navigation Tabs -->
-    <div class="project-nav-tabs">
-        <a href="<?= url("/projects/{$project['key']}/board") ?>" class="nav-tab">
-            <i class="bi bi-kanban"></i>
-            <span>Board</span>
-        </a>
-        <a href="<?= url("/projects/{$project['key']}/issues") ?>" class="nav-tab">
-            <i class="bi bi-list-ul"></i>
-            <span>Issues</span>
-        </a>
-        <a href="<?= url("/projects/{$project['key']}/backlog") ?>" class="nav-tab">
-            <i class="bi bi-inbox"></i>
-            <span>Backlog</span>
-        </a>
-        <a href="<?= url("/projects/{$project['key']}/sprints") ?>" class="nav-tab active">
-            <i class="bi bi-lightning-charge"></i>
-            <span>Sprints</span>
-        </a>
-        <a href="<?= url("/projects/{$project['key']}/reports") ?>" class="nav-tab">
-            <i class="bi bi-bar-chart"></i>
-            <span>Reports</span>
-        </a>
-        <a href="<?= url("/time-tracking/project/{$project['id']}") ?>" class="nav-tab">
-            <i class="bi bi-hourglass-split"></i>
-            <span>Time Tracking</span>
-        </a>
-        <a href="<?= url("/projects/{$project['key']}/calendar") ?>" class="nav-tab">
-            <i class="bi bi-calendar-event"></i>
-            <span>Calendar</span>
-        </a>
-        <a href="<?= url("/projects/{$project['key']}/roadmap") ?>" class="nav-tab">
-            <i class="bi bi-signpost-2"></i>
-            <span>Roadmap</span>
-        </a>
-    </div>
-
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-start mb-4" style="gap: 24px;">
         <div>

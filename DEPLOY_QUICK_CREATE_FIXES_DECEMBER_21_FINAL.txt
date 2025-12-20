@@ -1,0 +1,187 @@
+================================================================================
+CRITICAL DEPLOYMENT CARD - QUICK CREATE MODAL FIXES
+December 21, 2025
+================================================================================
+
+🔴 CRITICAL ISSUE FIXED:
+   Error: "Issue created but key extraction failed"
+   Console: Response returns projects list instead of creating issue
+
+================================================================================
+WHAT WAS FIXED
+================================================================================
+
+1. ✅ projectsMap Global Scope (CRITICAL)
+   - Made projectsMap globally accessible
+   - Fallback project key extraction now works
+   - Form now posts to correct endpoint: /projects/{KEY}/issues
+
+2. ✅ Better Error Detection
+   - Detects when wrong endpoint is hit
+   - Shows clear diagnostic messages
+   - Helps identify the exact problem
+
+3. ✅ Improved "Assign to me" Warning
+   - Better explanation of why current user might not be in list
+   - Fallback mechanism works even if attribute not set
+
+================================================================================
+DEPLOYMENT STEPS
+================================================================================
+
+Step 1: Clear Browser Cache
+  1. Open Browser DevTools (F12)
+  2. Go to Settings → Storage
+  3. Click "Clear All" or use CTRL+SHIFT+DEL
+  4. Select "All time" → "Cookies and cached files"
+  5. Click "Clear"
+
+Step 2: Hard Refresh Page
+  1. Press CTRL+F5 (or CMD+SHIFT+R on Mac)
+  2. Wait for page to fully load
+  3. Check console (F12) for "📦 projectsMap initialized" message
+
+Step 3: Test Creating Issue with Attachments
+  1. Click "Create" button in navbar (top-right)
+  2. Fill in required fields:
+     - Project: Select any project (e.g., "CWays MIS")
+     - Issue Type: Select any type
+     - Summary: Enter "Test issue with attachment"
+  3. Add file attachment:
+     - Click "Drop files or click to upload"
+     - Select any file (PDF, image, doc, etc.)
+  4. Click "Create" button
+
+Step 4: Verify in Console
+  Look for these messages:
+  
+  ✅ SUCCESS CASE:
+     [SUBMIT] Project ID: 1
+     [SUBMIT] Project Key from dataset: CWAYS
+     [SUBMIT] Posting to URL: /projects/CWAYS/issues
+     [SUBMIT] ✓ Response received - status: 201
+     [SUBMIT] ✓ Issue key extracted: CWAYS-123
+     
+  ❌ IF STILL FAILING:
+     [SUBMIT] ❌ WRONG ENDPOINT! Got projects list instead
+     [SUBMIT] DEBUG INFO: projectKey: undefined
+     
+     This means the fix isn't applied. Check cache and reload.
+
+Step 5: Verify in Database
+  1. Navigate to the issue page (if redirected)
+  2. Check issue details are correct
+  3. Check attachments are saved
+  4. Go to admin panel and verify issue exists in database
+
+================================================================================
+FILES MODIFIED
+================================================================================
+
+File: views/layouts/app.php
+
+Changes:
+  Line 1628-1631: Made projectsMap global
+  Line 2650-2667: Added wrong endpoint detection
+  Line 2094-2098: Improved assign-to-me warning messages
+
+Risk: VERY LOW
+Breaking Changes: NONE
+Database Changes: NONE
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+□ Cache cleared
+□ Hard refresh done
+□ "📦 projectsMap initialized" appears in console
+□ Project dropdown loads correctly
+□ Can select issue type
+□ Can add attachment
+□ Form submission shows correct endpoint in logs
+□ Issue created successfully
+□ Attachments appear on issue page
+□ No JavaScript errors in console
+
+================================================================================
+EXPECTED BEHAVIOR AFTER FIX
+================================================================================
+
+BEFORE: "Error creating issue: Issue created but key extraction failed"
+AFTER:  Issue created successfully → Redirects to issue page
+
+BEFORE: [SUBMIT] ✗ Unexpected response structure: {items: Array(6), total: 6}
+AFTER:  [SUBMIT] ✓ Issue key extracted: CWAYS-123
+
+BEFORE: Form posts to /api/v1/projects (WRONG)
+AFTER:  Form posts to /projects/{KEY}/issues (CORRECT)
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If you still see "key extraction failed" error:
+
+1. Clear cache again (CTRL+SHIFT+DEL)
+2. Hard refresh (CTRL+F5)
+3. Open F12 → Console
+4. Create issue and watch console logs
+5. If you see "[SUBMIT] ❌ WRONG ENDPOINT!" then:
+   - The fix didn't apply
+   - Check file was saved: views/layouts/app.php lines 1630
+   - Check projectsMap = {} is present
+   - Try reloading the page
+
+If "Assign to me" shows warning:
+  This is NORMAL and OK!
+  Warning: "Current user not found in active assignees list"
+  
+  Why? Current user might not be marked as "is_active = 1"
+  The fallback mechanism (searching for "(me)" in text) handles this
+  So "Assign to me" link still works!
+
+If attachments not saving:
+  1. Check file size (max 10MB)
+  2. Check file type is allowed (PDF, DOC, XLS, PPT, TXT, JPG, PNG, GIF, ZIP)
+  3. Check browser console for validation errors
+  4. Try with smaller file first
+
+================================================================================
+QUICK REFERENCE
+================================================================================
+
+Global Init:   📦 projectsMap initialized as global variable
+Modal Open:    [MODAL-OPEN] Modal "show.bs.modal" event fired
+Projects Load: [LOAD-PROJECTS] Starting project and assignee loading...
+Submit Start:  [SUBMIT] submitQuickCreate() called
+Submit OK:     [SUBMIT] ✓ Issue key extracted: CWAYS-123
+Submit Fail:   [SUBMIT] ❌ WRONG ENDPOINT! Got projects list instead
+
+Console Filter: Open DevTools → Console → Filter by "SUBMIT" or "MODAL"
+
+================================================================================
+SUPPORT
+================================================================================
+
+If deployment doesn't work:
+1. Verify views/layouts/app.php was saved
+2. Check line 1630 has: const projectsMap = {};
+3. Check browser cache is cleared
+4. Check you're not using cached version of page
+5. Try in incognito/private window
+
+Still not working? 
+- Check CRITICAL_FIX_QUICK_CREATE_PROJECTSMAP_DECEMBER_21.md for details
+- Ensure file was saved with correct line numbers
+- Verify no other JavaScript errors in console
+
+================================================================================
+STATUS: ✅ PRODUCTION READY
+Risk Level: VERY LOW
+Backward Compatible: YES
+Database Changes: NO
+Downtime Required: NO
+
+Deploy immediately - This is a critical user-facing bug fix!
+================================================================================

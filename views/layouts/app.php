@@ -516,9 +516,12 @@
                     <div class="dropdown-panel user-panel">
                         <div class="panel-header user-header">
                             <img src="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
-                                alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>" class="user-avatar-large">
+                                alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>"
+                                class="user-avatar-large">
                             <div>
-                                <div class="user-name"><?= e($user['display_name'] ?? ($user['first_name'] . ' ' . $user['last_name']) ?? 'User') ?></div>
+                                <div class="user-name">
+                                    <?= e($user['display_name'] ?? ($user['first_name'] . ' ' . $user['last_name']) ?? 'User') ?>
+                                </div>
                                 <div class="user-email"><?= e($user['email'] ?? '') ?></div>
                             </div>
                         </div>
@@ -1049,7 +1052,7 @@
 
     <!-- Notification JavaScript -->
     <script>
-            // Load notifications on bell cl                ick
+        // Load notifications on bell cl                ick
         document.getElementById('notificationBell').addEventListener('click', function (e) {
             if (this.getAttribute('aria-expanded') === 'true') {
                 loadNotifications();
@@ -1213,26 +1216,31 @@
                         </div>
 
                         <!-- Description Field with Quill Rich Text Editor + Inline Attachments -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Description</label>
-                             <div style="border: 1px solid #DFE1E6; border-radius: 4px; overflow: hidden;">
-                                 <!-- Quill Editor Container -->
-                                 <div id="quickCreateDescriptionEditor" style="background: white; min-height: 200px;"></div>
-                                 <!-- Inline Attachments Section Below Editor -->
-                                 <div id="descriptionAttachmentsContainer" style="display: none; border-top: 1px solid #DFE1E6; background-color: #F7F8FA; padding: 12px;">
-                                     <div style="font-weight: 500; font-size: 13px; color: #161B22; margin-bottom: 12px; padding-left: 8px;">Attached files:</div>
-                                     <div id="descriptionAttachmentsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                                 </div>
-                                 <!-- Hidden file input for description attachments -->
-                                 <input type="file" id="descriptionAttachmentInput" multiple style="display: none;" 
-                                     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip,.mov,.mp4,.webm,.webp">
-                             </div>
-                             <!-- Hidden textarea to store content -->
-                             <textarea name="description" id="quickCreateDescription" style="display:none;"></textarea>
-                             <small class="form-text text-muted d-block mt-2">
-                                 <span id="descChar">0</span>/5000 characters
-                             </small>
-                         </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Description</label>
+                            <div style="border: 1px solid #DFE1E6; border-radius: 4px; overflow: hidden;">
+                                <!-- Quill Editor Container -->
+                                <div id="quickCreateDescriptionEditor" style="background: white; min-height: 200px;">
+                                </div>
+                                <!-- Inline Attachments Section Below Editor -->
+                                <div id="descriptionAttachmentsContainer"
+                                    style="display: none; border-top: 1px solid #DFE1E6; background-color: #F7F8FA; padding: 12px;">
+                                    <div
+                                        style="font-weight: 500; font-size: 13px; color: #161B22; margin-bottom: 12px; padding-left: 8px;">
+                                        Attached files:</div>
+                                    <div id="descriptionAttachmentsList"
+                                        style="display: flex; flex-direction: column; gap: 8px;"></div>
+                                </div>
+                                <!-- Hidden file input for description attachments -->
+                                <input type="file" id="descriptionAttachmentInput" multiple style="display: none;"
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip,.mov,.mp4,.webm,.webp">
+                            </div>
+                            <!-- Hidden textarea to store content -->
+                            <textarea name="description" id="quickCreateDescription" style="display:none;"></textarea>
+                            <small class="form-text text-muted d-block mt-2">
+                                <span id="descChar">0</span>/5000 characters
+                            </small>
+                        </div>
 
                         <!-- Reporter Field (Auto-filled, Read-only) - With Avatar -->
                         <div class="mb-4">
@@ -1253,58 +1261,57 @@
                         </div>
 
                         <!-- Assignee Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Assignee</label>
-                             <div class="assignee-wrapper">
-                                 <select class="form-select form-select-lg jira-input" name="assignee_id"
-                                     id="quickCreateAssignee">
-                                     <option value="">Automatic</option>
-                                 </select>
-                                 <a href="#" class="assignee-link ms-2" id="assignToMeLink">Assign to me</a>
-                             </div>
-                         </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Assignee</label>
+                            <div class="assignee-wrapper">
+                                <select class="form-select form-select-lg jira-input" name="assignee_id"
+                                    id="quickCreateAssignee">
+                                    <option value="">Automatic</option>
+                                </select>
+                                <a href="#" class="assignee-link ms-2" id="assignToMeLink">Assign to me</a>
+                            </div>
+                        </div>
 
-                         <!-- Status Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Status</label>
-                             <select class="form-select jira-input" name="status_id" id="quickCreateStatus">
-                                 <option value="">Default</option>
-                             </select>
-                         </div>
+                        <!-- Status Field -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Status</label>
+                            <select class="form-select jira-input" name="status_id" id="quickCreateStatus">
+                                <option value="">Default</option>
+                            </select>
+                        </div>
 
-                         <!-- Sprint Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Sprint</label>
-                             <select class="form-select jira-input" name="sprint_id" id="quickCreateSprint">
-                                 <option value="">None (Backlog)</option>
-                             </select>
-                         </div>
+                        <!-- Sprint Field -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Sprint</label>
+                            <select class="form-select jira-input" name="sprint_id" id="quickCreateSprint">
+                                <option value="">None (Backlog)</option>
+                            </select>
+                        </div>
 
-                         <!-- Labels Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Labels</label>
-                             <select class="form-select jira-input" name="labels" id="quickCreateLabels" 
-                                     placeholder="Select labels..." multiple>
-                                 <option value="">No labels</option>
-                             </select>
-                             <small class="form-text text-muted d-block mt-1">Hold Ctrl/Cmd to select multiple</small>
-                         </div>
+                        <!-- Labels Field -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Labels</label>
+                            <select class="form-select jira-input" name="labels" id="quickCreateLabels"
+                                placeholder="Select labels..." multiple>
+                                <option value="">No labels</option>
+                            </select>
+                            <small class="form-text text-muted d-block mt-1">Hold Ctrl/Cmd to select multiple</small>
+                        </div>
 
-                         <!-- Start Date Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Start Date</label>
-                             <input type="date" class="form-control jira-input" name="start_date" 
-                                    id="quickCreateStartDate">
-                         </div>
+                        <!-- Start Date Field -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Start Date</label>
+                            <input type="date" class="form-control jira-input" name="start_date"
+                                id="quickCreateStartDate">
+                        </div>
 
-                         <!-- Due Date Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Due Date</label>
-                             <input type="date" class="form-control jira-input" name="due_date" 
-                                    id="quickCreateDueDate">
-                         </div>
+                        <!-- Due Date Field -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Due Date</label>
+                            <input type="date" class="form-control jira-input" name="due_date" id="quickCreateDueDate">
+                        </div>
 
-                         <!-- Attachments Field -->
+                        <!-- Attachments Field -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Attachments</label>
                             <div class="attachment-drop-zone" id="quickCreateAttachmentZone" style="
@@ -1602,7 +1609,7 @@
     <!-- Test Script 4 -->
     <script>
         console.log('[NAVBAR-LOG] About to setup navbar');
-        
+
         // API URLs - Use PHP-generated URLs to handle any deployment path
         // MOVED TO GLOBAL SCOPE (outside try-catch) so submitQuickCreate can access them
         const API_QUICK_CREATE_URL = '<?= url('/projects/quick-create-list') ?>';
@@ -1610,14 +1617,19 @@
         const API_ISSUE_CREATE_TEMPLATE = '<?= url('/projects/{projectKey}/issues') ?>';
         const APP_BASE_PATH = '<?= url('') ?>';
         const ISSUE_VIEW_TEMPLATE = '<?= url('/issue/{issueKey}') ?>';
-        
+
         console.log('📱 Global API URLs initialized:', { APP_BASE_PATH, ISSUE_VIEW_TEMPLATE });
-        
+
         // CSRF Token - moved to global scope for submitQuickCreate access
-        const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
-        const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
-        console.log('🔐 CSRF Token initialized:', csrfToken ? 'present' : 'missing');
-        
+         const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+         const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
+         console.log('🔐 CSRF Token initialized:', csrfToken ? 'present' : 'missing');
+
+         // ✅ CRITICAL: Global projectsMap for quick create form submission
+          // This must be global so submitQuickCreate() can access it as a fallback
+          window.projectsMap = {};
+          console.log('📦 projectsMap initialized as window.projectsMap');
+
         try {
             console.log('[NAVBAR] Setting up navbar click handlers');
             // Close navbar when clicking navigation links
@@ -1773,13 +1785,34 @@
                         const assigneeSelect = document.getElementById('quickCreateAssignee');
                         if (!assigneeSelect) return;
 
+                        console.log('[ASSIGN-ME] Looking for current user option...');
+                        console.log('[ASSIGN-ME] All assignee options:');
+                        for (let i = 0; i < assigneeSelect.options.length; i++) {
+                            const opt = assigneeSelect.options[i];
+                            console.log(`  [${i}] value="${opt.value}" text="${opt.text}" data-is-current="${opt.dataset.isCurrent}"`);
+                        }
+
                         const currentUserOption = assigneeSelect.querySelector('option[data-is-current="true"]');
                         if (currentUserOption) {
                             assigneeSelect.value = currentUserOption.value;
-                            $('#quickCreateAssignee').trigger('change');
-                            console.log('✅ Assigned to current user:', currentUserOption.textContent);
+                            
+                            // Trigger change event with vanilla JavaScript
+                            const changeEvent = new Event('change', { bubbles: true });
+                            assigneeSelect.dispatchEvent(changeEvent);
+                            
+                            console.log('[ASSIGN-ME] ✅ Assigned to current user:', currentUserOption.textContent);
                         } else {
-                            console.warn('⚠️ Current user option not found');
+                            console.warn('[ASSIGN-ME] ⚠️ Current user option not found in dropdown');
+                            console.warn('[ASSIGN-ME] Check if current user is active and in the assignees API response');
+                            
+                            // Fallback: Try to find option with "(me)" in text
+                            const meOption = Array.from(assigneeSelect.options).find(opt => opt.textContent.includes('(me)'));
+                            if (meOption) {
+                                console.log('[ASSIGN-ME] ✅ Found option with (me) text:', meOption.textContent);
+                                assigneeSelect.value = meOption.value;
+                                const changeEvent = new Event('change', { bubbles: true });
+                                assigneeSelect.dispatchEvent(changeEvent);
+                            }
                         }
                     });
                 }
@@ -1887,12 +1920,13 @@
                     // Re-initialize reporter field on modal open
                     initializeReporterField();
 
-                    // Initialize Select2 if not already done
-                    if (!$('#quickCreateProject').hasClass('select2-hidden-accessible')) {
+                    // Initialize Select2 if not already done (using vanilla JS instead of jQuery)
+                    const projectSelectElement = document.getElementById('quickCreateProject');
+                    if (projectSelectElement && !projectSelectElement.classList.contains('select2-hidden-accessible')) {
                         console.log('Initializing Select2...');
                         initializeSelect2();
                     } else {
-                        console.log('Select2 already initialized');
+                        console.log('Select2 already initialized or element not found');
                     }
 
                     const projectSelect = document.getElementById('quickCreateProject');
@@ -2015,7 +2049,7 @@
                                 console.log(`   [${idx + 1}] Added project: ${displayText}`);
 
                                 // Add to projectsMap for issue type lookup
-                                projectsMap[project.id] = {
+                                window.projectsMap[project.id] = {
                                     id: project.id,
                                     key: project.key,
                                     name: project.name,
@@ -2029,26 +2063,42 @@
                             projectSelect.innerHTML = '<option value="">No projects available</option>';
                         }
 
-                        console.log('✅ projectsMap now contains', Object.keys(projectsMap).length, 'projects');
+                        console.log('✅ window.projectsMap now contains', Object.keys(window.projectsMap).length, 'projects');
 
                         // Populate assignees select
                         assigneeSelect.innerHTML = '<option value="">Automatic</option>';
 
                         if (assignees.length > 0) {
-                            const currentUserId = parseInt('<?= e($user['id'] ?? '0') ?>') || 0;
-                            assignees.forEach(user => {
-                                const option = document.createElement('option');
-                                option.value = user.id;
-                                // Compare as numbers for accuracy
-                                const isCurrentUser = parseInt(user.id) === currentUserId;
-                                option.dataset.isCurrent = isCurrentUser ? 'true' : 'false';
-                                option.textContent = user.name + (isCurrentUser ? ' (me)' : '');
-                                assigneeSelect.appendChild(option);
-                            });
-                            console.log('Added', assignees.length, 'assignees to dropdown');
-                        } else {
-                            console.warn('No assignees returned from API');
-                        }
+                             const currentUserId = parseInt('<?= e($user['id'] ?? '0') ?>') || 0;
+                             console.log('[ASSIGNEES] Current user ID:', currentUserId);
+                             let foundCurrentUser = false;
+                             
+                             assignees.forEach(user => {
+                                 const option = document.createElement('option');
+                                 option.value = user.id;
+                                 // Compare as numbers for accuracy
+                                 const isCurrentUser = parseInt(user.id) === currentUserId;
+                                 
+                                 // Only set attribute when true (cleaner and matches querySelector)
+                                 if (isCurrentUser) {
+                                     option.dataset.isCurrent = 'true';
+                                     foundCurrentUser = true;
+                                     console.log('[ASSIGNEES] ✅ Found current user:', user.name, '(ID:', user.id, ')');
+                                 }
+                                 
+                                 option.textContent = user.name + (isCurrentUser ? ' (me)' : '');
+                                 assigneeSelect.appendChild(option);
+                             });
+                             
+                             console.log('[ASSIGNEES] Added', assignees.length, 'assignees to dropdown');
+                             if (!foundCurrentUser) {
+                                 console.warn('[ASSIGNEES] ⚠️ Current user not found in active assignees list (ID:', currentUserId, ')');
+                                 console.warn('[ASSIGNEES] ℹ️  This is OK - current user might not be marked as active, or is admin');
+                                 console.warn('[ASSIGNEES] ℹ️  The "Assign to me" link will use fallback (me) matching');
+                             }
+                         } else {
+                             console.warn('[ASSIGNEES] No assignees returned from API');
+                         }
 
                         // Projects dropdown is now populated with plain HTML options
                         // No Select2 needed - plain HTML select works better for this use case
@@ -2064,20 +2114,26 @@
                         // Reset the selection to empty
                         console.log('🔄 Resetting project selection to empty');
                         projectSelect.value = '';
-                        $('#quickCreateProject').val('').trigger('change');
+                        
+                        // Trigger change event with vanilla JavaScript
+                        const changeEvent = new Event('change', { bubbles: true });
+                        projectSelect.dispatchEvent(changeEvent);
 
                         console.log('✅ Projects and assignees loaded and Select2 re-initialized');
                         console.log('📊 Final state:');
-                        console.log('   - Projects in dropdown:', $('#quickCreateProject option').length - 1);
-                        console.log('   - Assignees in dropdown:', $('#quickCreateAssignee option').length - 1);
-                        console.log('   - Projects in map:', Object.keys(projectsMap).length);
+                        console.log('   - Projects in dropdown:', projectSelect.options.length - 1);
+                        console.log('   - Assignees in dropdown:', assigneeSelect.options.length - 1);
+                        console.log('   - Projects in window.projectsMap:', Object.keys(window.projectsMap).length);
 
                     } catch (error) {
                         console.error('❌ Failed to load projects/assignees:', error);
                         console.error('   Error message:', error.message);
                         console.error('   Error stack:', error.stack);
                         projectSelect.innerHTML = '<option value="">Error: ' + (error.message || 'Unknown error') + '</option>';
-                        $('#quickCreateProject').trigger('change');
+                        
+                        // Trigger change event with vanilla JavaScript
+                        const changeEvent = new Event('change', { bubbles: true });
+                        projectSelect.dispatchEvent(changeEvent);
                     } finally {
                         projectsLoading = false;
                         console.log('✅ Loading complete, projectsLoading =', projectsLoading);
@@ -2085,8 +2141,7 @@
                 });
             }
 
-            // Store project details fetched from API (populated when modal opens)
-            let projectsMap = {};
+
 
             // Flag to track if change handler is initialized
             let projectChangeHandlerInitialized = false;
@@ -2109,22 +2164,25 @@
                 }
 
                 projectSelect.addEventListener('change', async function () {
-                    const projectId = this.value;
-                    console.log('🎯 Project changed to:', projectId);
-                    console.log('   Selected text:', this.options[this.selectedIndex].text);
+                     const projectId = this.value;
+                     console.log('🎯 Project changed to:', projectId);
+                     console.log('   Selected text:', this.options[this.selectedIndex].text);
 
-                    if (!projectId) {
-                        issueTypeSelect.innerHTML = '<option value="">Select a project first...</option>';
-                        assigneeSelect.innerHTML = '<option value="">Automatic</option>';
-                        statusSelect.innerHTML = '<option value="">Default</option>';
-                        sprintSelect.innerHTML = '<option value="">None (Backlog)</option>';
-                        labelsSelect.innerHTML = '<option value="">No labels</option>';
-                        return;
-                    }
+                     if (!projectId) {
+                         // ✅ CRITICAL FIX: Don't clear assignees - keep full team roster available
+                         // This preserves the ability to use "Assign to me" even without a project selected
+                         issueTypeSelect.innerHTML = '<option value="">Select a project first...</option>';
+                         // ✅ REMOVED: assigneeSelect.innerHTML = '<option value="">Automatic</option>';
+                         // Now keep existing assignees instead of clearing them
+                         statusSelect.innerHTML = '<option value="">Default</option>';
+                         sprintSelect.innerHTML = '<option value="">None (Backlog)</option>';
+                         labelsSelect.innerHTML = '<option value="">No labels</option>';
+                         return;
+                     }
 
                     // First try projectsMap
-                    let issueTypes = [];
-                    const project = projectsMap[projectId];
+                     let issueTypes = [];
+                     const project = window.projectsMap[projectId];
 
                     console.log('Project from map:', project);
                     console.log('Issue types from map:', project ? project.issue_types : 'no project');
@@ -2432,7 +2490,7 @@
             // Check required fields
             const projectSelect = document.getElementById('quickCreateProject');
             const issueTypeSelect = document.getElementById('quickCreateIssueType');
-            
+
             console.log('[SUBMIT] Project value:', projectSelect.value);
             console.log('[SUBMIT] Issue Type value:', issueTypeSelect.value);
             console.log('[SUBMIT] Summary value:', summaryField.value);
@@ -2455,7 +2513,7 @@
                 console.log('[SUBMIT] Form validation failed');
                 return;
             }
-            
+
             console.log('[SUBMIT] All validations passed, proceeding with submission');
 
             const formData = new FormData(form);
@@ -2464,31 +2522,81 @@
             const createAnother = form.querySelector('[name="create_another"]').checked;
 
             try {
-                 console.log('[SUBMIT] Starting API request...');
-                 btn.disabled = true;
-                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
+                console.log('[SUBMIT] Starting API request...');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
 
-                 // ✅ FIX: Keep FormData as-is (don't convert to JSON - File objects can't be JSON serialized)
-                 // Remove the 'create_another' checkbox from FormData
-                 const formDataToSend = new FormData(form);
-                 formDataToSend.delete('create_another');
-                 
-                 // Log form data entries for debugging
-                 console.log('[SUBMIT] FormData entries:');
-                 for (const [key, value] of formDataToSend.entries()) {
-                     if (value instanceof File) {
-                         console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-                     } else {
-                         console.log(`  ${key}: ${value}`);
-                     }
-                 }
+                // ✅ FIX: Keep FormData as-is (don't convert to JSON - File objects can't be JSON serialized)
+                // Remove the 'create_another' checkbox from FormData
+                const formDataToSend = new FormData(form);
+                formDataToSend.delete('create_another');
+
+                // ✅ CRITICAL FIX: Add description attachments to FormData
+                // Files from Quill editor are stored in descriptionAttachments map
+                if (typeof descriptionAttachments !== 'undefined' && descriptionAttachments.size > 0) {
+                    console.log('[SUBMIT] Adding description attachments:', descriptionAttachments.size);
+                    for (const [fileId, file] of descriptionAttachments) {
+                        // Add each file with the 'attachments' field name to match quick-create attachments
+                        formDataToSend.append('attachments', file);
+                        console.log(`[SUBMIT]   - Added: ${file.name} (${file.size} bytes)`);
+                    }
+                }
+
+                // Log form data entries for debugging
+                console.log('[SUBMIT] FormData entries:');
+                for (const [key, value] of formDataToSend.entries()) {
+                    if (value instanceof File) {
+                        console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+                    } else {
+                        console.log(`  ${key}: ${value}`);
+                    }
+                }
 
                 // Get project key from selected project
                 const projectSelect = document.getElementById('quickCreateProject');
-                const projectKey = projectSelect.options[projectSelect.selectedIndex].dataset.projectKey;
+                const selectedProjectId = projectSelect.value;
+                const selectedOption = projectSelect.options[projectSelect.selectedIndex];
+                let projectKey = selectedOption ? selectedOption.dataset.projectKey : null;
+                
+                console.log('[SUBMIT] Project ID:', selectedProjectId);
+                console.log('[SUBMIT] Project Key from dataset:', projectKey);
+                console.log('[SUBMIT] Selected option:', selectedOption);
+                console.log('[SUBMIT] Selected option dataset:', selectedOption ? selectedOption.dataset : 'null');
+
+                // ✅ CRITICAL FIX: Fallback to projectsMap if dataset not available
+                if (!projectKey && selectedProjectId && window.projectsMap[selectedProjectId]) {
+                    projectKey = window.projectsMap[selectedProjectId].key;
+                    console.log('[SUBMIT] Using projectKey from window.projectsMap:', projectKey);
+                } else if (!projectKey && selectedOption && selectedOption.text) {
+                    // ✅ EMERGENCY FALLBACK: Extract key from option text "Name (KEY)"
+                    const match = selectedOption.text.match(/\(([A-Z0-9]+)\)$/);
+                    if (match) {
+                        projectKey = match[1];
+                        console.log('[SUBMIT] ✅ Extracted projectKey from option text:', projectKey);
+                    }
+                }
+
+                if (!projectKey) {
+                    console.error('[SUBMIT] ✗ Could not determine project key');
+                    console.error('[SUBMIT] Selected project ID:', selectedProjectId);
+                    console.error('[SUBMIT] Selected project option:', projectSelect.options[projectSelect.selectedIndex]);
+                    console.error('[SUBMIT] window.projectsMap keys:', Object.keys(window.projectsMap));
+                    console.error('[SUBMIT] window.projectsMap:', window.projectsMap);
+                    console.error('[SUBMIT] All dropdown options:');
+                    for (let i = 0; i < projectSelect.options.length; i++) {
+                        console.error(`   [${i}] value="${projectSelect.options[i].value}" text="${projectSelect.options[i].text}" key="${projectSelect.options[i].dataset.projectKey}"`);
+                    }
+                    throw new Error('Could not determine project key. Please select a project and try again.');
+                }
 
                 // Create issue using web endpoint (uses session auth)
-                const webUrl = APP_BASE_PATH + '/projects/' + projectKey + '/issues';
+                 // ✅ FIX: Remove trailing slash from APP_BASE_PATH to avoid double slashes
+                 const basePath = APP_BASE_PATH.endsWith('/') ? APP_BASE_PATH.slice(0, -1) : APP_BASE_PATH;
+                 const webUrl = basePath + '/projects/' + projectKey + '/issues';
+                 console.log('[SUBMIT] ✅ URL computed:', webUrl);
+                 console.log('[SUBMIT]    basePath:', basePath);
+                 console.log('[SUBMIT]    projectKey:', projectKey);
+                 console.log('[SUBMIT] Posting to URL:', webUrl);
 
                 // ✅ FIX: Send as FormData to preserve File objects
                 // Don't set Content-Type header - let browser set it with proper boundary
@@ -2505,14 +2613,20 @@
                     body: formDataToSend,  // ✅ CHANGED: Use FormData instead of JSON.stringify()
                 });
 
-                console.log('Create response status:', response.status);
-                console.log('Create response content-type:', response.headers.get('content-type'));
+                console.log('[SUBMIT] ✓ Response received - status:', response.status);
+                console.log('[SUBMIT] Response content-type:', response.headers.get('content-type'));
+                console.log('[SUBMIT] Response URL (after redirects):', response.url);
 
                 const responseText = await response.text();
-                console.log('Raw response text:', responseText);
+                console.log('[SUBMIT] Raw response text length:', responseText.length);
+                if (responseText.length < 500) {
+                    console.log('[SUBMIT] Full response text:', responseText);
+                } else {
+                    console.log('[SUBMIT] Response text (first 500 chars):', responseText.substring(0, 500));
+                }
 
                 if (!response.ok) {
-                    console.error('Error response body:', responseText);
+                    console.error('[SUBMIT] ✗ Error response:', responseText);
                     try {
                         const errorData = JSON.parse(responseText);
                         throw new Error(errorData.error || `HTTP ${response.status}`);
@@ -2521,18 +2635,85 @@
                     }
                 }
 
-                const result = JSON.parse(responseText);
-                console.log('Issue created:', result);
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('[SUBMIT] ✗ Failed to parse response as JSON');
+                    console.error('[SUBMIT] Parse error:', parseError.message);
+                    console.error('[SUBMIT] Response text (first 500 chars):', responseText.substring(0, 500));
+                    throw new Error('Invalid server response: ' + parseError.message);
+                }
 
-                // Get issue key from response - could be at result.issue_key or result.issue.issue_key
-                const issueKey = result.issue_key || (result.issue && result.issue.issue_key);
+                console.log('[SUBMIT] ✓ Issue creation response received');
+                 
+                 // ✅ DEBUG: Log the actual structure
+                 console.log('[SUBMIT] Response keys:', Object.keys(result));
+                 console.log('[SUBMIT] Full response structure:', {
+                     hasSuccess: 'success' in result,
+                     hasIssueKey: 'issue_key' in result,
+                     hasIssue: 'issue' in result,
+                     hasError: 'error' in result,
+                     hasItems: 'items' in result,
+                     issueKeyValue: result.issue_key || 'undefined',
+                     issueObjKeys: result.issue ? Object.keys(result.issue).slice(0, 5) : 'no issue object',
+                     responseKeys: Object.keys(result).slice(0, 10)
+                 });
+                 
+                 // ✅ DETECTION: Check if this is a projects list response (wrong endpoint)
+                 if (result.items && result.total !== undefined && result.current_page !== undefined) {
+                     console.error('[SUBMIT] ❌ WRONG ENDPOINT! Got projects list instead of issue response');
+                     console.error('[SUBMIT] This means the form posted to /api/v1/projects instead of /projects/{KEY}/issues');
+                     console.error('[SUBMIT] DEBUG INFO:');
+                     console.error('[SUBMIT]    selectedProjectId:', selectedProjectId);
+                     console.error('[SUBMIT]    projectKey:', projectKey);
+                     console.error('[SUBMIT]    webUrl:', webUrl);
+                     console.error('[SUBMIT]    projectsMap:', projectsMap);
+                     throw new Error('Form posted to wrong endpoint. Project key not properly extracted. This is a bug in the modal initialization.');
+                 }
+
+                // ✅ FIX: Extract issue key from multiple possible locations
+                // Tries root level first, then nested in issue object
+                const issueKey = result.issue_key ||
+                    (result.issue && result.issue.issue_key) ||
+                    (result.data && result.data.issue_key);
+
+                if (!issueKey) {
+                    console.error('[SUBMIT] ✗ Issue key not found in response');
+                    console.error('[SUBMIT] Full response object:', JSON.stringify(result, null, 2));
+                    if (result.issue) {
+                        console.error('[SUBMIT] Issue object keys:', Object.keys(result.issue));
+                        console.error('[SUBMIT] First 500 chars of issue object:', JSON.stringify(result.issue).substring(0, 500));
+                    }
+                    // Check if this is actually a success despite key extraction issue
+                    if (result.success === true && result.issue && result.issue.issue_key) {
+                        console.log('[SUBMIT] ✓ Found issue_key in result.issue.issue_key');
+                    }
+                }
 
                 if (issueKey) {
+                    console.log('[SUBMIT] ✓ Issue key extracted:', issueKey);
                     if (createAnother) {
                         // Reset form for creating another issue
                         form.reset();
                         document.getElementById('summaryChar').textContent = '0';
                         document.getElementById('descChar').textContent = '0';
+                        // Clear description attachments
+                        if (typeof descriptionAttachments !== 'undefined') {
+                            descriptionAttachments.clear();
+                            const container = document.getElementById('descriptionAttachmentsContainer');
+                            if (container) {
+                                container.style.display = 'none';
+                                const fileList = document.getElementById('descriptionAttachmentsList');
+                                if (fileList) {
+                                    fileList.innerHTML = '';
+                                }
+                            }
+                        }
+                        // Clear Quill editor
+                        if (typeof quillEditor !== 'undefined' && quillEditor) {
+                            quillEditor.setContents([]);
+                        }
                         document.getElementById('quickCreateSummary').focus();
                         btn.disabled = false;
                         btn.innerHTML = originalText;
@@ -2551,14 +2732,19 @@
                         // Redirect to the new issue (preserves current host/IP)
                         // Use deployment-aware URL template
                         const issueUrl = ISSUE_VIEW_TEMPLATE.replace('{issueKey}', issueKey);
-                        console.log('Redirecting to:', issueUrl);
+                        console.log('[SUBMIT] ✓ Redirecting to:', issueUrl);
                         window.location.href = issueUrl;
                     }
                 } else if (result.error) {
                     throw new Error(result.error);
+                } else if (result.success === true) {
+                    // ✅ FALLBACK: If success is true, try harder to extract the key
+                    console.warn('[SUBMIT] ⚠️ Success is true but key not extracted in standard locations');
+                    // This shouldn't happen with current API, but gives us a safety net
+                    throw new Error('Issue was created but response format was unexpected. Check browser console for full response structure (F12).');
                 } else {
-                    console.error('Unexpected response structure:', result);
-                    throw new Error('Issue created but no key returned');
+                    console.error('[SUBMIT] ✗ Unexpected response structure:', result);
+                    throw new Error('Issue created but key extraction failed. Check browser console (F12) for diagnostic details.');
                 }
             } catch (error) {
                 console.error('Error creating issue:', error);
@@ -2605,7 +2791,7 @@
                                 ['clean']
                             ],
                             handlers: {
-                                'attach-file': function() {
+                                'attach-file': function () {
                                     document.getElementById('descriptionAttachmentInput').click();
                                 }
                             }
@@ -2626,7 +2812,7 @@
                 quillEditor.on('text-change', function () {
                     const content = quillEditor.root.innerHTML;
                     document.getElementById('quickCreateDescription').value = content;
-                    
+
                     // Update character count (approximate)
                     const textLength = quillEditor.getText().length - 1; // -1 for trailing newline
                     document.getElementById('descChar').textContent = Math.max(0, textLength);
@@ -2643,9 +2829,9 @@
 
         function setupDescriptionAttachmentHandlers() {
             const fileInput = document.getElementById('descriptionAttachmentInput');
-            
+
             // Handle file selection
-            fileInput.addEventListener('change', function() {
+            fileInput.addEventListener('change', function () {
                 const files = Array.from(this.files);
                 files.forEach(file => {
                     addDescriptionAttachment(file);
@@ -2656,17 +2842,17 @@
             // Handle drag and drop on description editor
             const editorDiv = document.getElementById('quickCreateDescriptionEditor');
             const editorArea = editorDiv.closest('.mb-4');
-            
+
             if (editorArea) {
                 editorArea.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     editorDiv.style.backgroundColor = '#F0DCE5';
                 });
-                
+
                 editorArea.addEventListener('dragleave', () => {
                     editorDiv.style.backgroundColor = 'white';
                 });
-                
+
                 editorArea.addEventListener('drop', (e) => {
                     e.preventDefault();
                     editorDiv.style.backgroundColor = 'white';
@@ -2687,7 +2873,7 @@
             }
 
             // Validate file type
-            const allowedTypes = ['application/pdf', 'application/msword', 
+            const allowedTypes = ['application/pdf', 'application/msword',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'application/vnd.ms-excel',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -2697,7 +2883,7 @@
                 'image/jpeg', 'image/png', 'image/gif', 'image/webp',
                 'application/zip',
                 'video/mp4', 'video/webm', 'video/quicktime'];
-            
+
             if (!allowedTypes.includes(file.type)) {
                 alert(`File type not allowed: ${file.type}`);
                 return;
@@ -2705,7 +2891,7 @@
 
             // Generate unique ID for this file
             const fileId = 'desc-attach-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            
+
             // Store file
             descriptionAttachments.set(fileId, file);
 
@@ -2782,7 +2968,7 @@
             if (fileItem) {
                 fileItem.remove();
             }
-            
+
             // Hide container if empty
             if (descriptionAttachments.size === 0) {
                 document.getElementById('descriptionAttachmentsContainer').style.display = 'none';
@@ -2849,9 +3035,9 @@
     <!-- Time Tracking Widget -->
     <script src="<?= url('/assets/js/floating-timer.js') ?>"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        FloatingTimer.init({syncInterval: 5000, debug: false});
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            FloatingTimer.init({ syncInterval: 5000, debug: false });
+        });
     </script>
 
     <?= \App\Core\View::yield('scripts') ?>

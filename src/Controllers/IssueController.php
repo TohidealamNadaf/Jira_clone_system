@@ -177,8 +177,22 @@ class IssueController extends Controller
             // Dispatch notification for issue creation
             NotificationService::dispatchIssueCreated($issue['id'], $this->userId());
 
-            if ($request->wantsJson()) {
-                $this->json(['success' => true, 'issue' => sanitize_issue_for_json($issue)], 201);
+            // ✅ CRITICAL FIX: Check for JSON request in multiple ways
+            // Some browsers/frameworks send Accept header, some use X-Requested-With
+            $isJsonRequest = $request->wantsJson() || 
+                           $request->header('X-Requested-With') === 'XMLHttpRequest' ||
+                           strpos($request->header('Accept', ''), 'application/json') !== false;
+
+            if ($isJsonRequest) {
+                // ✅ FIX: Always include issue_key at root level for easier access in modal
+                // JavaScript looks for result.issue_key || result.issue.issue_key
+                // ✅ CRITICAL: Don't return from void function - $this->json() handles output/exit
+                $this->json([
+                    'success' => true,
+                    'issue_key' => $issue['issue_key'],  // ✅ Root-level key for quick modal
+                    'issue' => sanitize_issue_for_json($issue)
+                ], 201);
+                return;
             }
 
             $this->redirectWith(
@@ -187,12 +201,34 @@ class IssueController extends Controller
                 "Issue {$issue['issue_key']} created successfully."
             );
         } catch (\InvalidArgumentException $e) {
-            if ($request->wantsJson()) {
-                $this->json(['error' => $e->getMessage()], 422);
-            }
+             // ✅ CRITICAL FIX: Check for JSON request in multiple ways
+             $isJsonRequest = $request->wantsJson() || 
+                            $request->header('X-Requested-With') === 'XMLHttpRequest' ||
+                            strpos($request->header('Accept', ''), 'application/json') !== false;
+
+             if ($isJsonRequest) {
+                 $this->json(['error' => $e->getMessage()], 422);
+                 return;
+             }
 
             Session::flash('error', $e->getMessage());
             Session::flash('_old_input', $data);
+            $this->back();
+        } catch (\Exception $e) {
+             // ✅ CRITICAL FIX: Catch all exceptions and return proper JSON for AJAX requests
+             $isJsonRequest = $request->wantsJson() || 
+                            $request->header('X-Requested-With') === 'XMLHttpRequest' ||
+                            strpos($request->header('Accept', ''), 'application/json') !== false;
+
+             if ($isJsonRequest) {
+                 $this->json([
+                     'success' => false,
+                     'error' => $e->getMessage()
+                 ], 500);
+                 return;
+             }
+
+            Session::flash('error', 'An error occurred while creating the issue: ' . $e->getMessage());
             $this->back();
         }
     }
@@ -696,4 +732,4 @@ class IssueController extends Controller
         $transitions = $this->issueService->getAvailableTransitions($issue['id']);
         $this->json($transitions);
     }
-    }
+}

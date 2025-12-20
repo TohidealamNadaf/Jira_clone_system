@@ -2804,6 +2804,21 @@ GET /api/v1/roadmap/projects
 
 ## Critical Production Fixes - December 19, 2025 ✅ ALL COMPLETE
 
+### Budget Save API 500 Error Fix ✅ COMPLETE
+**Status**: Production Critical - RESOLVED
+**Issue**: Budget save on time-tracking project page failing with "API Error 500: Response was not valid JSON"
+**Root Cause**: Three issues - (1) Wrong auth method, (2) Missing credentials, (3) Route parameter mismatch
+**Solution**:
+1. **Fixed authentication**: Changed to `Session::user()` for web routes
+2. **Fixed credentials**: Added `credentials: 'include'` to JavaScript fetch call
+3. **Fixed routing**: Moved from API routes to web routes, updated parameter handling from ID to key
+**Files Modified**:
+- `routes/web.php` - Lines 78-80: Added budget routes to web routes
+- `src/Controllers/Api/ProjectBudgetApiController.php` - Updated parameter handling from ID to key
+- `views/time-tracking/project-report.php` - Updated API URL and added credentials
+**Impact**: Budget API endpoints now work correctly for web AJAX calls with proper session auth
+**Testing**: Verified API returns valid JSON responses, budget updates persist
+
 ### Quick Create Modal Submit Button Fix ✅ COMPLETE
 **Status**: Production Critical - RESOLVED
 **Issue**: Quick create modal submit button not working - "nothing happens" when clicking create

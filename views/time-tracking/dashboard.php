@@ -5,6 +5,8 @@ declare(strict_types=1);
 // Time Tracking Dashboard - Main Overview
 // Shows user's timers, statistics, and quick actions
 
+\App\Core\View::extends('layouts.app');
+
 $currentUser = auth();
 $timeLogs = $timeLogs ?? [];
 $activeTimer = $activeTimer ?? null;
@@ -15,6 +17,8 @@ $todayLogs = $today_logs ?? [];
 $totalSeconds = array_sum(array_map(fn($log) => $log['duration_seconds'] ?? 0, $todayLogs));
 $totalCost = array_sum(array_map(fn($log) => $log['total_cost'] ?? 0, $todayLogs));
 $billableEntries = count(array_filter($todayLogs, fn($log) => $log['is_billable'] === 1));
+
+\App\Core\View::section('content');
 
 ?>
 
@@ -157,37 +161,37 @@ $billableEntries = count(array_filter($todayLogs, fn($log) => $log['is_billable'
                             <td class="time-tracking-logs__cell time-tracking-logs__cell--issue">
                                 <a href="<?= url('/projects/' . ($log['project_key'] ?? 'N/A') . '/issues/' . ($log['issue_key'] ?? 'N/A')) ?>" 
                                    class="time-tracking-logs__link">
-                                     <strong><?= htmlspecialchars($log['issue_key'] ?? 'N/A') ?></strong>
-                                 </a>
-                                 <p class="time-tracking-logs__summary"><?= htmlspecialchars(substr($log['issue_summary'] ?? '', 0, 50)) ?></p>
-                             </td>
-                             <td class="time-tracking-logs__cell"><?= date('M d, Y H:i', strtotime($log['created_at'])) ?></td>
-                             <td class="time-tracking-logs__cell time-tracking-logs__cell--mono">
-                                 <?php
-                                 $h = intdiv($log['duration_seconds'] ?? 0, 3600);
-                                 $m = intdiv(($log['duration_seconds'] ?? 0) % 3600, 60);
-                                 echo sprintf('%d:%02d', $h, $m);
-                                 ?>
-                             </td>
-                             <td class="time-tracking-logs__cell time-tracking-logs__cell--cost">
-                                 <strong>$<?= number_format((float)($log['total_cost'] ?? 0), 2) ?></strong>
-                             </td>
-                             <td class="time-tracking-logs__cell">
-                                 <?php if ($log['is_billable'] === 1): ?>
-                                     <span class="badge badge-billable">Yes</span>
-                                 <?php else: ?>
-                                     <span class="badge badge-non-billable">No</span>
-                                 <?php endif; ?>
-                             </td>
-                             <td class="time-tracking-logs__cell time-tracking-logs__cell--description">
-                                 <?php if (!empty($log['description'])): ?>
-                                     <small><?= htmlspecialchars(substr($log['description'], 0, 40)) ?></small>
-                                 <?php else: ?>
-                                     <small class="text-muted">—</small>
-                                 <?php endif; ?>
-                             </td>
-                         </tr>
-                         <?php endforeach; ?>
+                                      <strong><?= htmlspecialchars($log['issue_key'] ?? 'N/A') ?></strong>
+                                  </a>
+                                  <p class="time-tracking-logs__summary"><?= htmlspecialchars(substr($log['issue_summary'] ?? '', 0, 50)) ?></p>
+                              </td>
+                              <td class="time-tracking-logs__cell"><?= date('M d, Y H:i', strtotime($log['created_at'])) ?></td>
+                              <td class="time-tracking-logs__cell time-tracking-logs__cell--mono">
+                                  <?php
+                                  $h = intdiv($log['duration_seconds'] ?? 0, 3600);
+                                  $m = intdiv(($log['duration_seconds'] ?? 0) % 3600, 60);
+                                  echo sprintf('%d:%02d', $h, $m);
+                                  ?>
+                              </td>
+                              <td class="time-tracking-logs__cell time-tracking-logs__cell--cost">
+                                  <strong>$<?= number_format((float)($log['total_cost'] ?? 0), 2) ?></strong>
+                              </td>
+                              <td class="time-tracking-logs__cell">
+                                  <?php if ($log['is_billable'] === 1): ?>
+                                      <span class="badge badge-billable">Yes</span>
+                                  <?php else: ?>
+                                      <span class="badge badge-non-billable">No</span>
+                                  <?php endif; ?>
+                              </td>
+                              <td class="time-tracking-logs__cell time-tracking-logs__cell--description">
+                                  <?php if (!empty($log['description'])): ?>
+                                      <small><?= htmlspecialchars(substr($log['description'], 0, 40)) ?></small>
+                                  <?php else: ?>
+                                      <small class="text-muted">—</small>
+                                  <?php endif; ?>
+                              </td>
+                          </tr>
+                          <?php endforeach; ?>
                     <?php endif; ?>
                  </tbody>
             </table>
@@ -212,6 +216,8 @@ $billableEntries = count(array_filter($todayLogs, fn($log) => $log['is_billable'
             <li>Click <strong>"Stop"</strong> when done and add a description</li>
             <li>Your time is automatically logged and visible here</li>
             <li>View reports and budgets at <a href="<?= url('/time-tracking/budgets') ?>" class="time-tracking-help__link">Budgets</a></li>
-        </ol>
-    </div>
-</div>
+            </ol>
+            </div>
+            </div>
+
+            <?php \App\Core\View::endSection(); ?>

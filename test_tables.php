@@ -12,3 +12,4 @@ $roles = Database::select('SELECT id, name FROM roles');
 echo 'Total roles: ' . count($roles) . PHP_EOL;
 ?>
 
+

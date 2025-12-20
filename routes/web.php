@@ -74,6 +74,11 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/projects/{key}/settings', [ProjectController::class, 'settings'])->name('projects.settings');
     $router->put('/projects/{key}', [ProjectController::class, 'update'])->name('projects.update');
     $router->delete('/projects/{key}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+
+    // Project Budget (moved from API routes for proper session auth)
+    $router->get('/projects/{key}/budget', [\App\Controllers\Api\ProjectBudgetApiController::class, 'getBudget'])->name('projects.budget.get');
+    $router->put('/projects/{key}/budget', [\App\Controllers\Api\ProjectBudgetApiController::class, 'updateBudget'])->name('projects.budget.update');
+
     $router->get('/projects/{key}/members', [ProjectController::class, 'members'])->name('projects.members');
     $router->post('/projects/{key}/members', [ProjectController::class, 'addMember'])->name('projects.members.add');
     $router->put('/projects/{key}/members/{userId}', [ProjectController::class, 'updateMember'])->name('projects.members.update');

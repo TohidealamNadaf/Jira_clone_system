@@ -504,7 +504,7 @@ class ProjectService
      */
     public function setProjectBudget(int $projectId, float $budget, string $currency = 'USD'): bool
     {
-        return Database::update(
+        $rowsAffected = Database::update(
             'projects',
             [
                 'budget' => $budget,
@@ -513,6 +513,8 @@ class ProjectService
             'id = ?',
             [$projectId]
         );
+
+        return $rowsAffected > 0;
     }
 
     /**

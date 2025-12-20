@@ -32,18 +32,20 @@ class ProjectBudgetApiController extends Controller
     public function getBudget(Request $request): void
     {
         try {
-            $projectId = (int)$request->param('projectId');
+            $projectKey = $request->param('key');
 
-            if (!$projectId) {
-                $this->json(['error' => 'Project ID required'], 400);
+            if (!$projectKey) {
+                $this->json(['error' => 'Project key required'], 400);
                 return;
             }
 
-            $project = $this->projectService->getProjectById($projectId);
+            $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
                 $this->json(['error' => 'Project not found'], 404);
                 return;
             }
+
+            $projectId = $project['id'];
 
             $budgetStatus = $this->projectService->getBudgetStatus($projectId);
 
@@ -70,28 +72,31 @@ class ProjectBudgetApiController extends Controller
     public function updateBudget(Request $request): void
     {
         try {
-            $user = Session::user();
+            // Use session authentication for web routes
+            $user = \App\Core\Session::user();
             if (!$user) {
                 $this->json(['error' => 'Unauthorized'], 401);
                 return;
             }
 
-            $projectId = (int)$request->param('projectId');
-            if (!$projectId) {
-                $this->json(['error' => 'Project ID required'], 400);
+            $projectKey = $request->param('key');
+            if (!$projectKey) {
+                $this->json(['error' => 'Project key required'], 400);
                 return;
             }
 
             // Verify project exists
-            $project = $this->projectService->getProjectById($projectId);
+            $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
                 $this->json(['error' => 'Project not found'], 404);
                 return;
             }
 
+            $projectId = $project['id'];
+
             // Get and validate JSON input directly (no exit calls)
             $json = $request->json();
-            if (!$json) {
+            if (!is_array($json)) {
                 $this->json(['error' => 'Invalid JSON request body'], 400);
                 return;
             }

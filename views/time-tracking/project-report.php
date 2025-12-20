@@ -491,7 +491,7 @@ try {
                 </div>
                 <div class="card-body">
                     <div class="action-list">
-                        <a href="<?= url('/time-tracking/dashboard') ?>" class="action-link">
+                        <a href="<?= url('/time-tracking') ?>" class="action-link">
                             <i class="bi bi-speedometer2"></i>
                             <span>Dashboard</span>
                         </a>
@@ -1835,7 +1835,7 @@ function saveBudget(event) {
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
     
-    const apiUrl = `<?= url('/api/v1/projects') ?>/${projectId}/budget`;
+    const apiUrl = `<?= url('/projects') ?>/<?= $project['key'] ?>/budget`;
     console.log('[BUDGET] API URL:', apiUrl);
     
     fetch(apiUrl, {
@@ -1844,6 +1844,7 @@ function saveBudget(event) {
             'Content-Type': 'application/json',
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
         },
+        credentials: 'include',
         body: JSON.stringify({
             budget: parseFloat(budgetAmount),
             currency: currency

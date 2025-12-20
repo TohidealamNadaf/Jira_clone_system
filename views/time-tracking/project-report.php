@@ -13,32 +13,31 @@ $project = $project ?? null;
 $timeLogs = $timeLogs ?? [];
 $budget = $budget ?? null;
 $statistics = $statistics ?? [];
+$byUser = $byUser ?? [];
+
+// Currency symbol mapping function
+$getCurrencySymbol = function($code) {
+    $symbols = [
+        'USD' => '$',
+        'EUR' => '€',
+        'GBP' => '£',
+        'INR' => '₹',
+        'AUD' => '$',
+        'CAD' => '$',
+        'SGD' => '$',
+        'JPY' => '¥'
+    ];
+    return $symbols[strtoupper($code)] ?? $code;
+};
 
 if (!$project) {
     echo '<div class="alert alert-danger">Project not found</div>';
     return;
 }
 
-// Calculate totals and aggregates
+// Calculate totals and aggregates (byUser is already populated by controller)
 $totalSeconds = array_sum(array_map(fn($log) => $log['duration_seconds'] ?? 0, $timeLogs));
 $totalCost = array_sum(array_map(fn($log) => $log['total_cost'] ?? 0, $timeLogs));
-
-// Group by user
-$byUser = [];
-foreach ($timeLogs as $log) {
-    $userId = $log['user_id'];
-    if (!isset($byUser[$userId])) {
-        $byUser[$userId] = [
-            'user_name' => $log['user_name'] ?? 'Unknown',
-            'total_seconds' => 0,
-            'total_cost' => 0,
-            'count' => 0
-        ];
-    }
-    $byUser[$userId]['total_seconds'] += $log['duration_seconds'] ?? 0;
-    $byUser[$userId]['total_cost'] += $log['total_cost'] ?? 0;
-    $byUser[$userId]['count']++;
-}
 
 // Group by issue (FOR REPORTING - from time logs)
 $byIssue = [];
@@ -46,8 +45,8 @@ foreach ($timeLogs as $log) {
     $issueId = $log['issue_id'];
     if (!isset($byIssue[$issueId])) {
         $byIssue[$issueId] = [
-            'issue_key' => $log['issue_key'],
-            'issue_summary' => $log['issue_summary'],
+            'issue_key' => $log['issue_key'] ?? '',
+            'issue_summary' => $log['issue_summary'] ?? $log['summary'] ?? '',
             'total_seconds' => 0,
             'total_cost' => 0,
             'count' => 0
@@ -112,9 +111,9 @@ try {
 
 ?>
 
-<div class="page-wrapper">
+<div class="time-tracking-page-wrapper">
     <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb-nav">
+    <nav class="breadcrumb-nav">
         <a href="<?= url('/projects') ?>" class="breadcrumb-link">
             <i class="bi bi-house-door"></i> Projects
         </a>
@@ -124,7 +123,7 @@ try {
         </a>
         <span class="breadcrumb-sep">/</span>
         <span class="breadcrumb-current">Time Tracking</span>
-    </div>
+    </nav>
 
     <!-- Page Header -->
     <div class="page-header">
@@ -160,44 +159,105 @@ try {
         <!-- Left Column: Main Content -->
         <div class="content-left">
             <!-- Budget Status Card -->
-            <?php if ($budget && $budget['id']): ?>
             <div class="content-card">
                 <div class="card-header">
-                    <h3 class="card-title">💰 Budget Status</h3>
+                    <div class="header-top">
+                        <h3 class="card-title">💰 Project Budget</h3>
+                        <button class="btn btn-sm btn-outline-primary" onclick="toggleBudgetEdit()">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="budget-grid">
-                        <div class="budget-item">
-                            <p class="budget-label">Total Budget</p>
-                            <h4 class="budget-value"><?= number_format($budget['total_budget'] ?? 0, 2) ?></h4>
-                        </div>
-                        <div class="budget-item">
-                            <p class="budget-label">Total Cost</p>
-                            <h4 class="budget-value"><?= number_format($budget['total_cost'] ?? 0, 2) ?></h4>
-                        </div>
-                        <div class="budget-item">
-                            <p class="budget-label">Remaining</p>
-                            <h4 class="budget-value <?= ($budget['total_budget'] ?? 0) - ($budget['total_cost'] ?? 0) > 0 ? 'text-success' : 'text-danger' ?>">
-                                <?= number_format(($budget['total_budget'] ?? 0) - ($budget['total_cost'] ?? 0), 2) ?>
-                            </h4>
-                        </div>
-                        <div class="budget-item">
-                            <p class="budget-label">Usage</p>
-                            <div class="budget-progress">
-                                <?php 
-                                $percent = ($budget['total_budget'] ?? 0) > 0 
-                                    ? (($budget['total_cost'] ?? 0) / ($budget['total_budget'] ?? 0)) * 100 
-                                    : 0;
-                                $barColor = $percent > 100 ? '#d32f2f' : ($percent > 80 ? '#f57c00' : '#388e3c');
-                                ?>
-                                <div class="progress-bar" style="width: <?= min($percent, 100) ?>%; background-color: <?= $barColor ?>"></div>
-                                <span class="progress-text"><?= number_format($percent, 1) ?>%</span>
+                    <!-- Budget Display Mode -->
+                    <div id="budgetDisplay">
+                        <?php 
+                         $projectBudget = (float)($budget['budget'] ?? 0);
+                         $spentAmount = (float)($budget['spent'] ?? 0);
+                         $remainingAmount = (float)($budget['remaining'] ?? 0);
+                         $percentageUsed = (float)($budget['percentage_used'] ?? 0);
+                         // Get currency from budget array - check both 'currency' and 'budget_currency' keys
+                         $currency = trim(strtoupper($budget['currency'] ?? $budget['budget_currency'] ?? 'USD'));
+                         $isExceeded = (bool)($budget['is_exceeded'] ?? false);
+                         
+                         // Use the currency symbol function
+                         $symbol = $getCurrencySymbol($currency);
+                         ?>
+                        <div class="budget-grid">
+                            <div class="budget-item">
+                                <p class="budget-label">Total Budget</p>
+                                <h4 class="budget-value"><?= $symbol ?><?= number_format($projectBudget, 2) ?></h4>
+                            </div>
+                            <div class="budget-item">
+                                <p class="budget-label">Total Spent</p>
+                                <h4 class="budget-value"><?= $symbol ?><?= number_format($spentAmount, 2) ?></h4>
+                            </div>
+                            <div class="budget-item">
+                                <p class="budget-label">Remaining</p>
+                                <h4 class="budget-value <?= $remainingAmount >= 0 ? 'text-success' : 'text-danger' ?>">
+                                    <?= $symbol ?><?= number_format(abs($remainingAmount), 2) ?>
+                                </h4>
+                            </div>
+                            <div class="budget-item">
+                                <p class="budget-label">Usage</p>
+                                <div class="budget-progress">
+                                    <?php 
+                                    $barColor = $percentageUsed > 100 ? '#d32f2f' : ($percentageUsed > 80 ? '#f57c00' : '#388e3c');
+                                    ?>
+                                    <div class="progress-bar" style="width: <?= min($percentageUsed, 100) ?>%; background-color: <?= $barColor ?>"></div>
+                                    <span class="progress-text"><?= number_format($percentageUsed, 1) ?>%</span>
+                                </div>
                             </div>
                         </div>
+                        <?php if ($isExceeded): ?>
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Budget Exceeded!</strong> Project has exceeded its allocated budget by <?= $symbol ?><?= number_format($spentAmount - $projectBudget, 2) ?>
+                        </div>
+                        <?php elseif ($percentageUsed >= 80): ?>
+                        <div class="alert alert-warning mt-3">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <strong>Warning:</strong> Budget usage is at <?= number_format($percentageUsed, 1) ?>%
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <!-- Budget Edit Mode -->
+                    <div id="budgetEdit" style="display: none;">
+                        <form onsubmit="saveBudget(event)">
+                            <div class="form-group">
+                                <label for="budgetAmount">Budget Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" id="currencySymbolDisplay"><?= $symbol ?></span>
+                                    <input type="number" class="form-control" id="budgetAmount" name="budget" 
+                                           value="<?= $projectBudget ?>" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="budgetCurrency">Currency</label>
+                                <select class="form-control" id="budgetCurrency" name="currency" onchange="updateCurrencySymbol()">
+                                    <option value="USD" <?= $currency === 'USD' ? 'selected' : '' ?>>USD ($)</option>
+                                    <option value="EUR" <?= $currency === 'EUR' ? 'selected' : '' ?>>EUR (€)</option>
+                                    <option value="GBP" <?= $currency === 'GBP' ? 'selected' : '' ?>>GBP (£)</option>
+                                    <option value="INR" <?= $currency === 'INR' ? 'selected' : '' ?>>INR (₹)</option>
+                                    <option value="AUD" <?= $currency === 'AUD' ? 'selected' : '' ?>>AUD ($)</option>
+                                    <option value="CAD" <?= $currency === 'CAD' ? 'selected' : '' ?>>CAD ($)</option>
+                                    <option value="SGD" <?= $currency === 'SGD' ? 'selected' : '' ?>>SGD ($)</option>
+                                    <option value="JPY" <?= $currency === 'JPY' ? 'selected' : '' ?>>JPY (¥)</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Save Budget
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleBudgetEdit()">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-            <?php endif; ?>
 
             <!-- Statistics Cards Grid -->
             <div class="stats-grid">
@@ -275,17 +335,29 @@ try {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($byUser as $userData): ?>
+                                <?php 
+                                if (empty($byUser)): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($userData['user_name']) ?></td>
+                                    <td colspan="6" class="text-center text-muted py-4">No time logged yet</td>
+                                </tr>
+                                <?php else: foreach ($byUser as $userData): 
+                                    $count = $userData['log_count'] ?? $userData['count'] ?? 0;
+                                    if ($count === 0) continue;
+                                ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($userData['name'] ?? 'Unknown') ?></td>
                                     <td class="text-right"><?= number_format($userData['total_seconds'] / 3600, 2) ?></td>
                                     <td class="text-right"><?= number_format($userData['total_cost'], 2) ?></td>
-                                    <td class="text-center"><span class="badge badge-sm"><?= $userData['count'] ?></span></td>
+                                    <td class="text-center"><span class="badge badge-sm"><?= $count ?></span></td>
                                     <td class="text-right">
                                         <?php 
-                                        $avgSecs = intdiv($userData['total_seconds'], $userData['count']);
-                                        $avgMins = intdiv($avgSecs, 60);
-                                        echo $avgMins . 'm';
+                                        if ($count > 0) {
+                                            $avgSecs = intdiv($userData['total_seconds'], $count);
+                                            $avgMins = intdiv($avgSecs, 60);
+                                            echo $avgMins . 'm';
+                                        } else {
+                                            echo '—';
+                                        }
                                         ?>
                                     </td>
                                     <td class="text-right">
@@ -295,7 +367,7 @@ try {
                                         ?>
                                     </td>
                                 </tr>
-                                <?php endforeach; ?>
+                                <?php endforeach; endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -402,7 +474,7 @@ try {
                             <?php 
                             if ($totalSeconds > 0) {
                                 $costPerHour = $totalCost / ($totalSeconds / 3600);
-                                echo '$' . number_format($costPerHour, 2);
+                                echo $symbol . number_format($costPerHour, 2);
                             } else {
                                 echo 'N/A';
                             }
@@ -1383,6 +1455,61 @@ textarea.form-control {
     border-color: var(--jira-gray);
 }
 
+/* ===== FIX: BUDGET INPUT INTERACTIVITY ===== */
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group-text {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--jira-dark);
+    text-align: center;
+    white-space: nowrap;
+    background-color: #f6f8fa;
+    border: 1px solid var(--jira-border);
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    pointer-events: none;
+}
+
+.input-group > .form-control {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    margin-bottom: 0;
+    border-radius: 0 4px 4px 0;
+    border-left: none;
+    pointer-events: auto !important;
+    cursor: text !important;
+}
+
+.input-group > .form-control:focus {
+    outline: none;
+    border-color: var(--jira-blue);
+    box-shadow: 0 0 0 3px rgba(139, 25, 86, 0.1);
+    position: relative;
+    z-index: 5;
+}
+
+#budgetAmount {
+    pointer-events: auto !important;
+    cursor: text !important;
+    background-color: white !important;
+}
+
+#budgetAmount:hover {
+    border-color: var(--jira-blue);
+}
+
 @media (max-width: 768px) {
     .timer-container {
         flex-wrap: wrap;
@@ -1655,6 +1782,128 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Currency symbol mapping
+const currencySymbols = {
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'INR': '₹',
+    'AUD': '$',
+    'CAD': '$',
+    'SGD': '$',
+    'JPY': '¥'
+};
+
+// Budget editing functions
+function toggleBudgetEdit() {
+    const display = document.getElementById('budgetDisplay');
+    const edit = document.getElementById('budgetEdit');
+    
+    if (display.style.display === 'none') {
+        display.style.display = 'block';
+        edit.style.display = 'none';
+    } else {
+        display.style.display = 'none';
+        edit.style.display = 'block';
+    }
+}
+
+function updateCurrencySymbol() {
+    const currencySelect = document.getElementById('budgetCurrency');
+    const selectedCurrency = currencySelect.value.toUpperCase();
+    const symbolDisplay = document.getElementById('currencySymbolDisplay');
+    
+    if (symbolDisplay) {
+        const symbol = currencySymbols[selectedCurrency] || selectedCurrency;
+        symbolDisplay.textContent = symbol;
+        console.log('[BUDGET] Currency changed to: ' + selectedCurrency + ' (' + symbol + ')');
+    }
+}
+
+function saveBudget(event) {
+    event.preventDefault();
+    
+    const projectId = '<?= $project['id'] ?>';
+    const budgetAmount = document.getElementById('budgetAmount').value;
+    const currency = document.getElementById('budgetCurrency').value;
+    
+    console.log('[BUDGET] Saving budget for project:', projectId);
+    console.log('[BUDGET] Amount:', budgetAmount, 'Currency:', currency);
+    
+    const btn = event.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+    
+    const apiUrl = `<?= url('/api/v1/projects') ?>/${projectId}/budget`;
+    console.log('[BUDGET] API URL:', apiUrl);
+    
+    fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            budget: parseFloat(budgetAmount),
+            currency: currency
+        })
+    })
+    .then(response => {
+        console.log('[BUDGET] Response status:', response.status);
+        console.log('[BUDGET] Response headers:', {
+            contentType: response.headers.get('content-type'),
+            contentLength: response.headers.get('content-length')
+        });
+        
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // If response is not JSON, convert to text and log full content
+            return response.text().then(text => {
+                console.error('[BUDGET] Non-JSON response. Content length:', text.length);
+                console.error('[BUDGET] Response content (first 500 chars):', text.substring(0, 500));
+                throw new Error('Server returned non-JSON response (Content-Type: ' + contentType + '). Response: ' + text.substring(0, 200));
+            });
+        }
+        
+        // If HTTP status is not 2xx, still try to parse JSON for error details
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error('API Error ' + response.status + ': ' + (data.error || data.message || 'Unknown error'));
+            }).catch(parseError => {
+                throw new Error('API Error ' + response.status + ': Response was not valid JSON');
+            });
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('[BUDGET] Success response:', data);
+        if (data.success) {
+            // Update the display with new budget data
+            const budget = data.budget;
+            console.log('[BUDGET] Budget updated successfully');
+            
+            // Reload the page to refresh all data
+            window.location.reload();
+        } else {
+            const errorMsg = data.error || data.message || 'Failed to update budget';
+            console.error('[BUDGET] API returned success=false:', errorMsg);
+            alert('Error: ' + errorMsg);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Save Budget';
+        }
+    })
+    .catch(error => {
+        console.error('[BUDGET] Error caught:', error);
+        console.error('[BUDGET] Error message:', error.message);
+        console.error('[BUDGET] Error stack:', error.stack);
+        alert('Error saving budget: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Save Budget';
+    });
+}
 </script>
 
 <?php \App\Core\View::endSection(); ?>

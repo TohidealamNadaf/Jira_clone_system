@@ -60,6 +60,11 @@
                         <span>Security</span>
                         <i class="bi bi-chevron-right nav-chevron"></i>
                     </a>
+                    <a href="<?= url('/profile/settings') ?>" class="profile-nav-item" data-section="settings">
+                        <i class="bi bi-gear"></i>
+                        <span>Settings</span>
+                        <i class="bi bi-chevron-right nav-chevron"></i>
+                    </a>
                     <a href="<?= url('/profile/tokens') ?>" class="profile-nav-item active" data-section="tokens">
                         <i class="bi bi-key"></i>
                         <span>API Tokens</span>

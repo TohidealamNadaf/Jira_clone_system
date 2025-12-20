@@ -34,6 +34,8 @@ const FloatingTimer = (() => {
         issueKey: '',
         rateAmount: 0,
         rateType: 'hourly',
+        currency: 'USD',
+        currencySymbol: '$',
         timerInterval: null,
         syncInterval: null
     };
@@ -88,7 +90,7 @@ const FloatingTimer = (() => {
 
                     <div class="floating-timer__cost-display">
                         <span class="floating-timer__cost-label">Cost:</span>
-                        <span class="floating-timer__cost">$0.00</span>
+                        <span class="floating-timer__cost">$0.00</span> <!-- Will be updated with actual currency -->
                     </div>
 
                     <div class="floating-timer__controls">
@@ -187,8 +189,10 @@ const FloatingTimer = (() => {
                 state.elapsedSeconds = data.elapsed_seconds;
                 state.rateType = data.rate_type;
                 state.rateAmount = data.rate_amount;
+                state.currency = data.currency || 'USD';
+                state.currencySymbol = getCurrencySymbol(state.currency);
 
-                console.log('[FloatingTimer] Found active timer for issue:', state.issueKey);
+                console.log('[FloatingTimer] Found active timer for issue:', state.issueKey, 'Currency:', state.currency);
                 updateDisplay();
                 showTimer();
                 startTimerTick();
@@ -212,11 +216,36 @@ const FloatingTimer = (() => {
     }
 
     /**
+     * Get deployment-aware API URL
+     */
+    function getApiUrl(endpoint) {
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        return basePath.replace(/\/$/, '') + config.apiBaseUrl + endpoint;
+    }
+
+    /**
+     * Get currency symbol from currency code
+     */
+    function getCurrencySymbol(currency) {
+        const symbols = {
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'INR': '₹',
+            'AUD': 'A$',
+            'CAD': 'C$',
+            'SGD': 'S$',
+            'JPY': '¥'
+        };
+        return symbols[currency] || '$';
+    }
+
+    /**
      * Start timer for specific issue
      */
     async function startTimer(issueId, projectId, issueSummary, issueKey) {
         try {
-            const response = await fetch(`${config.apiBaseUrl}/start`, {
+            const response = await fetch(getApiUrl('/start'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -243,13 +272,17 @@ const FloatingTimer = (() => {
             state.issueKey = issueKey || 'ISSUE';
             state.startTime = data.start_time * 1000;
             state.elapsedSeconds = 0;
+            state.rateType = data.rate_type || 'hourly';
+            state.rateAmount = data.rate_amount || 0;
+            state.currency = data.currency || 'USD';
+            state.currencySymbol = getCurrencySymbol(state.currency);
 
             updateDisplay();
             showTimer();
             startTimerTick();
             startSync();
 
-            console.log('[FloatingTimer] Timer started for issue:', issueKey);
+            console.log('[FloatingTimer] Timer started for issue:', issueKey, 'Currency:', state.currency);
             showNotification('Timer started', 'success');
         } catch (error) {
             console.error('[FloatingTimer] Error starting timer:', error);
@@ -262,7 +295,7 @@ const FloatingTimer = (() => {
      */
     async function pauseTimer() {
         try {
-            const response = await fetch(`${config.apiBaseUrl}/pause`, {
+            const response = await fetch(getApiUrl('/pause'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -275,13 +308,18 @@ const FloatingTimer = (() => {
                 throw new Error(error.error || 'Failed to pause timer');
             }
 
+            const data = await response.json();
+
+            // Keep isRunning true so timer stays visible
+            // Only set isPaused to true for UI state
             state.isPaused = true;
+            state.elapsedSeconds = data.elapsed_seconds || 0;
             stopTimerTick();
 
             updateDisplay();
             showNotification('Timer paused', 'info');
 
-            console.log('[FloatingTimer] Timer paused');
+            console.log('[FloatingTimer] Timer paused - elapsed: ' + formatSeconds(state.elapsedSeconds));
         } catch (error) {
             console.error('[FloatingTimer] Error pausing timer:', error);
             showNotification(error.message, 'error');
@@ -293,7 +331,7 @@ const FloatingTimer = (() => {
      */
     async function resumeTimer() {
         try {
-            const response = await fetch(`${config.apiBaseUrl}/resume`, {
+            const response = await fetch(getApiUrl('/resume'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -309,14 +347,22 @@ const FloatingTimer = (() => {
             const data = await response.json();
 
             state.isPaused = false;
-            state.startTime = data.start_time ? data.start_time * 1000 : Date.now();
             state.elapsedSeconds = data.elapsed_seconds || 0;
+            
+            // Calculate startTime so that (now - startTime) = elapsedSeconds
+            // This ensures the timer continues from where it was paused
+            const now = Date.now();
+            state.startTime = now - (state.elapsedSeconds * 1000);
+            
+            state.currency = data.currency || 'USD';
+            state.currencySymbol = getCurrencySymbol(state.currency);
 
             updateDisplay();
             startTimerTick();
+            startSync();
             showNotification('Timer resumed', 'success');
 
-            console.log('[FloatingTimer] Timer resumed');
+            console.log('[FloatingTimer] Timer resumed - elapsed: ' + formatSeconds(state.elapsedSeconds));
         } catch (error) {
             console.error('[FloatingTimer] Error resuming timer:', error);
             showNotification(error.message, 'error');
@@ -339,7 +385,7 @@ const FloatingTimer = (() => {
      */
     async function stopTimer(description = null) {
         try {
-            const response = await fetch(`${config.apiBaseUrl}/stop`, {
+            const response = await fetch(getApiUrl('/stop'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -370,9 +416,15 @@ const FloatingTimer = (() => {
 
             console.log('[FloatingTimer] Timer stopped');
             showNotification(
-                `Logged ${formatSeconds(data.elapsed_seconds)} for $${data.cost.toFixed(2)}`,
+                `Logged ${formatSeconds(data.elapsed_seconds)} for ${state.currencySymbol}${data.cost.toFixed(2)}`,
                 'success'
             );
+
+            // Refresh page after 2 seconds to show updated time logs
+            console.log('[FloatingTimer] Refreshing page to show updated time logs...');
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
         } catch (error) {
             console.error('[FloatingTimer] Error stopping timer:', error);
             showNotification(error.message, 'error');
@@ -433,7 +485,7 @@ const FloatingTimer = (() => {
      */
     async function syncWithServer() {
         try {
-            const response = await fetch(`${config.apiBaseUrl}/status`);
+            const response = await fetch(getApiUrl('/status'));
             const data = await response.json();
 
             if (data.status === 'stopped') {
@@ -466,7 +518,7 @@ const FloatingTimer = (() => {
         } else if (state.rateType === 'secondly') {
             cost = state.elapsedSeconds * state.rateAmount;
         }
-        elements.costDisplay.textContent = `$${cost.toFixed(2)}`;
+        elements.costDisplay.textContent = `${state.currencySymbol}${cost.toFixed(2)}`;
 
         // Update issue display
         elements.issueDisplay.textContent = state.issueKey;

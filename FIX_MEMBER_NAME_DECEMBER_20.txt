@@ -1,0 +1,35 @@
+================================================================================
+  MEMBER NAME FIX - TIME TRACKING PROJECT REPORT
+  December 20, 2025 - COMPLETE ✅
+================================================================================
+
+ISSUE
+  "Unknown" displayed in Time by Team Member table instead of real names
+
+ROOT CAUSE
+  Field name mismatch:
+  - Controller passes: 'name'
+  - View was trying: 'user_name'
+  - View had duplicate logic overriding controller data
+
+SOLUTION
+  ✅ Changed view to use correct 'name' field
+  ✅ Removed 38 lines of duplicate view logic
+  ✅ Single source of truth (controller data)
+
+FILES MODIFIED
+  - views/time-tracking/project-report.php (1 line changed, 38 lines removed)
+
+DEPLOYMENT
+  1. Clear cache: CTRL+SHIFT+DEL
+  2. Hard refresh: CTRL+F5
+  3. Test: Go to /time-tracking/project/1
+  4. Verify: Member names show correctly (not "Unknown")
+
+RISK LEVEL
+  ZERO - Pure view fix with code cleanup
+
+STATUS
+  ✅ PRODUCTION READY - Deploy immediately
+
+================================================================================

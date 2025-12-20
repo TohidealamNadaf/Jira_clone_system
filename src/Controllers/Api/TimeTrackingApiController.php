@@ -130,7 +130,8 @@ class TimeTrackingApiController extends Controller
                 'started_at' => $startTime,
                 'elapsed_seconds' => $elapsedSeconds,
                 'rate_type' => $timeLog['user_rate_type'],
-                'rate_amount' => (float)$timeLog['user_rate_amount']
+                'rate_amount' => (float)$timeLog['user_rate_amount'],
+                'currency' => $timeLog['currency'] ?? 'USD'
             ]);
         } catch (Exception $e) {
             $this->json(['error' => $e->getMessage()], 500);

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget API Debug Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #333; margin: 20px 0; }
+        .section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        button { background: #0052CC; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        button:hover { background: #0044A4; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .output { background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin: 10px 0; max-height: 400px; overflow-y: auto; font-family: 'Monaco', monospace; font-size: 12px; }
+        .success { border-left: 4px solid #4caf50; background: #f1f8f4; }
+        .error { border-left: 4px solid #f44336; background: #fef5f5; }
+        .warning { border-left: 4px solid #ff9800; background: #fff8f0; }
+        .info { border-left: 4px solid #2196F3; background: #f0f7ff; }
+        pre { margin: 0; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 3px; font-weight: 600; margin: 5px 0; }
+        .status-running { background: #e3f2fd; color: #1976d2; }
+        .status-done { background: #e8f5e9; color: #388e3c; }
+        .status-error { background: #ffebee; color: #d32f2f; }
+        .test-item { margin: 10px 0; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Budget API Debug Tool</h1>
+        
+        <div class="section">
+            <h2>Test Settings</h2>
+            <div class="form-group">
+                <label for="apiUrl">API URL</label>
+                <input type="text" id="apiUrl" value="/jira_clone_system/public/api/v1/projects" readonly>
+            </div>
+            <div class="form-group">
+                <label for="projectId">Project ID</label>
+                <input type="number" id="projectId" value="1" min="1">
+            </div>
+            <div class="form-group">
+                <label for="budgetAmount">Budget Amount</label>
+                <input type="number" id="budgetAmount" value="50000" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label for="currency">Currency</label>
+                <select id="currency">
+                    <option value="USD">USD</option>
+                    <option value="EUR" selected>EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="INR">INR</option>
+                </select>
+            </div>
+            <button id="testBtn" onclick="testBudgetAPI()">Test Budget API</button>
+        </div>
+
+        <div class="section">
+            <h2>Request Details</h2>
+            <div id="requestOutput" class="output info" style="display: none;">
+                <pre id="requestContent"></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Response Details</h2>
+            <div id="responseStatus" style="margin: 10px 0;"></div>
+            <div id="responseOutput" class="output" style="display: none;">
+                <pre id="responseContent"></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Response Headers</h2>
+            <div id="headersOutput" class="output" style="display: none;">
+                <pre id="headersContent"></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Debug Information</h2>
+            <div id="debugOutput" class="output" style="display: none;">
+                <div id="debugContent"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Curl Test (For Server Admin)</h2>
+            <p>Copy this command to test from terminal:</p>
+            <div id="curlOutput" class="output">
+                <pre id="curlCommand">curl -X PUT http://localhost:8080/jira_clone_system/public/api/v1/projects/1/budget \
+  -H "Content-Type: application/json" \
+  -d '{"budget": 50000, "currency": "EUR"}'</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testBudgetAPI() {
+            const projectId = document.getElementById('projectId').value;
+            const budgetAmount = parseFloat(document.getElementById('budgetAmount').value);
+            const currency = document.getElementById('currency').value;
+            
+            const apiUrl = `/jira_clone_system/public/api/v1/projects/${projectId}/budget`;
+            const requestData = { budget: budgetAmount, currency: currency };
+            
+            // Show request details
+            const requestOutput = document.getElementById('requestOutput');
+            const requestContent = document.getElementById('requestContent');
+            requestContent.textContent = JSON.stringify({
+                method: 'PUT',
+                url: apiUrl,
+                headers: { 'Content-Type': 'application/json' },
+                body: requestData
+            }, null, 2);
+            requestOutput.style.display = 'block';
+            
+            // Clear previous response
+            const responseStatus = document.getElementById('responseStatus');
+            responseStatus.innerHTML = '<span class="status-badge status-running">Testing...</span>';
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                // Show response status
+                const statusClass = response.ok ? 'status-done' : 'status-error';
+                const statusText = response.ok ? 'Success' : 'Error';
+                responseStatus.innerHTML = `<span class="status-badge ${statusClass}">HTTP ${response.status} - ${statusText}</span>`;
+                
+                // Show response headers
+                const headersOutput = document.getElementById('headersOutput');
+                const headersContent = document.getElementById('headersContent');
+                let headersText = '';
+                headersText += `Status: ${response.status} ${response.statusText}\n`;
+                headersText += `Content-Type: ${response.headers.get('content-type') || 'Not set'}\n`;
+                headersText += `Content-Length: ${response.headers.get('content-length') || 'Not set'}\n`;
+                headersContent.textContent = headersText;
+                headersOutput.style.display = 'block';
+                
+                // Get response text first
+                const responseText = await response.text();
+                const responseOutput = document.getElementById('responseOutput');
+                const responseContent = document.getElementById('responseContent');
+                
+                // Try to parse as JSON
+                try {
+                    const responseJSON = JSON.parse(responseText);
+                    responseOutput.className = response.ok ? 'output success' : 'output error';
+                    responseContent.textContent = JSON.stringify(responseJSON, null, 2);
+                } catch (parseError) {
+                    responseOutput.className = 'output error';
+                    responseContent.textContent = `Raw Response (Failed to parse as JSON):\n\n${responseText}`;
+                }
+                responseOutput.style.display = 'block';
+                
+                // Debug info
+                const debugOutput = document.getElementById('debugOutput');
+                const debugContent = document.getElementById('debugContent');
+                debugContent.innerHTML = `
+                    <div class="test-item">
+                        <strong>✓ Request sent successfully</strong><br>
+                        Status Code: <code>${response.status}</code><br>
+                        Content-Type: <code>${response.headers.get('content-type') || 'Not set'}</code><br>
+                        Response Size: <code>${responseText.length} bytes</code>
+                    </div>
+                    ${!response.ok ? `
+                    <div class="test-item" style="background: #ffebee;">
+                        <strong>✗ API returned error</strong><br>
+                        The API rejected the request with status ${response.status}.<br>
+                        Check the response above for details.
+                    </div>
+                    ` : `
+                    <div class="test-item" style="background: #e8f5e9;">
+                        <strong>✓ API returned success</strong><br>
+                        Budget should be updated. Check database or refresh page.
+                    </div>
+                    `}
+                `;
+                debugOutput.style.display = 'block';
+                
+            } catch (error) {
+                responseStatus.innerHTML = '<span class="status-badge status-error">Network Error</span>';
+                const debugOutput = document.getElementById('debugOutput');
+                const debugContent = document.getElementById('debugContent');
+                debugContent.innerHTML = `
+                    <div class="test-item" style="background: #ffebee;">
+                        <strong>✗ Network Error</strong><br>
+                        <code>${error.message}</code><br><br>
+                        Possible causes:<br>
+                        - Server is down<br>
+                        - CORS error (check browser console)<br>
+                        - Network connectivity issue<br>
+                        - Invalid URL
+                    </div>
+                `;
+                debugOutput.style.display = 'block';
+            }
+        }
+
+        // Update curl command when values change
+        document.getElementById('projectId').addEventListener('change', updateCurl);
+        document.getElementById('budgetAmount').addEventListener('change', updateCurl);
+        document.getElementById('currency').addEventListener('change', updateCurl);
+
+        function updateCurl() {
+            const projectId = document.getElementById('projectId').value;
+            const budgetAmount = document.getElementById('budgetAmount').value;
+            const currency = document.getElementById('currency').value;
+            
+            const cmd = `curl -X PUT http://localhost:8080/jira_clone_system/public/api/v1/projects/${projectId}/budget \\
+  -H "Content-Type: application/json" \\
+  -d '{"budget": ${budgetAmount}, "currency": "${currency}"}'`;
+            
+            document.getElementById('curlCommand').textContent = cmd;
+        }
+    </script>
+</body>
+</html>

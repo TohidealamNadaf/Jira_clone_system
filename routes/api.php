@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 use App\Controllers\Api\AuthApiController;
 use App\Controllers\Api\ProjectApiController;
+use App\Controllers\Api\ProjectBudgetApiController;
 use App\Controllers\Api\IssueApiController;
 use App\Controllers\Api\BoardApiController;
 use App\Controllers\Api\SprintApiController;
@@ -70,6 +71,10 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
         $router->post('/projects/{key}/versions', [ProjectApiController::class, 'storeVersion']);
         $router->put('/versions/{id}', [ProjectApiController::class, 'updateVersion']);
         $router->delete('/versions/{id}', [ProjectApiController::class, 'destroyVersion']);
+        
+        // Project Budget
+        $router->get('/projects/{projectId}/budget', [ProjectBudgetApiController::class, 'getBudget']);
+        $router->put('/projects/{projectId}/budget', [ProjectBudgetApiController::class, 'updateBudget']);
         
         // Issues
         $router->get('/issues', [IssueApiController::class, 'index']);

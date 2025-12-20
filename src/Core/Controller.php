@@ -31,10 +31,36 @@ abstract class Controller
 
     /**
      * Return JSON response
+     * 
+     * Direct JSON response without relying on global json() function
+     * to ensure proper header handling
      */
     protected function json(mixed $data, int $status = 200): never
     {
-        json($data, $status);
+        // Clear any output buffer to prevent mixing content
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        
+        // Set HTTP response code
+        http_response_code($status);
+        
+        // Set proper JSON headers BEFORE any output
+        header('Content-Type: application/json; charset=utf-8', true);
+        header('Cache-Control: no-cache, no-store, must-revalidate', true);
+        header('Pragma: no-cache', true);
+        header('Expires: 0', true);
+        
+        // Encode and output JSON
+        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        
+        // Final safety: ensure headers are actually sent
+        if (!headers_sent()) {
+            header('Content-Length: ' . strlen($json), true);
+        }
+        
+        echo $json;
+        exit();
     }
 
     /**

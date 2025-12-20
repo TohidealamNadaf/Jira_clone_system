@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Budget API</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; }
+        .section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        .output { background: white; border: 1px solid #ddd; padding: 15px; margin-top: 10px; border-radius: 3px; max-height: 400px; overflow-y: auto; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Budget API Test</h1>
+    
+    <div class="section">
+        <h2>Test Configuration</h2>
+        <label>Project ID: <input type="number" id="projectId" value="1" style="width: 100px;"></label>
+        <br><br>
+        <label>Budget Amount: <input type="number" id="budget" value="50000" step="0.01" style="width: 150px;"></label>
+        <br><br>
+        <label>Currency: 
+            <select id="currency">
+                <option>USD</option>
+                <option selected>EUR</option>
+                <option>GBP</option>
+                <option>INR</option>
+            </select>
+        </label>
+        <br><br>
+        <button onclick="testBudgetAPI()">Test Budget API</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+
+    <div class="section">
+        <h2>Test Output</h2>
+        <div id="output" class="output"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const className = type === 'success' ? 'success' : (type === 'error' ? 'error' : 'info');
+            const line = document.createElement('div');
+            line.className = className;
+            line.textContent = message;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+
+        async function testBudgetAPI() {
+            clearOutput();
+            
+            const projectId = document.getElementById('projectId').value;
+            const budget = document.getElementById('budget').value;
+            const currency = document.getElementById('currency').value;
+            
+            log('Starting Budget API Test...', 'info');
+            log('Project ID: ' + projectId, 'info');
+            log('Budget: ' + budget, 'info');
+            log('Currency: ' + currency, 'info');
+            log('', 'info');
+            
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            log('CSRF Token: ' + (csrfToken ? 'Found (' + csrfToken.length + ' chars)' : 'NOT FOUND'), csrfToken ? 'success' : 'error');
+            
+            // Build API URL
+            const baseUrl = window.location.origin;
+            const apiUrl = baseUrl + '/jira_clone_system/public/api/v1/projects/' + projectId + '/budget';
+            
+            log('', 'info');
+            log('API Endpoint: ' + apiUrl, 'info');
+            log('Method: PUT', 'info');
+            log('Content-Type: application/json', 'info');
+            log('', 'info');
+            
+            const requestBody = {
+                budget: parseFloat(budget),
+                currency: currency
+            };
+            
+            log('Request Body:', 'info');
+            log(JSON.stringify(requestBody, null, 2), 'info');
+            log('', 'info');
+            
+            try {
+                log('Sending request...', 'info');
+                
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken || ''
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                log('Response Status: ' + response.status + ' ' + response.statusText, response.ok ? 'success' : 'error');
+                
+                // Check content type
+                const contentType = response.headers.get('content-type');
+                log('Response Content-Type: ' + (contentType || 'NOT SET'), 'info');
+                
+                // Get response text first
+                const responseText = await response.text();
+                log('Response Length: ' + responseText.length + ' bytes', 'info');
+                log('', 'info');
+                
+                log('Raw Response Text:', 'info');
+                log(responseText, 'info');
+                log('', 'info');
+                
+                // Try to parse as JSON
+                try {
+                    const responseData = JSON.parse(responseText);
+                    log('✓ Valid JSON parsed successfully', 'success');
+                    log('Response Data:', 'success');
+                    log(JSON.stringify(responseData, null, 2), 'success');
+                    
+                    if (responseData.success) {
+                        log('✓ Budget updated successfully!', 'success');
+                    } else {
+                        log('✗ Server returned error: ' + (responseData.error || 'Unknown error'), 'error');
+                    }
+                } catch (parseError) {
+                    log('✗ JSON Parse Error: ' + parseError.message, 'error');
+                    log('Character at position 181: ' + (responseText.length > 180 ? JSON.stringify(responseText[180]) : '(beyond length)'), 'error');
+                    log('Hex dump of last 50 bytes:', 'error');
+                    
+                    const lastBytes = responseText.slice(-50);
+                    let hexDump = '';
+                    for (let i = 0; i < lastBytes.length; i++) {
+                        hexDump += lastBytes.charCodeAt(i).toString(16).padStart(2, '0') + ' ';
+                    }
+                    log(hexDump, 'error');
+                }
+                
+            } catch (error) {
+                log('✗ Fetch Error: ' + error.message, 'error');
+                log(error.stack, 'error');
+            }
+        }
+        
+        // Log when page loads
+        window.addEventListener('load', () => {
+            log('Page loaded. Click "Test Budget API" to start.', 'info');
+        });
+    </script>
+</body>
+</html>

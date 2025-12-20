@@ -1,0 +1,79 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   USER SETTINGS TABLE - QUICK SETUP GUIDE                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+ERROR YOU GOT:
+  "Database table not initialized. Please create the settings table first."
+
+REASON:
+  The user_settings table doesn't exist in your database yet.
+
+SOLUTION (3 SIMPLE STEPS):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: RUN SETUP SCRIPT
+  Open this link in your browser:
+  
+  → http://localhost:8080/jira_clone_system/public/setup-settings-table.php
+  
+  (Replace localhost with your IP if accessing from another PC)
+
+STEP 2: CHECK FOR SUCCESS MESSAGE
+  You should see:
+  ✓ Setup Successful
+  ✓ The user_settings table has been created successfully!
+  
+  If you see an error, check:
+  - MySQL is running in XAMPP
+  - Database connection is configured in config/config.php
+
+STEP 3: UPDATE YOUR SETTINGS
+  1. Log into your account
+  2. Go to: Profile → Settings
+  3. Scroll down to "Time Tracking Rates"
+  4. Enter your annual package (e.g., 1000000)
+  5. Select currency (e.g., INR)
+  6. Click "Save Settings"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TABLE CREATED:
+  - 14 columns
+  - 3 indexes
+  - 7 currencies supported
+  - Auto-calculates hourly/daily/minute rates
+
+WHAT GETS STORED:
+  ✓ Annual package (e.g., ₹1,000,000)
+  ✓ Currency (USD, EUR, GBP, INR, AUD, CAD, SGD, JPY)
+  ✓ Hourly rate (auto-calculated)
+  ✓ Daily rate (auto-calculated)  
+  ✓ Minute rate (auto-calculated)
+  ✓ Display preferences (language, timezone, layout)
+  ✓ Privacy settings
+  ✓ Accessibility options
+
+CALCULATION EXAMPLE:
+  Annual Package: ₹1,000,000
+  → Hourly Rate = ₹1,000,000 / 2,210 = ₹452.49/hour
+  → Daily Rate = ₹452.49 × 8.5 = ₹3,846.17/day
+  → Minute Rate = ₹452.49 / 60 = ₹7.54/minute
+
+AFTER SETUP:
+  ✓ Time tracking will work with cost calculations
+  ✓ Billable hours can be calculated
+  ✓ Project costs will be tracked
+  ✓ Reports will show financial impact
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+READY? 
+  → Click this link: http://localhost:8080/jira_clone_system/public/setup-settings-table.php
+  → Then go to Profile → Settings
+  → Enter your annual package
+  → Done! ✓
+
+FULL GUIDE:
+  See: USER_SETTINGS_TABLE_SETUP_GUIDE.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

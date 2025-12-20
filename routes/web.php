@@ -185,6 +185,8 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/profile/notifications', [UserController::class, 'profileNotifications'])->name('profile.notifications');
     $router->put('/profile/notifications', [UserController::class, 'updateNotificationSettings'])->name('profile.notifications.update');
     $router->get('/profile/security', [UserController::class, 'security'])->name('profile.security');
+    $router->get('/profile/settings', [UserController::class, 'settings'])->name('profile.settings');
+    $router->put('/profile/settings', [UserController::class, 'updateSettings'])->name('profile.settings.update');
     
     // Notifications
     $router->get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

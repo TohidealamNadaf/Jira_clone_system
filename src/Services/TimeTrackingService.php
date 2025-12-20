@@ -48,37 +48,31 @@ class TimeTrackingService
 
             // Create new time log entry
             $startTime = new DateTime();
-            $sql = "
-                INSERT INTO " . self::TABLE_TIME_LOGS . " (
-                    issue_id, user_id, project_id,
-                    status, start_time, paused_at,
-                    duration_seconds, paused_seconds,
-                    user_rate_type, user_rate_amount,
-                    total_cost, currency, is_billable
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ";
-
-            Database::execute($sql, [
-                $issueId, $userId, $projectId,
-                'running', $startTime->format('Y-m-d H:i:s'), $startTime->format('Y-m-d H:i:s'),
-                0, 0,
-                $userRate['rate_type'], $userRate['rate_amount'],
-                0.00, $userRate['currency'], 1
+            
+            $timeLogId = Database::insert(self::TABLE_TIME_LOGS, [
+                'issue_id' => $issueId,
+                'user_id' => $userId,
+                'project_id' => $projectId,
+                'status' => 'running',
+                'start_time' => $startTime->format('Y-m-d H:i:s'),
+                'paused_at' => $startTime->format('Y-m-d H:i:s'),
+                'duration_seconds' => 0,
+                'paused_seconds' => 0,
+                'user_rate_type' => $userRate['rate_type'],
+                'user_rate_amount' => $userRate['rate_amount'],
+                'total_cost' => 0.00,
+                'currency' => $userRate['currency'],
+                'is_billable' => 1
             ]);
 
-            $timeLogId = Database::lastInsertId();
-
             // Create active timer entry
-            $sql = "
-                INSERT INTO " . self::TABLE_ACTIVE_TIMERS . " (
-                    user_id, issue_time_log_id, issue_id, project_id,
-                    started_at, last_heartbeat
-                ) VALUES (?, ?, ?, ?, ?, ?)
-            ";
-
-            Database::execute($sql, [
-                $userId, $timeLogId, $issueId, $projectId,
-                $startTime->format('Y-m-d H:i:s'), $startTime->format('Y-m-d H:i:s')
+            Database::insert(self::TABLE_ACTIVE_TIMERS, [
+                'user_id' => $userId,
+                'issue_time_log_id' => $timeLogId,
+                'issue_id' => $issueId,
+                'project_id' => $projectId,
+                'started_at' => $startTime->format('Y-m-d H:i:s'),
+                'last_heartbeat' => $startTime->format('Y-m-d H:i:s')
             ]);
 
             return [
@@ -87,7 +81,10 @@ class TimeTrackingService
                 'status' => 'running',
                 'start_time' => $startTime->getTimestamp(),
                 'elapsed_seconds' => 0,
-                'cost' => 0.00
+                'cost' => 0.00,
+                'rate_type' => $userRate['rate_type'],
+                'rate_amount' => $userRate['rate_amount'],
+                'currency' => $userRate['currency']
             ];
         } catch (Exception $e) {
             throw $e;
@@ -117,37 +114,36 @@ class TimeTrackingService
             $startTime = new DateTime($timeLog['start_time']);
             $elapsedSeconds = (int)$pausedAt->getTimestamp() - (int)$startTime->getTimestamp();
 
-            // Update time log
-            $sql = "
-                UPDATE " . self::TABLE_TIME_LOGS . "
-                SET status = 'paused', paused_at = ?, duration_seconds = ?, total_cost = ?
-                WHERE id = ?
-            ";
-
             $totalCost = $this->calculateCost(
                 $elapsedSeconds,
                 $timeLog['user_rate_type'],
                 (float)$timeLog['user_rate_amount']
             );
 
-            Database::execute($sql, [
-                $pausedAt->format('Y-m-d H:i:s'),
-                $elapsedSeconds,
-                $totalCost,
-                $timeLogId
-            ]);
+            // Update time log
+            Database::update(self::TABLE_TIME_LOGS, [
+                'status' => 'paused',
+                'paused_at' => $pausedAt->format('Y-m-d H:i:s'),
+                'duration_seconds' => $elapsedSeconds,
+                'total_cost' => $totalCost
+            ], 'id = ?', [$timeLogId]);
 
-            // Remove from active timers
-            Database::execute(
-                "DELETE FROM " . self::TABLE_ACTIVE_TIMERS . " WHERE user_id = ?",
-                [$userId]
-            );
+            // Keep active timer entry so timer can be resumed
+            // Only delete active timer when user explicitly stops (not pauses)
+            // Update heartbeat for tracking
+            Database::update(self::TABLE_ACTIVE_TIMERS, [
+                'last_heartbeat' => $pausedAt->format('Y-m-d H:i:s')
+            ], 'user_id = ?', [$userId]);
 
             return [
                 'success' => true,
                 'status' => 'paused',
                 'elapsed_seconds' => $elapsedSeconds,
-                'cost' => $totalCost
+                'cost' => $totalCost,
+                'time_log_id' => $timeLogId,
+                'rate_type' => $timeLog['user_rate_type'],
+                'rate_amount' => (float)$timeLog['user_rate_amount'],
+                'currency' => $timeLog['currency'] ?? 'USD'
             ];
         } catch (Exception $e) {
             throw $e;
@@ -164,52 +160,65 @@ class TimeTrackingService
     public function resumeTimer(int $userId): array
     {
         try {
-            // Get the most recent paused timer for this user
-            $sql = "
-                SELECT * FROM " . self::TABLE_TIME_LOGS . "
-                WHERE user_id = ? AND status = 'paused'
-                ORDER BY created_at DESC
-                LIMIT 1
-            ";
-
-            $timeLog = Database::selectOne($sql, [$userId]);
-            if (!$timeLog) {
+            // First, get the active timer entry to find which time log to resume
+            $activeTimer = $this->getActiveTimer($userId);
+            if (!$activeTimer) {
                 throw new Exception("No paused timer found for this user.");
+            }
+
+            // Get the specific time log from active_timers reference
+            $timeLogId = $activeTimer['issue_time_log_id'];
+            $timeLog = $this->getTimeLog($timeLogId);
+            
+            // If already running, return success (idempotent operation)
+            if ($timeLog['status'] === 'running') {
+                // Timer is already running, just return current state
+                return [
+                    'success' => true,
+                    'time_log_id' => $timeLog['id'],
+                    'status' => 'running',
+                    'elapsed_seconds' => (int)$timeLog['duration_seconds'],
+                    'cost' => (float)$timeLog['total_cost'],
+                    'start_time' => strtotime($timeLog['start_time']),
+                    'rate_type' => $timeLog['user_rate_type'],
+                    'rate_amount' => (float)$timeLog['user_rate_amount'],
+                    'currency' => $timeLog['currency'] ?? 'USD'
+                ];
+            }
+            
+            // Only resume if paused
+            if ($timeLog['status'] !== 'paused') {
+                throw new Exception("Timer is in unexpected state: " . $timeLog['status']);
             }
 
             $resumedAt = new DateTime();
 
             // Update time log back to running
-            $sql = "
-                UPDATE " . self::TABLE_TIME_LOGS . "
-                SET status = 'running', resumed_at = ?
-                WHERE id = ?
-            ";
+            Database::update(self::TABLE_TIME_LOGS, [
+                'status' => 'running',
+                'resumed_at' => $resumedAt->format('Y-m-d H:i:s')
+            ], 'id = ?', [$timeLog['id']]);
 
-            Database::execute($sql, [
-                $resumedAt->format('Y-m-d H:i:s'),
-                $timeLog['id']
-            ]);
-
-            // Create new active timer
-            $sql = "
-                INSERT INTO " . self::TABLE_ACTIVE_TIMERS . " (
-                    user_id, issue_time_log_id, issue_id, project_id,
-                    started_at, last_heartbeat
-                ) VALUES (?, ?, ?, ?, ?, ?)
-            ";
-
-            Database::execute($sql, [
-                $userId, $timeLog['id'], $timeLog['issue_id'], $timeLog['project_id'],
-                $resumedAt->format('Y-m-d H:i:s'), $resumedAt->format('Y-m-d H:i:s')
-            ]);
+            // Update the existing active timer (don't insert a new one - violates UNIQUE constraint)
+            // active_timers has UNIQUE KEY on user_id, so only one timer per user
+            Database::update(self::TABLE_ACTIVE_TIMERS, [
+                'issue_time_log_id' => $timeLog['id'],
+                'issue_id' => $timeLog['issue_id'],
+                'project_id' => $timeLog['project_id'],
+                'started_at' => $resumedAt->format('Y-m-d H:i:s'),
+                'last_heartbeat' => $resumedAt->format('Y-m-d H:i:s')
+            ], 'user_id = ?', [$userId]);
 
             return [
                 'success' => true,
                 'time_log_id' => $timeLog['id'],
                 'status' => 'running',
                 'elapsed_seconds' => (int)$timeLog['duration_seconds'],
-                'cost' => (float)$timeLog['total_cost']
+                'cost' => (float)$timeLog['total_cost'],
+                'start_time' => $resumedAt->getTimestamp(),
+                'rate_type' => $timeLog['user_rate_type'],
+                'rate_amount' => (float)$timeLog['user_rate_amount'],
+                'currency' => $timeLog['currency'] ?? 'USD'
             ];
         } catch (Exception $e) {
             throw $e;
@@ -249,26 +258,16 @@ class TimeTrackingService
             );
 
             // Update time log
-            $sql = "
-                UPDATE " . self::TABLE_TIME_LOGS . "
-                SET status = 'stopped', end_time = ?, duration_seconds = ?,
-                    total_cost = ?, description = ?
-                WHERE id = ?
-            ";
-
-            Database::execute($sql, [
-                $stoppedAt->format('Y-m-d H:i:s'),
-                $totalElapsedSeconds,
-                $totalCost,
-                $description ?? '',
-                $timeLogId
-            ]);
+            Database::update(self::TABLE_TIME_LOGS, [
+                'status' => 'stopped',
+                'end_time' => $stoppedAt->format('Y-m-d H:i:s'),
+                'duration_seconds' => $totalElapsedSeconds,
+                'total_cost' => $totalCost,
+                'description' => $description ?? ''
+            ], 'id = ?', [$timeLogId]);
 
             // Remove from active timers
-            Database::execute(
-                "DELETE FROM " . self::TABLE_ACTIVE_TIMERS . " WHERE user_id = ?",
-                [$userId]
-            );
+            Database::delete(self::TABLE_ACTIVE_TIMERS, 'user_id = ?', [$userId]);
 
             // Update project budget if exists
             $this->updateProjectBudget($timeLog['project_id'], $totalCost);
@@ -410,6 +409,27 @@ class TimeTrackingService
      */
     public function getUserCurrentRate(int $userId): ?array
     {
+        // First try to get rate from user_settings (new system)
+        try {
+            $result = Database::selectOne(
+                "SELECT * FROM user_settings WHERE user_id = ? AND annual_package IS NOT NULL",
+                [$userId]
+            );
+            
+            if ($result && !empty($result['annual_package'])) {
+                return [
+                    'user_id' => $userId,
+                    'rate_type' => 'hourly',
+                    'rate_amount' => (float)$result['hourly_rate'],
+                    'currency' => $result['rate_currency'] ?? 'USD',
+                    'is_active' => 1
+                ];
+            }
+        } catch (Exception $e) {
+            // Table might not exist, continue to legacy system
+        }
+        
+        // Fall back to legacy user_rates table
         $sql = "
             SELECT * FROM " . self::TABLE_USER_RATES . "
             WHERE user_id = ? AND is_active = 1
@@ -447,26 +467,21 @@ class TimeTrackingService
 
         try {
             // Deactivate any existing rates of this type
-            $sql = "
-                UPDATE " . self::TABLE_USER_RATES . "
-                SET is_active = 0
-                WHERE user_id = ? AND rate_type = ?
-            ";
-            Database::execute($sql, [$userId, $rateType]);
+            Database::update(self::TABLE_USER_RATES, [
+                'is_active' => 0
+            ], 'user_id = ? AND rate_type = ?', [$userId, $rateType]);
 
             // Create new rate
-            $sql = "
-                INSERT INTO " . self::TABLE_USER_RATES . " (
-                    user_id, rate_type, rate_amount, currency, is_active, effective_from
-                ) VALUES (?, ?, ?, ?, ?, ?)
-            ";
-
             $today = (new DateTime())->format('Y-m-d');
-            Database::execute($sql, [
-                $userId, $rateType, $rateAmount, $currency, 1, $today
+            
+            $rateId = Database::insert(self::TABLE_USER_RATES, [
+                'user_id' => $userId,
+                'rate_type' => $rateType,
+                'rate_amount' => $rateAmount,
+                'currency' => $currency,
+                'is_active' => 1,
+                'effective_from' => $today
             ]);
-
-            $rateId = Database::lastInsertId();
 
             return [
                 'id' => $rateId,
@@ -530,13 +545,11 @@ class TimeTrackingService
     private function updateProjectBudget(int $projectId, float $additionalCost): void
     {
         try {
-            $sql = "
-                UPDATE project_budgets
-                SET total_cost = total_cost + ?
-                WHERE project_id = ?
-            ";
-
-            Database::execute($sql, [$additionalCost, $projectId]);
+            // Use raw query to handle arithmetic
+            Database::query(
+                "UPDATE project_budgets SET total_cost = total_cost + ? WHERE project_id = ?",
+                [$additionalCost, $projectId]
+            );
 
             // Check if we need to trigger alerts
             $this->checkBudgetAlerts($projectId);
@@ -594,19 +607,14 @@ class TimeTrackingService
             }
 
             // Create new alert
-            $sql = "
-                INSERT INTO budget_alerts (
-                    project_budget_id, project_id, alert_type,
-                    threshold_percentage, actual_percentage,
-                    cost_at_alert, remaining_budget_at_alert
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            ";
-
-            Database::execute($sql, [
-                $budget['id'], $projectId, $alertType,
-                $budget['alert_threshold'], $percentageUsed,
-                $budget['total_cost'],
-                $budget['total_budget'] - $budget['total_cost']
+            Database::insert('budget_alerts', [
+                'project_budget_id' => $budget['id'],
+                'project_id' => $projectId,
+                'alert_type' => $alertType,
+                'threshold_percentage' => $budget['alert_threshold'],
+                'actual_percentage' => $percentageUsed,
+                'cost_at_alert' => $budget['total_cost'],
+                'remaining_budget_at_alert' => $budget['total_budget'] - $budget['total_cost']
             ]);
         } catch (Exception $e) {
             error_log("Failed to check budget alerts: " . $e->getMessage());

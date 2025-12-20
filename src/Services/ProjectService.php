@@ -90,7 +90,7 @@ class ProjectService
     public function getProjectById(int $id): ?array
     {
         $project = Database::selectOne(
-            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at,
+            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at, p.budget, p.budget_currency,
                     u.display_name as lead_name,
                     pc.name as category_name
              FROM projects p
@@ -478,6 +478,91 @@ class ProjectService
         if (empty($data['name'])) {
             throw new \InvalidArgumentException('Version name is required');
         }
+    }
+
+    /**
+     * Get project budget
+     * 
+     * @param int $projectId
+     * @return array|null
+     */
+    public function getProjectBudget(int $projectId): ?array
+    {
+        return Database::selectOne(
+            "SELECT budget, budget_currency FROM projects WHERE id = ?",
+            [$projectId]
+        );
+    }
+
+    /**
+     * Set project budget
+     * 
+     * @param int $projectId
+     * @param float $budget
+     * @param string $currency
+     * @return bool
+     */
+    public function setProjectBudget(int $projectId, float $budget, string $currency = 'USD'): bool
+    {
+        return Database::update(
+            'projects',
+            [
+                'budget' => $budget,
+                'budget_currency' => $currency
+            ],
+            'id = ?',
+            [$projectId]
+        );
+    }
+
+    /**
+     * Get budget remaining for project
+     * 
+     * @param int $projectId
+     * @return array
+     */
+    public function getBudgetStatus(int $projectId): array
+    {
+        $project = $this->getProjectById($projectId);
+        if (!$project) {
+            return [
+                'budget' => 0.00,
+                'spent' => 0.00,
+                'remaining' => 0.00,
+                'percentage_used' => 0,
+                'currency' => 'USD'
+            ];
+        }
+
+        $totalBudget = (float)($project['budget'] ?? 0);
+        $currency = $project['budget_currency'] ?? 'USD';
+
+        // Get total spent from time tracking
+        $spent = 0.0;
+        try {
+            $result = Database::selectOne(
+                "SELECT COALESCE(SUM(total_cost), 0) as total_spent 
+                 FROM issue_time_logs 
+                 WHERE project_id = ? AND status = 'stopped'",
+                [$projectId]
+            );
+            $spent = (float)($result['total_spent'] ?? 0);
+        } catch (\Exception $e) {
+            // Table might not exist yet
+            $spent = 0.0;
+        }
+
+        $remaining = $totalBudget - $spent;
+        $percentageUsed = $totalBudget > 0 ? round(($spent / $totalBudget) * 100, 2) : 0;
+
+        return [
+            'budget' => $totalBudget,
+            'spent' => $spent,
+            'remaining' => max(0, $remaining),
+            'percentage_used' => min(100, $percentageUsed),
+            'currency' => $currency,
+            'is_exceeded' => $spent > $totalBudget
+        ];
     }
 
     private function logAudit(string $action, string $entityType, ?int $entityId, ?array $oldValues, ?array $newValues, int $userId): void

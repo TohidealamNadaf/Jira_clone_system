@@ -128,11 +128,13 @@ main {
 .reports-page-wrapper,
 .members-page-wrapper,
 .notifications-page-wrapper,
+.time-tracking-page-wrapper,
 .auth-page-wrapper,
 .error-page-wrapper {
-    padding: 1.5rem 2rem;
+    padding: 0 !important;
+    margin: 0 !important;
     background-color: var(--bg-primary);
-    width: 100%;
+    width: 100% !important;
     box-sizing: border-box;
 }
 

@@ -363,8 +363,8 @@ class TimeTrackingController extends Controller
         try {
             $request->validate([
                 'rate_type' => 'required|in:hourly,minutely,secondly',
-                'rate_amount' => 'required|numeric|min:0.01',
-                'currency' => 'required|size:3'
+                'rate_amount' => 'required|numeric|minValue:0.01',
+                'currency' => 'required|min:3|max:3'
             ]);
 
             $result = $this->timeTrackingService->setUserRate(
@@ -398,8 +398,8 @@ class TimeTrackingController extends Controller
                 throw new Exception("Project not found");
             }
 
-            // Get budget summary
-            $budgetSummary = $this->timeTrackingService->getProjectBudgetSummary($projectId);
+            // Get budget information
+            $budgetStatus = $this->projectService->getBudgetStatus($projectId);
 
             // Get time logs
             $timeLogs = $this->timeTrackingService->getProjectTimeLogs($projectId);
@@ -412,8 +412,8 @@ class TimeTrackingController extends Controller
             foreach ($timeLogs as $log) {
                 if (!isset($byUser[$log['user_id']])) {
                     $byUser[$log['user_id']] = [
-                        'name' => $log['display_name'],
-                        'avatar' => $log['avatar'],
+                        'name' => $log['display_name'] ?? $log['user_name'] ?? 'Unknown',
+                        'avatar' => $log['avatar'] ?? null,
                         'total_seconds' => 0,
                         'total_cost' => 0,
                         'log_count' => 0
@@ -426,13 +426,13 @@ class TimeTrackingController extends Controller
 
             return $this->view('time-tracking.project-report', [
                 'project' => $project,
-                'budget_summary' => $budgetSummary,
-                'time_logs' => $timeLogs,
+                'budget' => $budgetStatus,
+                'timeLogs' => $timeLogs,
                 'statistics' => $stats,
-                'by_user' => $byUser
+                'byUser' => $byUser
             ]);
         } catch (Exception $e) {
-            return $this->view('error', ['message' => $e->getMessage()]);
+            return $this->view('errors.500', ['message' => $e->getMessage()]);
         }
     }
 
@@ -491,7 +491,7 @@ class TimeTrackingController extends Controller
                 'by_project' => $byProject
             ]);
         } catch (Exception $e) {
-            return $this->view('error', ['message' => $e->getMessage()]);
+            return $this->view('errors.500', ['message' => $e->getMessage()]);
         }
     }
 
@@ -516,7 +516,7 @@ class TimeTrackingController extends Controller
                 'budgets' => $budgets
             ]);
         } catch (Exception $e) {
-            return $this->view('error', ['message' => $e->getMessage()]);
+            return $this->view('errors.500', ['message' => $e->getMessage()]);
         }
     }
-}
+    }

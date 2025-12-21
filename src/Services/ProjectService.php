@@ -332,7 +332,6 @@ class ProjectService
         return Database::select(
             "SELECT id, name, slug, description
              FROM roles
-             WHERE is_system = 0 OR slug IN ('project-admin', 'project-member', 'project-viewer')
              ORDER BY name ASC"
         );
     }

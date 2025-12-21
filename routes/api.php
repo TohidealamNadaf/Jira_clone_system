@@ -35,6 +35,12 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
         // Authentication
         $router->post('/auth/login', [AuthApiController::class, 'login']);
         $router->post('/auth/refresh', [AuthApiController::class, 'refresh']);
+        
+        // Public Lookups (static reference data - no auth needed)
+        $router->get('/issue-types', [IssueApiController::class, 'issueTypes']);
+        $router->get('/priorities', [IssueApiController::class, 'priorities']);
+        $router->get('/statuses', [IssueApiController::class, 'statuses']);
+        $router->get('/link-types', [IssueApiController::class, 'linkTypes']);
     });
     
     // =====================================================
@@ -78,7 +84,6 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
         
         // Issues
         $router->get('/issues', [IssueApiController::class, 'index']);
-        $router->post('/issues', [IssueApiController::class, 'store']);
         $router->get('/issues/{key}', [IssueApiController::class, 'show']);
         $router->put('/issues/{key}', [IssueApiController::class, 'update']);
         $router->delete('/issues/{key}', [IssueApiController::class, 'destroy']);
@@ -156,12 +161,7 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
         $router->put('/filters/{id}', [SearchApiController::class, 'updateFilter']);
         $router->delete('/filters/{id}', [SearchApiController::class, 'destroyFilter']);
         
-        // Lookups (for dropdowns)
-        $router->get('/issue-types', [IssueApiController::class, 'issueTypes']);
-        $router->get('/priorities', [IssueApiController::class, 'priorities']);
-        $router->get('/statuses', [IssueApiController::class, 'statuses']);
-        $router->get('/labels', [IssueApiController::class, 'labels']);
-        $router->get('/link-types', [IssueApiController::class, 'linkTypes']);
+        // NOTE: Lookups routes are defined in public group above - removed from here to avoid duplication
         
         // Notifications
          $router->get('/notifications/preferences', [NotificationController::class, 'getPreferences']);

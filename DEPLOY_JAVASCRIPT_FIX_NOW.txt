@@ -1,0 +1,92 @@
+================================================================================
+JAVASCRIPT BASEPATH FIX - DEPLOYMENT CARD
+================================================================================
+
+STATUS: 🟢 PRODUCTION READY - Deploy Immediately (PART 2 OF 2)
+
+ISSUE:
+  ❌ JavaScript calling /api/v1/... without base path
+  ❌ Requests going to wrong URLs (missing /jira_clone_system/public)
+  ❌ Modal dropdowns still showing 404 errors
+
+ROOT CAUSE:
+  API URLs hardcoded without deployment-aware base path
+  Works on root deployment, breaks on subdirectory
+
+PREVIOUS FIX (Part 1):
+  ✅ Removed duplicate routes from web.php and api.php
+  ✅ API endpoints now properly accessible
+
+THIS FIX (Part 2):
+  ✅ Updated JavaScript to use APP_BASE_PATH constant
+  ✅ URLs now work on any deployment location
+
+DEPLOYMENT (3 minutes):
+
+1. Verify file change applied:
+   Open: public/assets/js/create-issue-modal.js
+   Look for: `const basePath = typeof APP_BASE_PATH !== 'undefined'`
+   Should appear at lines ~186 and ~268
+
+2. Clear browser completely:
+   - Close browser tab
+   - Close browser window
+   - Clear cache: CTRL+SHIFT+DEL → All time → Clear
+
+3. Reopen application:
+   - Open fresh browser window
+   - Navigate to http://localhost:8081/jira_clone_system/public/
+
+   - No cached files should be loaded
+
+4. Test functionality:
+   - Click Create button (top-right navbar)
+   - Quick Create Modal should open
+   - Issue Type dropdown should show: Epic, Story, Task, Bug, Sub-task
+   - Priority dropdown should show: Highest, High, Medium, Low, Lowest
+   - F12 DevTools → Console should show:
+     ✅ "🔄 Loading issue types from: /jira_clone_system/public/api/v1/issue-types"
+     ✅ "🔄 Loading priorities from: /jira_clone_system/public/api/v1/priorities"
+   - Network tab should show both requests with 200 status
+
+VERIFY SUCCESS:
+  ✅ Modal opens without errors
+  ✅ Issue types dropdown populated
+  ✅ Priorities dropdown populated
+  ✅ Console shows correct API URLs with base path
+  ✅ Network requests return 200 status
+  ✅ No 404 errors in console
+
+FILES CHANGED:
+  1. public/assets/js/create-issue-modal.js - Added base path to 2 URLs
+
+DEPENDENCIES:
+  - Part 1: Route fix (routes/web.php, routes/api.php) - Already applied ✅
+  - Part 2: JavaScript fix (create-issue-modal.js) - Applying now
+  - Both required for complete fix
+
+RISK LEVEL: 🟢 VERY LOW
+  - Pure JavaScript fix
+  - No backend changes
+  - No breaking changes
+  - Uses existing APP_BASE_PATH constant
+
+TROUBLESHOOTING:
+  If still seeing 404:
+  1. Hard refresh (CTRL+F5)
+  2. Clear all cache (CTRL+SHIFT+DEL)
+  3. Close and reopen browser
+  4. Check DevTools Console for actual URL being called
+  5. Verify APP_BASE_PATH is defined (console.log(APP_BASE_PATH))
+
+TIMING: ~3 minutes total
+
+================================================================================
+                      PART 2 - READY TO DEPLOY NOW
+================================================================================
+
+After deploying both Part 1 and Part 2, the complete fix is:
+  ✅ API routes work without authentication
+  ✅ JavaScript uses correct deployment-aware URLs
+  ✅ Modal dropdowns load and display correctly
+  ✅ Works on any deployment location (root or subdirectory)

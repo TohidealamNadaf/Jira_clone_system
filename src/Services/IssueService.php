@@ -251,80 +251,7 @@ class IssueService
         return null;
     }
 
-    public function createIssue(array $data, int $userId): array
-    {
-        $this->validateIssueData($data, true);
 
-        return Database::transaction(function () use ($data, $userId) {
-            $projectId = (int) $data['project_id'];
-            $issueKey = $this->calculateNextIssueKey($projectId);
-            $issueNumber = $this->getNextIssueNumber($projectId);
-
-            $initialStatus = $this->getInitialStatus($projectId);
-            if (!$initialStatus) {
-                throw new \RuntimeException('No initial status found for workflow');
-            }
-
-            $issueId = Database::insert('issues', [
-                'project_id' => $projectId,
-                'issue_type_id' => (int) $data['issue_type_id'],
-                'status_id' => $initialStatus['id'],
-                'priority_id' => !empty($data['priority_id']) ? (int) $data['priority_id'] : $this->getDefaultPriority(),
-                'issue_key' => $issueKey,
-                'issue_number' => $issueNumber,
-                'summary' => $data['summary'],
-                'description' => $data['description'] ?? null,
-                'reporter_id' => $userId,
-                'assignee_id' => !empty($data['assignee_id']) ? (int) $data['assignee_id'] : $this->getDefaultAssignee($projectId),
-                'parent_id' => !empty($data['parent_id']) ? (int) $data['parent_id'] : null,
-                'epic_id' => !empty($data['epic_id']) ? (int) $data['epic_id'] : null,
-                'sprint_id' => !empty($data['sprint_id']) ? (int) $data['sprint_id'] : null,
-                'story_points' => $data['story_points'] ?? null,
-                'original_estimate' => !empty($data['original_estimate']) ? (int) $data['original_estimate'] : null,
-                'remaining_estimate' => !empty($data['original_estimate']) ? (int) $data['original_estimate'] : null,
-                'environment' => $data['environment'] ?? null,
-                'due_date' => $data['due_date'] ?? null,
-            ]);
-
-            // Increment issue count
-            Database::query(
-                "UPDATE projects SET issue_count = issue_count + 1 WHERE id = ?",
-                [$projectId]
-            );
-
-            if (!empty($data['labels'])) {
-                $this->syncLabels($issueId, $data['labels'], $projectId);
-            }
-
-            if (!empty($data['components'])) {
-                $this->syncComponents($issueId, $data['components']);
-            }
-
-            if (!empty($data['fix_versions'])) {
-                $this->syncVersions($issueId, $data['fix_versions'], 'fix');
-            }
-
-            $this->watchIssue($issueId, $userId);
-
-            $this->logAudit('issue_created', 'issue', $issueId, null, $data, $userId);
-            $this->recordHistory($issueId, $userId, 'created', null, $issueKey);
-
-            // Get the created issue
-            $createdIssue = $this->getIssueById($issueId);
-            if (!$createdIssue) {
-                // Fallback: return minimal issue data with the key we just created
-                return [
-                    'id' => $issueId,
-                    'issue_key' => $issueKey,
-                    'summary' => $data['summary'] ?? '',
-                    'description' => $data['description'] ?? null,
-                    'project_id' => $projectId,
-                    'project_key' => Database::selectValue("SELECT `key` FROM projects WHERE id = ?", [$projectId]),
-                ];
-            }
-            return $createdIssue;
-        });
-    }
 
     public function updateIssue(int $issueId, array $data, int $userId): array
     {
@@ -807,6 +734,21 @@ class IssueService
         }
     }
 
+    /**
+     * Sync fix versions for an issue
+     */
+    private function syncFixVersions(int $issueId, array $versions): void
+    {
+        Database::delete('issue_fix_versions', 'issue_id = ?', [$issueId]);
+
+        foreach ($versions as $versionId) {
+            Database::insert('issue_fix_versions', [
+                'issue_id' => $issueId,
+                'version_id' => $versionId,
+            ]);
+        }
+    }
+
     private function validateIssueData(array $data, bool $isCreate): void
     {
         if ($isCreate) {
@@ -1239,6 +1181,150 @@ class IssueService
             // Log error
             error_log("Attachment storage failed for issue {$issueId}: " . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Create a new issue
+     */
+    public function createIssue(array $data, int $userId): array
+    {
+        // Validate required fields
+        if (empty($data['project_id'])) {
+            throw new \InvalidArgumentException('Project ID is required');
+        }
+        if (empty($data['issue_type_id'])) {
+            throw new \InvalidArgumentException('Issue type is required');
+        }
+        if (empty($data['summary'])) {
+            throw new \InvalidArgumentException('Summary is required');
+        }
+
+        // Validate project exists
+        $project = Database::selectOne("SELECT * FROM projects WHERE id = ?", [$data['project_id']]);
+        if (!$project) {
+            throw new \InvalidArgumentException('Invalid project');
+        }
+
+        // Validate issue type exists
+        $issueType = Database::selectOne("SELECT * FROM issue_types WHERE id = ?", [$data['issue_type_id']]);
+        if (!$issueType) {
+            throw new \InvalidArgumentException('Invalid issue type');
+        }
+
+        // Get next issue number for the project
+        $nextNumber = Database::selectOne(
+            "SELECT MAX(issue_number) + 1 as next_number FROM issues WHERE project_id = ?",
+            [$data['project_id']]
+        );
+        $issueNumber = $nextNumber['next_number'] ?? 1;
+
+        // Generate issue key
+        $issueKey = $project['key'] . '-' . $issueNumber;
+
+        // Get default status for new issues (To Do)
+        $defaultStatus = Database::selectOne(
+            "SELECT * FROM statuses WHERE name = 'To Do' LIMIT 1"
+        );
+        $statusId = $defaultStatus['id'] ?? 1;
+
+        // Get default priority if not provided
+        $priorityId = $data['priority_id'] ?? null;
+        if (!$priorityId) {
+            $defaultPriority = Database::selectOne(
+                "SELECT * FROM issue_priorities WHERE is_default = 1 LIMIT 1"
+            );
+            $priorityId = $defaultPriority['id'] ?? null;
+        }
+
+        try {
+            // Insert issue
+            $issueId = Database::insert('issues', [
+                'project_id' => $data['project_id'],
+                'issue_type_id' => $data['issue_type_id'],
+                'status_id' => $statusId,
+                'priority_id' => $priorityId,
+                'issue_key' => $issueKey,
+                'issue_number' => $issueNumber,
+                'summary' => $data['summary'],
+                'description' => $data['description'] ?? null,
+                'reporter_id' => $userId,
+                'assignee_id' => $data['assignee_id'] ?? null,
+                'parent_id' => $data['parent_id'] ?? null,
+                'epic_id' => $data['epic_id'] ?? null,
+                'sprint_id' => $data['sprint_id'] ?? null,
+                'story_points' => $data['story_points'] ?? null,
+                'original_estimate' => $data['original_estimate'] ?? null,
+                'remaining_estimate' => $data['original_estimate'] ?? null, // Initially set to original
+                'time_spent' => 0,
+                'environment' => $data['environment'] ?? null,
+                'due_date' => $data['due_date'] ?? null,
+                'start_date' => $data['start_date'] ?? null,
+                'end_date' => $data['end_date'] ?? null,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if (!$issueId) {
+                throw new \Exception('Failed to create issue');
+            }
+
+            // Handle labels if provided
+            if (!empty($data['labels']) && is_array($data['labels'])) {
+                $this->syncLabels($issueId, $data['labels'], $data['project_id']);
+            }
+
+            // Handle components if provided
+            if (!empty($data['components']) && is_array($data['components'])) {
+                $this->syncComponents($issueId, $data['components']);
+            }
+
+            // Handle fix versions if provided
+            if (!empty($data['fix_versions']) && is_array($data['fix_versions'])) {
+                $this->syncFixVersions($issueId, $data['fix_versions']);
+            }
+
+            // Add to sprint if specified
+            if (!empty($data['sprint_id'])) {
+                Database::insert('sprint_issues', [
+                    'sprint_id' => $data['sprint_id'],
+                    'issue_id' => $issueId,
+                    'added_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+
+            // Log creation in audit trail
+            $this->logAudit('issue_created', 'issue', $issueId, null, [
+                'project_id' => $data['project_id'],
+                'issue_key' => $issueKey,
+                'summary' => $data['summary']
+            ], $userId);
+
+            // Get complete issue data
+            $issue = Database::selectOne(
+                "SELECT i.*, 
+                        p.name as project_name, p.key as project_key,
+                        it.name as issue_type_name, it.icon as issue_type_icon,
+                        s.name as status_name, s.color as status_color,
+                        pr.name as priority_name, pr.color as priority_color,
+                        reporter.display_name as reporter_name, reporter.avatar as reporter_avatar,
+                        assignee.display_name as assignee_name, assignee.avatar as assignee_avatar
+                 FROM issues i
+                 JOIN projects p ON i.project_id = p.id
+                 JOIN issue_types it ON i.issue_type_id = it.id
+                 JOIN statuses s ON i.status_id = s.id
+                 LEFT JOIN issue_priorities pr ON i.priority_id = pr.id
+                 LEFT JOIN users reporter ON i.reporter_id = reporter.id
+                 LEFT JOIN users assignee ON i.assignee_id = assignee.id
+                 WHERE i.id = ?",
+                [$issueId]
+            );
+
+            return $issue;
+
+        } catch (\Exception $e) {
+            error_log("Issue creation failed: " . $e->getMessage());
+            throw new \Exception('Failed to create issue: ' . $e->getMessage());
         }
     }
 }

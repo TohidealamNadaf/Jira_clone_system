@@ -1,0 +1,53 @@
+================================================================================
+PROJECT MEMBERS - ROLE DROPDOWN FIX
+================================================================================
+
+STATUS: ✅ READY FOR IMMEDIATE DEPLOYMENT
+
+ISSUE: Role dropdown on /projects/{key}/members only showed "Product Owner"
+
+ROOT CAUSE: getAvailableRoles() query had restrictive WHERE clause
+
+FIX APPLIED:
+  File: src/Services/ProjectService.php
+  Change: Removed WHERE clause filter, fetch ALL roles
+  
+  BEFORE: WHERE is_system = 0 OR slug IN ('project-admin', ...)
+  AFTER: No WHERE filter - return all roles
+
+  File: views/projects/members.php
+  Change: Updated role dropdown to use role name (already correct)
+
+TESTING:
+  1. Go to: /projects/CWAYS/members
+  2. Click "Add Member" button
+  3. Select a user
+  4. Click Role dropdown
+  5. Should see all roles (Administrator, Developer, Product Owner, etc.)
+  6. Select role and submit
+  7. Verify member was added with correct role
+
+DEPLOYMENT TIME: 1 minute
+TESTING TIME: 2-3 minutes
+RISK LEVEL: VERY LOW
+
+FILES MODIFIED:
+  - src/Services/ProjectService.php (1 change)
+  - views/projects/members.php (2 changes)
+
+BREAKING CHANGES: NONE
+DATABASE CHANGES: NONE
+DOWNTIME: NO
+
+QUICK TEST CHECKLIST:
+  [ ] Page loads without errors
+  [ ] Add Member modal opens
+  [ ] Role dropdown shows all roles (6+)
+  [ ] Can select and add member with any role
+  [ ] Change Role feature works
+  [ ] No console errors (F12)
+
+STATUS: ✅ READY TO DEPLOY
+
+See: FIX_PROJECT_MEMBERS_ROLES_DROPDOWN_COMPLETE.md for full details
+================================================================================

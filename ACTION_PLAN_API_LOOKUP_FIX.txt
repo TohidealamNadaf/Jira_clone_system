@@ -1,0 +1,213 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                 API LOOKUP FIX - IMMEDIATE ACTION PLAN                      ║
+║                         December 21, 2025                                   ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+CURRENT STATUS
+──────────────
+✅ Code changes made:
+   ├─ routes/api.php (lines 40-43) - Routes registered
+   └─ IssueApiController.php (lines 594, 604, 612) - Return types fixed
+
+❌ Still failing: API returns 404 Not Found
+   Reason: Apache hasn't been restarted yet
+
+DO THIS NOW (Takes 3-5 minutes)
+───────────────────────────────
+
+STEP 1: RESTART APACHE
+═════════════════════
+
+🔹 If using Laragon:
+   └─ Click Laragon icon (bottom-right) → Apache → Restart
+      Wait for confirmation message
+
+🔹 If using XAMPP:
+   └─ XAMPP Control Panel → Apache → Stop → Start
+      Wait for green "Running" status
+
+🔹 If using Command Prompt:
+   └─ WIN+R → type "cmd" → ENTER
+      Type: net stop Apache2.4 && net start Apache2.4
+      Press: ENTER
+      Wait for: "Service started successfully"
+
+⏱️  WAIT: 3-5 seconds for Apache to fully restart
+   (Watch for status change or confirmation message)
+
+
+STEP 2: CLEAR BROWSER CACHE
+════════════════════════════
+
+1️⃣  Press: CTRL + SHIFT + DEL
+   (Opens Clear Browsing Data dialog)
+
+2️⃣  Make sure checked:
+   ├─ ☑️  "Cached images and files"
+   └─ ☑️  "Cookies and other site data"
+
+3️⃣  Click: "Clear data" or "Clear browsing data"
+
+⏱️  WAIT: 2-3 seconds
+
+
+STEP 3: CLOSE AND REOPEN BROWSER
+═════════════════════════════════
+
+1️⃣  Close all browser tabs and windows
+   (Don't just refresh - fully close the browser)
+
+2️⃣  Wait 2-3 seconds
+
+3️⃣  Open browser again
+
+4️⃣  Go to: http://localhost:8080/jira_clone_system/public/
+
+
+STEP 4: HARD REFRESH
+════════════════════
+
+Press: CTRL + F5 (or CTRL + Shift + R on Mac)
+   (This forces browser to reload all JavaScript)
+
+⏱️  WAIT: For page to fully load
+
+
+STEP 5: TEST THE FIX
+════════════════════
+
+1️⃣  Open browser console:
+   Press: F12
+   Click: "Console" tab
+
+2️⃣  Look for these messages:
+   ✅ "🔄 Loading issue types from: /api/v1/issue-types"
+   ✅ "✅ Issue types loaded: Array(5)" or similar
+   ✅ "🔄 Loading priorities from: /api/v1/priorities"
+   ✅ "✅ Loaded priorities: Array(4)" or similar
+
+3️⃣  Verify NO 404 errors:
+   ❌ Should NOT see: "404 Not Found"
+   ❌ Should NOT see: "Failed to load"
+
+4️⃣  Test the modal:
+   ├─ Click "Create" button
+   ├─ Modal should open
+   └─ Dropdowns should have options
+
+
+EXPECTED RESULT
+───────────────
+✅ Issue Type dropdown populated with options
+✅ Priority dropdown populated with options
+✅ No console errors
+✅ No 404 messages
+✅ Modal works perfectly
+
+
+IF STILL NOT WORKING
+────────────────────
+
+❌ Still seeing 404?
+
+Check 1: Is Apache actually running?
+─────────────────────────────────────
+→ Laragon: Should show green "On" or status
+→ XAMPP: Should show green "Running"
+→ Command: Run: tasklist | findstr Apache
+           Should show Apache process
+
+Check 2: Did cache clear properly?
+──────────────────────────────────
+→ Try again: CTRL+SHIFT+DEL
+→ Make sure to clear ALL time ranges
+→ Close browser completely
+→ Reopen and navigate to page
+
+Check 3: Is the code saved correctly?
+──────────────────────────────────────
+→ Open: routes/api.php
+→ Look for lines 40-43
+→ Should see:
+   $router->get('/issue-types', ...)
+   $router->get('/priorities', ...)
+   $router->get('/statuses', ...)
+   $router->get('/link-types', ...)
+
+Check 4: Verify the fix with script
+──────────────────────────────────
+→ Navigate to: /clear-cache-and-verify.php
+→ Run the verification
+→ Check if all tests pass ✅
+→ If not, see recommendations
+
+
+DETAILED TROUBLESHOOTING
+────────────────────────
+
+Symptom: Still getting 404 in console
+Answer: Apache probably not restarted
+Action: 
+  1. Verify Apache status (green/running)
+  2. If running, try restarting again
+  3. If still 404, try Method 1 + Method 2 + Method 3 in order
+
+Symptom: Page looks different or styles missing
+Answer: Browser cache not fully cleared
+Action:
+  1. Close browser completely
+  2. Clear Windows temp folder: %temp%
+  3. Reopen browser
+  4. Go to page
+  5. Press CTRL+F5
+
+Symptom: Getting error message in console
+Answer: Check the exact error message
+Action:
+  1. Look at console error (F12)
+  2. Note the exact text
+  3. If still "404": Apache restart needed
+  4. If "Cannot read property": JavaScript error - different issue
+
+
+TIMELINE
+────────
+Restart Apache:      1-3 minutes
+Clear cache:         1 minute
+Refresh browser:     30 seconds
+Test:                1-2 minutes
+─────────────────────────────
+TOTAL:               3-7 minutes
+
+
+VERIFY IT WORKED
+─────────────────
+✅ Checklist:
+  □ Apache shows running/online status
+  □ Browser cache cleared
+  □ Hard refresh done (CTRL+F5)
+  □ Console shows "Issue types loaded" ✅
+  □ Console shows "Loaded priorities" ✅
+  □ No 404 errors in console
+  □ Dropdown in modal has options
+  □ Can select from dropdowns
+  □ Modal submits without errors
+
+
+SUPPORT
+────────
+Documents available:
+  1. RESTART_APACHE_NOW.txt (step-by-step restart guide)
+  2. FIX_API_LOOKUP_ENDPOINTS_DECEMBER_21.md (technical details)
+  3. API_LOOKUP_FIX_SUMMARY_DECEMBER_21.md (complete overview)
+  4. clear-cache-and-verify.php (automated verification)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              START HERE:
+                     1. Restart Apache now
+                     2. Clear cache (CTRL+SHIFT+DEL)
+                     3. Hard refresh (CTRL+F5)
+                     4. Open console (F12)
+                     5. Check for ✅ success messages
+═══════════════════════════════════════════════════════════════════════════════

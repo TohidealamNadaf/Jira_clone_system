@@ -93,145 +93,7 @@ class IssueController extends Controller
         ]);
     }
 
-    public function create(Request $request): string
-    {
-        $projectKey = $request->param('key') ?? $request->input('project');
-        $project = null;
 
-        if ($projectKey) {
-            $project = $this->projectService->getProjectByKey($projectKey);
-            if ($project) {
-                $this->authorize('issues.create', $project['id']);
-                // Load full project details including related data
-                $project = $this->issueService->getProjectWithDetails($project['id']);
-            }
-        }
-
-        return $this->view('issues.create', [
-            'project' => $project,
-            'projects' => $this->issueService->getProjects(),
-            'issueTypes' => $this->issueService->getIssueTypes(),
-            'priorities' => $this->issueService->getPriorities(),
-        ]);
-    }
-
-    public function store(Request $request): void
-    {
-        $data = $request->validate([
-            'project_id' => 'required|integer',
-            'issue_type_id' => 'required|integer',
-            'summary' => 'required|max:500',
-            'description' => 'nullable|max:50000',
-            'priority_id' => 'nullable|integer',
-            'assignee_id' => 'nullable|integer',
-            'parent_id' => 'nullable|integer',
-            'epic_id' => 'nullable|integer',
-            'sprint_id' => 'nullable|integer',
-            'story_points' => 'nullable|numeric|min:0|max:999',
-            'original_estimate' => 'nullable|integer|min:0',
-            'due_date' => 'nullable|date',
-            'labels' => 'nullable|array',
-            'components' => 'nullable|array',
-            'fix_versions' => 'nullable|array',
-            // ✅ ADD: Attachment validation for Quick Create Modal
-            'attachments' => 'nullable|array',  // Optional attachment array
-            'attachments.*' => 'file|max:10240',  // Each file: max 10MB
-        ]);
-
-        // Convert empty strings to null for optional foreign key fields
-        foreach (['assignee_id', 'epic_id', 'parent_id', 'sprint_id'] as $field) {
-            if (isset($data[$field]) && ($data[$field] === '' || $data[$field] === 0)) {
-                $data[$field] = null;
-            }
-        }
-
-        $this->authorize('issues.create', (int) $data['project_id']);
-
-        try {
-            $issue = $this->issueService->createIssue($data, $this->userId());
-
-            // ✅ NEW: Handle file attachments from Quick Create Modal
-            $files = $request->files('attachments') ?? [];
-            if (!empty($files)) {
-                foreach ($files as $file) {
-                    if ($file && $file->isValid()) {
-                        try {
-                            // Store attachment using AttachmentController logic
-                            $attachment = $this->issueService->storeAttachment(
-                                $issue['id'],
-                                $file,
-                                $this->userId()
-                            );
-                            if (!$attachment) {
-                                // Log but don't fail the issue creation
-                                error_log("Failed to store attachment for issue {$issue['id']}");
-                            }
-                        } catch (\Exception $attachmentError) {
-                            // Log attachment error but don't fail issue creation
-                            error_log("Attachment upload error: " . $attachmentError->getMessage());
-                        }
-                    }
-                }
-            }
-
-            // Dispatch notification for issue creation
-            NotificationService::dispatchIssueCreated($issue['id'], $this->userId());
-
-            // ✅ CRITICAL FIX: Check for JSON request in multiple ways
-            // Some browsers/frameworks send Accept header, some use X-Requested-With
-            $isJsonRequest = $request->wantsJson() || 
-                           $request->header('X-Requested-With') === 'XMLHttpRequest' ||
-                           strpos($request->header('Accept', ''), 'application/json') !== false;
-
-            if ($isJsonRequest) {
-                // ✅ FIX: Always include issue_key at root level for easier access in modal
-                // JavaScript looks for result.issue_key || result.issue.issue_key
-                // ✅ CRITICAL: Don't return from void function - $this->json() handles output/exit
-                $this->json([
-                    'success' => true,
-                    'issue_key' => $issue['issue_key'],  // ✅ Root-level key for quick modal
-                    'issue' => sanitize_issue_for_json($issue)
-                ], 201);
-                return;
-            }
-
-            $this->redirectWith(
-                url("/issue/{$issue['issue_key']}"),
-                'success',
-                "Issue {$issue['issue_key']} created successfully."
-            );
-        } catch (\InvalidArgumentException $e) {
-             // ✅ CRITICAL FIX: Check for JSON request in multiple ways
-             $isJsonRequest = $request->wantsJson() || 
-                            $request->header('X-Requested-With') === 'XMLHttpRequest' ||
-                            strpos($request->header('Accept', ''), 'application/json') !== false;
-
-             if ($isJsonRequest) {
-                 $this->json(['error' => $e->getMessage()], 422);
-                 return;
-             }
-
-            Session::flash('error', $e->getMessage());
-            Session::flash('_old_input', $data);
-            $this->back();
-        } catch (\Exception $e) {
-             // ✅ CRITICAL FIX: Catch all exceptions and return proper JSON for AJAX requests
-             $isJsonRequest = $request->wantsJson() || 
-                            $request->header('X-Requested-With') === 'XMLHttpRequest' ||
-                            strpos($request->header('Accept', ''), 'application/json') !== false;
-
-             if ($isJsonRequest) {
-                 $this->json([
-                     'success' => false,
-                     'error' => $e->getMessage()
-                 ], 500);
-                 return;
-             }
-
-            Session::flash('error', 'An error occurred while creating the issue: ' . $e->getMessage());
-            $this->back();
-        }
-    }
 
     public function show(Request $request): string
     {
@@ -731,5 +593,83 @@ class IssueController extends Controller
 
         $transitions = $this->issueService->getAvailableTransitions($issue['id']);
         $this->json($transitions);
+    }
+
+    /**
+     * Store a new issue (AJAX endpoint)
+     */
+    public function store(Request $request): void
+    {
+        // Validate required fields
+        $data = $request->validate([
+            'project_id' => 'required|integer',
+            'issue_type_id' => 'required|integer',
+            'summary' => 'required|max:500',
+            'description' => 'nullable|max:50000',
+            'priority_id' => 'nullable|integer',
+            'assignee_id' => 'nullable|integer'
+        ]);
+
+        try {
+            // Get current user ID from session (note: stored as '_user' with underscore)
+            $user = Session::user();
+            $userId = $user['id'] ?? 0;
+            
+            if (!$userId) {
+                $this->json(['error' => 'User not authenticated'], 401);
+                return;
+            }
+
+            // Create issue using service
+            $issue = $this->issueService->createIssue($data, $userId);
+
+            // Return success response
+            $this->json([
+                'success' => true,
+                'issue_id' => $issue['id'],
+                'issue_key' => $issue['issue_key'],
+                'message' => 'Issue created successfully',
+                'issue' => $issue
+            ]);
+
+        } catch (\InvalidArgumentException $e) {
+            // Validation error
+            $this->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 422);
+
+        } catch (\Exception $e) {
+            // General error
+            error_log("Issue creation failed: " . $e->getMessage());
+            $this->json([
+                'success' => false,
+                'error' => 'Failed to create issue. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get issue types for dropdown/select lists
+     * Used by quick create modal and issue creation forms
+     */
+    public function getIssueTypes(Request $request): void
+    {
+        try {
+            $sql = "SELECT id, name, description, icon, color, is_subtask, is_default, sort_order 
+                    FROM issue_types 
+                    ORDER BY sort_order ASC, name ASC";
+
+            $types = \App\Core\Database::select($sql);
+            
+            // Return JSON response
+            $this->json($types);
+        } catch (\Exception $e) {
+            error_log("Failed to fetch issue types: " . $e->getMessage());
+            $this->json([
+                'error' => 'Failed to load issue types',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

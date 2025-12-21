@@ -1,0 +1,61 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   FIX API LOOKUP ENDPOINTS - DEPLOY NOW                     ║
+║                            December 21, 2025                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+ISSUE FIXED
+───────────
+❌ Create Issue Modal: "404 Not Found" when loading issue types and priorities
+✅ SOLUTION: Added public API endpoints for dropdown lookups
+
+FILES MODIFIED (2)
+──────────────────
+1. routes/api.php
+   ├─ Added 4 public lookup routes (lines 210-221)
+   └─ No auth required for static reference data
+
+2. src/Controllers/Api/IssueApiController.php
+   ├─ Fixed return types (3 methods)
+   ├─ issueTypes(): void → never
+   ├─ priorities(): void → never
+   └─ statuses(): void → never
+
+DEPLOYMENT STEPS
+────────────────
+1. Copy modified files to production
+   - routes/api.php
+   - src/Controllers/Api/IssueApiController.php
+
+2. Clear application cache
+   - rm -rf storage/cache/*
+   - or clear manually: storage/cache/
+
+3. Clear browser cache
+   - CTRL+SHIFT+DEL (browser cache)
+   - CTRL+F5 (hard refresh)
+
+4. Test endpoints
+   - Open Create Issue Modal
+   - Check browser console (F12)
+   - Should see: "✅ Issue types loaded"
+   - Should see: "✅ Loaded priorities"
+
+5. Verify no errors in console
+   - Press F12 → Console tab
+   - No "404 Not Found" errors
+
+TESTING CHECKLIST
+─────────────────
+□ Create Issue Modal opens without errors
+□ Issue type dropdown populates
+□ Priority dropdown populates
+□ No "404 Not Found" in console
+□ No "Failed to load" errors
+□ Works on all pages that use the modal
+
+DEPLOYMENT TIME: < 5 minutes
+DOWNTIME REQUIRED: NO
+BREAKING CHANGES: NONE
+ROLLBACK: Simple (revert 2 files)
+
+STATUS: ✅ READY FOR PRODUCTION

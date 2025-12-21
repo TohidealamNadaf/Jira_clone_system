@@ -593,45 +593,29 @@ class IssueApiController extends Controller
 
     public function issueTypes(Request $request): never
     {
-        $projectId = $request->input('project_id');
-        
-        $sql = "SELECT * FROM issue_types WHERE is_active = 1";
-        $params = [];
+        $sql = "SELECT id, name, description, icon, color, is_subtask, is_default, sort_order 
+                FROM issue_types 
+                ORDER BY sort_order ASC, name ASC";
 
-        if ($projectId) {
-            $sql .= " AND (project_id IS NULL OR project_id = ?)";
-            $params[] = $projectId;
-        }
-
-        $sql .= " ORDER BY sort_order ASC, name ASC";
-
-        $types = Database::select($sql, $params);
+        $types = Database::select($sql);
         $this->json($types);
     }
 
     public function priorities(Request $request): never
     {
         $priorities = Database::select(
-            "SELECT * FROM issue_priorities WHERE is_active = 1 ORDER BY sort_order ASC"
+            "SELECT id, name, description, icon, color, sort_order, is_default FROM issue_priorities ORDER BY sort_order ASC"
         );
         $this->json($priorities);
     }
 
     public function statuses(Request $request): never
     {
-        $projectId = $request->input('project_id');
-        
-        $sql = "SELECT * FROM statuses WHERE is_active = 1";
-        $params = [];
+        $sql = "SELECT id, name, description, category, color, sort_order 
+                FROM statuses 
+                ORDER BY sort_order ASC, name ASC";
 
-        if ($projectId) {
-            $sql .= " AND (project_id IS NULL OR project_id = ?)";
-            $params[] = $projectId;
-        }
-
-        $sql .= " ORDER BY sort_order ASC, name ASC";
-
-        $statuses = Database::select($sql, $params);
+        $statuses = Database::select($sql);
         $this->json($statuses);
     }
 

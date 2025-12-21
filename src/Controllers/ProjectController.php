@@ -51,28 +51,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    /**
-     * Get all projects for quick create dropdown (no filtering)
-     */
-    public function quickCreateList(Request $request): void
-    {
-        // Return ALL projects with issue types for quick create modal
-        $projects = $this->projectService->getAllProjects([], 1, 1000);
-        
-        // Get all issue types (global, not per-project)
-        $allIssueTypes = Database::select(
-            "SELECT id, name, icon, color FROM issue_types ORDER BY sort_order ASC"
-        );
-        
-        // Add same issue types to each project
-        if (!empty($projects['items'])) {
-            foreach ($projects['items'] as &$project) {
-                $project['issue_types'] = $allIssueTypes;
-            }
-        }
-        
-        $this->json($projects);
-    }
+
 
     public function create(Request $request): string
     {
@@ -132,38 +111,7 @@ class ProjectController extends Controller
             abort(404, 'Project not found');
         }
 
-        // Add issue types for quick create modal (global issue types)
-        $issueTypes = Database::select(
-            "SELECT id, name, icon, color FROM issue_types ORDER BY sort_order ASC"
-        );
-        $project['issue_types'] = $issueTypes;
 
-        // Add statuses for quick create modal
-        $statuses = Database::select(
-            "SELECT id, name, color, category FROM statuses ORDER BY sort_order ASC"
-        );
-        $project['statuses'] = $statuses;
-
-        // Add sprints for quick create modal
-        $sprints = Database::select(
-            "SELECT s.id, s.name FROM sprints s 
-             INNER JOIN boards b ON s.board_id = b.id 
-             WHERE b.project_id = ? AND s.status != 'completed' 
-             ORDER BY s.start_date DESC",
-            [$project['id']]
-        );
-        $project['sprints'] = $sprints;
-
-        // Add labels for quick create modal
-        $labels = Database::select(
-            "SELECT DISTINCT l.id, l.name FROM labels l
-             INNER JOIN issue_labels il ON l.id = il.label_id
-             INNER JOIN issues i ON il.issue_id = i.id
-             WHERE i.project_id = ?
-             ORDER BY l.name ASC",
-            [$project['id']]
-        );
-        $project['labels'] = $labels;
 
         if ($request->wantsJson()) {
             $this->json($project);
@@ -792,6 +740,27 @@ class ProjectController extends Controller
             ], 200);
         } catch (\Exception $e) {
             error_log('[API-PROJECTS] Error: ' . $e->getMessage());
+            $this->json([
+                'error' => 'Failed to load projects',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get projects list for quick create modal
+     */
+    public function quickCreateList(Request $request): void
+    {
+        try {
+            // Get projects user has access to
+            $projects = $this->projectService->getUserProjects($this->userId());
+            
+            // Return JSON response
+            $this->json($projects);
+            
+        } catch (\Exception $e) {
+            error_log('[QUICK-CREATE-LIST] Error: ' . $e->getMessage());
             $this->json([
                 'error' => 'Failed to load projects',
                 'message' => $e->getMessage()

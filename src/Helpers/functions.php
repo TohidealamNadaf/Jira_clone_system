@@ -621,9 +621,23 @@ function markdown(string $text): string
  */
 function json(mixed $data, int $status = 200): never
 {
+    // Clear any output buffer to prevent mixing content types
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    
     http_response_code($status);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    header('Content-Type: application/json; charset=utf-8', true);
+    header('Cache-Control: no-cache, no-store, must-revalidate', true);
+    header('Pragma: no-cache', true);
+    header('Expires: 0', true);
+    
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if (!headers_sent()) {
+        header('Content-Length: ' . strlen($json), true);
+    }
+    
+    echo $json;
     exit;
 }
 

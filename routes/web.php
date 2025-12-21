@@ -62,8 +62,14 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
     $router->get('/projects/quick-create-list', [ProjectController::class, 'quickCreateList'])->name('projects.quick-create-list');
     
-    // Users (for dropdowns and quick create modal)
+    // Users
     $router->get('/users/active', [UserController::class, 'activeUsers'])->name('users.active');
+    
+    // Issue Types (for quick create modal and forms)
+    $router->get('/issue-types-list', [IssueController::class, 'getIssueTypes'])->name('issue-types.list');
+    
+    // NOTE: API lookup endpoints are now in routes/api.php with public access (no auth required)
+    // Removed: /api/v1/issue-types, /api/v1/priorities, /api/v1/statuses, /api/v1/labels, /api/v1/link-types
     
     $router->post('/projects', [ProjectController::class, 'store'])->name('projects.store');
     $router->get('/projects/{key}', [ProjectController::class, 'show'])->name('projects.show');
@@ -99,8 +105,8 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     
     // Issues
     $router->get('/projects/{key}/issues', [IssueController::class, 'index'])->name('issues.index');
-    $router->get('/projects/{key}/issues/create', [IssueController::class, 'create'])->name('issues.create');
-    $router->post('/projects/{key}/issues', [IssueController::class, 'store'])->name('issues.store');
+    $router->get('/issues/create', [IssueController::class, 'create'])->name('issues.create');
+    $router->post('/issues/store', [IssueController::class, 'store'])->name('issues.store');
     $router->get('/issue/{issueKey}', [IssueController::class, 'show'])->name('issues.show');
     $router->get('/issue/{issueKey}/edit', [IssueController::class, 'edit'])->name('issues.edit');
     $router->put('/issue/{issueKey}', [IssueController::class, 'update'])->name('issues.update');

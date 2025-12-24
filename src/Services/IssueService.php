@@ -83,9 +83,9 @@ class IssueService
         if (!empty($filters['labels'])) {
             $where[] = "EXISTS (SELECT 1 FROM issue_labels il 
                         JOIN labels l ON il.label_id = l.id 
-                        WHERE il.issue_id = i.id AND l.name IN (" . 
-                        implode(',', array_map(fn($i) => ":label_$i", range(0, count($filters['labels']) - 1))) . 
-                        "))";
+                        WHERE il.issue_id = i.id AND l.name IN (" .
+                implode(',', array_map(fn($i) => ":label_$i", range(0, count($filters['labels']) - 1))) .
+                "))";
             foreach ($filters['labels'] as $idx => $label) {
                 $params["label_$idx"] = $label;
             }
@@ -209,9 +209,9 @@ class IssueService
                            u.first_name, u.last_name, u.email
                     FROM comments c
                     JOIN users u ON c.user_id = u.id
-                    WHERE c.issue_id = " . (int)$issue['id'] . "
+                    WHERE c.issue_id = " . (int) $issue['id'] . "
                     ORDER BY c.created_at DESC";
-            
+
             $stmt = $pdo->query($sql);
             $issue['comments'] = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
         } catch (\Exception $e) {
@@ -261,25 +261,39 @@ class IssueService
         }
 
         return Database::transaction(function () use ($issueId, $issue, $data, $userId) {
-            $updateFields = ['summary', 'description', 'priority_id', 'issue_type_id', 
-                            'assignee_id', 'epic_id', 'story_points', 'original_estimate',
-                            'remaining_estimate', 'environment', 'due_date'];
+            $updateFields = [
+                'summary',
+                'description',
+                'priority_id',
+                'issue_type_id',
+                'assignee_id',
+                'epic_id',
+                'story_points',
+                'original_estimate',
+                'remaining_estimate',
+                'environment',
+                'due_date',
+                'start_date',
+                'end_date'
+            ];
 
             $updateData = [];
             foreach ($updateFields as $field) {
                 if (array_key_exists($field, $data)) {
                     // Convert empty strings to NULL for foreign key fields
                     $value = $data[$field];
-                    if (in_array($field, ['assignee_id', 'epic_id', 'priority_id', 'issue_type_id']) 
-                        && ($value === '' || $value === null)) {
+                    if (
+                        in_array($field, ['assignee_id', 'epic_id', 'priority_id', 'issue_type_id'])
+                        && ($value === '' || $value === null)
+                    ) {
                         // For optional FK fields (assignee, epic), allow NULL
                         if (in_array($field, ['assignee_id', 'epic_id'])) {
                             $value = null;
                         }
                     }
-                    
+
                     $updateData[$field] = $value;
-                    
+
                     if ($issue[$field] != $value) {
                         $this->recordHistory($issueId, $userId, $field, $issue[$field], $value);
                     }
@@ -318,7 +332,7 @@ class IssueService
         $this->logAudit('issue_deleted', 'issue', $issueId, $issue, null, $userId);
 
         $deleted = Database::delete('issues', 'id = ?', [$issueId]) > 0;
-        
+
         if ($deleted) {
             // Decrement the issue count in the project
             Database::query(
@@ -326,7 +340,7 @@ class IssueService
                 [$issue['project_id']]
             );
         }
-        
+
         return $deleted;
     }
 
@@ -347,7 +361,7 @@ class IssueService
         }
 
         $updateData = ['status_id' => $targetStatusId];
-        
+
         if ($targetStatus['category'] === 'done' && !$issue['resolved_at']) {
             $updateData['resolved_at'] = date('Y-m-d H:i:s');
         } elseif ($targetStatus['category'] !== 'done' && $issue['resolved_at']) {
@@ -357,9 +371,12 @@ class IssueService
         Database::update('issues', $updateData, 'id = ?', [$issueId]);
 
         $this->recordHistory($issueId, $userId, 'status', $issue['status_name'], $targetStatus['name']);
-        $this->logAudit('issue_transitioned', 'issue', $issueId, 
-            ['status_id' => $issue['status_id']], 
-            ['status_id' => $targetStatusId], 
+        $this->logAudit(
+            'issue_transitioned',
+            'issue',
+            $issueId,
+            ['status_id' => $issue['status_id']],
+            ['status_id' => $targetStatusId],
             $userId
         );
 
@@ -376,14 +393,17 @@ class IssueService
         Database::update('issues', ['assignee_id' => $assigneeId], 'id = ?', [$issueId]);
 
         $oldAssignee = $issue['assignee_name'] ?? 'Unassigned';
-        $newAssignee = $assigneeId 
+        $newAssignee = $assigneeId
             ? Database::selectValue("SELECT display_name FROM users WHERE id = ?", [$assigneeId]) ?? 'Unknown'
             : 'Unassigned';
 
         $this->recordHistory($issueId, $userId, 'assignee', $oldAssignee, $newAssignee);
-        $this->logAudit('issue_assigned', 'issue', $issueId, 
-            ['assignee_id' => $issue['assignee_id']], 
-            ['assignee_id' => $assigneeId], 
+        $this->logAudit(
+            'issue_assigned',
+            'issue',
+            $issueId,
+            ['assignee_id' => $issue['assignee_id']],
+            ['assignee_id' => $assigneeId],
             $userId
         );
 
@@ -587,7 +607,7 @@ class IssueService
              FROM issues WHERE project_id = ?",
             [$project['key'], $projectId]
         );
-        
+
         $nextNumber = ($lastIssue['max_number'] ?? 0) + 1;
         return $project['key'] . '-' . $nextNumber;
     }

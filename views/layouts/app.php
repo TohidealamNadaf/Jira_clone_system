@@ -20,6 +20,9 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
 
+    <!-- TinyMCE (Community Edition via CDNJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <!-- Custom CSS -->
@@ -37,6 +40,9 @@
     <?php
     $primaryColor = \App\Core\Database::selectValue("SELECT value FROM settings WHERE `key` = 'primary_color'") ?? '#8B1956';
     $defaultTheme = \App\Core\Database::selectValue("SELECT value FROM settings WHERE `key` = 'default_theme'") ?? 'light';
+
+    // Get current user for navbar
+    $user = \App\Core\Session::user();
     ?>
     <style>
         /* Prevent scrollbar layout shift */
@@ -315,6 +321,17 @@
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
             transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
         }
+
+        /* TinyMCE in Bootstrap Modal Fix */
+        .tox-tinymce {
+            z-index: 2000;
+            /* Ensure editor is above modal */
+        }
+
+        .tox-tinymce-aux {
+            z-index: 3000 !important;
+            /* Ensure dialogs/tooltips are above everything */
+        }
     </style>
 
     <?php \App\Core\View::yield('styles') ?>
@@ -506,14 +523,14 @@
                 <div class="navbar-action-dropdown">
                     <button class="navbar-action-btn user-btn" id="userMenu" title="User menu"
                         data-user-name="<?= e($user['display_name'] ?? ($user['first_name'] . ' ' . $user['last_name']) ?? 'User') ?>"
-                        data-user-avatar="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>">
-                        <img src="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
+                        data-user-avatar="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>">
+                        <img src="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
                             alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>" class="user-avatar">
                         <i class="bi bi-chevron-down d-none d-md-inline"></i>
                     </button>
                     <div class="dropdown-panel user-panel">
                         <div class="panel-header user-header">
-                            <img src="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
+                            <img src="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
                                 alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>"
                                 class="user-avatar-large">
                             <div>
@@ -1140,12 +1157,12 @@
 
     <!-- Flash Messages -->
     <?php foreach (['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'info' => 'info'] as $type => $class): ?>
-            <?php if ($message = $flash[$type] ?? null): ?>
-                    <div class="alert alert-<?= $class ?> alert-dismissible fade show m-3" role="alert">
-                        <?= e($message) ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-            <?php endif; ?>
+        <?php if ($message = $flash[$type] ?? null): ?>
+            <div class="alert alert-<?= $class ?> alert-dismissible fade show m-3" role="alert">
+                <?= e($message) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
     <?php endforeach; ?>
 
     <!-- Main Content - Consistent for All Users -->
@@ -1227,14 +1244,14 @@
         console.log('📱 Global API URLs initialized:', { APP_BASE_PATH, ISSUE_VIEW_TEMPLATE });
 
         // CSRF Token - moved to global scope for submitQuickCreate access
-         const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
-         const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
-         console.log('🔐 CSRF Token initialized:', csrfToken ? 'present' : 'missing');
+        const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
+        console.log('🔐 CSRF Token initialized:', csrfToken ? 'present' : 'missing');
 
-         // ✅ CRITICAL: Global projectsMap for quick create form submission
-          // This must be global so submitQuickCreate() can access it as a fallback
-          window.projectsMap = {};
-          console.log('📦 projectsMap initialized as window.projectsMap');
+        // ✅ CRITICAL: Global projectsMap for quick create form submission
+        // This must be global so submitQuickCreate() can access it as a fallback
+        window.projectsMap = {};
+        console.log('📦 projectsMap initialized as window.projectsMap');
 
         try {
             console.log('[NAVBAR] Setting up navbar click handlers');
@@ -1401,16 +1418,16 @@
                         const currentUserOption = assigneeSelect.querySelector('option[data-is-current="true"]');
                         if (currentUserOption) {
                             assigneeSelect.value = currentUserOption.value;
-                            
+
                             // Trigger change event with vanilla JavaScript
                             const changeEvent = new Event('change', { bubbles: true });
                             assigneeSelect.dispatchEvent(changeEvent);
-                            
+
                             console.log('[ASSIGN-ME] ✅ Assigned to current user:', currentUserOption.textContent);
                         } else {
                             console.warn('[ASSIGN-ME] ⚠️ Current user option not found in dropdown');
                             console.warn('[ASSIGN-ME] Check if current user is active and in the assignees API response');
-                            
+
                             // Fallback: Try to find option with "(me)" in text
                             const meOption = Array.from(assigneeSelect.options).find(opt => opt.textContent.includes('(me)'));
                             if (meOption) {
@@ -1675,36 +1692,36 @@
                         assigneeSelect.innerHTML = '<option value="">Automatic</option>';
 
                         if (assignees.length > 0) {
-                             const currentUserId = parseInt('<?= e($user['id'] ?? '0') ?>') || 0;
-                             console.log('[ASSIGNEES] Current user ID:', currentUserId);
-                             let foundCurrentUser = false;
-                             
-                             assignees.forEach(user => {
-                                 const option = document.createElement('option');
-                                 option.value = user.id;
-                                 // Compare as numbers for accuracy
-                                 const isCurrentUser = parseInt(user.id) === currentUserId;
-                                 
-                                 // Only set attribute when true (cleaner and matches querySelector)
-                                 if (isCurrentUser) {
-                                     option.dataset.isCurrent = 'true';
-                                     foundCurrentUser = true;
-                                     console.log('[ASSIGNEES] ✅ Found current user:', user.name, '(ID:', user.id, ')');
-                                 }
-                                 
-                                 option.textContent = user.name + (isCurrentUser ? ' (me)' : '');
-                                 assigneeSelect.appendChild(option);
-                             });
-                             
-                             console.log('[ASSIGNEES] Added', assignees.length, 'assignees to dropdown');
-                             if (!foundCurrentUser) {
-                                 console.warn('[ASSIGNEES] ⚠️ Current user not found in active assignees list (ID:', currentUserId, ')');
-                                 console.warn('[ASSIGNEES] ℹ️  This is OK - current user might not be marked as active, or is admin');
-                                 console.warn('[ASSIGNEES] ℹ️  The "Assign to me" link will use fallback (me) matching');
-                             }
-                         } else {
-                             console.warn('[ASSIGNEES] No assignees returned from API');
-                         }
+                            const currentUserId = parseInt('<?= e($user['id'] ?? '0') ?>') || 0;
+                            console.log('[ASSIGNEES] Current user ID:', currentUserId);
+                            let foundCurrentUser = false;
+
+                            assignees.forEach(user => {
+                                const option = document.createElement('option');
+                                option.value = user.id;
+                                // Compare as numbers for accuracy
+                                const isCurrentUser = parseInt(user.id) === currentUserId;
+
+                                // Only set attribute when true (cleaner and matches querySelector)
+                                if (isCurrentUser) {
+                                    option.dataset.isCurrent = 'true';
+                                    foundCurrentUser = true;
+                                    console.log('[ASSIGNEES] ✅ Found current user:', user.name, '(ID:', user.id, ')');
+                                }
+
+                                option.textContent = user.name + (isCurrentUser ? ' (me)' : '');
+                                assigneeSelect.appendChild(option);
+                            });
+
+                            console.log('[ASSIGNEES] Added', assignees.length, 'assignees to dropdown');
+                            if (!foundCurrentUser) {
+                                console.warn('[ASSIGNEES] ⚠️ Current user not found in active assignees list (ID:', currentUserId, ')');
+                                console.warn('[ASSIGNEES] ℹ️  This is OK - current user might not be marked as active, or is admin');
+                                console.warn('[ASSIGNEES] ℹ️  The "Assign to me" link will use fallback (me) matching');
+                            }
+                        } else {
+                            console.warn('[ASSIGNEES] No assignees returned from API');
+                        }
 
                         // Projects dropdown is now populated with plain HTML options
                         // No Select2 needed - plain HTML select works better for this use case
@@ -1720,7 +1737,7 @@
                         // Reset the selection to empty
                         console.log('🔄 Resetting project selection to empty');
                         projectSelect.value = '';
-                        
+
                         // Trigger change event with vanilla JavaScript
                         const changeEvent = new Event('change', { bubbles: true });
                         projectSelect.dispatchEvent(changeEvent);
@@ -1736,7 +1753,7 @@
                         console.error('   Error message:', error.message);
                         console.error('   Error stack:', error.stack);
                         projectSelect.innerHTML = '<option value="">Error: ' + (error.message || 'Unknown error') + '</option>';
-                        
+
                         // Trigger change event with vanilla JavaScript
                         const changeEvent = new Event('change', { bubbles: true });
                         projectSelect.dispatchEvent(changeEvent);
@@ -1770,25 +1787,25 @@
                 }
 
                 projectSelect.addEventListener('change', async function () {
-                     const projectId = this.value;
-                     console.log('🎯 Project changed to:', projectId);
-                     console.log('   Selected text:', this.options[this.selectedIndex].text);
+                    const projectId = this.value;
+                    console.log('🎯 Project changed to:', projectId);
+                    console.log('   Selected text:', this.options[this.selectedIndex].text);
 
-                     if (!projectId) {
-                         // ✅ CRITICAL FIX: Don't clear assignees - keep full team roster available
-                         // This preserves the ability to use "Assign to me" even without a project selected
-                         issueTypeSelect.innerHTML = '<option value="">Select a project first...</option>';
-                         // ✅ REMOVED: assigneeSelect.innerHTML = '<option value="">Automatic</option>';
-                         // Now keep existing assignees instead of clearing them
-                         statusSelect.innerHTML = '<option value="">Default</option>';
-                         sprintSelect.innerHTML = '<option value="">None (Backlog)</option>';
-                         labelsSelect.innerHTML = '<option value="">No labels</option>';
-                         return;
-                     }
+                    if (!projectId) {
+                        // ✅ CRITICAL FIX: Don't clear assignees - keep full team roster available
+                        // This preserves the ability to use "Assign to me" even without a project selected
+                        issueTypeSelect.innerHTML = '<option value="">Select a project first...</option>';
+                        // ✅ REMOVED: assigneeSelect.innerHTML = '<option value="">Automatic</option>';
+                        // Now keep existing assignees instead of clearing them
+                        statusSelect.innerHTML = '<option value="">Default</option>';
+                        sprintSelect.innerHTML = '<option value="">None (Backlog)</option>';
+                        labelsSelect.innerHTML = '<option value="">No labels</option>';
+                        return;
+                    }
 
                     // First try projectsMap
-                     let issueTypes = [];
-                     const project = window.projectsMap[projectId];
+                    let issueTypes = [];
+                    const project = window.projectsMap[projectId];
 
                     console.log('Project from map:', project);
                     console.log('Issue types from map:', project ? project.issue_types : 'no project');
@@ -2083,7 +2100,7 @@
 
     <!-- Create Issue Modal Component -->
     <?php include_once __DIR__ . '/../components/create-issue-modal.php'; ?>
-    
+
     <!-- Create Issue Modal JavaScript -->
     <script src="<?= url('/assets/js/create-issue-modal.js') ?>"></script>
 </body>

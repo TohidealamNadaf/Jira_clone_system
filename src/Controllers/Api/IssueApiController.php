@@ -136,6 +136,8 @@ class IssueApiController extends Controller
             'original_estimate' => 'nullable|integer|min:0',
             'remaining_estimate' => 'nullable|integer|min:0',
             'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
             'environment' => 'nullable|max:10000',
             'labels' => 'nullable|array',
             'components' => 'nullable|array',
@@ -328,7 +330,7 @@ class IssueApiController extends Controller
         $stmt = $pdo->prepare("SELECT * FROM comments WHERE id = ?");
         $stmt->execute([$commentId]);
         $comment = $stmt->fetch(\PDO::FETCH_ASSOC);
-        
+
         if (!$comment) {
             $this->json(['error' => 'Comment not found'], 404);
         }
@@ -357,7 +359,7 @@ class IssueApiController extends Controller
         $stmt = $pdo->prepare("SELECT * FROM comments WHERE id = ?");
         $stmt->execute([$commentId]);
         $comment = $stmt->fetch(\PDO::FETCH_ASSOC);
-        
+
         if (!$comment) {
             $this->json(['error' => 'Comment not found'], 404);
         }
@@ -623,7 +625,7 @@ class IssueApiController extends Controller
     {
         $projectId = $request->input('project_id');
         $search = $request->input('search');
-        
+
         $where = ['1 = 1'];
         $params = [];
 

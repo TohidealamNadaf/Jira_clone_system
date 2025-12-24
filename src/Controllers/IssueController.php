@@ -168,7 +168,7 @@ class IssueController extends Controller
 
         $data = $request->validate([
             'summary' => 'nullable|max:500',
-            'description' => 'nullable|max:50000',
+            'description' => 'nullable|max:2000000',
             'issue_type_id' => 'nullable|integer',
             'priority_id' => 'nullable|integer',
             'assignee_id' => 'nullable|integer',
@@ -177,6 +177,8 @@ class IssueController extends Controller
             'original_estimate' => 'nullable|integer|min:0',
             'remaining_estimate' => 'nullable|integer|min:0',
             'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'environment' => 'nullable|max:10000',
             'labels' => 'nullable|array',
             'components' => 'nullable|array',
@@ -605,7 +607,7 @@ class IssueController extends Controller
             'project_id' => 'required|integer',
             'issue_type_id' => 'required|integer',
             'summary' => 'required|max:500',
-            'description' => 'nullable|max:50000',
+            'description' => 'nullable|max:2000000',
             'priority_id' => 'nullable|integer',
             'assignee_id' => 'nullable|integer'
         ]);
@@ -614,7 +616,7 @@ class IssueController extends Controller
             // Get current user ID from session (note: stored as '_user' with underscore)
             $user = Session::user();
             $userId = $user['id'] ?? 0;
-            
+
             if (!$userId) {
                 $this->json(['error' => 'User not authenticated'], 401);
                 return;
@@ -661,7 +663,7 @@ class IssueController extends Controller
                     ORDER BY sort_order ASC, name ASC";
 
             $types = \App\Core\Database::select($sql);
-            
+
             // Return JSON response
             $this->json($types);
         } catch (\Exception $e) {

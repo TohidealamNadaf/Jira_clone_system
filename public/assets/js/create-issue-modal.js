@@ -315,6 +315,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const projectKey = projectSelect.options[projectSelect.selectedIndex].dataset.projectKey;
             const issueTypeId = document.getElementById('issueType').value;
             const summary = document.getElementById('issueSummary').value;
+
+            // Sync TinyMCE content to textarea
+            if (typeof tinymce !== 'undefined' && tinymce.get('issueDescription')) {
+                tinymce.get('issueDescription').save();
+            }
+
             const description = document.getElementById('issueDescription').value || '';
             const assigneeId = document.getElementById('issueAssignee').value;
             const priorityId = document.getElementById('issuePriority').value;
@@ -343,13 +349,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const endpoint = basePath + '/issues/store';
 
             console.log('📤 [CREATE-ISSUE-MODAL] Submitting issue to:', endpoint);
-            console.log('📋 [CREATE-ISSUE-MODAL] Form data:', { 
-                projectId, 
-                projectKey, 
-                issueTypeId, 
-                summary, 
-                assigneeId, 
-                priorityId 
+            console.log('📋 [CREATE-ISSUE-MODAL] Form data:', {
+                projectId,
+                projectKey,
+                issueTypeId,
+                summary,
+                assigneeId,
+                priorityId
             });
 
             const requestBody = {
@@ -390,13 +396,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (response.ok && result.success) {
                 console.log('✅ [CREATE-ISSUE-MODAL] Issue created successfully:', result);
                 alert(`✅ Issue ${result.issue_key} created successfully!`);
-                
+
                 // Close modal
                 modal.hide();
-                
+
                 // Reset form
                 form.reset();
-                
+
                 // Reload page after delay
                 setTimeout(() => {
                     window.location.href = basePath + '/projects/' + projectKey + '/board';
@@ -464,6 +470,125 @@ document.addEventListener('DOMContentLoaded', function () {
         createIssueModal.addEventListener('show.bs.modal', function () {
             console.log('📖 [CREATE-ISSUE-MODAL] Modal opening - loading data');
             loadCreateIssueModalData();
+
+            // Initialize TinyMCE
+            if (typeof tinymce !== 'undefined') {
+                tinymce.init({
+                    selector: '#issueDescription',
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | blocks | ' +
+                        'bold italic backcolor | alignleft aligncenter ' +
+                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                        'removeformat | uploadimage uploadfile | help',
+                    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; }',
+
+                    // Enable local file uploads
+                    image_title: true,
+                    automatic_uploads: true,
+                    file_picker_types: 'image',
+                    file_picker_callback: function (cb, value, meta) {
+                        var input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', 'image/*');
+
+                        input.onchange = function () {
+                            var file = this.files[0];
+
+                            var reader = new FileReader();
+                            reader.onload = function () {
+                                var id = 'blobid' + (new Date()).getTime();
+                                var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                                var base64 = reader.result.split(',')[1];
+                                var blobInfo = blobCache.create(id, file, base64);
+                                blobCache.add(blobInfo);
+
+                                /* call the callback and populate the Title field with the file name */
+                                cb(blobInfo.blobUri(), { title: file.name });
+                            };
+                            reader.readAsDataURL(file);
+                        };
+
+                        input.click();
+                    },
+
+                    setup: function (editor) {
+                        editor.ui.registry.addButton('uploadfile', {
+                            icon: 'document-properties', // Use a document icon
+                            tooltip: 'Attach File',
+                            onAction: function () {
+                                var input = document.createElement('input');
+                                input.setAttribute('type', 'file');
+                                input.setAttribute('accept', '*/*'); // Accept all files
+
+                                input.onchange = function () {
+                                    var file = this.files[0];
+                                    var reader = new FileReader();
+                                    reader.onload = function () {
+                                        var base64 = reader.result; // Full data URI
+
+                                        // Insert link directly
+                                        editor.insertContent('<a href="' + base64 + '" download="' + file.name + '" target="_blank">' + file.name + '</a>&nbsp;');
+                                    };
+                                    reader.readAsDataURL(file);
+                                };
+                                input.click();
+                            }
+                        });
+
+
+                        editor.ui.registry.addButton('uploadimage', {
+                            icon: 'image',
+                            tooltip: 'Upload Image',
+                            onAction: function () {
+                                var input = document.createElement('input');
+                                input.setAttribute('type', 'file');
+                                input.setAttribute('accept', 'image/*');
+
+                                input.onchange = function () {
+                                    var file = this.files[0];
+                                    var reader = new FileReader();
+                                    reader.onload = function () {
+                                        var id = 'blobid' + (new Date()).getTime();
+                                        var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                                        var base64 = reader.result.split(',')[1];
+                                        var blobInfo = blobCache.create(id, file, base64);
+                                        blobCache.add(blobInfo);
+
+                                        // Insert content directly
+                                        editor.insertContent('<img src="' + blobInfo.blobUri() + '" alt="' + file.name + '"/>');
+                                    };
+                                    reader.readAsDataURL(file);
+                                };
+                                input.click();
+                            }
+                        });
+
+                        editor.on('change', function () {
+                            editor.save(); // Sync content to textarea
+                        });
+                    }
+                });
+            }
+        });
+
+        // Destroy TinyMCE when modal closes to prevent issues
+        createIssueModal.addEventListener('hidden.bs.modal', function () {
+            if (typeof tinymce !== 'undefined') {
+                tinymce.remove('#issueDescription');
+            }
+        });
+
+        // Bootstrap modal focus fix for TinyMCE
+        document.addEventListener('focusin', function (e) {
+            if (e.target.closest('.tox-tinymce-aux, .moxman-window, .tam-assetmanager-root') !== null) {
+                e.stopImmediatePropagation();
+            }
         });
 
         createIssueModal.addEventListener('shown.bs.modal', function () {
@@ -473,13 +598,13 @@ document.addEventListener('DOMContentLoaded', function () {
         // Expose globally for potential future use
         window.CreateIssueModal = {
             modal: modal,
-            open: function () { 
+            open: function () {
                 console.log('🔘 Opening modal programmatically');
-                modal?.show(); 
+                modal?.show();
             },
-            close: function () { 
+            close: function () {
                 console.log('❌ Closing modal programmatically');
-                modal?.hide(); 
+                modal?.hide();
             },
             loadData: loadCreateIssueModalData,
             submit: submitCreateIssueForm,

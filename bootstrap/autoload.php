@@ -97,7 +97,9 @@ class Autoloader
 Autoloader::register();
 
 // Define base path
-define('BASE_PATH', dirname(__DIR__));
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__));
+}
 
 // Register namespaces
 Autoloader::addNamespace('App', BASE_PATH . '/src');

@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\Database;
-use Exception;
 
 class CalendarService
 {
@@ -65,10 +64,10 @@ class CalendarService
                 i.end_date,
                 i.due_date,
                 i.priority_id,
-                p.name as priority_name,
+                ip.name as priority_name,
                 i.status_id,
                 s.name as status_name,
-                s.color_class as status_color,
+                s.color as status_color,
                 i.project_id,
                 proj.name as project_name,
                 proj.key as project_key,
@@ -76,7 +75,7 @@ class CalendarService
             FROM issues i
             JOIN projects proj ON i.project_id = proj.id
             JOIN statuses s ON i.status_id = s.id
-            JOIN priorities p ON i.priority_id = p.id
+            JOIN issue_priorities ip ON i.priority_id = ip.id
             JOIN issue_types it ON i.issue_type_id = it.id
             WHERE 
                 (
@@ -124,10 +123,11 @@ class CalendarService
 
         // Color mapping based on priority
         $colors = [
-            'Urgent' => '#d9534f', // Red
+            'Highest' => '#d9534f', // Red
             'High' => '#f0ad4e',   // Orange
             'Medium' => '#5bc0de', // Blue
-            'Low' => '#5cb85c'     // Green
+            'Low' => '#5cb85c',     // Green
+            'Lowest' => '#5cb85c'   // Green
         ];
 
         $color = $colors[$issue['priority_name']] ?? '#777777';

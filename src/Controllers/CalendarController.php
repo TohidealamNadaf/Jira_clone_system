@@ -21,9 +21,9 @@ class CalendarController extends Controller
     }
 
     /**
-     * Display the Calendar View
+     * Display Calendar View
      */
-    public function index(Request $request): string
+    public function index(): string
     {
         $this->authorize('issues.view');
         return $this->view('calendar.index');
@@ -104,7 +104,7 @@ class CalendarController extends Controller
     /**
      * API: Get Projects for Filter
      */
-    public function projects(Request $request): void
+    public function projects(): void
     {
         $this->authorize('issues.view');
         try {
@@ -118,7 +118,7 @@ class CalendarController extends Controller
     /**
      * API: Upcoming Issues
      */
-    public function upcoming(Request $request): void
+    public function upcoming(): void
     {
         $this->authorize('issues.view');
         try {
@@ -132,7 +132,7 @@ class CalendarController extends Controller
     /**
      * API: Overdue Issues
      */
-    public function overdue(Request $request): void
+    public function overdue(): void
     {
         $this->authorize('issues.view');
         try {

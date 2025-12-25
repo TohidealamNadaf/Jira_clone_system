@@ -60,34 +60,26 @@
             <div class="filter-group">
                 <label>Status</label>
                 <select id="statusFilter" class="jira-select" multiple>
-                    <option value="open">Open</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
+                    <!-- Loaded dynamically -->
                 </select>
             </div>
             <div class="filter-group">
                 <label>Priority</label>
                 <select id="priorityFilter" class="jira-select" multiple>
-                    <option value="urgent">Urgent</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
+                    <!-- Loaded dynamically -->
                 </select>
             </div>
             <div class="filter-group">
                 <label>Issue Type</label>
                 <select id="typeFilter" class="jira-select" multiple>
-                    <option value="bug">Bug</option>
-                    <option value="story">Story</option>
-                    <option value="task">Task</option>
-                    <option value="epic">Epic</option>
+                    <!-- Loaded dynamically -->
                 </select>
             </div>
             <div class="filter-group">
                 <label>Assignee</label>
                 <select id="assigneeFilter" class="jira-select">
                     <option value="">Anyone</option>
+                    <!-- Loaded dynamically -->
                 </select>
             </div>
             <div class="filter-group">
@@ -231,8 +223,7 @@
 </div>
 
 <!-- Event Details Modal -->
-<div class="jira-modal" id="eventModal" onclick="handleBackdropClick(event)">
-    <div class="modal-backdrop" onclick="handleBackdropClick(event)"></div>
+<div class="jira-modal" id="eventModal" onclick="handleBackdropClick(event)" aria-hidden="true">
     <div class="modal-dialog modal-standard">
         <div class="modal-content">
             <div class="modal-header">
@@ -369,138 +360,10 @@
         </div>
     </div>
 </div>
-            <div class="modal-body">
-                <div class="event-info">
-                    <div class="event-type-badge" id="eventTypeBadge">
-                        <i class="bi bi-bug"></i>
-                        Bug
-                    </div>
-                    <div class="event-basic">
-                        <h3 class="event-key" id="eventKey">PROJ-123</h3>
-                        <h4 class="event-summary" id="eventSummary">Fix calendar loading issue</h4>
-                    </div>
-                </div>
-
-                <div class="event-details-grid">
-                    <div class="detail-row">
-                        <label>Project</label>
-                        <span id="eventProject">Project Alpha</span>
-                    </div>
-                    <div class="detail-row">
-                        <label>Status</label>
-                        <span class="status-badge" id="eventStatus">In Progress</span>
-                    </div>
-                    <div class="detail-row">
-                        <label>Priority</label>
-                        <span class="priority-badge urgent" id="eventPriority">Urgent</span>
-                    </div>
-                    <div class="detail-row">
-                        <label>Assignee</label>
-                        <div class="assignee-info">
-                            <img class="assignee-avatar" id="assigneeAvatar" src="" alt="">
-                            <span id="assigneeName">John Doe</span>
-                        </div>
-                    </div>
-                    <div class="detail-row">
-                        <label>Reporter</label>
-                        <div class="reporter-info">
-                            <img class="reporter-avatar" id="reporterAvatar" src="" alt="">
-                            <span id="reporterName">Jane Smith</span>
-                        </div>
-                    </div>
-                    <div class="detail-row">
-                        <label>Due Date</label>
-                        <span id="eventDueDate">Dec 24, 2025</span>
-                    </div>
-                    <div class="detail-row">
-                        <label>Created</label>
-                        <span id="eventCreatedDate">Dec 20, 2025</span>
-                    </div>
-                    <div class="detail-row">
-                        <label>Updated</label>
-                        <span id="eventUpdatedDate">Dec 22, 2025</span>
-                    </div>
-                    <div class="detail-row">
-                        <label>Story Points</label>
-                        <span id="eventStoryPoints">5</span>
-                    </div>
-                    <div class="detail-row">
-                        <label>Labels</label>
-                        <div class="labels-container" id="eventLabels">
-                            <span class="label-tag">backend</span>
-                            <span class="label-tag">urgent</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="event-description">
-                    <h4>Description</h4>
-                    <div class="description-content" id="eventDescription">
-                        The calendar page is not loading properly and shows no styling. Need to investigate the CSS
-                        loading issue and fix the design.
-                    </div>
-                </div>
-
-                <div class="event-timeline">
-                    <h4>Recent Activity</h4>
-                    <div class="timeline-items" id="eventTimeline">
-                        <div class="timeline-item">
-                            <div class="timeline-dot status"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Status changed</strong>
-                                    <span class="timeline-time">2 hours ago</span>
-                                </div>
-                                <div class="timeline-detail">
-                                    From <span class="old-value">To Do</span> to <span class="new-value">In
-                                        Progress</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-dot comment"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-header">
-                                    <strong>Comment added</strong>
-                                    <span class="timeline-time">5 hours ago</span>
-                                </div>
-                                <div class="timeline-detail">
-                                    Working on the CSS fix now. Should be ready by EOD.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div class="footer-left">
-                    <button class="jira-btn jira-btn-ghost" onclick="watchIssue()">
-                        <i class="bi bi-eye"></i>
-                        Watch
-                    </button>
-                    <button class="jira-btn jira-btn-ghost" onclick="shareIssue()">
-                        <i class="bi bi-share"></i>
-                        Share
-                    </button>
-                </div>
-                <div class="footer-right">
-                    <button class="jira-btn jira-btn-secondary" onclick="editIssue()">
-                        <i class="bi bi-pencil"></i>
-                        Edit
-                    </button>
-                    <button class="jira-btn jira-btn-primary" id="viewIssueBtn">
-                        <i class="bi bi-box-arrow-up-right"></i>
-                        View Issue
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Create Event Modal -->
-<div class="jira-modal" id="createEventModal" onclick="handleBackdropClick(event, 'create')">
-    <div class="modal-dialog large">
+<div class="jira-modal" id="createEventModal" onclick="handleBackdropClick(event, 'create')" aria-hidden="true">
+    <div class="modal-dialog modal-standard">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Create Calendar Event</h2>
@@ -508,7 +371,7 @@
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body-scroll">
                 <form id="createEventForm">
                     <div class="form-section">
                         <h3>Event Details</h3>
@@ -536,7 +399,7 @@
                         </div>
                         <div class="form-group">
                             <label>Description</label>
-                            <textarea id="eventDesc" class="jira-textarea" rows="3"
+                            <textarea id="eventDesc" class="jira-textarea" rows="2"
                                 placeholder="Event description..."></textarea>
                         </div>
                         <div class="form-row">
@@ -639,7 +502,7 @@
 </div>
 
 <!-- Export Modal -->
-<div class="jira-modal" id="exportModal" onclick="handleBackdropClick(event, 'export')">
+<div class="jira-modal" id="exportModal" onclick="handleBackdropClick(event, 'export')" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -743,5 +606,5 @@
 
 <!-- FullCalendar -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-<script src="<?= asset('js/calendar.js') ?>"></script>
+<script src="<?= asset('js/calendar-realtime.js') ?>"></script>
 <?php \App\Core\View::endSection(); ?>

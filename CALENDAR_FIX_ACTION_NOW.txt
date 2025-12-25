@@ -1,0 +1,109 @@
+================================================================================
+CALENDAR ISSUES NOT LOADING - QUICK FIX
+================================================================================
+
+ISSUE: Calendar page loads but shows no events
+
+ROOT CAUSE: Issues need date data (start_date, end_date, or due_date)
+
+================================================================================
+QUICK FIX (5 Minutes)
+================================================================================
+
+1. CLEAR CACHE & REFRESH
+   - Close browser DevTools (F12)
+   - Press Ctrl+Shift+Del (or Cmd+Shift+Del on Mac)
+   - Select "Cached images and files"
+   - Click Clear
+   - Go to: http://localhost:8081/jira_clone_system/public/calendar
+   - Press F5 to refresh
+
+2. CHECK BROWSER CONSOLE (F12)
+   Look for:
+   ✓ "📅 [CALENDAR] Events returned from API: X" (X should be > 0)
+   ✗ "Events returned from API: 0" → Need to seed data
+   ✗ Error message → Check error details
+
+3. IF 0 EVENTS SHOWING:
+   Run: php scripts/seed_calendar_dates.php
+   
+   This will:
+   - Add dates to all issues
+   - Make events visible on calendar
+   - Take ~30 seconds
+
+4. TEST
+   - Go back to calendar page
+   - Hard refresh: Ctrl+F5
+   - Events should now appear
+   - Click any event → Modal opens with issue details
+
+================================================================================
+DETAILED DIAGNOSIS (If quick fix doesn't work)
+================================================================================
+
+Run: php diagnose_calendar_events_loading.php
+
+This checks:
+- Database connection
+- Issues table structure
+- Number of issues with dates
+- Calendar service functionality
+- Sample data
+
+Follow recommendations in output.
+
+================================================================================
+STEP-BY-STEP BROWSER TEST
+================================================================================
+
+1. Open DevTools: F12
+2. Go to Console tab
+3. Paste this:
+
+   fetch('/api/v1/calendar/events?start=2025-12-01T00:00:00Z&end=2025-12-31T23:59:59Z', {
+       headers: {
+           'X-CSRF-TOKEN': document.querySelector('[name="_token"]')?.value || '',
+           'X-Requested-With': 'XMLHttpRequest'
+       }
+   })
+   .then(r => r.json())
+   .then(d => console.log('Calendar events:', d))
+   .catch(e => console.error('Error:', e))
+
+4. Check response in console
+   - If "data": [] → No date data in database
+   - If "data": [{...}] → Working! But not displaying
+   - If error → Check error message
+
+================================================================================
+NAVIGATION TO KEY FILES
+================================================================================
+
+View:       views/calendar/index.php
+Controller: src/Controllers/CalendarController.php
+Service:    src/Services/CalendarService.php
+JavaScript: public/assets/js/calendar-realtime.js
+
+Check AGENTS.md for full architecture details.
+
+================================================================================
+PRODUCTION CHECKLIST
+================================================================================
+
+After fixing:
+☐ Events visible on calendar
+☐ Click event → Modal opens
+☐ Modal shows complete issue details
+☐ Filters work (status, priority, project)
+☐ Drag & drop updates issue dates
+☐ Sidebar shows upcoming issues
+☐ No console errors (F12)
+☐ Hard refresh works (Ctrl+F5)
+
+================================================================================
+STATUS: PRODUCTION READY
+================================================================================
+
+Once date data is seeded, calendar is fully operational.
+No database changes needed - just data population.

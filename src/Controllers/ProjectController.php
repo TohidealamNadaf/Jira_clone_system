@@ -380,6 +380,37 @@ class ProjectController extends Controller
             'is_archived' => 'nullable|boolean',
         ]);
 
+        // Handle Avatar Upload
+        if ($file = $request->file('avatar')) {
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            $maxSize = 5 * 1024 * 1024; // 5MB
+
+            if (!in_array($file['type'], $allowedTypes)) {
+                Session::flash('error', 'Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.');
+                $this->redirect(url("/projects/{$key}/settings#details"));
+            }
+
+            if ($file['size'] > $maxSize) {
+                Session::flash('error', 'File size exceeds 5MB limit.');
+                $this->redirect(url("/projects/{$key}/settings#details"));
+            }
+
+            $uploadDir = __DIR__ . '/../../public/uploads/avatars';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = 'project_' . $project['id'] . '_' . uniqid() . '.' . $extension;
+            $targetPath = $uploadDir . '/' . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $data['avatar'] = '/uploads/avatars/' . $filename;
+            } else {
+                error_log('Failed to move uploaded avatar: ' . print_r($file, true));
+            }
+        }
+
         try {
             $updated = $this->projectService->updateProject($project['id'], $data, $this->userId());
 
@@ -532,7 +563,7 @@ class ProjectController extends Controller
     {
         $key = $request->param('key');
         $userId = (int) $request->param('userId');
-        
+
         $project = $this->projectService->getProjectByKey($key);
 
         if (!$project) {
@@ -579,7 +610,7 @@ class ProjectController extends Controller
     {
         $key = $request->param('key');
         $userId = (int) $request->param('userId');
-        
+
         $project = $this->projectService->getProjectByKey($key);
 
         if (!$project) {
@@ -695,7 +726,7 @@ class ProjectController extends Controller
     {
         $key = $request->param('key');
         $versionId = (int) $request->param('versionId');
-        
+
         $project = $this->projectService->getProjectByKey($key);
 
         if (!$project) {
@@ -720,7 +751,7 @@ class ProjectController extends Controller
     {
         try {
             $user = Session::user();
-            
+
             if (!$user || !isset($user['id'])) {
                 $this->json(['error' => 'Unauthorized'], 401);
             }
@@ -755,10 +786,10 @@ class ProjectController extends Controller
         try {
             // Get projects user has access to
             $projects = $this->projectService->getUserProjects($this->userId());
-            
+
             // Return JSON response
             $this->json($projects);
-            
+
         } catch (\Exception $e) {
             error_log('[QUICK-CREATE-LIST] Error: ' . $e->getMessage());
             $this->json([

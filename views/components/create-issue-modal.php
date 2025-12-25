@@ -5,6 +5,8 @@
         max-width: 600px;
         height: auto;
         max-height: 90vh;
+        margin-top: 10px;
+        /* Added small top margin as requested */
     }
 
     #createIssueModal .modal-content {
@@ -68,6 +70,80 @@
     #createIssueModal .required-star {
         color: #ef4444;
         margin-left: 2px;
+    }
+
+    /* Drag & Drop Zone Styles */
+    .upload-zone {
+        border: 2px dashed #d1d5db;
+        border-radius: 6px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f9fafb;
+        position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+        border-color: #8b1956;
+        background: #fdf2f8;
+    }
+
+    .upload-zone-icon {
+        font-size: 24px;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .upload-zone-text {
+        font-size: 13px;
+        color: #4b5563;
+    }
+
+    .upload-zone-hint {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 4px;
+    }
+
+    .file-preview-list {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .file-preview-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: white;
+        padding: 8px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .file-preview-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .remove-file-btn {
+        color: #ef4444;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 2px;
+    }
+
+    .remove-file-btn:hover {
+        color: #dc2626;
     }
 
     #createIssueModal .modal-footer {
@@ -171,12 +247,53 @@
                             placeholder="Enter issue description" maxlength="5000"></textarea>
                     </div>
 
-                    <!-- Assignee Field -->
+                    <!-- Attachments Drag & Drop -->
                     <div class="form-group">
-                        <label for="issueAssignee" class="form-label">Assignee</label>
-                        <select class="form-select" id="issueAssignee" name="assignee">
-                            <option value="">Automatic</option>
-                        </select>
+                        <label class="form-label">Attachments</label>
+                        <div class="upload-zone" id="uploadZone">
+                            <input type="file" id="fileInput" multiple style="display: none;">
+                            <div class="upload-zone-icon">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                            </div>
+                            <div class="upload-zone-text">Drop files here or click to upload</div>
+                            <div class="upload-zone-hint">Max file size: 10MB</div>
+                        </div>
+                        <div class="file-preview-list" id="filePreviewList"></div>
+                    </div>
+
+                    <!-- Assignee Field -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="issueAssignee" class="form-label">Assignee</label>
+                                <select class="form-select" id="issueAssignee" name="assignee">
+                                    <option value="">Automatic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Reporter</label>
+                                <?php
+                                $currentUser = \App\Core\Session::user();
+                                $userAvatar = $currentUser['avatar'] ?? null;
+                                $userName = $currentUser['display_name'] ?? $currentUser['name'] ?? 'Unknown';
+                                $userEmail = $currentUser['email'] ?? '';
+                                ?>
+                                <div class="form-control d-flex align-items-center bg-light" readonly>
+                                    <?php if ($userAvatar): ?>
+                                        <img src="<?= htmlspecialchars($userAvatar) ?>" alt="Avatar"
+                                            class="rounded-circle me-2" width="24" height="24">
+                                    <?php else: ?>
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
+                                            style="width: 24px; height: 24px; font-size: 12px;">
+                                            <?= strtoupper(substr($userName, 0, 1)) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <span><?= htmlspecialchars($userName) ?></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Priority Field -->
@@ -185,6 +302,22 @@
                         <select class="form-select" id="issuePriority" name="priority">
                             <option value="">Select priority</option>
                         </select>
+                    </div>
+
+                    <!-- Date Fields Row -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="issueStartDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="issueStartDate" name="start_date">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="issueEndDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="issueEndDate" name="end_date">
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>

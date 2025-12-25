@@ -202,6 +202,15 @@ class IssueService
             ['issue_id' => $issue['id']]
         );
 
+        $issue['attachments'] = Database::select(
+            "SELECT ia.*, u.display_name as author_name 
+         FROM issue_attachments ia
+         JOIN users u ON ia.uploaded_by = u.id
+         WHERE ia.issue_id = :issue_id
+         ORDER BY ia.created_at DESC",
+            ['issue_id' => $issue['id']]
+        );
+
         // Load comments using raw PDO to avoid parameter binding issues
         try {
             $pdo = Database::getConnection();

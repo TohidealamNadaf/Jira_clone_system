@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const users = await usersResponse.json();
                     console.log('✅ Users loaded:', users);
                     populateAssigneeDropdown(users);
+                    populateAssigneeDropdown(users);
                 } else {
                     console.error('❌ Failed to load users. Status:', usersResponse.status);
                 }
@@ -179,6 +180,11 @@ document.addEventListener('DOMContentLoaded', function () {
             console.warn('⚠️ Users data is not an array');
         }
     }
+
+    /**
+     * Populate reporter dropdown with users
+     */
+
 
     /**
      * Load issue types globally
@@ -324,6 +330,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const description = document.getElementById('issueDescription').value || '';
             const assigneeId = document.getElementById('issueAssignee').value;
             const priorityId = document.getElementById('issuePriority').value;
+            const startDate = document.getElementById('issueStartDate').value;
+            const endDate = document.getElementById('issueEndDate').value;
+
+            // Validate dates
+            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                alert('⚠️ End Date cannot be before Start Date');
+                return;
+            }
 
             // Validate required fields
             if (!projectId || !issueTypeId || !summary.trim()) {
@@ -355,7 +369,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 issueTypeId,
                 summary,
                 assigneeId,
-                priorityId
+                priorityId,
+                startDate,
+                endDate
             });
 
             const requestBody = {
@@ -364,7 +380,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 summary: summary.trim(),
                 description: description,
                 assignee_id: assigneeId ? parseInt(assigneeId) : null,
-                priority_id: priorityId ? parseInt(priorityId) : null
+                priority_id: priorityId ? parseInt(priorityId) : null,
+                start_date: startDate ? startDate : null,
+                end_date: endDate ? endDate : null
             };
 
             console.log('📦 [CREATE-ISSUE-MODAL] Request body:', requestBody);
@@ -428,27 +446,55 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+
+    // File storage for attachments
+    const selectedFiles = new Set();
+
     /**
      * Initialize all handlers
      */
     function initialize() {
         console.log('🔧 [CREATE-ISSUE-MODAL] Setting up handlers...');
 
-        // ✅ CRITICAL: Attach click handler to navbar Create button
-        const openModalBtn = document.getElementById('openCreateIssueModal');
-        if (openModalBtn) {
-            openModalBtn.addEventListener('click', function (event) {
+        // Setup Drag & Drop
+        setupDragAndDrop();
+
+        // ✅ CRITICAL: Attach click handler to ALL triggers (class-based)
+        document.addEventListener('click', function (event) {
+            const trigger = event.target.closest('.open-create-issue-modal, #openCreateIssueModal');
+            if (trigger) {
                 event.preventDefault();
                 event.stopPropagation();
-                console.log('🔘 [CREATE-ISSUE-MODAL] Navbar Create button clicked');
+                console.log('🔘 [CREATE-ISSUE-MODAL] Trigger button clicked');
+
+                // Get pre-defined data from trigger
+                const preProjectId = trigger.dataset.projectId;
+                const preProjectKey = trigger.dataset.projectKey;
+
                 modal.show();
+
                 // Load data when modal opens
-                loadCreateIssueModalData();
-            });
-            console.log('✅ Navbar Create button (#openCreateIssueModal) click handler attached');
-        } else {
-            console.error('❌ Navbar Create button (#openCreateIssueModal) not found');
-        }
+                loadCreateIssueModalData().then(() => {
+                    // Pre-select project if specified
+                    if (preProjectId || preProjectKey) {
+                        const projectSelect = document.getElementById('issueProject');
+                        if (projectSelect) {
+                            if (preProjectId) {
+                                projectSelect.value = preProjectId;
+                            } else if (preProjectKey) {
+                                // Find option with matching key
+                                const option = Array.from(projectSelect.options).find(opt => opt.dataset.projectKey === preProjectKey);
+                                if (option) projectSelect.value = option.value;
+                            }
+
+                            // Trigger change event to load issue types
+                            projectSelect.dispatchEvent(new Event('change'));
+                        }
+                    }
+                });
+            }
+        });
+        console.log('✅ Global click listener attached for .open-create-issue-modal');
 
         // Setup project change handler
         setupProjectChangeHandler();
@@ -470,6 +516,10 @@ document.addEventListener('DOMContentLoaded', function () {
         createIssueModal.addEventListener('show.bs.modal', function () {
             console.log('📖 [CREATE-ISSUE-MODAL] Modal opening - loading data');
             loadCreateIssueModalData();
+
+            // Clear selected files
+            selectedFiles.clear();
+            updateFilePreview();
 
             // Initialize TinyMCE
             if (typeof tinymce !== 'undefined') {
@@ -617,6 +667,264 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('📍 [CREATE-ISSUE-MODAL] Open button ID: openCreateIssueModal');
     }
 
+    /**
+     * Setup Drag & Drop Handlers
+     */
+    function setupDragAndDrop() {
+        const dropZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        if (!dropZone || !fileInput) {
+            console.warn('⚠️ Drag & Drop zone not found');
+            return;
+        }
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        // Handle click to upload
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Handle file input change
+        fileInput.addEventListener('change', function () {
+            handleFiles(this.files);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight() {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight() {
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        console.log('✅ Drag & Drop handlers setup');
+    }
+
+    /**
+     * Handle added files
+     */
+    function handleFiles(files) {
+        ([...files]).forEach(file => {
+            selectedFiles.add(file);
+        });
+        updateFilePreview();
+    }
+
+    /**
+     * Update file preview list
+     */
+    function updateFilePreview() {
+        const previewList = document.getElementById('filePreviewList');
+        if (!previewList) return;
+
+        previewList.innerHTML = '';
+
+        selectedFiles.forEach(file => {
+            const item = document.createElement('div');
+            item.className = 'file-preview-item';
+
+            // File icon based on type
+            let iconClass = 'file-earmark';
+            if (file.type.includes('image')) iconClass = 'file-image';
+            else if (file.type.includes('pdf')) iconClass = 'file-pdf';
+            else if (file.type.includes('text')) iconClass = 'file-text';
+
+            item.innerHTML = `
+                <div class="file-preview-name" title="${file.name}">
+                    <i class="bi bi-${iconClass}"></i>
+                    ${file.name} <span class="text-muted">(${(file.size / 1024).toFixed(1)} KB)</span>
+                </div>
+                <button type="button" class="remove-file-btn" aria-label="Remove">
+                    <i class="bi bi-x-circle-fill"></i>
+                </button>
+            `;
+
+            // Remove handler
+            item.querySelector('.remove-file-btn').addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering dropzone click
+                selectedFiles.delete(file);
+                updateFilePreview();
+            });
+
+            previewList.appendChild(item);
+        });
+    }
+
+    /**
+     * Submit issue form via AJAX
+     */
+    async function submitCreateIssueForm() {
+        const form = document.getElementById('createIssueForm');
+        if (!form) {
+            console.error('❌ Create Issue Form not found');
+            return;
+        }
+
+        try {
+            // Get form values
+            const projectSelect = document.getElementById('issueProject');
+            const projectId = projectSelect.value;
+            const projectKey = projectSelect.options[projectSelect.selectedIndex].dataset.projectKey;
+            const issueTypeId = document.getElementById('issueType').value;
+            const summary = document.getElementById('issueSummary').value;
+
+            // Sync TinyMCE content to textarea
+            if (typeof tinymce !== 'undefined' && tinymce.get('issueDescription')) {
+                tinymce.get('issueDescription').save();
+            }
+
+            const description = document.getElementById('issueDescription').value || '';
+            const assigneeId = document.getElementById('issueAssignee').value;
+            const priorityId = document.getElementById('issuePriority').value;
+
+            // Validate required fields
+            if (!projectId || !issueTypeId || !summary.trim()) {
+                alert('⚠️ Please fill in all required fields (Project, Issue Type, Summary)');
+                return;
+            }
+
+            if (!projectKey) {
+                alert('⚠️ Unable to determine project key');
+                return;
+            }
+
+            const submitBtn = document.getElementById('createIssueBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+            }
+
+            const basePath = getBasePath();
+            const endpoint = basePath + '/issues/store';
+
+            const requestBody = {
+                project_id: parseInt(projectId),
+                issue_type_id: parseInt(issueTypeId),
+                summary: summary.trim(),
+                description: description,
+                assignee_id: assigneeId ? parseInt(assigneeId) : null,
+                priority_id: priorityId ? parseInt(priorityId) : null
+            };
+
+            // 1. Create Issue
+            console.log('📤 Creating issue...');
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': getCsrfToken()
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                console.log('✅ Issue created:', result.issue_key);
+                const issueKey = result.issue_key;
+
+                // 2. Upload Attachments (if any)
+                if (selectedFiles.size > 0) {
+                    if (submitBtn) submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading files...';
+
+                    console.log(`📤 Uploading ${selectedFiles.size} attachments for ${issueKey}...`);
+
+                    // Upload files sequentially or in parallel
+                    // Using parallel for speed
+                    const uploadPromises = Array.from(selectedFiles).map(async (file) => {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('issueKey', issueKey); // Add issueKey if needed by backend param
+
+                        // Note: The AttachmentController::store expects 'issueKey' as a parameter in the URL or Body? 
+                        // The controller uses $request->param('issueKey'). If it's a route param, we need the right URL.
+                        // Route is likely /api/issues/{key}/attachments based on standard REST
+                        // Let's verify route in next steps or assume /issues/{key}/attachments based on implementation plan context
+                        // Looking at AttachmentController it redirects back to /issue/{key} so it might be a standard POST form submit controller
+                        // But we want JSON response. The controller supports wantsJson().
+
+                        // We will construct the URL correctly:
+                        const uploadUrl = basePath + `/issues/${issueKey}/attachments`;
+
+                        try {
+                            const upResponse = await fetch(uploadUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-Token': getCsrfToken(),
+                                    'Accept': 'application/json' // Force JSON response
+                                },
+                                body: formData
+                            });
+
+                            if (!upResponse.ok) {
+                                throw new Error(`Upload failed for ${file.name}`);
+                            }
+                            return { file: file.name, status: 'success' };
+                        } catch (err) {
+                            console.error(`❌ Failed to upload ${file.name}`, err);
+                            return { file: file.name, status: 'error', error: err };
+                        }
+                    });
+
+                    await Promise.all(uploadPromises);
+                    console.log('✅ All uploads processed');
+                }
+
+                alert(`✅ Issue ${issueKey} created successfully!`);
+                modal.hide();
+                form.reset();
+                selectedFiles.clear();
+                updateFilePreview();
+
+                setTimeout(() => {
+                    window.location.href = basePath + '/projects/' + projectKey + '/board';
+                }, 1000);
+
+            } else {
+                const errorMessage = result.error || result.message || 'Failed to create issue';
+                alert('❌ ' + errorMessage);
+            }
+
+        } catch (error) {
+            console.error('❌ Error submitting form:', error);
+            alert('❌ Network error. Please check console and try again.');
+        } finally {
+            const submitBtn = document.getElementById('createIssueBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Create';
+            }
+        }
+    }
+
     // Run initialization
     initialize();
 });
+

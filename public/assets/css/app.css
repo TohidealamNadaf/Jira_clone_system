@@ -5763,9 +5763,8 @@ a.profile-nav-item:hover,
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(9, 30, 66, 0.54);
-    backdrop-filter: blur(2px);
-    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Backdrop */
 }
 
 .jira-modal.open {
@@ -5782,8 +5781,35 @@ a.profile-nav-item:hover,
     flex-direction: column;
     max-height: 85vh;
     box-shadow: var(--shadow-xl);
-    z-index: 2;
+    z-index: 1055;
+    /* Higher than backdrop */
     margin: auto;
+}
+
+.modal-standard {
+    width: 600px !important;
+    max-height: 80vh !important;
+}
+
+.modal-body-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px;
+    max-height: calc(80vh - 140px);
+    /* Subtract header and footer space */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+    scroll-behavior: smooth;
+    overscroll-behavior: auto;
+    /* Allow proper scrolling */
+}
+
+/* Utility to hide alt text when image fails to load, to prevent duplicate text */
+img[src=""],
+img[src="#"],
+img:not([src]) {
+    display: none;
 }
 
 .modal-dialog.large {
@@ -5826,11 +5852,24 @@ a.profile-nav-item:hover,
 }
 
 .modal-body {
-    padding: 20px;
-    overflow-y: auto;
+    padding: 0;
     flex: 1;
-    overscroll-behavior: contain;
-    /* Prevents scroll chaining to body */
+    overflow: hidden;
+    /* Hide overflow on main container */
+}
+
+.modal-body-scroll {
+    padding: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    overscroll-behavior: auto;
+    /* Allow proper scrolling */
+    max-height: calc(80vh - 140px);
+    /* Subtract header and footer space */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+    scroll-behavior: smooth;
 }
 
 .modal-footer {
@@ -5909,6 +5948,123 @@ a.profile-nav-item:hover,
 .detail-row div {
     font-size: 14px;
     color: var(--text-primary);
+}
+
+.assignee-info,
+.reporter-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.assignee-avatar,
+.reporter-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+}
+
+/* Create Event Form Styling */
+.form-section {
+    margin-bottom: 24px;
+}
+
+.form-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    flex: 1;
+    margin-bottom: 16px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.jira-input,
+.jira-select,
+.jira-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.jira-input:focus,
+.jira-select:focus,
+.jira-textarea:focus {
+    outline: none;
+    border-color: var(--jira-blue);
+    box-shadow: 0 0 0 3px rgba(139, 25, 86, 0.1);
+}
+
+.jira-textarea {
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+}
+
+/* Reminder Settings */
+.reminder-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.reminder-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reminder-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--jira-blue);
+}
+
+.reminder-item label {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin: 0;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* Recurring Settings */
+.recurring-options {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
 }
 
 /* Event Timeline */

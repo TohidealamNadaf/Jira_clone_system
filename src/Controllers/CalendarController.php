@@ -48,8 +48,12 @@ class CalendarController extends Controller
 
         try {
             // FullCalendar sends 'start' and 'end' as ISO strings
-            $start = $request->input('start');
-            $end = $request->input('end');
+            $startRaw = $request->input('start');
+            $endRaw = $request->input('end');
+
+            // Format dates for MySQL (ISO8601 -> Y-m-d H:i:s)
+            $start = $startRaw ? date('Y-m-d H:i:s', strtotime($startRaw)) : null;
+            $end = $endRaw ? date('Y-m-d H:i:s', strtotime($endRaw)) : null;
 
             // Filters
             $projectKey = $request->input('project'); // Key or ID? Service expects key if we use getProjectDateRangeEvents? 
@@ -143,5 +147,103 @@ class CalendarController extends Controller
         }
     }
 
+    /**
+     * API: Get statuses for filter
+     */
+    public function statuses(): void
+    {
+        $this->authorize('issues.view');
+        try {
+            $statuses = $this->calendarService->getStatusesForFilter();
+            $this->json(['success' => true, 'data' => $statuses]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 
+    /**
+     * API: Get priorities for filter
+     */
+    public function priorities(): void
+    {
+        $this->authorize('issues.view');
+        try {
+            $priorities = $this->calendarService->getPrioritiesForFilter();
+            $this->json(['success' => true, 'data' => $priorities]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Get issue types for filter
+     */
+    public function issueTypes(): void
+    {
+        $this->authorize('issues.view');
+        try {
+            $types = $this->calendarService->getIssueTypesForFilter();
+            $this->json(['success' => true, 'data' => $types]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Get users for assignee filter
+     */
+    public function users(): void
+    {
+        $this->authorize('issues.view');
+        try {
+            $users = $this->calendarService->getUsersForFilter();
+            $this->json(['success' => true, 'data' => $users]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Toggle Watch Status
+     */
+    public function toggleWatch(Request $request): void
+    {
+        $this->authorize('issues.view'); // Assuming any viewer can watch
+        $key = $request->param('key');
+        $user = $request->user();
+
+        if (!$key || !$user) {
+            $this->json(['success' => false, 'error' => 'Invalid request'], 400);
+            return;
+        }
+
+        try {
+            $isWatching = $this->calendarService->toggleWatch($key, $user->id);
+            $this->json(['success' => true, 'isWatching' => $isWatching]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Check Watch Status
+     */
+    public function checkWatchStatus(Request $request): void
+    {
+        $this->authorize('issues.view');
+        $key = $request->param('key');
+        $user = $request->user();
+
+        if (!$key || !$user) {
+            $this->json(['success' => false, 'error' => 'Invalid request'], 400);
+            return;
+        }
+
+        try {
+            $isWatching = $this->calendarService->getWatchStatus($key, $user->id);
+            $this->json(['success' => true, 'isWatching' => $isWatching]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }

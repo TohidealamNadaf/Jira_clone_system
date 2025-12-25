@@ -598,6 +598,18 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             <?= e($issue['status_name']) ?>
                         </span>
                     </div>
+                    <?php if ($issue['start_date']): ?>
+                        <div class="detail-row">
+                            <span class="detail-label">Start Date</span>
+                            <span class="detail-value"><?= format_date($issue['start_date']) ?></span>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($issue['end_date']): ?>
+                        <div class="detail-row">
+                            <span class="detail-label">End Date</span>
+                            <span class="detail-value"><?= format_date($issue['end_date']) ?></span>
+                        </div>
+                    <?php endif; ?>
                     <div class="detail-row">
                         <span class="detail-label">Created</span>
                         <span class="detail-value"><?= format_date($issue['created_at']) ?></span>

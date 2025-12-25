@@ -39,7 +39,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
                         </div>
                         <h1 class="issue-key"><?= e($issue['issue_key']) ?></h1>
-                        <span class="issue-status-badge" style="background-color: <?= e($issue['status_color']) ?>">
+                        <span class="issue-status-badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </div>
@@ -481,15 +481,15 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                                         </a>
                                         <span class="link-desc"><?= e($link['description'] ?? '') ?></span>
                                         <span class="link-status"
-                                            style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>">
+                                            style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>; color: white !important;">
                                             <?= e($link['status_name'] ?? 'Unknown') ?>
                                         </span>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                            <?php if (!empty($links['inward'] ?? [])): ?>
-                                <?php foreach ($links['inward'] as $link): ?>
-                                    <div class="link-item">
+                                        </div>
+                                        <?php endforeach; ?>
+                                        <?php endif; ?>
+                                        <?php if (!empty($links['inward'] ?? [])): ?>
+                                        <?php foreach ($links['inward'] as $link): ?>
+                                        <div class="link-item">
                                         <span class="link-badge"
                                             style="background-color: <?= e($link['issue_type_color'] ?? '#ccc') ?>">
                                             <i class="bi bi-<?= e($link['issue_type_icon'] ?? 'link') ?>"></i>
@@ -499,7 +499,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                                         </a>
                                         <span class="link-desc"><?= e($link['description'] ?? '') ?></span>
                                         <span class="link-status"
-                                            style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>">
+                                            style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>; color: white !important;">
                                             <?= e($link['status_name'] ?? 'Unknown') ?>
                                         </span>
                                     </div>
@@ -594,7 +594,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Status</span>
-                        <span class="detail-badge" style="background-color: <?= e($issue['status_color']) ?>">
+                        <span class="detail-badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </div>

@@ -486,6 +486,28 @@ class ProjectController extends Controller
         ]);
     }
 
+    /**
+     * Show project workflows
+     */
+    public function workflows(Request $request): string
+    {
+        $key = $request->param('key');
+        $project = $this->projectService->getProjectByKey($key);
+
+        if (!$project) {
+            abort(404, 'Project not found');
+        }
+
+        $this->authorize('projects.view', $project['id']);
+
+        $workflows = $this->projectService->getWorkflows($project['id']);
+
+        return $this->view('projects.workflows', [
+            'project' => $project,
+            'workflows' => $workflows,
+        ]);
+    }
+
     public function members(Request $request): string
     {
         $key = $request->param('key');

@@ -985,26 +985,27 @@ section {
     text-transform: uppercase;
     letter-spacing: 0.3px;
     white-space: nowrap;
+    color: white !important;  /* CRITICAL: Force white text for all status badges */
 }
 
 .status-todo {
     background: var(--bg-tertiary);
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
 }
 
 .status-in-progress {
     background: var(--jira-blue-lighter);
-    color: var(--jira-blue-dark);
+    color: var(--jira-blue-dark) !important;
 }
 
 .status-in-review {
     background: #FCE2B6;
-    color: #7F5F01;
+    color: #7F5F01 !important;
 }
 
 .status-done {
     background: var(--color-success-light);
-    color: #2D5016;
+    color: #2D5016 !important;
 }
 
 /* ======================================

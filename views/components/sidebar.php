@@ -39,7 +39,7 @@
                 <a class="nav-link text-white" href="<?= url('/search?assignee=currentUser()') ?>">
                     <i class="bi bi-person-check me-2"></i> Assigned to Me
                     <?php if (($stats['assigned_count'] ?? 0) > 0): ?>
-                        <span class="badge bg-primary ms-auto"><?= e($stats['assigned_count']) ?></span>
+                        <span class="badge bg-primary ms-auto" style="color: white !important;"><?= e($stats['assigned_count']) ?></span>
                     <?php endif; ?>
                 </a>
             </li>

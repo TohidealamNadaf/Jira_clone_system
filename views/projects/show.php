@@ -146,11 +146,11 @@
                                             class="issue-summary"><?= e(substr($issue['summary'], 0, 60)) ?><?= strlen($issue['summary']) > 60 ? '...' : '' ?></span>
                                     </div>
                                     <div class="issue-item-right">
-                                        <span class="status-badge"
-                                            style="background-color: <?= e($issue['status']['color'] ?? '#DFE1E6') ?>">
-                                            <?= e($issue['status']['name'] ?? 'Open') ?>
-                                        </span>
-                                    </div>
+                                         <span class="status-badge"
+                                             style="background-color: <?= e($issue['status']['color'] ?? '#DFE1E6') ?>; color: white !important;">
+                                             <?= e($issue['status']['name'] ?? 'Open') ?>
+                                         </span>
+                                     </div>
                                 </a>
                             <?php endforeach; ?>
                         </div>

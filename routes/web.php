@@ -56,21 +56,21 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
 
     // Dashboard
     $router->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Projects
     $router->get('/projects', [ProjectController::class, 'index'])->name('projects.index');
     $router->get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
     $router->get('/projects/quick-create-list', [ProjectController::class, 'quickCreateList'])->name('projects.quick-create-list');
-    
+
     // Users
     $router->get('/users/active', [UserController::class, 'activeUsers'])->name('users.active');
-    
+
     // Issue Types (for quick create modal and forms)
     $router->get('/issue-types-list', [IssueController::class, 'getIssueTypes'])->name('issue-types.list');
-    
+
     // NOTE: API lookup endpoints are now in routes/api.php with public access (no auth required)
     // Removed: /api/v1/issue-types, /api/v1/priorities, /api/v1/statuses, /api/v1/labels, /api/v1/link-types
-    
+
     $router->post('/projects', [ProjectController::class, 'store'])->name('projects.store');
     $router->get('/projects/{key}', [ProjectController::class, 'show'])->name('projects.show');
     $router->get('/projects/{key}/activity', [ProjectController::class, 'activity'])->name('projects.activity');
@@ -102,7 +102,8 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->post('/projects/{key}/members', [ProjectController::class, 'addMember'])->name('projects.members.add');
     $router->put('/projects/{key}/members/{userId}', [ProjectController::class, 'updateMember'])->name('projects.members.update');
     $router->delete('/projects/{key}/members/{userId}', [ProjectController::class, 'removeMember'])->name('projects.members.remove');
-    
+    $router->get('/projects/{key}/workflows', [ProjectController::class, 'workflows'])->name('projects.workflows');
+
     // Issues
     $router->get('/projects/{key}/issues', [IssueController::class, 'index'])->name('issues.index');
     $router->get('/issues/create', [IssueController::class, 'create'])->name('issues.create');
@@ -116,23 +117,23 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->post('/issue/{issueKey}/watch', [IssueController::class, 'watch'])->name('issues.watch');
     $router->post('/issue/{issueKey}/vote', [IssueController::class, 'vote'])->name('issues.vote');
     $router->post('/issue/{issueKey}/link', [IssueController::class, 'link'])->name('issues.link');
-    
+
     // Comments
     $router->post('/issue/{issueKey}/comments', [CommentController::class, 'store'])->name('comments.store');
     $router->put('/comments/{id}', [CommentController::class, 'update'])->name('comments.update');
     $router->delete('/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
-    
+
     // Attachments
     $router->post('/issue/{issueKey}/attachments', [AttachmentController::class, 'store'])->name('attachments.store');
     $router->get('/attachments/{id}', [AttachmentController::class, 'download'])->name('attachments.download');
     $router->delete('/attachments/{id}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
-    
+
     // Worklogs
     $router->post('/issue/{issueKey}/logwork', [IssueController::class, 'logWork'])->name('worklogs.store');
     $router->post('/issue/{issueKey}/worklogs', [IssueController::class, 'logWork'])->name('worklogs.store');
     $router->put('/worklogs/{id}', [IssueController::class, 'updateWorklog'])->name('worklogs.update');
     $router->delete('/worklogs/{id}', [IssueController::class, 'deleteWorklog'])->name('worklogs.destroy');
-    
+
     // Boards
     $router->get('/projects/{key}/boards', [BoardController::class, 'index'])->name('boards.index');
     $router->get('/projects/{key}/boards/create', [BoardController::class, 'create'])->name('boards.create');
@@ -143,7 +144,7 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->put('/boards/{id}', [BoardController::class, 'update'])->name('boards.update');
     $router->delete('/boards/{id}', [BoardController::class, 'destroy'])->name('boards.destroy');
     $router->post('/boards/{id}/move', [BoardController::class, 'moveIssue'])->name('boards.move');
-    
+
     // Sprints
     $router->get('/boards/{boardId}/sprints', [SprintController::class, 'index'])->name('sprints.index');
     $router->post('/boards/{boardId}/sprints', [SprintController::class, 'store'])->name('sprints.store');
@@ -153,18 +154,18 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->delete('/sprints/{id}', [SprintController::class, 'destroy'])->name('sprints.destroy');
     $router->post('/sprints/{id}/issues', [SprintController::class, 'addIssue'])->name('sprints.issues.add');
     $router->delete('/sprints/{id}/issues/{issueId}', [SprintController::class, 'removeIssue'])->name('sprints.issues.remove');
-    
+
     // Search
     $router->get('/search', [SearchController::class, 'index'])->name('search.index');
     $router->get('/search/quick', [SearchController::class, 'quick'])->name('search.quick');
     $router->get('/search/advanced', [SearchController::class, 'advanced'])->name('search.advanced');
-    
+
     // Filters
     $router->get('/filters', [SearchController::class, 'filters'])->name('filters.index');
     $router->post('/filters', [SearchController::class, 'saveFilter'])->name('filters.store');
     $router->put('/filters/{id}', [SearchController::class, 'updateFilter'])->name('filters.update');
     $router->delete('/filters/{id}', [SearchController::class, 'deleteFilter'])->name('filters.destroy');
-    
+
     // Reports
     $router->get('/reports', [ReportController::class, 'index'])->name('reports.index');
     $router->get('/reports/stats', [ReportController::class, 'stats'])->name('reports.stats');
@@ -182,15 +183,15 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/reports/time-estimate-accuracy', [ReportController::class, 'estimateAccuracy'])->name('reports.estimate-accuracy');
     $router->get('/reports/version-progress', [ReportController::class, 'versionProgress'])->name('reports.version-progress');
     $router->get('/reports/release-burndown', [ReportController::class, 'releaseBurndown'])->name('reports.release-burndown');
-    
+
     // Calendar
     $router->get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
     $router->get('/projects/{key}/calendar', [CalendarController::class, 'show'])->name('calendar.project');
-    
+
     // Roadmap
     $router->get('/roadmap', [RoadmapController::class, 'index'])->name('roadmap.index');
     $router->get('/projects/{key}/roadmap', [RoadmapController::class, 'show'])->name('roadmap.project');
-    
+
     // Time Tracking Routes
     $router->get('/time-tracking', [\App\Controllers\TimeTrackingController::class, 'globalDashboard'])->name('time-tracking.global');
     $router->get('/time-tracking/dashboard', [\App\Controllers\TimeTrackingController::class, 'dashboard'])->name('time-tracking.dashboard');
@@ -198,10 +199,10 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/time-tracking/project/{projectId}', [\App\Controllers\TimeTrackingController::class, 'projectReport'])->name('time-tracking.project');
     $router->get('/time-tracking/budgets', [\App\Controllers\TimeTrackingController::class, 'budgetDashboard'])->name('time-tracking.budgets');
     $router->get('/time-tracking/issue/{issueId}', [\App\Controllers\TimeTrackingController::class, 'issueLogs'])->name('time-tracking.issue');
-    
+
     // API Endpoints for UI (JSON responses for AJAX)
     $router->get('/api/web/projects', [ProjectController::class, 'apiProjects'])->name('api.web.projects');
-    
+
     // User Profile
     $router->get('/profile', [UserController::class, 'profile'])->name('profile');
     $router->put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
@@ -215,17 +216,17 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/profile/security', [UserController::class, 'security'])->name('profile.security');
     $router->get('/profile/settings', [UserController::class, 'settings'])->name('profile.settings');
     $router->put('/profile/settings', [UserController::class, 'updateSettings'])->name('profile.settings.update');
-    
+
     // Notifications
     $router->get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    
+
     // Real-Time Notification Streaming (Server-Sent Events)
     $router->get('/notifications/stream', [NotificationStreamController::class, 'stream'])->name('notifications.stream');
     $router->get('/notifications/unread-count', [NotificationStreamController::class, 'getUnreadCount'])->name('notifications.unread');
     $router->get('/notifications/recent', [NotificationStreamController::class, 'getRecent'])->name('notifications.recent');
     $router->post('/notifications/read', [NotificationStreamController::class, 'markAsRead'])->name('notifications.read');
     $router->post('/notifications/read-all', [NotificationStreamController::class, 'markAllAsRead'])->name('notifications.read-all');
-    
+
     // Settings (Project Settings)
     $router->get('/projects/{key}/settings/components', [SettingsController::class, 'components'])->name('settings.components');
     $router->get('/projects/{key}/settings/versions', [SettingsController::class, 'versions'])->name('settings.versions');
@@ -238,7 +239,7 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
 
 $router->group(['prefix' => '/admin', 'middleware' => ['auth', 'admin', 'csrf']], function ($router) {
     $router->get('/', [AdminController::class, 'index'])->name('admin.index');
-    
+
     // User Management
     $router->get('/users', [AdminController::class, 'users'])->name('admin.users');
     $router->get('/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
@@ -248,7 +249,7 @@ $router->group(['prefix' => '/admin', 'middleware' => ['auth', 'admin', 'csrf']]
     $router->post('/users/{id}/deactivate', [AdminController::class, 'deactivateUser'])->name('admin.users.deactivate');
     $router->post('/users/{id}/activate', [AdminController::class, 'activateUser'])->name('admin.users.activate');
     $router->delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
-    
+
     // Role Management
     $router->get('/roles', [AdminController::class, 'roles'])->name('admin.roles');
     $router->get('/roles/create', [AdminController::class, 'createRole'])->name('admin.roles.create');
@@ -257,42 +258,42 @@ $router->group(['prefix' => '/admin', 'middleware' => ['auth', 'admin', 'csrf']]
     $router->get('/roles/{id}/edit', [AdminController::class, 'editRole'])->name('admin.roles.edit');
     $router->put('/roles/{id}', [AdminController::class, 'updateRole'])->name('admin.roles.update');
     $router->delete('/roles/{id}', [AdminController::class, 'deleteRole'])->name('admin.roles.delete');
-    
+
     // Group Management
     $router->get('/groups', [AdminController::class, 'groups'])->name('admin.groups');
     $router->post('/groups', [AdminController::class, 'storeGroup'])->name('admin.groups.store');
     $router->put('/groups/{id}', [AdminController::class, 'updateGroup'])->name('admin.groups.update');
     $router->delete('/groups/{id}', [AdminController::class, 'deleteGroup'])->name('admin.groups.delete');
-    
+
     // Workflow Management
     $router->get('/workflows', [AdminController::class, 'workflows'])->name('admin.workflows');
     $router->get('/workflows/{id}', [AdminController::class, 'showWorkflow'])->name('admin.workflows.show');
-    
+
     // Issue Types
     $router->get('/issue-types', [AdminController::class, 'issueTypes'])->name('admin.issue-types');
     $router->post('/issue-types', [AdminController::class, 'storeIssueType'])->name('admin.issue-types.store');
     $router->put('/issue-types/{id}', [AdminController::class, 'updateIssueType'])->name('admin.issue-types.update');
     $router->delete('/issue-types/{id}', [AdminController::class, 'deleteIssueType'])->name('admin.issue-types.delete');
-    
+
     // Audit Log
     $router->get('/audit-log', [AdminController::class, 'auditLog'])->name('admin.audit-log');
-    
+
     // System Settings
     $router->get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
     $router->put('/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     $router->post('/settings/test-email', [AdminController::class, 'testEmail'])->name('admin.settings.test-email');
-    
+
     // Global Permissions
     $router->get('/global-permissions', [AdminController::class, 'globalPermissions'])->name('admin.global-permissions');
     $router->put('/global-permissions', [AdminController::class, 'updateGlobalPermissions'])->name('admin.global-permissions.update');
-    
+
     // Alias for convenience
     $router->get('/permissions', [AdminController::class, 'globalPermissions'])->name('admin.permissions');
     $router->put('/permissions', [AdminController::class, 'updateGlobalPermissions'])->name('admin.permissions.update');
-    
+
     // Projects Management
     $router->get('/projects', [AdminController::class, 'projects'])->name('admin.projects');
-    
+
     // Project Categories
     $router->get('/project-categories', [AdminController::class, 'projectCategories'])->name('admin.project-categories');
     $router->post('/project-categories', [AdminController::class, 'storeProjectCategory'])->name('admin.project-categories.store');
@@ -309,7 +310,7 @@ $router->group(['middleware' => ['auth']], function ($router) {
     $router->get('/projects/{key}/print/board', [PrintController::class, 'printBoard'])->name('print.board');
     $router->get('/projects/{key}/print/project', [PrintController::class, 'printProject'])->name('print.project');
     $router->get('/sprints/{sprint_id}/print', [PrintController::class, 'printSprint'])->name('print.sprint');
-    
+
     // Export to PDF (with KoolReport)
     $router->get('/projects/{key}/export/board-pdf', [PrintController::class, 'exportBoardPDF'])->name('export.board-pdf');
     $router->get('/projects/{key}/export/project-pdf', [PrintController::class, 'exportProjectPDF'])->name('export.project-pdf');

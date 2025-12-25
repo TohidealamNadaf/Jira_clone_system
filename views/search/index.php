@@ -320,11 +320,11 @@
                                 <a href="<?= url('/issue/' . $issue['issue_key']) ?>" class="result-key-link">
                                     <?= e($issue['issue_key']) ?>
                                 </a>
-                                <span class="result-priority-badge" style="background-color: <?= e($issue['priority_color']) ?>">
+                                <span class="result-priority-badge" style="background-color: <?= e($issue['priority_color']) ?>; color: white !important;">
                                     <?= e($issue['priority_name']) ?>
                                 </span>
                             </div>
-                            <span class="result-status-badge" style="background-color: <?= e($issue['status_color']) ?>">
+                            <span class="result-status-badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                                 <?= e($issue['status_name']) ?>
                             </span>
                         </div>
@@ -406,12 +406,12 @@
                                     <?php endif; ?>
                                 </td>
                                 <td class="col-status">
-                                    <span class="status-badge-table" style="background-color: <?= e($issue['status_color']) ?>">
+                                    <span class="status-badge-table" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                                         <?= e($issue['status_name']) ?>
                                     </span>
                                 </td>
                                 <td class="col-priority">
-                                    <span class="priority-badge-table" style="background-color: <?= e($issue['priority_color']) ?>">
+                                    <span class="priority-badge-table" style="background-color: <?= e($issue['priority_color']) ?>; color: white !important;">
                                         <?= e($issue['priority_name']) ?>
                                     </span>
                                 </td>

@@ -360,7 +360,7 @@ class IssueService
             throw new \InvalidArgumentException('Issue not found');
         }
 
-        if (!$this->isTransitionAllowed($issue['status_id'], $targetStatusId, $issue['project_id'])) {
+        if (!$this->isTransitionAllowed($issue['status_id'], $targetStatusId, $issue['project_id'], $issue['issue_type_id'] ?? null)) {
             throw new \InvalidArgumentException('This transition is not allowed');
         }
 
@@ -658,22 +658,45 @@ class IssueService
         return null;
     }
 
-    private function isTransitionAllowed(int $fromStatusId, int $toStatusId, int $projectId): bool
+    private function isTransitionAllowed(int $fromStatusId, int $toStatusId, int $projectId, ?int $issueTypeId = null): bool
     {
-        // Get the default workflow
-        $defaultWorkflow = Database::selectOne(
-            "SELECT id FROM workflows WHERE is_default = 1"
-        );
+        // 1. Try to find mapping for specific project and issue type
+        $mapping = null;
+        if ($issueTypeId) {
+            $mapping = Database::selectOne(
+                "SELECT workflow_id FROM project_workflows 
+                 WHERE project_id = ? AND issue_type_id = ?",
+                [$projectId, $issueTypeId]
+            );
+        }
 
-        if (!$defaultWorkflow) {
-            // No default workflow - allow any transition
+        // 2. Fall back to project default mapping
+        if (!$mapping) {
+            $mapping = Database::selectOne(
+                "SELECT workflow_id FROM project_workflows 
+                 WHERE project_id = ? AND issue_type_id IS NULL",
+                [$projectId]
+            );
+        }
+
+        // 3. Fall back to system default workflow
+        if (!$mapping) {
+            $mapping = Database::selectOne(
+                "SELECT id as workflow_id FROM workflows WHERE is_default = 1"
+            );
+        }
+
+        if (!$mapping) {
+            // No workflow found - allow any transition (safety fallback)
             return true;
         }
 
-        // Check if ANY workflow transitions are configured
+        $workflowId = $mapping['workflow_id'];
+
+        // Check if ANY workflow transitions are configured for this workflow
         $transitionCount = Database::selectOne(
             "SELECT COUNT(*) as count FROM workflow_transitions WHERE workflow_id = ?",
-            [$defaultWorkflow['id']]
+            [$workflowId]
         );
 
         // If NO transitions configured at all, allow all transitions (setup phase)
@@ -687,7 +710,7 @@ class IssueService
              WHERE workflow_id = ?
              AND (from_status_id = ? OR from_status_id IS NULL)
              AND to_status_id = ?",
-            [$defaultWorkflow['id'], $fromStatusId, $toStatusId]
+            [$workflowId, $fromStatusId, $toStatusId]
         );
 
         return $transition !== null;

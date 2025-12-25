@@ -996,7 +996,7 @@
                         <span class="issue-priority" style="background-color: <?= e($issue['priority_color'] ?? '#626F86') ?>">
                           <?= e(substr($issue['priority_name'] ?? 'None', 0, 1)) ?>
                         </span>
-                        <span class="issue-status" style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>">
+                        <span class="issue-status" style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>; color: white !important;">
                           <?= e($issue['status_name'] ?? 'New') ?>
                         </span>
                       </a>
@@ -1037,7 +1037,7 @@
                         </div>
                         <div class="issue-key"><?= e($issue['issue_key']) ?></div>
                         <div class="issue-summary"><?= e($issue['summary']) ?></div>
-                        <span class="issue-status" style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>">
+                        <span class="issue-status" style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>; color: white !important;">
                           <?= e($issue['status_name'] ?? 'New') ?>
                         </span>
                       </a>
@@ -1079,7 +1079,7 @@
                         <div class="issue-key"><?= e($issue['issue_key']) ?></div>
                         <div class="issue-summary"><?= e($issue['summary']) ?></div>
                         <i class="bi bi-eye" style="color: var(--text-secondary);"></i>
-                        <span class="issue-status" style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>">
+                        <span class="issue-status" style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>; color: white !important;">
                           <?= e($issue['status_name'] ?? 'New') ?>
                         </span>
                       </a>

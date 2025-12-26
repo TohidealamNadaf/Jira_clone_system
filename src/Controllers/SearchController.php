@@ -33,12 +33,14 @@ class SearchController extends Controller
             'created' => $request->input('created', ''),
             'exclude_done' => $request->input('exclude_done', false), // Hide done issues by default
         ];
-        
+
         // When user navigates from dashboard (assignee=currentUser without status filter),
         // automatically exclude done status to match dashboard behavior
-        if (($filters['assignee'] === 'currentUser()' || $filters['assignee'] === 'currentUser()')
-            && empty($filters['status']) 
-            && !$request->has('status')) {
+        if (
+            ($filters['assignee'] === 'currentUser()' || $filters['assignee'] === 'currentUser()')
+            && empty($filters['status'])
+            && !$request->has('status')
+        ) {
             $filters['exclude_done'] = true;
         }
 
@@ -51,19 +53,19 @@ class SearchController extends Controller
         $projects = Database::select(
             "SELECT DISTINCT p.id, p.key, p.name FROM projects p ORDER BY p.name"
         );
-        
+
         $issueTypes = Database::select(
             "SELECT DISTINCT it.id, it.name, it.icon, it.color FROM issue_types it ORDER BY it.name"
         );
-        
+
         $statuses = Database::select(
             "SELECT DISTINCT s.id, s.name, s.color FROM statuses s ORDER BY s.name"
         );
-        
+
         $priorities = Database::select(
             "SELECT id, name, color FROM issue_priorities ORDER BY id"
         );
-        
+
         $users = Database::select(
             "SELECT id, display_name FROM users ORDER BY display_name"
         );
@@ -461,7 +463,7 @@ class SearchController extends Controller
                      LEFT JOIN issue_priorities ip ON i.priority_id = ip.id
                      LEFT JOIN users u ON i.assignee_id = u.id
                      WHERE {$whereClause}";
-        
+
         $total = (int) Database::selectValue($countSql, $params);
 
         // Get issues
@@ -480,7 +482,7 @@ class SearchController extends Controller
                 WHERE {$whereClause}
                 ORDER BY {$orderBy}
                 LIMIT ? OFFSET ?";
-        
+
         $issues = Database::select($sql, array_merge($params, [$perPage, $offset]));
 
         return [
@@ -555,19 +557,19 @@ class SearchController extends Controller
         $orderBy = 'i.created_at DESC';
 
         $jql = trim($jql);
-        
+
         if (preg_match('/ORDER BY (.+)$/i', $jql, $matches)) {
             $orderClause = trim($matches[1]);
             $jql = preg_replace('/ORDER BY .+$/i', '', $jql);
-            
+
             $orderMap = [
                 'created' => 'i.created_at',
                 'updated' => 'i.updated_at',
-                'priority' => 'p.order_num',
+                'priority' => 'p.sort_order',
                 'status' => 's.name',
                 'summary' => 'i.summary',
             ];
-            
+
             if (preg_match('/(\w+)\s*(ASC|DESC)?/i', $orderClause, $orderMatch)) {
                 $field = strtolower($orderMatch[1]);
                 $direction = strtoupper($orderMatch[2] ?? 'DESC');
@@ -675,11 +677,11 @@ class SearchController extends Controller
         if (is_array($value)) {
             return array_filter($value); // Remove empty values
         }
-        
+
         if (is_string($value) && !empty($value)) {
             return [$value]; // Wrap single string in array
         }
-        
+
         return []; // Return empty array for null or empty string
     }
 
@@ -690,7 +692,7 @@ class SearchController extends Controller
     private function convertToIds(array $values, string $table, string $column): array
     {
         $ids = [];
-        
+
         foreach ($values as $value) {
             // If already a numeric ID, use it directly
             if (is_numeric($value)) {
@@ -706,7 +708,7 @@ class SearchController extends Controller
                 }
             }
         }
-        
+
         return $ids;
     }
 }

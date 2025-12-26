@@ -1,0 +1,104 @@
+================================================================================
+                    CALENDAR ISSUES NOT LOADING - QUICK FIX
+================================================================================
+
+ISSUE: Calendar page shows no events
+URL: http://localhost:8081/jira_clone_system/public/calendar
+
+ROOT CAUSES:
+1. Issues table missing start_date/end_date columns (schema)
+2. Issues have no dates populated (test data)
+3. FullCalendar.js not receiving API data (API endpoint)
+
+IMMEDIATE ACTION:
+================================================================================
+
+1. RUN FIX SCRIPT (60 seconds)
+   ──────────────────────────
+   Visit: http://localhost:8081/jira_clone_system/public/fix_calendar_issues_now.php
+   
+   This script automatically:
+   ✓ Adds missing columns (start_date, end_date)
+   ✓ Populates test data with dates
+   ✓ Tests CalendarService
+   ✓ Provides diagnostic info
+
+
+2. CLEAR BROWSER CACHE (30 seconds)
+   ─────────────────────────────────
+   Press: CTRL + SHIFT + DEL
+   Select: "All time"
+   Click: "Clear data"
+
+
+3. HARD REFRESH (5 seconds)
+   ────────────────────────
+   Press: CTRL + F5
+
+
+4. TEST CALENDAR (2 minutes)
+   ─────────────────────────
+   Visit: http://localhost:8081/jira_clone_system/public/calendar
+   
+   Should see:
+   ✓ Events on calendar grid
+   ✓ Color-coded by priority
+   ✓ Sidebar with upcoming issues
+   ✓ Click event opens modal
+
+
+TROUBLESHOOTING:
+================================================================================
+
+If still not working:
+
+1. Check Browser Console (F12)
+   Look for JavaScript errors (red)
+   
+2. Check Network Tab (F12 → Network)
+   Look for request: /api/v1/calendar/events
+   Should return: 200 OK with JSON data
+   
+3. Run Diagnostic
+   Visit: http://localhost:8081/jira_clone_system/public/verify_calendar_setup.php
+   
+4. Check Logs
+   Look in: storage/logs/error.log for exceptions
+
+
+FILES INVOLVED:
+================================================================================
+✓ src/Controllers/CalendarController.php    (handles requests)
+✓ src/Services/CalendarService.php          (fetches events)
+✓ views/calendar/index.php                  (UI with FullCalendar)
+✓ public/assets/js/calendar.js              (FullCalendar init)
+✓ routes/web.php (line 187)                 (GET /calendar)
+✓ routes/api.php (line 183)                 (GET /api/v1/calendar/events)
+
+
+API ENDPOINT TEST:
+================================================================================
+From browser console (F12):
+
+fetch('/api/v1/calendar/events?start=2025-12-01&end=2025-12-31', {
+    headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    }
+})
+.then(r => r.json())
+.then(data => {
+    console.log('Response:', data);
+    console.log('Events:', data.data.length);
+});
+
+Expected: Should log list of events with dates
+
+
+ESTIMATED TIME: 5-10 minutes total
+SUCCESS CRITERIA: Calendar shows events by date with colors and modal works
+
+================================================================================
+
+Questions? Check: CALENDAR_FIX_ISSUES_NOT_LOADING.md (detailed guide)
+
+================================================================================

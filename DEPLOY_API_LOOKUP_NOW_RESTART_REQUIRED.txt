@@ -1,0 +1,94 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║             API LOOKUP ENDPOINTS FIX - RESTART APACHE NOW                    ║
+║                            December 21, 2025                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+ISSUE FIXED
+───────────
+❌ BEFORE: GET /api/v1/issue-types → 404 Not Found
+❌ BEFORE: GET /api/v1/priorities → 404 Not Found
+✅ AFTER:  Endpoints properly registered and accessible
+
+WHAT WAS CHANGED
+────────────────
+File: routes/api.php (lines 40-43)
+
+ADDED:
+  $router->get('/issue-types', [IssueApiController::class, 'issueTypes']);
+  $router->get('/priorities', [IssueApiController::class, 'priorities']);
+  $router->get('/statuses', [IssueApiController::class, 'statuses']);
+  $router->get('/link-types', [IssueApiController::class, 'linkTypes']);
+
+File: src/Controllers/Api/IssueApiController.php (lines 594, 604, 612)
+
+CHANGED:
+  void → never (3 methods)
+
+STATUS
+──────
+✅ Code changes completed
+⏳ NEEDS: Apache restart
+⏳ NEEDS: Browser cache clear
+
+IMMEDIATE NEXT STEPS
+────────────────────
+
+1️⃣  RESTART APACHE
+    ├─ Laragon: Click icon (bottom-right) → Apache → Restart
+    ├─ XAMPP: Control Panel → Apache → Stop → Start
+    └─ Or command: net stop Apache2.4 && net start Apache2.4
+    
+    Wait for: "Service started successfully" message
+
+2️⃣  CLEAR BROWSER CACHE
+    ├─ Press: CTRL+SHIFT+DEL
+    ├─ Select: "Cached images and files"
+    └─ Click: "Clear"
+
+3️⃣  HARD REFRESH
+    └─ Press: CTRL+F5 (or CTRL+Shift+R on Mac)
+
+4️⃣  TEST THE FIX
+    ├─ Open Create Issue Modal
+    ├─ Open Console: F12 → Console tab
+    └─ Look for: ✅ Issue types loaded
+               ✅ Loaded priorities
+
+EXPECTED RESULTS
+────────────────
+After restart and cache clear:
+
+✅ Console shows no 404 errors
+✅ Issue Type dropdown populates
+✅ Priority dropdown populates
+✅ Both dropdowns have valid options
+✅ No "Failed to load" messages
+
+TIMELINE
+────────
+Apache restart:     1-2 minutes
+Cache clear:        30 seconds
+Test:               30 seconds
+─────────────────────────────────
+Total:              2-3 minutes
+
+DEPLOYMENT CHECKLIST
+────────────────────
+□ Code changes saved (routes/api.php + IssueApiController.php)
+□ Apache restarted (status shows running)
+□ Browser cache cleared
+□ Hard refresh completed
+□ Modal opens without errors
+□ Dropdowns populate correctly
+□ No console errors
+
+ROLLBACK (If needed)
+────────────────────
+If something goes wrong:
+1. Revert routes/api.php to previous version
+2. Revert IssueApiController.php to previous version
+3. Restart Apache
+4. Clear cache
+5. Hard refresh
+
+STATUS: ✅ READY - RESTART APACHE NOW

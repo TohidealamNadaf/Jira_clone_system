@@ -936,7 +936,7 @@
                                 </td>
                                 <td><?= e(substr($issue['summary'], 0, 50)) ?><?= strlen($issue['summary']) > 50 ? '...' : '' ?></td>
                                 <td>
-                                    <span class="status-badge" style="background-color: <?= e($issue['status_color'] ?? '#DFE1E6') ?>20; color: <?= e($issue['status_color'] ?? '#626F86') ?>; border-color: <?= e($issue['status_color'] ?? '#DFE1E6') ?>;">
+                                    <span class="status-badge" style="background-color: <?= e($issue['status_color'] ?? '#DFE1E6') ?>; color: white !important;">
                                         <?= e($issue['status_name']) ?>
                                     </span>
                                 </td>

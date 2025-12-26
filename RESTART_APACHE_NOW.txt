@@ -1,0 +1,145 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         RESTART APACHE NOW                                  ║
+║                     (This is required for the fix to work)                   ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+WHY?
+────
+The routes were added to routes/api.php, but Apache needs to be restarted
+to reload PHP files and register the new routes.
+
+CHOOSE YOUR METHOD
+──────────────────
+
+╔─ METHOD 1: LARAGON (Easiest) ────────────────────────────────────╗
+│                                                                   │
+│ 1. Look at the bottom-right corner of your screen               │
+│    (Windows system tray)                                         │
+│                                                                   │
+│ 2. Find the Laragon icon (looks like a small dashboard icon)    │
+│                                                                   │
+│ 3. Click it to open the Laragon menu                            │
+│                                                                   │
+│ 4. Find "Apache" section or button                              │
+│                                                                   │
+│ 5. Click "Restart" (or "Stop" then "Start")                    │
+│                                                                   │
+│ 6. Wait 3-5 seconds for the message:                            │
+│    "Apache started"  or  "Apache restarted"                     │
+│                                                                   │
+│ ✅ DONE! Apache is restarted                                    │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+
+╔─ METHOD 2: XAMPP CONTROL PANEL ──────────────────────────────────╗
+│                                                                   │
+│ 1. Click Windows "Start" button                                  │
+│                                                                   │
+│ 2. Search for "XAMPP Control Panel"                             │
+│                                                                   │
+│ 3. Open it                                                       │
+│                                                                   │
+│ 4. Find the "Apache" row                                        │
+│                                                                   │
+│ 5. Click "Stop" button                                          │
+│    Wait for status to change (2-3 seconds)                      │
+│                                                                   │
+│ 6. Click "Start" button                                         │
+│    Wait for "Apache" to show green "Running"                    │
+│                                                                   │
+│ ✅ DONE! Apache is restarted                                    │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+
+╔─ METHOD 3: COMMAND LINE (Advanced) ──────────────────────────────╗
+│                                                                   │
+│ 1. Press: WIN + R                                               │
+│    (Windows Run dialog opens)                                    │
+│                                                                   │
+│ 2. Type: cmd                                                     │
+│    (Command Prompt)                                              │
+│                                                                   │
+│ 3. Press: ENTER                                                  │
+│    (Command Prompt opens)                                        │
+│                                                                   │
+│ 4. Type exactly: net stop Apache2.4                             │
+│    Press: ENTER                                                  │
+│    Wait for: "[SC] ControlService SUCCESS"                      │
+│                                                                   │
+│ 5. Type exactly: net start Apache2.4                            │
+│    Press: ENTER                                                  │
+│    Wait for: "Service started successfully"                     │
+│                                                                   │
+│ 6. Close Command Prompt                                         │
+│                                                                   │
+│ ✅ DONE! Apache is restarted                                    │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+
+VERIFY APACHE IS RUNNING
+────────────────────────
+✅ Should see: "Apache" with green status or "running"
+✅ Should see: No error messages
+✅ Should see: Status shows active/online
+
+AFTER RESTARTING APACHE
+──────────────────────────
+
+1. Close all browser tabs/windows
+
+2. Clear browser cache:
+   Press: CTRL + SHIFT + DEL
+   ├─ Select: "Cached images and files"
+   └─ Click: "Clear"
+
+3. Hard refresh:
+   Press: CTRL + F5
+   (Or: CTRL + Shift + R on Mac)
+
+4. Test the fix:
+   ├─ Open: http://localhost:8080/jira_clone_system/public/
+   ├─ Go to: Dashboard or any project
+   ├─ Click: "Create" button
+   └─ Check: Console (F12) for success messages
+
+WHAT TO LOOK FOR
+────────────────
+✅ Open browser console (F12)
+✅ Look for messages like:
+   "🔄 Loading issue types from: /api/v1/issue-types"
+   "✅ Issue types loaded: Array(5)"
+✅ Look for "no 404 errors"
+
+IF STILL NOT WORKING
+────────────────────
+1. Verify Apache actually restarted
+   → Laragon/XAMPP should show green "Running"
+
+2. Try the cache clear again
+   → CTRL+SHIFT+DEL → Clear cache
+   → CTRL+F5 → Hard refresh
+
+3. Run verification script:
+   → Navigate to: /clear-cache-and-verify.php
+   → Check all ✅ marks
+
+4. Check browser console for actual error
+   → Press F12
+   → Go to Console tab
+   → Look at error message
+   → It will tell you what's wrong
+
+NEED HELP?
+──────────
+See these documents:
+- FIX_API_LOOKUP_ENDPOINTS_DECEMBER_21.md (technical details)
+- API_LOOKUP_FIX_SUMMARY_DECEMBER_21.md (complete summary)
+- clear-cache-and-verify.php (automated verification)
+
+STATUS: Ready to restart Apache
+Next: Restart Apache → Clear cache → Hard refresh → Test
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║ Press WIN+R, type "cmd", and run: net stop Apache2.4 && net start Apache2.4║
+║                          THEN: CTRL+F5 and test                            ║
+╚════════════════════════════════════════════════════════════════════════════╝

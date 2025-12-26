@@ -86,7 +86,7 @@ class ProjectService
     public function getProjectByKey(string $key): ?array
     {
         $project = Database::selectOne(
-            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at,
+            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
                     pc.name as category_name,
                     creator.display_name as created_by_name
@@ -104,11 +104,13 @@ class ProjectService
     public function getProjectById(int $id): ?array
     {
         $project = Database::selectOne(
-            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at, p.budget, p.budget_currency,
+            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
-                    pc.name as category_name
+                    pc.name as category_name,
+                    creator.display_name as created_by_name
              FROM projects p
              LEFT JOIN users u ON p.lead_id = u.id
+             LEFT JOIN users creator ON p.created_by = creator.id
              LEFT JOIN project_categories pc ON p.category_id = pc.id
              WHERE p.id = ?",
             [$id]
@@ -184,6 +186,7 @@ class ProjectService
                 'category_id' => $categoryId,
                 'default_assignee' => $data['default_assignee'] ?? 'unassigned',
                 'avatar' => $data['avatar'] ?? null,
+                'is_private' => $data['is_private'] ?? 0,
                 'created_by' => $userId,
             ]);
 
@@ -229,6 +232,7 @@ class ProjectService
             'default_assignee' => $data['default_assignee'] ?? null,
             'avatar' => $data['avatar'] ?? null,
             'is_archived' => $data['is_archived'] ?? null,
+            'is_private' => $data['is_private'] ?? null,
         ], fn($v) => $v !== null);
 
         if (!empty($updateData)) {
@@ -332,7 +336,6 @@ class ProjectService
         return Database::select(
             "SELECT id, name, slug, description
              FROM roles
-             WHERE is_system = 0 OR slug IN ('project-admin', 'project-member', 'project-viewer')
              ORDER BY name ASC"
         );
     }
@@ -405,6 +408,22 @@ class ProjectService
     {
         return Database::select(
             "SELECT * FROM versions WHERE project_id = ? ORDER BY sort_order ASC, release_date DESC",
+            [$projectId]
+        );
+    }
+
+    /**
+     * Get workflows associated with a project
+     */
+    public function getWorkflows(int $projectId): array
+    {
+        return Database::select(
+            "SELECT w.*, pw.issue_type_id, it.name as issue_type_name
+             FROM workflows w
+             JOIN project_workflows pw ON w.id = pw.workflow_id
+             LEFT JOIN issue_types it ON pw.issue_type_id = it.id
+             WHERE pw.project_id = ?
+             ORDER BY pw.issue_type_id IS NULL DESC, it.name ASC",
             [$projectId]
         );
     }
@@ -580,7 +599,7 @@ class ProjectService
             ];
         }
 
-        $totalBudget = (float)($project['budget'] ?? 0);
+        $totalBudget = (float) ($project['budget'] ?? 0);
         $currency = $project['budget_currency'] ?? 'USD';
 
         // Get total spent from time tracking
@@ -592,7 +611,7 @@ class ProjectService
                  WHERE project_id = ? AND status = 'stopped'",
                 [$projectId]
             );
-            $spent = (float)($result['total_spent'] ?? 0);
+            $spent = (float) ($result['total_spent'] ?? 0);
         } catch (\Exception $e) {
             // Table might not exist yet
             $spent = 0.0;

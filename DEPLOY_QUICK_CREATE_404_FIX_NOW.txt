@@ -1,0 +1,58 @@
+═══════════════════════════════════════════════════════════════════════════════
+  QUICK CREATE MODAL - 404 FIX (DECEMBER 22, 2025)
+═══════════════════════════════════════════════════════════════════════════════
+
+STATUS: ✅ FIXED & READY TO DEPLOY
+
+ISSUE:
+  Quick create modal showing 404 errors for three endpoints:
+  - GET /projects/quick-create-list 404
+  - GET /users/active 404
+  - GET /api/v1/issue-types 404
+
+SOLUTION:
+  Updated JavaScript to use pre-defined constants from app.php instead of
+  building URLs dynamically.
+
+FILES MODIFIED:
+  ✅ /public/assets/js/create-issue-modal.js (Lines 78-203)
+
+DEPLOYMENT STEPS:
+  1. Clear browser cache (CTRL+SHIFT+DEL)
+  2. Hard refresh (CTRL+F5)
+  3. Click "Create" button to open quick create modal
+  4. Check browser console (F12)
+  5. Should see URLs being loaded successfully
+
+EXPECTED RESULT:
+  ✅ Modal opens without 404 errors
+  ✅ Projects dropdown populated
+  ✅ Users dropdown populated
+  ✅ Issue types loaded
+  ✅ Create issue functionality works
+
+TESTING CHECKLIST:
+  [ ] Browser cache cleared
+  [ ] Hard refresh done
+  [ ] Modal opens without errors
+  [ ] Projects list shows in dropdown
+  [ ] Users/assignees show in dropdown
+  [ ] Issue types loaded
+  [ ] Form can be submitted
+  [ ] Console shows no 404 errors
+
+RISK LEVEL: VERY LOW
+  - JavaScript only
+  - No database changes
+  - No API changes
+  - No configuration changes
+  - Backward compatible
+
+DEPLOYMENT TIME: < 2 minutes
+  - Clear cache
+  - Hard refresh
+  - Test
+
+═══════════════════════════════════════════════════════════════════════════════
+  Deploy This Change Now! ✅
+═══════════════════════════════════════════════════════════════════════════════

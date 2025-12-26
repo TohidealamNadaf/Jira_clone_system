@@ -1,172 +1,200 @@
-﻿<?php \App\Core\View::extends('layouts.app'); ?>
-
+<?php \App\Core\View:: extends('layouts.app'); ?>
 <?php \App\Core\View::section('content'); ?>
 
-<div class="project-settings-wrapper">
+<div class="ps-page-wrapper">
     <!-- Breadcrumb Navigation -->
-    <div class="settings-breadcrumb">
-        <a href="<?= url('/projects') ?>" class="breadcrumb-link">
-            <i class="bi bi-house-door"></i> Projects
+    <nav class="ps-breadcrumb" aria-label="Page navigation">
+        <a href="<?= url('/dashboard') ?>" class="ps-breadcrumb-link">
+            <i class="bi bi-house-door"></i> Dashboard
         </a>
-        <span class="breadcrumb-separator">/</span>
-        <a href="<?= url("/projects/{$project['key']}") ?>" class="breadcrumb-link">
+        <span class="ps-breadcrumb-sep">/</span>
+        <a href="<?= url('/projects') ?>" class="ps-breadcrumb-link">Projects</a>
+        <span class="ps-breadcrumb-sep">/</span>
+        <a href="<?= url("/projects/{$project['key']}") ?>" class="ps-breadcrumb-link">
             <?= e($project['name']) ?>
         </a>
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">Settings</span>
-    </div>
+        <span class="ps-breadcrumb-sep">/</span>
+        <span class="ps-breadcrumb-current">Settings</span>
+    </nav>
 
     <!-- Page Header -->
-    <div class="settings-header">
-        <div class="settings-header-left">
-            <h1 class="settings-title">Project Settings</h1>
-            <p class="settings-subtitle">Manage project details, access, and configuration</p>
+    <div class="ps-page-header">
+        <div class="ps-header-left">
+            <div class="ps-avatar-container">
+                <?php if ($project['avatar'] ?? null): ?>
+                    <img src="<?= e(url($project['avatar'])) ?>" alt="<?= e($project['name']) ?>" class="ps-avatar-img">
+                <?php else: ?>
+                    <div class="ps-avatar-placeholder">
+                        <?= strtoupper(substr($project['key'], 0, 1)) ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="ps-header-content">
+                <h1 class="ps-header-title">Project Settings</h1>
+                <p class="ps-header-subtitle">Manage project details, access, and configuration</p>
+            </div>
+        </div>
+        <div class="ps-header-right">
+            <a href="<?= url("/projects/{$project['key']}") ?>" class="ps-action-btn">
+                <i class="bi bi-arrow-left"></i> Back to Project
+            </a>
         </div>
     </div>
 
-    <!-- Settings Container -->
-    <div class="settings-container">
+    <!-- Main Content Area -->
+    <div class="ps-main-container">
         <!-- Sidebar Navigation -->
-        <div class="settings-sidebar">
-            <nav class="settings-nav">
-                <a href="#details" class="settings-nav-item active" onclick="showTab('details'); return false;">
-                    <i class="bi bi-info-circle"></i>
+        <aside class="ps-sidebar">
+            <nav class="ps-nav-menu">
+                <a href="#details" class="ps-nav-item active" onclick="showTab('details'); return false;"
+                    data-section="details">
+                    <i class="bi bi-gear"></i>
                     <span>Details</span>
                 </a>
-                <a href="#access" class="settings-nav-item" onclick="showTab('access'); return false;">
-                    <i class="bi bi-shield-lock"></i>
+                <a href="#access" class="ps-nav-item" onclick="showTab('access'); return false;" data-section="access">
+                    <i class="bi bi-shield-check"></i>
                     <span>Access</span>
                 </a>
-                <a href="#notifications" class="settings-nav-item" onclick="showTab('notifications'); return false;">
+                <a href="#notifications" class="ps-nav-item" onclick="showTab('notifications'); return false;"
+                    data-section="notifications">
                     <i class="bi bi-bell"></i>
                     <span>Notifications</span>
                 </a>
-                <a href="#workflows" class="settings-nav-item" onclick="showTab('workflows'); return false;">
+                <a href="#components" class="ps-nav-item" onclick="showTab('components'); return false;"
+                    data-section="components">
+                    <i class="bi bi-box"></i>
+                    <span>Components</span>
+                </a>
+                <a href="#versions" class="ps-nav-item" onclick="showTab('versions'); return false;"
+                    data-section="versions">
+                    <i class="bi bi-tag"></i>
+                    <span>Versions</span>
+                </a>
+                <a href="#workflows" class="ps-nav-item" onclick="showTab('workflows'); return false;"
+                    data-section="workflows">
                     <i class="bi bi-diagram-3"></i>
                     <span>Workflows</span>
                 </a>
                 <?php if (can('delete-project', $project['id'])): ?>
-                <a href="#danger" class="settings-nav-item danger" onclick="showTab('danger'); return false;">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>Danger Zone</span>
-                </a>
+                    <div class="ps-nav-divider"></div>
+                    <a href="#danger" class="ps-nav-item ps-nav-danger" onclick="showTab('danger'); return false;"
+                        data-section="danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>Danger Zone</span>
+                    </a>
                 <?php endif; ?>
             </nav>
-        </div>
+        </aside>
 
-        <!-- Settings Content -->
-        <div class="settings-content">
+        <!-- Content Area -->
+        <main class="ps-content">
+
             <!-- Details Tab -->
-            <div id="details-tab" class="settings-tab active">
-                <div class="settings-card">
-                    <div class="settings-card-header">
+            <div id="details-tab" class="ps-tab-pane active">
+                <div class="ps-card">
+                    <div class="ps-card-header">
                         <div>
-                            <h3 class="settings-card-title">Project Details</h3>
-                            <p class="settings-card-description">Basic information about your project</p>
+                            <h2 class="ps-card-title">Project Details</h2>
+                            <p class="ps-card-subtitle">Basic information and project identity</p>
                         </div>
                     </div>
-                    <div class="settings-card-body">
-                        <form action="<?= url("/projects/{$project['key']}/settings") ?>" method="POST" enctype="multipart/form-data">
+                    <div class="ps-card-body">
+                        <form action="<?= url("/projects/{$project['key']}") ?>" method="POST"
+                            enctype="multipart/form-data">
                             <?= csrf_field() ?>
                             <input type="hidden" name="_method" value="PUT">
 
-                            <!-- Project Avatar & Name -->
-                            <div class="form-section">
-                                <div class="form-section-header">
-                                    <h4>Basic Information</h4>
-                                </div>
-                                <div class="form-grid-2">
-                                    <div class="avatar-section">
-                                        <div class="avatar-preview">
-                                            <?php if ($project['avatar'] ?? null): ?>
-                                            <img src="<?= e($project['avatar']) ?>" alt="Project avatar">
-                                            <?php else: ?>
-                                            <div class="avatar-gradient">
+                            <!-- Avatar Section -->
+                            <div class="ps-form-section">
+                                <div class="ps-avatar-editor">
+                                    <div class="ps-avatar-box">
+                                        <?php if ($project['avatar'] ?? null): ?>
+                                            <img src="<?= e(url($project['avatar'])) ?>" alt="Project avatar"
+                                                class="ps-avatar-preview-img">
+                                        <?php else: ?>
+                                            <div class="ps-avatar-placeholder-large">
                                                 <?= strtoupper(substr($project['key'], 0, 1)) ?>
                                             </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Project Avatar</label>
-                                            <input type="file" class="form-control form-control-sm" name="avatar" accept="image/*">
-                                            <p class="form-text">PNG, JPG or GIF (max 2MB)</p>
-                                        </div>
+                                        <?php endif; ?>
                                     </div>
-                                    <div>
-                                        <div class="form-group">
-                                            <label class="form-label required">Project Name</label>
-                                            <input type="text" class="form-control <?= has_error('name') ? 'is-invalid' : '' ?>" 
-                                                   name="name" value="<?= e($project['name']) ?>" required>
-                                            <?php if (has_error('name')): ?>
-                                            <div class="invalid-feedback"><?= e(error('name')) ?></div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Project Key</label>
-                                            <input type="text" class="form-control" value="<?= e($project['key']) ?>" disabled>
-                                            <p class="form-text">Key cannot be changed after creation</p>
-                                        </div>
+                                    <div class="ps-avatar-actions">
+                                        <label class="ps-btn ps-btn-secondary ps-btn-sm">
+                                            <i class="bi bi-camera"></i> Upload Image
+                                            <input type="file" class="ps-file-input" name="avatar" accept="image/*"
+                                                onchange="previewAvatar(this)">
+                                        </label>
+                                        <p class="ps-helper-text">JPG or PNG, max 5MB</p>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Basic Info -->
+                            <div class="ps-form-grid">
+                                <div class="ps-form-group">
+                                    <label class="ps-form-label" for="name">
+                                        Project Name <span class="ps-required">*</span>
+                                    </label>
+                                    <input type="text" id="name" class="ps-form-control" name="name"
+                                        value="<?= e($project['name']) ?>" required>
+                                    <p class="ps-helper-text">Human-readable name for the project</p>
+                                </div>
+
+                                <div class="ps-form-group">
+                                    <label class="ps-form-label" for="key">Project Key</label>
+                                    <input type="text" id="key" class="ps-form-control"
+                                        value="<?= e($project['key']) ?>" disabled>
+                                    <p class="ps-helper-text">Unique identifier (cannot be changed)</p>
                                 </div>
                             </div>
 
                             <!-- Description -->
-                            <div class="form-section">
-                                <div class="form-section-header">
-                                    <h4>Description</h4>
-                                </div>
-                                <div class="form-group">
-                                    <textarea class="form-control" name="description" rows="6"><?= e($project['description']) ?></textarea>
-                                    <p class="form-text">Describe what your project is about</p>
-                                </div>
+                            <div class="ps-form-group">
+                                <label class="ps-form-label" for="description">Description</label>
+                                <textarea id="description" class="ps-form-control ps-form-textarea" name="description"
+                                    rows="4"
+                                    placeholder="Describe your project..."><?= e($project['description']) ?></textarea>
+                                <p class="ps-helper-text">Brief overview of the project purpose and goals</p>
                             </div>
 
-                            <!-- Category & Lead -->
-                            <div class="form-section">
-                                <div class="form-section-header">
-                                    <h4>Organization</h4>
-                                </div>
-                                <div class="form-grid-2">
-                                    <div class="form-group">
-                                        <label class="form-label">Category</label>
-                                        <select class="form-control" name="category_id">
-                                            <option value="">None</option>
-                                            <?php foreach ($categories ?? [] as $category): ?>
-                                            <option value="<?= e($category['id']) ?>" <?= $project['category_id'] == $category['id'] ? 'selected' : '' ?>>
+                            <!-- Project Settings -->
+                            <div class="ps-form-grid">
+                                <div class="ps-form-group">
+                                    <label class="ps-form-label" for="category">Category</label>
+                                    <select id="category" class="ps-form-control" name="category_id">
+                                        <option value="">Select a category...</option>
+                                        <?php foreach ($categories ?? [] as $category): ?>
+                                            <option value="<?= e($category['id']) ?>"
+                                                <?= $project['category_id'] == $category['id'] ? 'selected' : '' ?>>
                                                 <?= e($category['name']) ?>
                                             </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Project Lead</label>
-                                        <select class="form-control" name="lead_id">
-                                            <option value="">Unassigned</option>
-                                            <?php foreach ($users ?? [] as $u): ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="ps-form-group">
+                                    <label class="ps-form-label" for="lead">Project Lead</label>
+                                    <select id="lead" class="ps-form-control" name="lead_id">
+                                        <option value="">Unassigned</option>
+                                        <?php foreach ($users ?? [] as $u): ?>
                                             <option value="<?= e($u['id']) ?>" <?= $project['lead_id'] == $u['id'] ? 'selected' : '' ?>>
                                                 <?= e($u['display_name']) ?>
                                             </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- Project URL -->
-                            <div class="form-section">
-                                <div class="form-section-header">
-                                    <h4>External Links</h4>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Project URL</label>
-                                    <input type="url" class="form-control" name="url" value="<?= e($project['url'] ?? '') ?>" placeholder="https://example.com/project">
-                                    <p class="form-text">Link to external project documentation or repository</p>
-                                </div>
+                            <!-- URL -->
+                            <div class="ps-form-group">
+                                <label class="ps-form-label" for="url">Project URL</label>
+                                <input type="url" id="url" class="ps-form-control" name="url"
+                                    value="<?= e($project['url'] ?? '') ?>" placeholder="https://...">
+                                <p class="ps-helper-text">External link to project documentation or website</p>
                             </div>
 
-                            <!-- Save Button -->
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
+                            <!-- Actions -->
+                            <div class="ps-form-actions">
+                                <button type="submit" class="ps-btn ps-btn-primary">
                                     <i class="bi bi-check-lg"></i> Save Changes
                                 </button>
                             </div>
@@ -176,69 +204,59 @@
             </div>
 
             <!-- Access Tab -->
-            <div id="access-tab" class="settings-tab">
-                <div class="settings-card">
-                    <div class="settings-card-header">
+            <div id="access-tab" class="ps-tab-pane">
+                <div class="ps-card">
+                    <div class="ps-card-header">
                         <div>
-                            <h3 class="settings-card-title">Access Settings</h3>
-                            <p class="settings-card-description">Control who can access this project</p>
+                            <h2 class="ps-card-title">Access & Visibility</h2>
+                            <p class="ps-card-subtitle">Control who can view and interact with this project</p>
                         </div>
                     </div>
-                    <div class="settings-card-body">
+                    <div class="ps-card-body">
                         <form action="<?= url("/projects/{$project['key']}/settings/access") ?>" method="POST">
                             <?= csrf_field() ?>
                             <input type="hidden" name="_method" value="PUT">
 
-                            <!-- Visibility -->
-                            <div class="form-section">
-                                <div class="form-section-header">
-                                    <h4>Project Visibility</h4>
-                                    <p>Choose who can see this project</p>
-                                </div>
-                                <div class="visibility-options">
-                                    <label class="visibility-option">
+                            <!-- Visibility Options -->
+                            <div class="ps-form-group">
+                                <label class="ps-form-label">Project Visibility</label>
+                                <div class="ps-radio-group">
+                                    <label class="ps-radio-card">
                                         <input type="radio" name="is_private" value="0" <?= !$project['is_private'] ? 'checked' : '' ?>>
-                                        <div class="visibility-option-content">
-                                            <div class="visibility-option-title">
-                                                <i class="bi bi-globe"></i> Public
+                                        <div class="ps-radio-content">
+                                            <i class="bi bi-globe"></i>
+                                            <div class="ps-radio-text">
+                                                <strong>Public</strong>
+                                                <p>Everyone in the organization can view</p>
                                             </div>
-                                            <p class="visibility-option-description">Anyone in the organization can view</p>
                                         </div>
                                     </label>
-                                    <label class="visibility-option">
+                                    <label class="ps-radio-card">
                                         <input type="radio" name="is_private" value="1" <?= $project['is_private'] ? 'checked' : '' ?>>
-                                        <div class="visibility-option-content">
-                                            <div class="visibility-option-title">
-                                                <i class="bi bi-lock"></i> Private
+                                        <div class="ps-radio-content">
+                                            <i class="bi bi-lock"></i>
+                                            <div class="ps-radio-text">
+                                                <strong>Private</strong>
+                                                <p>Only project members can view</p>
                                             </div>
-                                            <p class="visibility-option-description">Only members can view and access</p>
                                         </div>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Default Assignee -->
-                            <div class="form-section">
-                                <div class="form-section-header">
-                                    <h4>Default Settings</h4>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Default Assignee for New Issues</label>
-                                    <select class="form-control" name="default_assignee">
-                                        <option value="unassigned" <?= ($project['default_assignee'] ?? '') === 'unassigned' ? 'selected' : '' ?>>
-                                            Unassigned
-                                        </option>
-                                        <option value="project_lead" <?= ($project['default_assignee'] ?? '') === 'project_lead' ? 'selected' : '' ?>>
-                                            Project Lead
-                                        </option>
-                                    </select>
-                                    <p class="form-text">Issues will be auto-assigned to this role</p>
-                                </div>
+                            <div class="ps-form-group">
+                                <label class="ps-form-label" for="assignee">Default Assignee</label>
+                                <select id="assignee" class="ps-form-control" name="default_assignee">
+                                    <option value="unassigned" <?= ($project['default_assignee'] ?? '') === 'unassigned' ? 'selected' : '' ?>>Unassigned</option>
+                                    <option value="project_lead" <?= ($project['default_assignee'] ?? '') === 'project_lead' ? 'selected' : '' ?>>Project Lead</option>
+                                </select>
+                                <p class="ps-helper-text">Default assignee for new issues when not specified</p>
                             </div>
 
-                            <!-- Save Button -->
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
+                            <!-- Actions -->
+                            <div class="ps-form-actions">
+                                <button type="submit" class="ps-btn ps-btn-primary">
                                     <i class="bi bi-check-lg"></i> Save Changes
                                 </button>
                             </div>
@@ -248,55 +266,53 @@
             </div>
 
             <!-- Notifications Tab -->
-            <div id="notifications-tab" class="settings-tab">
-                <div class="settings-card">
-                    <div class="settings-card-header">
+            <div id="notifications-tab" class="ps-tab-pane">
+                <div class="ps-card">
+                    <div class="ps-card-header">
                         <div>
-                            <h3 class="settings-card-title">Notification Settings</h3>
-                            <p class="settings-card-description">Configure how team members are notified</p>
+                            <h2 class="ps-card-title">Email Notifications</h2>
+                            <p class="ps-card-subtitle">Configure notification preferences for team members</p>
                         </div>
                     </div>
-                    <div class="settings-card-body">
+                    <div class="ps-card-body">
                         <form action="<?= url("/projects/{$project['key']}/settings/notifications") ?>" method="POST">
                             <?= csrf_field() ?>
                             <input type="hidden" name="_method" value="PUT">
 
-                            <!-- Email Notifications -->
-                            <div class="form-section">
-                                <div class="form-section-header">
-                                    <h4>Email Notifications</h4>
-                                    <p>When should team members receive email notifications?</p>
-                                </div>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="notify_assignee" value="1" <?= $project['settings']['notify_assignee'] ?? true ? 'checked' : '' ?>>
-                                        <div class="checkbox-content">
-                                            <span class="checkbox-label">Notify assignee on issue assignment</span>
-                                            <p class="checkbox-description">Send email when assigned to an issue</p>
-                                        </div>
-                                    </label>
-
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="notify_reporter" value="1" <?= $project['settings']['notify_reporter'] ?? true ? 'checked' : '' ?>>
-                                        <div class="checkbox-content">
-                                            <span class="checkbox-label">Notify reporter on updates</span>
-                                            <p class="checkbox-description">Send email when their issue is updated</p>
-                                        </div>
-                                    </label>
-
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="notify_watchers" value="1" <?= $project['settings']['notify_watchers'] ?? true ? 'checked' : '' ?>>
-                                        <div class="checkbox-content">
-                                            <span class="checkbox-label">Notify watchers on updates</span>
-                                            <p class="checkbox-description">Send email to all people watching the issue</p>
-                                        </div>
-                                    </label>
-                                </div>
+                            <!-- Notification Checkboxes -->
+                            <div class="ps-checkbox-group">
+                                <label class="ps-checkbox-item">
+                                    <input type="checkbox" name="notify_assignee" value="1"
+                                        <?= $project['settings']['notify_assignee'] ?? true ? 'checked' : '' ?>>
+                                    <span class="ps-checkbox-custom"></span>
+                                    <div class="ps-checkbox-text">
+                                        <strong>Notify Assignee</strong>
+                                        <p>Send email when assigned to an issue</p>
+                                    </div>
+                                </label>
+                                <label class="ps-checkbox-item">
+                                    <input type="checkbox" name="notify_reporter" value="1"
+                                        <?= $project['settings']['notify_reporter'] ?? true ? 'checked' : '' ?>>
+                                    <span class="ps-checkbox-custom"></span>
+                                    <div class="ps-checkbox-text">
+                                        <strong>Notify Reporter</strong>
+                                        <p>Send email when issue is updated or resolved</p>
+                                    </div>
+                                </label>
+                                <label class="ps-checkbox-item">
+                                    <input type="checkbox" name="notify_watchers" value="1"
+                                        <?= $project['settings']['notify_watchers'] ?? true ? 'checked' : '' ?>>
+                                    <span class="ps-checkbox-custom"></span>
+                                    <div class="ps-checkbox-text">
+                                        <strong>Notify Watchers</strong>
+                                        <p>Send email to anyone watching the issue</p>
+                                    </div>
+                                </label>
                             </div>
 
-                            <!-- Save Button -->
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
+                            <!-- Actions -->
+                            <div class="ps-form-actions">
+                                <button type="submit" class="ps-btn ps-btn-primary">
                                     <i class="bi bi-check-lg"></i> Save Changes
                                 </button>
                             </div>
@@ -305,875 +321,1275 @@
                 </div>
             </div>
 
-            <!-- Workflows Tab -->
-            <div id="workflows-tab" class="settings-tab">
-                <div class="settings-card">
-                    <div class="settings-card-header">
+            <!-- Components Tab -->
+            <div id="components-tab" class="ps-tab-pane">
+                <div class="ps-card">
+                    <div class="ps-card-header">
                         <div>
-                            <h3 class="settings-card-title">Workflows</h3>
-                            <p class="settings-card-description">Configure issue workflows and status transitions</p>
+                            <h2 class="ps-card-title">Components</h2>
+                            <p class="ps-card-subtitle">Organize issues into project components</p>
                         </div>
                     </div>
-                    <div class="settings-card-body">
-                        <div class="workflow-info">
-                            <i class="bi bi-info-circle"></i>
-                            <p>Manage how issues flow through your project with custom statuses and transitions.</p>
+                    <div class="ps-card-body">
+                        <div class="ps-empty-state">
+                            <i class="bi bi-box"></i>
+                            <h3>Components Coming Soon</h3>
+                            <p>Organize issues by backend, frontend, API, and more</p>
                         </div>
-                        <a href="<?= url("/projects/{$project['key']}/workflows") ?>" class="btn btn-outline-primary mt-3">
-                            <i class="bi bi-diagram-3"></i> Manage Workflows
-                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Versions Tab -->
+            <div id="versions-tab" class="ps-tab-pane">
+                <div class="ps-card">
+                    <div class="ps-card-header">
+                        <div>
+                            <h2 class="ps-card-title">Versions</h2>
+                            <p class="ps-card-subtitle">Manage product releases and deliveries</p>
+                        </div>
+                    </div>
+                    <div class="ps-card-body">
+                        <div class="ps-empty-state">
+                            <i class="bi bi-tag"></i>
+                            <h3>Versions Coming Soon</h3>
+                            <p>Schedule releases and assign issues to versions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflows Tab -->
+            <div id="workflows-tab" class="ps-tab-pane">
+                <div class="ps-card">
+                    <div class="ps-card-header">
+                        <div>
+                            <h2 class="ps-card-title">Workflows</h2>
+                            <p class="ps-card-subtitle">Define the lifecycle of your issues</p>
+                        </div>
+                    </div>
+                    <div class="ps-card-body">
+                        <div class="ps-info-block">
+                            <i class="bi bi-info-circle"></i>
+                            <p>Workflows control valid transitions between statuses (To Do → In Progress → Done).
+                                Customize to match your team's process.</p>
+                        </div>
+                        <div class="ps-mt-4">
+                            <a href="<?= url("/projects/{$project['key']}/workflows") ?>"
+                                class="ps-btn ps-btn-secondary">
+                                <i class="bi bi-diagram-3"></i> Configure Workflows
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Danger Zone Tab -->
             <?php if (can('delete-project', $project['id'])): ?>
-            <div id="danger-tab" class="settings-tab">
-                <div class="settings-card danger-zone">
-                    <div class="settings-card-header danger">
-                        <div>
-                            <h3 class="settings-card-title">
-                                <i class="bi bi-exclamation-triangle"></i> Danger Zone
-                            </h3>
-                            <p class="settings-card-description">Irreversible and destructive actions</p>
-                        </div>
-                    </div>
-                    <div class="settings-card-body">
-                        <!-- Archive Section -->
-                        <div class="danger-action">
-                            <div class="danger-action-content">
-                                <h4>Archive Project</h4>
-                                <p>Archived projects are read-only and hidden from the main list. You can unarchive later.</p>
+                <div id="danger-tab" class="ps-tab-pane">
+                    <div class="ps-card ps-card-danger">
+                        <div class="ps-card-header ps-card-header-danger">
+                            <div>
+                                <h2 class="ps-card-title">Danger Zone</h2>
+                                <p class="ps-card-subtitle">Irreversible actions for this project</p>
                             </div>
-                            <?php if ($project['is_archived'] ?? false): ?>
-                            <form action="<?= url("/projects/{$project['key']}/unarchive") ?>" method="POST" style="display: inline;">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="bi bi-arrow-counterclockwise"></i> Unarchive Project
-                                </button>
-                            </form>
-                            <?php else: ?>
-                            <form action="<?= url("/projects/{$project['key']}/archive") ?>" method="POST" style="display: inline;">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Archive this project? You can unarchive it later.');">
-                                    <i class="bi bi-archive"></i> Archive Project
-                                </button>
-                            </form>
-                            <?php endif; ?>
                         </div>
-
-                        <hr class="danger-divider">
-
-                        <!-- Delete Section -->
-                        <div class="danger-action">
-                            <div class="danger-action-content">
-                                <h4>Delete Project</h4>
-                                <p>Once deleted, all issues, data, and history will be permanently removed. This cannot be undone.</p>
+                        <div class="ps-card-body">
+                            <!-- Archive Section -->
+                            <div class="ps-danger-item">
+                                <div class="ps-danger-info">
+                                    <h3>Archive Project</h3>
+                                    <p>Archived projects are read-only and hidden from lists. You can unarchive later.</p>
+                                </div>
+                                <?php if ($project['is_archived'] ?? false): ?>
+                                    <form action="<?= url("/projects/{$project['key']}/unarchive") ?>" method="POST"
+                                        style="margin: 0;">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="ps-btn ps-btn-success">Unarchive Project</button>
+                                    </form>
+                                <?php else: ?>
+                                    <form action="<?= url("/projects/{$project['key']}/archive") ?>" method="POST"
+                                        style="margin: 0;">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="ps-btn ps-btn-warning"
+                                            onclick="return confirm('Are you sure you want to archive this project?');">
+                                            Archive Project
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
-                            <button type="button" onclick="openDeleteModal()" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i> Delete Project
-                            </button>
+
+                            <!-- Delete Section -->
+                            <div class="ps-danger-item">
+                                <div class="ps-danger-info">
+                                    <h3 class="ps-text-danger">Delete Project</h3>
+                                    <p>Permanently remove this project and all data. <strong>This cannot be undone.</strong>
+                                    </p>
+                                </div>
+                                <button type="button" onclick="openDeleteModal()" class="ps-btn ps-btn-danger">
+                                    <i class="bi bi-trash"></i> Delete Project
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             <?php endif; ?>
-        </div>
+
+        </main>
     </div>
 </div>
 
 <!-- Delete Project Modal -->
-<div id="deleteProjectModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header danger">
-            <h4 class="modal-title">
+<div id="deleteProjectModal" class="ps-modal-overlay">
+    <div class="ps-modal-dialog">
+        <div class="ps-modal-header ps-modal-header-danger">
+            <h3 class="ps-modal-title">
                 <i class="bi bi-exclamation-triangle"></i> Delete Project
-            </h4>
-            <button type="button" class="modal-close" onclick="closeDeleteModal()">
+            </h3>
+            <button type="button" class="ps-modal-close" onclick="closeDeleteModal()">
                 <i class="bi bi-x"></i>
             </button>
         </div>
-        <div class="modal-body">
-            <div class="alert alert-danger">
+        <div class="ps-modal-body">
+            <div class="ps-alert ps-alert-danger">
                 <i class="bi bi-exclamation-triangle"></i>
-                <strong>Warning:</strong> This action cannot be undone. All data will be permanently deleted.
+                <div>
+                    <strong>Warning:</strong> This action is permanent. All data will be deleted.
+                </div>
             </div>
             <p>Type <strong><?= e($project['key']) ?></strong> to confirm deletion:</p>
             <form action="<?= url("/projects/{$project['key']}") ?>" method="POST" id="deleteProjectForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="_method" value="DELETE">
-                <input type="text" id="confirmProjectKey" class="form-control" placeholder="Project key" required>
+                <input type="text" id="confirmProjectKey" class="ps-form-control"
+                    placeholder="Enter project key to confirm" required>
             </form>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" onclick="closeDeleteModal()">
-                Cancel
-            </button>
-            <button type="submit" form="deleteProjectForm" id="confirmDeleteBtn" class="btn btn-danger" disabled>
+        <div class="ps-modal-footer">
+            <button type="button" class="ps-btn ps-btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button type="submit" form="deleteProjectForm" id="confirmDeleteBtn" class="ps-btn ps-btn-danger" disabled>
                 Delete Project
             </button>
         </div>
     </div>
 </div>
 
-<style>
-/* Project Settings Wrapper */
-.project-settings-wrapper {
-    padding: 2rem;
-    background: var(--bg-secondary);
-    min-height: calc(100vh - 56px);
-}
-
-/* Breadcrumb */
-.settings-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 24px;
-    font-size: 14px;
-}
-
-.breadcrumb-link {
-    color: var(--jira-blue);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-}
-
-.breadcrumb-link:hover {
-    color: var(--jira-blue-dark);
-    text-decoration: underline;
-}
-
-.breadcrumb-separator {
-    color: var(--text-tertiary);
-}
-
-.breadcrumb-current {
-    color: var(--text-tertiary);
-}
-
-/* Page Header */
-.settings-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 32px;
-}
-
-.settings-header-left h1,
-.settings-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 4px 0;
-    letter-spacing: -0.3px;
-}
-
-.settings-subtitle {
-    font-size: 15px;
-    color: var(--text-tertiary);
-    margin: 0;
-}
-
-/* Settings Container */
-.settings-container {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 24px;
-    max-width: 1200px;
-}
-
-/* Sidebar Navigation */
-.settings-sidebar {
-    position: sticky;
-    top: 90px;
-    height: fit-content;
-}
-
-.settings-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-}
-
-.settings-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: all var(--transition-fast);
-    border-left: 3px solid transparent;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.settings-nav-item i {
-    font-size: 16px;
-    color: var(--jira-blue);
-    flex-shrink: 0;
-}
-
-.settings-nav-item:hover {
-    background-color: var(--bg-secondary);
-}
-
-.settings-nav-item.active {
-    background-color: var(--jira-blue-lighter);
-    border-left-color: var(--jira-blue);
-    color: var(--jira-blue-dark);
-    font-weight: 500;
-}
-
-.settings-nav-item.danger {
-    color: #AE2A19;
-}
-
-.settings-nav-item.danger i {
-    color: #AE2A19;
-}
-
-.settings-nav-item.danger:hover {
-    background-color: #FFECEB;
-}
-
-/* Settings Content */
-.settings-content {
-    flex: 1;
-}
-
-.settings-tab {
-    display: none;
-}
-
-.settings-tab.active {
-    display: block;
-}
-
-/* Settings Card */
-.settings-card {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-}
-
-.settings-card.danger-zone {
-    border-color: #FFDBDA;
-}
-
-.settings-card-header {
-    padding: 20px 24px;
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.settings-card-header.danger {
-    background: #FFECEB;
-    border-bottom-color: #FFDBDA;
-}
-
-.settings-card-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 4px 0;
-}
-
-.settings-card-header.danger .settings-card-title {
-    color: #AE2A19;
-}
-
-.settings-card-description {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    margin: 0;
-}
-
-.settings-card-body {
-    padding: 24px;
-}
-
-/* Form Sections */
-.form-section {
-    margin-bottom: 32px;
-}
-
-.form-section:last-child {
-    margin-bottom: 0;
-}
-
-.form-section-header {
-    margin-bottom: 16px;
-}
-
-.form-section-header h4 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 4px 0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.form-section-header p {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    margin: 0;
-}
-
-/* Form Groups */
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-}
-
-.form-label.required::after {
-    content: ' *';
-    color: #AE2A19;
-}
-
-.form-control {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-    transition: all var(--transition-fast);
-    background: var(--bg-primary);
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--jira-blue);
-    box-shadow: 0 0 0 4px rgba(139, 25, 86, 0.1);
-}
-
-.form-control:disabled {
-    background: var(--bg-secondary);
-    color: var(--text-tertiary);
-    cursor: not-allowed;
-}
-
-.form-control.is-invalid {
-    border-color: #AE2A19;
-}
-
-.invalid-feedback {
-    color: #AE2A19;
-    font-size: 12px;
-    margin-top: 4px;
-}
-
-.form-text {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    margin-top: 4px;
-    margin-bottom: 0;
-}
-
-/* Grid Layouts */
-.form-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-}
-
-@media (max-width: 768px) {
-    .form-grid-2 {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Avatar Section */
-.avatar-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
-
-.avatar-preview {
-    width: 100px;
-    height: 100px;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 12px;
-    background: var(--bg-tertiary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 700;
-    color: white;
-}
-
-.avatar-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.avatar-gradient {
-    background: linear-gradient(135deg, var(--jira-blue), #003D99);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Visibility Options */
-.visibility-options {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.visibility-option {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.visibility-option:hover {
-    background: var(--bg-secondary);
-    border-color: var(--jira-blue);
-}
-
-.visibility-option input[type="radio"] {
-    margin-top: 4px;
-    flex-shrink: 0;
-}
-
-.visibility-option-content {
-    flex: 1;
-}
-
-.visibility-option-title {
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 2px;
-}
-
-.visibility-option-description {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    margin: 0;
-}
-
-/* Checkbox Group */
-.checkbox-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.checkbox-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.checkbox-item:hover {
-    background: var(--bg-secondary);
-    border-color: var(--jira-blue);
-}
-
-.checkbox-item input[type="checkbox"] {
-    margin-top: 2px;
-    flex-shrink: 0;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.checkbox-content {
-    flex: 1;
-}
-
-.checkbox-label {
-    display: block;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 2px;
-}
-
-.checkbox-description {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    margin: 0;
-}
-
-/* Workflow Info */
-.workflow-info {
-    display: flex;
-    gap: 12px;
-    padding: 12px 16px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.workflow-info i {
-    color: var(--jira-blue);
-    flex-shrink: 0;
-}
-
-.workflow-info p {
-    margin: 0;
-}
-
-/* Danger Zone */
-.danger-action {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 16px 0;
-}
-
-.danger-action-content {
-    flex: 1;
-}
-
-.danger-action h4 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 4px 0;
-}
-
-.danger-action p {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    margin: 0;
-}
-
-.danger-divider {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 16px 0;
-}
-
-/* Form Actions */
-.form-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border-color);
-}
-
-/* Buttons */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    text-decoration: none;
-}
-
-.btn-primary {
-    background: var(--jira-blue);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--jira-blue-dark);
-    transform: translateY(-1px);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
-}
-
-.btn-outline-primary {
-    background: transparent;
-    border: 1px solid var(--jira-blue);
-    color: var(--jira-blue);
-}
-
-.btn-outline-primary:hover {
-    background: var(--jira-blue-lighter);
-}
-
-.btn-outline-secondary {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-}
-
-.btn-outline-secondary:hover {
-    background: var(--bg-secondary);
-}
-
-.btn-success {
-    background: #36B37E;
-    color: white;
-}
-
-.btn-success:hover {
-    background: #2d8659;
-}
-
-.btn-warning {
-    background: #FFAB00;
-    color: white;
-}
-
-.btn-warning:hover {
-    background: #E59400;
-}
-
-.btn-danger {
-    background: #AE2A19;
-    color: white;
-}
-
-.btn-danger:hover {
-    background: #8C2417;
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Modal */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 2000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal-overlay.show {
-    display: flex;
-}
-
-.modal-content {
-    background: var(--bg-primary);
-    border-radius: 8px;
-    width: 100%;
-    max-width: 500px;
-    box-shadow: var(--shadow-lg);
-    overflow: hidden;
-}
-
-.modal-header {
-    padding: 20px 24px;
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.modal-header.danger {
-    background: #FFECEB;
-    border-bottom-color: #FFDBDA;
-}
-
-.modal-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.modal-header.danger .modal-title {
-    color: #AE2A19;
-}
-
-.modal-close {
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-close:hover {
-    color: var(--text-primary);
-}
-
-.modal-body {
-    padding: 24px;
-}
-
-.modal-footer {
-    padding: 12px 24px;
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-}
-
-/* Alert */
-.alert {
-    padding: 12px 16px;
-    border-radius: 6px;
-    border: 1px solid;
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    font-size: 14px;
-}
-
-.alert i {
-    flex-shrink: 0;
-}
-
-.alert-danger {
-    background: #FFECEB;
-    border-color: #FFDBDA;
-    color: #AE2A19;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-    .settings-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .settings-sidebar {
-        position: relative;
-        top: 0;
-    }
-    
-    .settings-nav {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 0;
-    }
-    
-    .settings-nav-item {
-        border-left: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-    
-    .settings-nav-item.active {
-        border-left: none;
-        border-bottom-color: var(--jira-blue);
-    }
-}
-
-@media (max-width: 768px) {
-    .project-settings-wrapper {
-        padding: 1rem;
-    }
-    
-    .settings-header {
-        margin-bottom: 24px;
-    }
-    
-    .settings-title {
-        font-size: 1.5rem;
-    }
-    
-    .danger-action {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-</style>
-
 <script>
+    // Tab Switching
     function showTab(tabName) {
         // Hide all tabs
-        document.querySelectorAll('.settings-tab').forEach(tab => {
+        document.querySelectorAll('.ps-tab-pane').forEach(tab => {
             tab.classList.remove('active');
         });
-        
-        // Remove active from all nav items
-        document.querySelectorAll('.settings-nav-item').forEach(item => {
+
+        // Show selected tab
+        const selectedTab = document.getElementById(tabName + '-tab');
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+        }
+
+        // Update nav items
+        document.querySelectorAll('.ps-nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        
-        // Show selected tab
-        const tab = document.getElementById(tabName + '-tab');
-        if (tab) {
-            tab.classList.add('active');
+        const activeNav = document.querySelector('[data-section="' + tabName + '"]');
+        if (activeNav) {
+            activeNav.classList.add('active');
         }
-        
-        // Set active nav item
-        const navItem = document.querySelector(`.settings-nav-item[href="#${tabName}"]`);
-        if (navItem) {
-            navItem.classList.add('active');
-        }
+
+        // Update URL hash
+        history.pushState(null, null, '#' + tabName);
     }
 
+    // Restore tab from hash on page load
+    window.addEventListener('load', function () {
+        const hash = window.location.hash.substring(1);
+        if (hash && document.getElementById(hash + '-tab')) {
+            showTab(hash);
+        }
+    });
+
+    // Delete Modal
     function openDeleteModal() {
-        document.getElementById('deleteProjectModal').classList.add('show');
+        document.getElementById('deleteProjectModal').classList.add('active');
     }
 
     function closeDeleteModal() {
-        document.getElementById('deleteProjectModal').classList.remove('show');
+        document.getElementById('deleteProjectModal').classList.remove('active');
     }
 
-    // Enable delete button only when correct key is typed
-    document.getElementById('confirmProjectKey')?.addEventListener('input', function() {
-        const btn = document.getElementById('confirmDeleteBtn');
-        const projectKey = '<?= e($project['key']) ?>';
-        const isCorrect = this.value === projectKey;
-        btn.disabled = !isCorrect;
-    });
+    // Delete Confirmation
+    const confirmInput = document.getElementById('confirmProjectKey');
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const projectKey = '<?= e($project['key']) ?>';
 
-    // Close modal when clicking outside
-    document.getElementById('deleteProjectModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeDeleteModal();
-    });
+    if (confirmInput) {
+        confirmInput.addEventListener('input', function () {
+            if (this.value === projectKey) {
+                deleteBtn.removeAttribute('disabled');
+            } else {
+                deleteBtn.setAttribute('disabled', 'disabled');
+            }
+        });
+    }
+
+    // Avatar Preview
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewBox = document.querySelector('.ps-avatar-box');
+                let img = previewBox.querySelector('img');
+                if (!img) {
+                    previewBox.innerHTML = '<img src="" alt="Avatar" class="ps-avatar-preview-img">';
+                    img = previewBox.querySelector('img');
+                }
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 </script>
+
+<style>
+    /* ============================================
+   PROJECT SETTINGS PAGE - ENTERPRISE DESIGN
+   ============================================ */
+
+    :root {
+        --ps-primary: #8B1956;
+        --ps-primary-dark: #6F123F;
+        --ps-text-primary: #161B22;
+        --ps-text-secondary: #626F86;
+        --ps-border: #DFE1E6;
+        --ps-bg-light: #F7F8FA;
+        --ps-bg-white: #FFFFFF;
+        --ps-danger: #DE350B;
+        --ps-success: #216E4E;
+        --ps-warning: #E77817;
+        --ps-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ps-page-wrapper {
+        min-height: 100vh;
+        background: var(--ps-bg-light);
+    }
+
+    /* Breadcrumb */
+    .ps-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 12px 32px;
+        background: var(--ps-bg-white);
+        border-bottom: 1px solid var(--ps-border);
+        font-size: 13px;
+    }
+
+    .ps-breadcrumb-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--ps-primary);
+        text-decoration: none;
+        transition: color var(--ps-transition);
+    }
+
+    .ps-breadcrumb-link:hover {
+        color: var(--ps-primary-dark);
+        text-decoration: underline;
+    }
+
+    .ps-breadcrumb-sep {
+        color: var(--ps-text-secondary);
+    }
+
+    .ps-breadcrumb-current {
+        color: var(--ps-text-primary);
+        font-weight: 600;
+    }
+
+    /* Page Header */
+    .ps-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 32px;
+        background: var(--ps-bg-white);
+        border-bottom: 1px solid var(--ps-border);
+        gap: 24px;
+    }
+
+    .ps-header-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        flex: 1;
+    }
+
+    .ps-avatar-container {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        border: 1px solid var(--ps-border);
+    }
+
+    .ps-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .ps-avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--ps-primary), var(--ps-primary-dark));
+        color: white;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .ps-header-content {
+        flex: 1;
+    }
+
+    .ps-header-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--ps-text-primary);
+        margin: 0 0 4px 0;
+    }
+
+    .ps-header-subtitle {
+        font-size: 14px;
+        color: var(--ps-text-secondary);
+        margin: 0;
+    }
+
+    .ps-header-right {
+        display: flex;
+        gap: 12px;
+    }
+
+    .ps-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        background: var(--ps-bg-white);
+        border: 1px solid var(--ps-border);
+        border-radius: 6px;
+        color: var(--ps-text-primary);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all var(--ps-transition);
+    }
+
+    .ps-action-btn:hover {
+        background: var(--ps-bg-light);
+        border-color: var(--ps-text-secondary);
+    }
+
+    /* Main Container */
+    .ps-main-container {
+        display: flex;
+        gap: 32px;
+        padding: 32px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Sidebar */
+    .ps-sidebar {
+        flex: 0 0 220px;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .ps-nav-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        background: var(--ps-bg-white);
+        border: 1px solid var(--ps-border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .ps-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: var(--ps-text-primary);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        border-left: 3px solid transparent;
+        transition: all var(--ps-transition);
+        background: var(--ps-bg-white);
+    }
+
+    .ps-nav-item:hover {
+        background: var(--ps-bg-light);
+        border-left-color: var(--ps-primary);
+    }
+
+    .ps-nav-item.active {
+        background: #F0DCE5;
+        border-left-color: var(--ps-primary);
+        color: var(--ps-primary);
+    }
+
+    .ps-nav-item i {
+        font-size: 16px;
+    }
+
+    .ps-nav-item.ps-nav-danger {
+        color: var(--ps-danger);
+    }
+
+    .ps-nav-item.ps-nav-danger.active {
+        background: #FFF0EB;
+        color: var(--ps-danger);
+    }
+
+    .ps-nav-divider {
+        height: 1px;
+        background: var(--ps-border);
+        margin: 4px 0;
+    }
+
+    /* Content Area */
+    .ps-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ps-tab-pane {
+        display: none;
+    }
+
+    .ps-tab-pane.active {
+        display: block;
+    }
+
+    /* Card */
+    .ps-card {
+        background: var(--ps-bg-white);
+        border: 1px solid var(--ps-border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .ps-card.ps-card-danger {
+        border-color: #FFBDAD;
+    }
+
+    .ps-card-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid var(--ps-border);
+        background: var(--ps-bg-white);
+    }
+
+    .ps-card-header.ps-card-header-danger {
+        background: #FFF0EB;
+        border-bottom-color: #FFBDAD;
+    }
+
+    .ps-card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--ps-text-primary);
+        margin: 0 0 4px 0;
+    }
+
+    .ps-card-header.ps-card-header-danger .ps-card-title {
+        color: var(--ps-danger);
+    }
+
+    .ps-card-subtitle {
+        font-size: 13px;
+        color: var(--ps-text-secondary);
+        margin: 0;
+    }
+
+    .ps-card-body {
+        padding: 32px;
+    }
+
+    /* Form */
+    .ps-form-section {
+        margin-bottom: 32px;
+    }
+
+    .ps-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .ps-form-group {
+        margin-bottom: 24px;
+    }
+
+    .ps-form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .ps-form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ps-text-secondary);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .ps-required {
+        color: var(--ps-danger);
+        margin-left: 2px;
+    }
+
+    .ps-form-control {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+        border: 1px solid var(--ps-border);
+        border-radius: 6px;
+        background: var(--ps-bg-white);
+        color: var(--ps-text-primary);
+        font-family: inherit;
+        transition: all var(--ps-transition);
+    }
+
+    .ps-form-control:focus {
+        outline: none;
+        border-color: var(--ps-primary);
+        box-shadow: 0 0 0 4px rgba(139, 25, 86, 0.1);
+    }
+
+    .ps-form-control:disabled {
+        background: var(--ps-bg-light);
+        color: var(--ps-text-secondary);
+        cursor: not-allowed;
+    }
+
+    .ps-form-textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .ps-helper-text {
+        font-size: 12px;
+        color: var(--ps-text-secondary);
+        margin: 6px 0 0 0;
+    }
+
+    /* Avatar Editor */
+    .ps-avatar-editor {
+        display: flex;
+        gap: 32px;
+        align-items: flex-start;
+        margin-bottom: 32px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--ps-border);
+    }
+
+    .ps-avatar-box {
+        width: 140px;
+        height: 140px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        border: 1px solid var(--ps-border);
+        background: var(--ps-bg-light);
+    }
+
+    .ps-avatar-preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .ps-avatar-placeholder-large {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--ps-primary), var(--ps-primary-dark));
+        color: white;
+        font-size: 56px;
+        font-weight: 700;
+    }
+
+    .ps-avatar-actions {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ps-file-input {
+        display: none;
+    }
+
+    /* Radio Cards */
+    .ps-radio-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .ps-radio-card {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .ps-radio-card input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .ps-radio-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 16px;
+        border: 2px solid var(--ps-border);
+        border-radius: 8px;
+        background: var(--ps-bg-white);
+        transition: all var(--ps-transition);
+    }
+
+    .ps-radio-card input:checked+.ps-radio-content {
+        border-color: var(--ps-primary);
+        background: #F0DCE5;
+    }
+
+    .ps-radio-content i {
+        font-size: 24px;
+        color: var(--ps-text-secondary);
+        flex-shrink: 0;
+    }
+
+    .ps-radio-card input:checked+.ps-radio-content i {
+        color: var(--ps-primary);
+    }
+
+    .ps-radio-text strong {
+        display: block;
+        color: var(--ps-text-primary);
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .ps-radio-text p {
+        font-size: 13px;
+        color: var(--ps-text-secondary);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    /* Checkbox Group */
+    .ps-checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .ps-checkbox-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .ps-checkbox-item input {
+        display: none;
+    }
+
+    .ps-checkbox-custom {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        border: 2px solid var(--ps-border);
+        border-radius: 4px;
+        background: var(--ps-bg-white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--ps-transition);
+        margin-top: 2px;
+    }
+
+    .ps-checkbox-item input:checked+.ps-checkbox-custom {
+        background: var(--ps-primary);
+        border-color: var(--ps-primary);
+    }
+
+    .ps-checkbox-item input:checked+.ps-checkbox-custom::after {
+        content: '';
+        width: 4px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .ps-checkbox-text strong {
+        display: block;
+        font-size: 14px;
+        color: var(--ps-text-primary);
+        margin-bottom: 2px;
+        font-weight: 500;
+    }
+
+    .ps-checkbox-text p {
+        font-size: 13px;
+        color: var(--ps-text-secondary);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    /* Empty State */
+    .ps-empty-state {
+        text-align: center;
+        padding: 64px 32px;
+    }
+
+    .ps-empty-state i {
+        font-size: 64px;
+        color: var(--ps-text-secondary);
+        opacity: 0.3;
+        display: block;
+        margin-bottom: 20px;
+    }
+
+    .ps-empty-state h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ps-text-primary);
+        margin: 0 0 8px 0;
+    }
+
+    .ps-empty-state p {
+        font-size: 13px;
+        color: var(--ps-text-secondary);
+        margin: 0;
+    }
+
+    /* Info Block */
+    .ps-info-block {
+        display: flex;
+        gap: 12px;
+        padding: 16px;
+        background: #F0DCE5;
+        border-radius: 6px;
+        margin-bottom: 24px;
+    }
+
+    .ps-info-block i {
+        font-size: 18px;
+        color: var(--ps-primary);
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .ps-info-block p {
+        font-size: 13px;
+        color: var(--ps-text-primary);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .ps-mt-4 {
+        margin-top: 24px;
+    }
+
+    /* Alert */
+    .ps-alert {
+        display: flex;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+    }
+
+    .ps-alert i {
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .ps-alert-danger {
+        background: #FFF0EB;
+        color: var(--ps-danger);
+    }
+
+    .ps-alert-danger i {
+        color: var(--ps-danger);
+    }
+
+    /* Danger Zone */
+    .ps-danger-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 0;
+        border-bottom: 1px solid var(--ps-border);
+        gap: 24px;
+    }
+
+    .ps-danger-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .ps-danger-item:first-child {
+        padding-top: 0;
+    }
+
+    .ps-danger-info h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        color: var(--ps-text-primary);
+    }
+
+    .ps-danger-info p {
+        font-size: 13px;
+        color: var(--ps-text-secondary);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .ps-text-danger {
+        color: var(--ps-danger);
+    }
+
+    /* Buttons */
+    .ps-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all var(--ps-transition);
+        background: var(--ps-bg-white);
+        color: var(--ps-text-primary);
+        white-space: nowrap;
+    }
+
+    .ps-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .ps-btn-primary {
+        background: var(--ps-primary);
+        color: white;
+        border-color: var(--ps-primary);
+    }
+
+    .ps-btn-primary:hover {
+        background: var(--ps-primary-dark);
+        border-color: var(--ps-primary-dark);
+        box-shadow: 0 4px 12px rgba(139, 25, 86, 0.25);
+    }
+
+    .ps-btn-secondary {
+        background: var(--ps-bg-light);
+        border-color: var(--ps-border);
+        color: var(--ps-text-primary);
+    }
+
+    .ps-btn-secondary:hover {
+        background: #EBECF0;
+        border-color: #B6C2CF;
+    }
+
+    .ps-btn-sm {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .ps-btn-success {
+        background: var(--ps-success);
+        color: white;
+        border-color: var(--ps-success);
+    }
+
+    .ps-btn-success:hover {
+        background: #175A3E;
+        border-color: #175A3E;
+    }
+
+    .ps-btn-warning {
+        background: var(--ps-warning);
+        color: white;
+        border-color: var(--ps-warning);
+    }
+
+    .ps-btn-warning:hover {
+        background: #D56C12;
+        border-color: #D56C12;
+    }
+
+    .ps-btn-danger {
+        background: var(--ps-danger);
+        color: white;
+        border-color: var(--ps-danger);
+    }
+
+    .ps-btn-danger:hover {
+        background: #C72E0F;
+        border-color: #C72E0F;
+        box-shadow: 0 4px 12px rgba(222, 53, 11, 0.25);
+    }
+
+    .ps-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Form Actions */
+    .ps-form-actions {
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid var(--ps-border);
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Modal */
+    .ps-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ps-modal-overlay.active {
+        display: flex;
+    }
+
+    .ps-modal-dialog {
+        background: var(--ps-bg-white);
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+
+    .ps-modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--ps-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ps-modal-header.ps-modal-header-danger {
+        background: #FFF0EB;
+        border-bottom-color: #FFBDAD;
+    }
+
+    .ps-modal-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ps-text-primary);
+        margin: 0;
+    }
+
+    .ps-modal-header.ps-modal-header-danger .ps-modal-title {
+        color: var(--ps-danger);
+    }
+
+    .ps-modal-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        color: var(--ps-text-secondary);
+        cursor: pointer;
+        font-size: 20px;
+        transition: color var(--ps-transition);
+    }
+
+    .ps-modal-close:hover {
+        color: var(--ps-text-primary);
+    }
+
+    .ps-modal-body {
+        padding: 24px;
+    }
+
+    .ps-modal-body p {
+        font-size: 13px;
+        color: var(--ps-text-primary);
+        margin: 16px 0 12px 0;
+    }
+
+    .ps-modal-body strong {
+        font-weight: 600;
+    }
+
+    .ps-modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid var(--ps-border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .ps-main-container {
+            gap: 24px;
+            padding: 24px;
+        }
+
+        .ps-sidebar {
+            flex: 0 0 200px;
+        }
+
+        .ps-form-grid {
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .ps-main-container {
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .ps-sidebar {
+            flex: none;
+            position: static;
+            top: auto;
+            width: 100%;
+            height: auto;
+        }
+
+        .ps-nav-menu {
+            display: flex;
+            flex-direction: row;
+            border-radius: 8px;
+        }
+
+        .ps-nav-item {
+            flex: 1;
+            justify-content: center;
+            padding: 12px 8px;
+            border-left: none;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+
+        .ps-nav-item:hover {
+            border-left: none;
+            border-bottom-color: var(--ps-primary);
+        }
+
+        .ps-nav-item.active {
+            border-left: none;
+            border-bottom-color: var(--ps-primary);
+        }
+
+        .ps-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ps-radio-group {
+            grid-template-columns: 1fr;
+        }
+
+        .ps-danger-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .ps-avatar-editor {
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .ps-breadcrumb {
+            padding: 12px 16px;
+            font-size: 12px;
+        }
+
+        .ps-page-header {
+            padding: 20px 16px;
+            flex-direction: column;
+        }
+
+        .ps-header-title {
+            font-size: 20px;
+        }
+
+        .ps-main-container {
+            padding: 16px;
+            gap: 16px;
+        }
+
+        .ps-card-header {
+            padding: 16px;
+        }
+
+        .ps-card-body {
+            padding: 16px;
+        }
+
+        .ps-form-grid {
+            gap: 16px;
+        }
+
+        .ps-avatar-editor {
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .ps-form-actions {
+            margin-top: 24px;
+            padding-top: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ps-breadcrumb {
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+
+        .ps-breadcrumb-link,
+        .ps-breadcrumb-sep {
+            display: none;
+        }
+
+        .ps-breadcrumb-link:first-child,
+        .ps-breadcrumb-current {
+            display: inline;
+        }
+
+        .ps-page-header {
+            padding: 16px;
+        }
+
+        .ps-header-title {
+            font-size: 16px;
+        }
+
+        .ps-header-left {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .ps-header-content {
+            flex: 1;
+        }
+
+        .ps-avatar-container {
+            width: 60px;
+            height: 60px;
+        }
+
+        .ps-header-right {
+            width: 100%;
+        }
+
+        .ps-action-btn {
+            width: 100%;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .ps-main-container {
+            padding: 12px;
+        }
+
+        .ps-nav-item {
+            font-size: 11px;
+            padding: 10px 6px;
+        }
+
+        .ps-nav-item span {
+            display: none;
+        }
+
+        .ps-card-header {
+            padding: 12px;
+        }
+
+        .ps-card-body {
+            padding: 12px;
+        }
+
+        .ps-card-title {
+            font-size: 15px;
+        }
+
+        .ps-avatar-box {
+            width: 100px;
+            height: 100px;
+        }
+
+        .ps-danger-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .ps-form-actions {
+            flex-direction: column;
+        }
+
+        .ps-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .ps-modal-dialog {
+            width: 95%;
+        }
+    }
+</style>
 
 <?php \App\Core\View::endSection(); ?>

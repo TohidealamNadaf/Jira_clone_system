@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Controller;
+use App\Core\Validator;
 use App\Services\ProjectDocumentationService;
 use App\Services\ProjectService;
 use Exception;
@@ -22,13 +23,13 @@ class ProjectDocumentationController extends Controller
 {
     private ProjectDocumentationService $docService;
     private ProjectService $projectService;
-    
+
     public function __construct()
     {
         $this->docService = new ProjectDocumentationService();
         $this->projectService = new ProjectService();
     }
-    
+
     /**
      * Display documentation hub for a project
      * 
@@ -40,30 +41,30 @@ class ProjectDocumentationController extends Controller
         try {
             // Get project key from route parameters
             $projectKey = $request->param('key');
-            
+
             // Get project details
             $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
                 return $this->view('errors/404', ['message' => 'Project not found']);
             }
-            
+
             // Get filters from request
             $request = new Request();
             $filters = [
                 'category' => $request->query('category', ''),
                 'search' => $request->query('search', '')
             ];
-            
+
             // Get documents
             $documents = $this->docService->getProjectDocuments($project['id'], $filters);
-            
+
             // Get statistics
             $stats = $this->docService->getProjectDocumentStats($project['id']);
-            
+
             // Get categories and allowed types for view
             $categories = ProjectDocumentationService::getCategories();
             $allowedTypes = ProjectDocumentationService::getAllowedTypes();
-            
+
             return $this->view('projects/documentation', [
                 'project' => $project,
                 'documents' => $documents,
@@ -72,13 +73,13 @@ class ProjectDocumentationController extends Controller
                 'allowedTypes' => $allowedTypes,
                 'filters' => $filters
             ]);
-            
+
         } catch (Exception $e) {
             error_log("Error in documentation index: " . $e->getMessage());
             return $this->view('errors/500', ['message' => 'Failed to load documentation']);
         }
     }
-    
+
     /**
      * Upload a new document
      * 
@@ -90,22 +91,31 @@ class ProjectDocumentationController extends Controller
         try {
             // Get project key from route parameters
             $projectKey = $request->param('key');
-            
+
             // Validate project
             $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
                 $this->json(['success' => false, 'error' => 'Project not found'], 404);
                 return;
             }
-            
-            $request = new Request();
-            
+
             // Validate file upload
             if (!isset($_FILES['document']) || $_FILES['document']['error'] !== UPLOAD_ERR_OK) {
                 $this->json(['success' => false, 'error' => 'No file uploaded or upload error'], 400);
                 return;
             }
-            
+
+            // Validate required fields
+            $validator = new Validator($request->all(), [
+                'title' => 'required|max:255',
+                'category' => 'required|in:requirement,design,technical,user_guide,training,report,other'
+            ]);
+
+            if ($validator->fails()) {
+                $this->json(['success' => false, 'error' => 'Validation failed', 'errors' => $validator->errors()], 422);
+                return;
+            }
+
             // Validate document data
             $documentData = [
                 'title' => $request->input('title', ''),
@@ -114,18 +124,7 @@ class ProjectDocumentationController extends Controller
                 'version' => $request->input('version', '1.0'),
                 'is_public' => $request->input('is_public', '1') === '1'
             ];
-            
-            // Validate required fields
-            $errors = $request->validate([
-                'title' => 'required|max:255',
-                'category' => 'required|in:requirement,design,technical,user_guide,training,report,other'
-            ]);
-            
-            if (!empty($errors)) {
-                $this->json(['success' => false, 'error' => 'Validation failed', 'errors' => $errors], 422);
-                return;
-            }
-            
+
             // Upload document
             $result = $this->docService->uploadDocument(
                 $_FILES['document'],
@@ -133,7 +132,7 @@ class ProjectDocumentationController extends Controller
                 $_SESSION['user']['id'] ?? 1,
                 $documentData
             );
-            
+
             if ($result['success']) {
                 $this->json([
                     'success' => true,
@@ -143,13 +142,13 @@ class ProjectDocumentationController extends Controller
             } else {
                 $this->json(['success' => false, 'error' => $result['error']], 400);
             }
-            
+
         } catch (Exception $e) {
             error_log("Error uploading document: " . $e->getMessage());
             $this->json(['success' => false, 'error' => 'Failed to upload document'], 500);
         }
     }
-    
+
     /**
      * Update document metadata
      * 
@@ -163,32 +162,32 @@ class ProjectDocumentationController extends Controller
             // Get route parameters
             $projectKey = $request->param('key');
             $documentId = (int) $request->param('documentId');
-            
+
             // Validate project
             $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
                 $this->json(['success' => false, 'error' => 'Project not found'], 404);
                 return;
             }
-            
+
             // Validate document exists and belongs to project
             $document = $this->docService->getDocument($documentId);
             if (!$document || $document['project_id'] != $project['id']) {
                 $this->json(['success' => false, 'error' => 'Document not found'], 404);
                 return;
             }
-            
+
             // Validate input
-            $errors = $request->validate([
+            $validator = new Validator($request->all(), [
                 'title' => 'required|max:255',
                 'category' => 'in:requirement,design,technical,user_guide,training,report,other'
             ]);
-            
-            if (!empty($errors)) {
-                $this->json(['success' => false, 'error' => 'Validation failed', 'errors' => $errors], 422);
+
+            if ($validator->fails()) {
+                $this->json(['success' => false, 'error' => 'Validation failed', 'errors' => $validator->errors()], 422);
                 return;
             }
-            
+
             // Update document
             $updateData = [
                 'title' => $request->post('title'),
@@ -197,21 +196,21 @@ class ProjectDocumentationController extends Controller
                 'version' => $request->post('version', '1.0'),
                 'is_public' => $request->post('is_public', '1') === '1'
             ];
-            
+
             $success = $this->docService->updateDocument($documentId, $updateData);
-            
+
             if ($success) {
                 $this->json(['success' => true, 'message' => 'Document updated successfully']);
             } else {
                 $this->json(['success' => false, 'error' => 'No changes made'], 400);
             }
-            
+
         } catch (Exception $e) {
             error_log("Error updating document: " . $e->getMessage());
             $this->json(['success' => false, 'error' => 'Failed to update document'], 500);
         }
     }
-    
+
     /**
      * Delete a document
      * 
@@ -225,36 +224,36 @@ class ProjectDocumentationController extends Controller
             // Get route parameters
             $projectKey = $request->param('key');
             $documentId = (int) $request->param('documentId');
-            
+
             // Validate project
             $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
                 $this->json(['success' => false, 'error' => 'Project not found'], 404);
                 return;
             }
-            
+
             // Validate document exists and belongs to project
             $document = $this->docService->getDocument($documentId);
             if (!$document || $document['project_id'] != $project['id']) {
                 $this->json(['success' => false, 'error' => 'Document not found'], 404);
                 return;
             }
-            
+
             // Delete document
             $result = $this->docService->deleteDocument($documentId);
-            
+
             if ($result['success']) {
                 $this->json(['success' => true, 'message' => $result['message']]);
             } else {
                 $this->json(['success' => false, 'error' => $result['error']], 400);
             }
-            
+
         } catch (Exception $e) {
             error_log("Error deleting document: " . $e->getMessage());
             $this->json(['success' => false, 'error' => 'Failed to delete document'], 500);
         }
     }
-    
+
     /**
      * Download a document
      * 
@@ -268,7 +267,7 @@ class ProjectDocumentationController extends Controller
             // Get route parameters
             $projectKey = $request->param('key');
             $documentId = (int) $request->param('documentId');
-            
+
             // Validate project
             $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
@@ -276,7 +275,7 @@ class ProjectDocumentationController extends Controller
                 echo 'Project not found';
                 return;
             }
-            
+
             // Get document
             $document = $this->docService->getDocument($documentId);
             if (!$document || $document['project_id'] != $project['id']) {
@@ -284,36 +283,39 @@ class ProjectDocumentationController extends Controller
                 echo 'Document not found';
                 return;
             }
-            
+
             // Check if file exists
             if (!file_exists($document['path'])) {
                 http_response_code(404);
                 echo 'File not found on server';
                 return;
             }
-            
-            // Increment download count
-            $this->docService->incrementDownloadCount($documentId);
-            
-            // Set headers for download
+
+            // Increment download count only if not preview
+            if (!$request->query('preview')) {
+                $this->docService->incrementDownloadCount($documentId);
+            }
+
+            // Set headers for download/preview
+            $disposition = $request->query('preview') ? 'inline' : 'attachment';
             header('Content-Description: File Transfer');
             header('Content-Type: ' . $document['mime_type']);
-            header('Content-Disposition: attachment; filename="' . $document['original_filename'] . '"');
+            header('Content-Disposition: ' . $disposition . '; filename="' . $document['original_filename'] . '"');
             header('Content-Length: ' . filesize($document['path']));
             header('Cache-Control: private, max-age=0, must-revalidate');
             header('Pragma: public');
-            
+
             // Output file
             readfile($document['path']);
             exit;
-            
+
         } catch (Exception $e) {
             error_log("Error downloading document: " . $e->getMessage());
             http_response_code(500);
             echo 'Failed to download document';
         }
     }
-    
+
     /**
      * Get document details for AJAX requests
      * 
@@ -327,27 +329,27 @@ class ProjectDocumentationController extends Controller
             // Get route parameters
             $projectKey = $request->param('key');
             $documentId = (int) $request->param('documentId');
-            
+
             // Validate project
             $project = $this->projectService->getProjectByKey($projectKey);
             if (!$project) {
                 $this->json(['success' => false, 'error' => 'Project not found'], 404);
                 return;
             }
-            
+
             // Get document
             $document = $this->docService->getDocument($documentId);
             if (!$document || $document['project_id'] != $project['id']) {
                 $this->json(['success' => false, 'error' => 'Document not found'], 404);
                 return;
             }
-            
+
             // Add formatted data
             $document['formatted_size'] = ProjectDocumentationService::formatFileSize($document['size']);
             $document['file_icon'] = ProjectDocumentationService::getFileIcon($document['mime_type'], $document['filename']);
-            
+
             $this->json(['success' => true, 'document' => $document]);
-            
+
         } catch (Exception $e) {
             error_log("Error getting document: " . $e->getMessage());
             $this->json(['success' => false, 'error' => 'Failed to get document'], 500);

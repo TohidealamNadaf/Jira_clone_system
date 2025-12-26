@@ -159,7 +159,7 @@
                         </span>
                     </td>
                     <td class="col-status">
-                        <span class="badge-status" style="background-color: <?= e($issue['status_color']) ?>20; color: <?= e($issue['status_color']) ?>;">
+                        <span class="badge-status" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </td>

@@ -54,7 +54,7 @@ class AdminController extends Controller
     public function users(Request $request): string
     {
         $this->authorize('admin.manage-users');
-        
+
         $search = $request->input('search');
         $status = $request->input('status');
         $role = $request->input('role');
@@ -106,7 +106,7 @@ class AdminController extends Controller
             'current_page' => $page,
             'last_page' => (int) ceil($total / $perPage),
         ];
-        
+
         // Get roles for filter dropdown
         $roles = Database::select("SELECT * FROM roles ORDER BY name");
 
@@ -134,7 +134,7 @@ class AdminController extends Controller
     public function createUser(Request $request): string
     {
         $this->authorize('admin.manage-users');
-        
+
         $roles = Database::select("SELECT * FROM roles ORDER BY name");
         $timezones = timezone_identifiers_list();
 
@@ -147,7 +147,7 @@ class AdminController extends Controller
     public function storeUser(Request $request): void
     {
         $this->authorize('admin.manage-users');
-        
+
         $data = $request->validate([
             'first_name' => 'required|max:100',
             'last_name' => 'required|max:100',
@@ -164,7 +164,7 @@ class AdminController extends Controller
             if ($data['password'] !== $data['password_confirmation']) {
                 throw new \InvalidArgumentException('Passwords do not match.');
             }
-            
+
             // Check for existing email
             $existing = Database::selectOne(
                 "SELECT id FROM users WHERE email = ?",
@@ -223,7 +223,7 @@ class AdminController extends Controller
     public function editUser(Request $request): string
     {
         $this->authorize('admin.manage-users');
-        
+
         $userId = (int) $request->param('id');
 
         $user = Database::selectOne("SELECT * FROM users WHERE id = ?", [$userId]);
@@ -246,7 +246,7 @@ class AdminController extends Controller
     public function updateUser(Request $request): void
     {
         $this->authorize('admin.manage-users');
-        
+
         $userId = (int) $request->param('id');
 
         $user = Database::selectOne("SELECT * FROM users WHERE id = ?", [$userId]);
@@ -286,7 +286,7 @@ class AdminController extends Controller
                     throw new \InvalidArgumentException('Passwords do not match.');
                 }
             }
-            
+
             // Check email uniqueness
             if (isset($data['email']) && $data['email'] !== $user['email']) {
                 $existing = Database::selectOne(
@@ -300,20 +300,28 @@ class AdminController extends Controller
 
             // Build update data
             $updateData = [];
-            
-            if (isset($data['first_name'])) $updateData['first_name'] = $data['first_name'];
-            if (isset($data['last_name'])) $updateData['last_name'] = $data['last_name'];
-            if (isset($data['email'])) $updateData['email'] = $data['email'];
-            if (isset($data['display_name'])) $updateData['display_name'] = $data['display_name'];
-            if (isset($data['job_title'])) $updateData['job_title'] = $data['job_title'];
-            if (isset($data['department'])) $updateData['department'] = $data['department'];
-            if (isset($data['location'])) $updateData['location'] = $data['location'];
-            if (isset($data['timezone'])) $updateData['timezone'] = $data['timezone'];
-            
+
+            if (isset($data['first_name']))
+                $updateData['first_name'] = $data['first_name'];
+            if (isset($data['last_name']))
+                $updateData['last_name'] = $data['last_name'];
+            if (isset($data['email']))
+                $updateData['email'] = $data['email'];
+            if (isset($data['display_name']))
+                $updateData['display_name'] = $data['display_name'];
+            if (isset($data['job_title']))
+                $updateData['job_title'] = $data['job_title'];
+            if (isset($data['department']))
+                $updateData['department'] = $data['department'];
+            if (isset($data['location']))
+                $updateData['location'] = $data['location'];
+            if (isset($data['timezone']))
+                $updateData['timezone'] = $data['timezone'];
+
             // Do NOT allow changing is_admin flag
             // is_admin can only be set during user creation via direct database modification
             // or by privileged system operations
-            
+
             if (isset($data['status'])) {
                 $updateData['is_active'] = $data['status'] === 'active' ? 1 : 0;
             }
@@ -409,7 +417,7 @@ class AdminController extends Controller
     public function deactivateUser(Request $request): void
     {
         $this->authorize('admin.manage-users');
-        
+
         $userId = (int) $request->param('id');
 
         if ($userId === $this->userId()) {
@@ -458,7 +466,7 @@ class AdminController extends Controller
     public function activateUser(Request $request): void
     {
         $this->authorize('admin.manage-users');
-        
+
         $userId = (int) $request->param('id');
 
         $user = Database::selectOne("SELECT * FROM users WHERE id = ?", [$userId]);
@@ -695,7 +703,7 @@ class AdminController extends Controller
 
             // Update permissions
             Database::delete('role_permissions', 'role_id = ?', [$roleId]);
-            
+
             $permissions = $request->input('permissions');
             if (!empty($permissions) && is_array($permissions)) {
                 foreach ($permissions as $permissionId) {
@@ -904,7 +912,7 @@ class AdminController extends Controller
             "SELECT s.* FROM statuses s
              JOIN workflow_statuses ws ON s.id = ws.status_id
              WHERE ws.workflow_id = ?
-             ORDER BY ws.order_num",
+             ORDER BY ws.id",
             [$workflowId]
         );
 
@@ -1505,22 +1513,43 @@ class AdminController extends Controller
 
         try {
             $keys = [
-                'app_name', 'app_url', 'default_timezone', 'default_language', 'date_format',
-                'primary_color', 'default_theme', 'mail_driver', 'smtp_host', 'smtp_port',
-                'smtp_encryption', 'smtp_username', 'smtp_password', 'mail_from_address', 'mail_from_name',
-                'require_2fa', 'session_timeout', 'password_min_length', 'password_require_special',
-                'max_login_attempts', 'lockout_duration', 'slack_webhook', 'github_client_id',
-                'github_client_secret', 'notify_issue_assigned', 'notify_issue_updated',
-                'notify_comment_added', 'notify_mentioned'
+                'app_name',
+                'app_url',
+                'default_timezone',
+                'default_language',
+                'date_format',
+                'primary_color',
+                'default_theme',
+                'mail_driver',
+                'smtp_host',
+                'smtp_port',
+                'smtp_encryption',
+                'smtp_username',
+                'smtp_password',
+                'mail_from_address',
+                'mail_from_name',
+                'require_2fa',
+                'session_timeout',
+                'password_min_length',
+                'password_require_special',
+                'max_login_attempts',
+                'lockout_duration',
+                'slack_webhook',
+                'github_client_id',
+                'github_client_secret',
+                'notify_issue_assigned',
+                'notify_issue_updated',
+                'notify_comment_added',
+                'notify_mentioned'
             ];
 
             foreach ($keys as $key) {
                 $value = $request->input($key);
-                
+
                 // Handle checkboxes - always save 0 or 1
                 if (in_array($key, ['require_2fa', 'password_require_special', 'notify_issue_assigned', 'notify_issue_updated', 'notify_comment_added', 'notify_mentioned'])) {
                     $value = $request->has($key) ? '1' : '0';
-                    
+
                     // Always save checkbox values (including 0)
                     $existing = Database::selectOne("SELECT id FROM settings WHERE `key` = ?", [$key]);
                     if ($existing) {
@@ -1533,7 +1562,7 @@ class AdminController extends Controller
 
                 if ($value !== null && $value !== '') {
                     $existing = Database::selectOne("SELECT id FROM settings WHERE `key` = ?", [$key]);
-                    
+
                     if ($existing) {
                         Database::update('settings', ['value' => $value], '`key` = ?', [$key]);
                     } else {
@@ -1580,7 +1609,7 @@ class AdminController extends Controller
                     $fromAddress ?: 'noreply@example.com'
                 );
                 file_put_contents($logFile, $logMessage, FILE_APPEND);
-                
+
                 $this->json(['success' => true, 'message' => 'Test email logged to storage/logs/email.log']);
                 return;
             }
@@ -1650,18 +1679,18 @@ class AdminController extends Controller
         string $body
     ): bool {
         $socket = null;
-        
+
         try {
             $protocol = $encryption === 'ssl' ? 'ssl://' : '';
             $socket = @fsockopen($protocol . $host, $port, $errno, $errstr, 30);
-            
+
             if (!$socket) {
                 throw new \Exception("Could not connect to SMTP server: $errstr ($errno)");
             }
 
             $this->smtpRead($socket);
             $this->smtpSend($socket, "EHLO " . gethostname());
-            
+
             if ($encryption === 'tls' && $port !== 465) {
                 $this->smtpSend($socket, "STARTTLS");
                 stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
@@ -1715,12 +1744,12 @@ class AdminController extends Controller
                 break;
             }
         }
-        
+
         $code = (int) substr($response, 0, 3);
         if ($code >= 400) {
             throw new \Exception("SMTP Error: $response");
         }
-        
+
         return $response;
     }
 

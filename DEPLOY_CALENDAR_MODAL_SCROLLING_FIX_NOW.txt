@@ -1,0 +1,74 @@
+================================================================================
+CALENDAR MODAL SCROLLING FIX - DEPLOYMENT CARD
+Date: December 24, 2025
+================================================================================
+
+ISSUE FIXED:
+  Calendar modal content could not scroll when viewing event details.
+  Users had to close modal to see fields like Story Points, Labels, Timeline.
+
+ROOT CAUSE:
+  Duplicate HTML in views/calendar/index.php (lines 372-499)
+  Orphaned <div class="modal-body"> breaking the modal's flex layout
+
+FIX APPLIED:
+  ✅ Removed 128 lines of duplicate HTML
+  ✅ Modal now has single, properly structured body
+  ✅ .modal-body-scroll CSS class works correctly
+
+FILE MODIFIED:
+  views/calendar/index.php - Removed duplicate modal body HTML
+
+TESTING STEPS:
+  1. Open: http://localhost:8081/jira_clone_system/public/calendar
+  2. Click: Any calendar event (e.g., ECOM-9)
+  3. Verify: Modal opens and content scrolls smoothly
+  4. Test: X button, backdrop click, ESC key all close modal
+  5. Check: "View Issue" button navigates to issue page
+
+EXPECTED RESULT:
+  ✓ Modal content scrolls smoothly
+  ✓ Scrollbar visible on right when needed
+  ✓ All event details visible
+  ✓ No console errors
+  ✓ All modal interactions work
+
+DEPLOYMENT CHECKLIST:
+  [ ] Pull code from repository
+  [ ] Clear browser cache (CTRL+SHIFT+DEL)
+  [ ] Hard refresh page (CTRL+F5)
+  [ ] Test in /calendar
+  [ ] Test on mobile/tablet (responsive)
+  [ ] Confirm scrolling works
+  [ ] Mark deployment complete
+
+CACHE CLEARING:
+  Browser: CTRL+SHIFT+DEL → Select "All time" → Clear
+  Application: No server-side cache needed
+
+ROLLBACK PLAN:
+  If issues occur:
+  1. Restore views/calendar/index.php from git
+  2. Clear browser cache again
+  3. Hard refresh
+
+RISK ASSESSMENT:
+  Risk Level: VERY LOW
+  - Only HTML structure change
+  - No JavaScript changes
+  - No CSS changes
+  - No database changes
+  - No API changes
+
+DEPLOYMENT TIME: < 5 minutes
+DOWNTIME REQUIRED: 0 minutes
+AFFECTED USERS: All users accessing calendar
+CRITICAL: No
+
+DOCUMENTATION:
+  CALENDAR_MODAL_SCROLLING_FIX_DECEMBER_24.md - Complete technical details
+
+STATUS:
+  ✅ READY FOR IMMEDIATE PRODUCTION DEPLOYMENT
+
+================================================================================

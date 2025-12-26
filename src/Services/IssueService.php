@@ -83,9 +83,9 @@ class IssueService
         if (!empty($filters['labels'])) {
             $where[] = "EXISTS (SELECT 1 FROM issue_labels il 
                         JOIN labels l ON il.label_id = l.id 
-                        WHERE il.issue_id = i.id AND l.name IN (" . 
-                        implode(',', array_map(fn($i) => ":label_$i", range(0, count($filters['labels']) - 1))) . 
-                        "))";
+                        WHERE il.issue_id = i.id AND l.name IN (" .
+                implode(',', array_map(fn($i) => ":label_$i", range(0, count($filters['labels']) - 1))) .
+                "))";
             foreach ($filters['labels'] as $idx => $label) {
                 $params["label_$idx"] = $label;
             }
@@ -202,6 +202,15 @@ class IssueService
             ['issue_id' => $issue['id']]
         );
 
+        $issue['attachments'] = Database::select(
+            "SELECT ia.*, u.display_name as author_name 
+         FROM issue_attachments ia
+         JOIN users u ON ia.uploaded_by = u.id
+         WHERE ia.issue_id = :issue_id
+         ORDER BY ia.created_at DESC",
+            ['issue_id' => $issue['id']]
+        );
+
         // Load comments using raw PDO to avoid parameter binding issues
         try {
             $pdo = Database::getConnection();
@@ -209,9 +218,9 @@ class IssueService
                            u.first_name, u.last_name, u.email
                     FROM comments c
                     JOIN users u ON c.user_id = u.id
-                    WHERE c.issue_id = " . (int)$issue['id'] . "
+                    WHERE c.issue_id = " . (int) $issue['id'] . "
                     ORDER BY c.created_at DESC";
-            
+
             $stmt = $pdo->query($sql);
             $issue['comments'] = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
         } catch (\Exception $e) {
@@ -251,80 +260,7 @@ class IssueService
         return null;
     }
 
-    public function createIssue(array $data, int $userId): array
-    {
-        $this->validateIssueData($data, true);
 
-        return Database::transaction(function () use ($data, $userId) {
-            $projectId = (int) $data['project_id'];
-            $issueKey = $this->calculateNextIssueKey($projectId);
-            $issueNumber = $this->getNextIssueNumber($projectId);
-
-            $initialStatus = $this->getInitialStatus($projectId);
-            if (!$initialStatus) {
-                throw new \RuntimeException('No initial status found for workflow');
-            }
-
-            $issueId = Database::insert('issues', [
-                'project_id' => $projectId,
-                'issue_type_id' => (int) $data['issue_type_id'],
-                'status_id' => $initialStatus['id'],
-                'priority_id' => !empty($data['priority_id']) ? (int) $data['priority_id'] : $this->getDefaultPriority(),
-                'issue_key' => $issueKey,
-                'issue_number' => $issueNumber,
-                'summary' => $data['summary'],
-                'description' => $data['description'] ?? null,
-                'reporter_id' => $userId,
-                'assignee_id' => !empty($data['assignee_id']) ? (int) $data['assignee_id'] : $this->getDefaultAssignee($projectId),
-                'parent_id' => !empty($data['parent_id']) ? (int) $data['parent_id'] : null,
-                'epic_id' => !empty($data['epic_id']) ? (int) $data['epic_id'] : null,
-                'sprint_id' => !empty($data['sprint_id']) ? (int) $data['sprint_id'] : null,
-                'story_points' => $data['story_points'] ?? null,
-                'original_estimate' => !empty($data['original_estimate']) ? (int) $data['original_estimate'] : null,
-                'remaining_estimate' => !empty($data['original_estimate']) ? (int) $data['original_estimate'] : null,
-                'environment' => $data['environment'] ?? null,
-                'due_date' => $data['due_date'] ?? null,
-            ]);
-
-            // Increment issue count
-            Database::query(
-                "UPDATE projects SET issue_count = issue_count + 1 WHERE id = ?",
-                [$projectId]
-            );
-
-            if (!empty($data['labels'])) {
-                $this->syncLabels($issueId, $data['labels'], $projectId);
-            }
-
-            if (!empty($data['components'])) {
-                $this->syncComponents($issueId, $data['components']);
-            }
-
-            if (!empty($data['fix_versions'])) {
-                $this->syncVersions($issueId, $data['fix_versions'], 'fix');
-            }
-
-            $this->watchIssue($issueId, $userId);
-
-            $this->logAudit('issue_created', 'issue', $issueId, null, $data, $userId);
-            $this->recordHistory($issueId, $userId, 'created', null, $issueKey);
-
-            // Get the created issue
-            $createdIssue = $this->getIssueById($issueId);
-            if (!$createdIssue) {
-                // Fallback: return minimal issue data with the key we just created
-                return [
-                    'id' => $issueId,
-                    'issue_key' => $issueKey,
-                    'summary' => $data['summary'] ?? '',
-                    'description' => $data['description'] ?? null,
-                    'project_id' => $projectId,
-                    'project_key' => Database::selectValue("SELECT `key` FROM projects WHERE id = ?", [$projectId]),
-                ];
-            }
-            return $createdIssue;
-        });
-    }
 
     public function updateIssue(int $issueId, array $data, int $userId): array
     {
@@ -334,25 +270,39 @@ class IssueService
         }
 
         return Database::transaction(function () use ($issueId, $issue, $data, $userId) {
-            $updateFields = ['summary', 'description', 'priority_id', 'issue_type_id', 
-                            'assignee_id', 'epic_id', 'story_points', 'original_estimate',
-                            'remaining_estimate', 'environment', 'due_date'];
+            $updateFields = [
+                'summary',
+                'description',
+                'priority_id',
+                'issue_type_id',
+                'assignee_id',
+                'epic_id',
+                'story_points',
+                'original_estimate',
+                'remaining_estimate',
+                'environment',
+                'due_date',
+                'start_date',
+                'end_date'
+            ];
 
             $updateData = [];
             foreach ($updateFields as $field) {
                 if (array_key_exists($field, $data)) {
                     // Convert empty strings to NULL for foreign key fields
                     $value = $data[$field];
-                    if (in_array($field, ['assignee_id', 'epic_id', 'priority_id', 'issue_type_id']) 
-                        && ($value === '' || $value === null)) {
+                    if (
+                        in_array($field, ['assignee_id', 'epic_id', 'priority_id', 'issue_type_id'])
+                        && ($value === '' || $value === null)
+                    ) {
                         // For optional FK fields (assignee, epic), allow NULL
                         if (in_array($field, ['assignee_id', 'epic_id'])) {
                             $value = null;
                         }
                     }
-                    
+
                     $updateData[$field] = $value;
-                    
+
                     if ($issue[$field] != $value) {
                         $this->recordHistory($issueId, $userId, $field, $issue[$field], $value);
                     }
@@ -391,7 +341,7 @@ class IssueService
         $this->logAudit('issue_deleted', 'issue', $issueId, $issue, null, $userId);
 
         $deleted = Database::delete('issues', 'id = ?', [$issueId]) > 0;
-        
+
         if ($deleted) {
             // Decrement the issue count in the project
             Database::query(
@@ -399,7 +349,7 @@ class IssueService
                 [$issue['project_id']]
             );
         }
-        
+
         return $deleted;
     }
 
@@ -410,7 +360,7 @@ class IssueService
             throw new \InvalidArgumentException('Issue not found');
         }
 
-        if (!$this->isTransitionAllowed($issue['status_id'], $targetStatusId, $issue['project_id'])) {
+        if (!$this->isTransitionAllowed($issue['status_id'], $targetStatusId, $issue['project_id'], $issue['issue_type_id'] ?? null)) {
             throw new \InvalidArgumentException('This transition is not allowed');
         }
 
@@ -420,7 +370,7 @@ class IssueService
         }
 
         $updateData = ['status_id' => $targetStatusId];
-        
+
         if ($targetStatus['category'] === 'done' && !$issue['resolved_at']) {
             $updateData['resolved_at'] = date('Y-m-d H:i:s');
         } elseif ($targetStatus['category'] !== 'done' && $issue['resolved_at']) {
@@ -430,9 +380,12 @@ class IssueService
         Database::update('issues', $updateData, 'id = ?', [$issueId]);
 
         $this->recordHistory($issueId, $userId, 'status', $issue['status_name'], $targetStatus['name']);
-        $this->logAudit('issue_transitioned', 'issue', $issueId, 
-            ['status_id' => $issue['status_id']], 
-            ['status_id' => $targetStatusId], 
+        $this->logAudit(
+            'issue_transitioned',
+            'issue',
+            $issueId,
+            ['status_id' => $issue['status_id']],
+            ['status_id' => $targetStatusId],
             $userId
         );
 
@@ -449,14 +402,17 @@ class IssueService
         Database::update('issues', ['assignee_id' => $assigneeId], 'id = ?', [$issueId]);
 
         $oldAssignee = $issue['assignee_name'] ?? 'Unassigned';
-        $newAssignee = $assigneeId 
+        $newAssignee = $assigneeId
             ? Database::selectValue("SELECT display_name FROM users WHERE id = ?", [$assigneeId]) ?? 'Unknown'
             : 'Unassigned';
 
         $this->recordHistory($issueId, $userId, 'assignee', $oldAssignee, $newAssignee);
-        $this->logAudit('issue_assigned', 'issue', $issueId, 
-            ['assignee_id' => $issue['assignee_id']], 
-            ['assignee_id' => $assigneeId], 
+        $this->logAudit(
+            'issue_assigned',
+            'issue',
+            $issueId,
+            ['assignee_id' => $issue['assignee_id']],
+            ['assignee_id' => $assigneeId],
             $userId
         );
 
@@ -660,7 +616,7 @@ class IssueService
              FROM issues WHERE project_id = ?",
             [$project['key'], $projectId]
         );
-        
+
         $nextNumber = ($lastIssue['max_number'] ?? 0) + 1;
         return $project['key'] . '-' . $nextNumber;
     }
@@ -702,22 +658,45 @@ class IssueService
         return null;
     }
 
-    private function isTransitionAllowed(int $fromStatusId, int $toStatusId, int $projectId): bool
+    private function isTransitionAllowed(int $fromStatusId, int $toStatusId, int $projectId, ?int $issueTypeId = null): bool
     {
-        // Get the default workflow
-        $defaultWorkflow = Database::selectOne(
-            "SELECT id FROM workflows WHERE is_default = 1"
-        );
+        // 1. Try to find mapping for specific project and issue type
+        $mapping = null;
+        if ($issueTypeId) {
+            $mapping = Database::selectOne(
+                "SELECT workflow_id FROM project_workflows 
+                 WHERE project_id = ? AND issue_type_id = ?",
+                [$projectId, $issueTypeId]
+            );
+        }
 
-        if (!$defaultWorkflow) {
-            // No default workflow - allow any transition
+        // 2. Fall back to project default mapping
+        if (!$mapping) {
+            $mapping = Database::selectOne(
+                "SELECT workflow_id FROM project_workflows 
+                 WHERE project_id = ? AND issue_type_id IS NULL",
+                [$projectId]
+            );
+        }
+
+        // 3. Fall back to system default workflow
+        if (!$mapping) {
+            $mapping = Database::selectOne(
+                "SELECT id as workflow_id FROM workflows WHERE is_default = 1"
+            );
+        }
+
+        if (!$mapping) {
+            // No workflow found - allow any transition (safety fallback)
             return true;
         }
 
-        // Check if ANY workflow transitions are configured
+        $workflowId = $mapping['workflow_id'];
+
+        // Check if ANY workflow transitions are configured for this workflow
         $transitionCount = Database::selectOne(
             "SELECT COUNT(*) as count FROM workflow_transitions WHERE workflow_id = ?",
-            [$defaultWorkflow['id']]
+            [$workflowId]
         );
 
         // If NO transitions configured at all, allow all transitions (setup phase)
@@ -731,7 +710,7 @@ class IssueService
              WHERE workflow_id = ?
              AND (from_status_id = ? OR from_status_id IS NULL)
              AND to_status_id = ?",
-            [$defaultWorkflow['id'], $fromStatusId, $toStatusId]
+            [$workflowId, $fromStatusId, $toStatusId]
         );
 
         return $transition !== null;
@@ -803,6 +782,21 @@ class IssueService
                 'issue_id' => $issueId,
                 'version_id' => $versionId,
                 'type' => $type,
+            ]);
+        }
+    }
+
+    /**
+     * Sync fix versions for an issue
+     */
+    private function syncFixVersions(int $issueId, array $versions): void
+    {
+        Database::delete('issue_fix_versions', 'issue_id = ?', [$issueId]);
+
+        foreach ($versions as $versionId) {
+            Database::insert('issue_fix_versions', [
+                'issue_id' => $issueId,
+                'version_id' => $versionId,
             ]);
         }
     }
@@ -1239,6 +1233,150 @@ class IssueService
             // Log error
             error_log("Attachment storage failed for issue {$issueId}: " . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Create a new issue
+     */
+    public function createIssue(array $data, int $userId): array
+    {
+        // Validate required fields
+        if (empty($data['project_id'])) {
+            throw new \InvalidArgumentException('Project ID is required');
+        }
+        if (empty($data['issue_type_id'])) {
+            throw new \InvalidArgumentException('Issue type is required');
+        }
+        if (empty($data['summary'])) {
+            throw new \InvalidArgumentException('Summary is required');
+        }
+
+        // Validate project exists
+        $project = Database::selectOne("SELECT * FROM projects WHERE id = ?", [$data['project_id']]);
+        if (!$project) {
+            throw new \InvalidArgumentException('Invalid project');
+        }
+
+        // Validate issue type exists
+        $issueType = Database::selectOne("SELECT * FROM issue_types WHERE id = ?", [$data['issue_type_id']]);
+        if (!$issueType) {
+            throw new \InvalidArgumentException('Invalid issue type');
+        }
+
+        // Get next issue number for the project
+        $nextNumber = Database::selectOne(
+            "SELECT MAX(issue_number) + 1 as next_number FROM issues WHERE project_id = ?",
+            [$data['project_id']]
+        );
+        $issueNumber = $nextNumber['next_number'] ?? 1;
+
+        // Generate issue key
+        $issueKey = $project['key'] . '-' . $issueNumber;
+
+        // Get default status for new issues (To Do)
+        $defaultStatus = Database::selectOne(
+            "SELECT * FROM statuses WHERE name = 'To Do' LIMIT 1"
+        );
+        $statusId = $defaultStatus['id'] ?? 1;
+
+        // Get default priority if not provided
+        $priorityId = $data['priority_id'] ?? null;
+        if (!$priorityId) {
+            $defaultPriority = Database::selectOne(
+                "SELECT * FROM issue_priorities WHERE is_default = 1 LIMIT 1"
+            );
+            $priorityId = $defaultPriority['id'] ?? null;
+        }
+
+        try {
+            // Insert issue
+            $issueId = Database::insert('issues', [
+                'project_id' => $data['project_id'],
+                'issue_type_id' => $data['issue_type_id'],
+                'status_id' => $statusId,
+                'priority_id' => $priorityId,
+                'issue_key' => $issueKey,
+                'issue_number' => $issueNumber,
+                'summary' => $data['summary'],
+                'description' => $data['description'] ?? null,
+                'reporter_id' => $userId,
+                'assignee_id' => $data['assignee_id'] ?? null,
+                'parent_id' => $data['parent_id'] ?? null,
+                'epic_id' => $data['epic_id'] ?? null,
+                'sprint_id' => $data['sprint_id'] ?? null,
+                'story_points' => $data['story_points'] ?? null,
+                'original_estimate' => $data['original_estimate'] ?? null,
+                'remaining_estimate' => $data['original_estimate'] ?? null, // Initially set to original
+                'time_spent' => 0,
+                'environment' => $data['environment'] ?? null,
+                'due_date' => $data['due_date'] ?? null,
+                'start_date' => $data['start_date'] ?? null,
+                'end_date' => $data['end_date'] ?? null,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if (!$issueId) {
+                throw new \Exception('Failed to create issue');
+            }
+
+            // Handle labels if provided
+            if (!empty($data['labels']) && is_array($data['labels'])) {
+                $this->syncLabels($issueId, $data['labels'], $data['project_id']);
+            }
+
+            // Handle components if provided
+            if (!empty($data['components']) && is_array($data['components'])) {
+                $this->syncComponents($issueId, $data['components']);
+            }
+
+            // Handle fix versions if provided
+            if (!empty($data['fix_versions']) && is_array($data['fix_versions'])) {
+                $this->syncFixVersions($issueId, $data['fix_versions']);
+            }
+
+            // Add to sprint if specified
+            if (!empty($data['sprint_id'])) {
+                Database::insert('sprint_issues', [
+                    'sprint_id' => $data['sprint_id'],
+                    'issue_id' => $issueId,
+                    'added_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+
+            // Log creation in audit trail
+            $this->logAudit('issue_created', 'issue', $issueId, null, [
+                'project_id' => $data['project_id'],
+                'issue_key' => $issueKey,
+                'summary' => $data['summary']
+            ], $userId);
+
+            // Get complete issue data
+            $issue = Database::selectOne(
+                "SELECT i.*, 
+                        p.name as project_name, p.key as project_key,
+                        it.name as issue_type_name, it.icon as issue_type_icon,
+                        s.name as status_name, s.color as status_color,
+                        pr.name as priority_name, pr.color as priority_color,
+                        reporter.display_name as reporter_name, reporter.avatar as reporter_avatar,
+                        assignee.display_name as assignee_name, assignee.avatar as assignee_avatar
+                 FROM issues i
+                 JOIN projects p ON i.project_id = p.id
+                 JOIN issue_types it ON i.issue_type_id = it.id
+                 JOIN statuses s ON i.status_id = s.id
+                 LEFT JOIN issue_priorities pr ON i.priority_id = pr.id
+                 LEFT JOIN users reporter ON i.reporter_id = reporter.id
+                 LEFT JOIN users assignee ON i.assignee_id = assignee.id
+                 WHERE i.id = ?",
+                [$issueId]
+            );
+
+            return $issue;
+
+        } catch (\Exception $e) {
+            error_log("Issue creation failed: " . $e->getMessage());
+            throw new \Exception('Failed to create issue: ' . $e->getMessage());
         }
     }
 }

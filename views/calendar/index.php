@@ -131,20 +131,7 @@
 
 
 
-            <!-- Unscheduled Issues -->
-            <div class="unscheduled-section">
-                <h3 class="sidebar-title">
-                    <i class="bi bi-calendar-x"></i>
-                    Unscheduled Issues
-                    <span class="unscheduled-count" id="unscheduledCount">0</span>
-                </h3>
-                <div class="unscheduled-list" id="unscheduledList">
-                    <div class="empty-state">
-                        <i class="bi bi-check-circle"></i>
-                        <p>All issues scheduled</p>
-                    </div>
-                </div>
-            </div>
+
         </div>
 
         <div class="calendar-content">
@@ -174,18 +161,18 @@
                         <i class="bi bi-download"></i>
                         Export
                     </button>
-                <button class="jira-btn jira-btn-ghost" id="settingsBtn">
-                    <i class="bi bi-gear"></i>
-                    Settings
-                </button>
-                <button class="jira-btn jira-btn-ghost" id="debugDropBtn" onclick="debugCalendarDrop()">
-                    <i class="bi bi-bug"></i>
-                    Debug Drop
-                </button>
-                <button class="jira-btn jira-btn-ghost" id="testDragBtn" onclick="testDragData()">
-                    <i class="bi bi-cursor"></i>
-                    Test Drag
-                </button>
+                    <button class="jira-btn jira-btn-ghost" id="settingsBtn">
+                        <i class="bi bi-gear"></i>
+                        Settings
+                    </button>
+                    <button class="jira-btn jira-btn-ghost" id="debugDropBtn" onclick="debugCalendarDrop()">
+                        <i class="bi bi-bug"></i>
+                        Debug Drop
+                    </button>
+                    <button class="jira-btn jira-btn-ghost" id="testDragBtn" onclick="testDragData()">
+                        <i class="bi bi-cursor"></i>
+                        Test Drag
+                    </button>
                 </div>
             </div>
 
@@ -237,23 +224,23 @@
                         Bug
                     </div>
                     <div class="event-basic">
-                        <h3 class="event-key" id="eventKey">PROJ-123</h3>
-                        <h4 class="event-summary" id="eventSummary">Fix calendar loading issue</h4>
+                        <h3 class="event-key" id="detailKey">PROJ-123</h3>
+                        <h4 class="event-summary" id="detailSummary">Fix calendar loading issue</h4>
                     </div>
-                </div> 
+                </div>
 
                 <div class="event-details-grid">
                     <div class="detail-row">
                         <label>Project</label>
-                        <span id="eventProject">Project Alpha</span>
+                        <span id="detailProject">Project Alpha</span>
                     </div>
                     <div class="detail-row">
                         <label>Status</label>
-                        <span class="status-badge" id="eventStatus">In Progress</span>
+                        <span class="status-badge" id="detailStatus">In Progress</span>
                     </div>
                     <div class="detail-row">
                         <label>Priority</label>
-                        <span class="priority-badge urgent" id="eventPriority">Urgent</span>
+                        <span class="priority-badge urgent" id="detailPriority">Urgent</span>
                     </div>
                     <div class="detail-row">
                         <label>Assignee</label>
@@ -271,36 +258,36 @@
                     </div>
                     <div class="detail-row">
                         <label>Due Date</label>
-                        <span id="eventDueDate">Dec 24, 2025</span>
+                        <span id="detailDueDate">Dec 24, 2025</span>
                     </div>
                     <div class="detail-row">
                         <label>Created</label>
-                        <span id="eventCreatedDate">Dec 20, 2025</span>
+                        <span id="detailCreatedDate">Dec 20, 2025</span>
                     </div>
                     <div class="detail-row">
                         <label>Updated</label>
-                        <span id="eventUpdatedDate">Dec 22, 2025</span>
+                        <span id="detailUpdatedDate">Dec 22, 2025</span>
                     </div>
                     <div class="detail-row">
                         <label>Story Points</label>
-                        <span id="eventStoryPoints">5</span>
+                        <span id="detailStoryPoints">5</span>
                     </div>
                     <div class="detail-row">
                         <label>Labels</label>
-                        <div class="labels-container" id="eventLabels">
+                        <div class="labels-container" id="detailLabels">
                             <span class="label-tag">backend</span>
                             <span class="label-tag">urgent</span>
                         </div>
                     </div>
-                </div> 
+                </div>
 
                 <div class="event-description">
                     <h4>Description</h4>
-                    <div class="description-content" id="eventDescription">
+                    <div class="description-content" id="detailDescription">
                         The calendar page is not loading properly and shows no styling. Need to investigate the CSS
                         loading issue and fix the design.
                     </div>
-                </div> 
+                </div>
 
                 <div class="event-timeline">
                     <h4>Recent Activity</h4>
@@ -605,13 +592,14 @@
 
                 <form id="scheduleIssueForm">
                     <input type="hidden" id="scheduleIssueId" name="issue_id">
-                    
+
                     <div class="form-section">
                         <h3>Schedule Details</h3>
                         <div class="form-group">
                             <label for="scheduleDueDate">Due Date *</label>
                             <input type="date" id="scheduleDueDate" name="due_date" class="jira-input" required>
-                            <small class="form-help">The date you dropped this issue on will be set as the due date</small>
+                            <small class="form-help">The date you dropped this issue on will be set as the due
+                                date</small>
                         </div>
                         <div class="form-group">
                             <label for="scheduleStartDate">Start Date</label>
@@ -665,7 +653,7 @@
     </div>
 </div>
 
- <?php \App\Core\View::endSection(); ?>
+<?php \App\Core\View::endSection(); ?>
 
 <?php \App\Core\View::section('styles'); ?>
 <!-- Calendar styles are included in app.css -->
@@ -687,6 +675,5 @@
 </script>
 
 <!-- FullCalendar -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script src="<?= asset('js/calendar-realtime.js') ?>"></script>
 <?php \App\Core\View::endSection(); ?>

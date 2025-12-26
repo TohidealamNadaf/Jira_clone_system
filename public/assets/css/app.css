@@ -985,7 +985,8 @@ section {
     text-transform: uppercase;
     letter-spacing: 0.3px;
     white-space: nowrap;
-    color: white !important;  /* CRITICAL: Force white text for all status badges */
+    color: white !important;
+    /* CRITICAL: Force white text for all status badges */
 }
 
 .status-todo {
@@ -6525,11 +6526,53 @@ img:not([src]) {
 }
 
 /* =====================================================
-   UNSCHEDULED ISSUES STYLES
+   CALENDAR LAYOUT & STICKY SIDEBAR
    ===================================================== */
 
+.calendar-main {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    position: relative;
+    padding-bottom: 32px;
+}
+
+.calendar-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+    /* Accounts for navbar */
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    max-height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 10;
+    margin-left: 25px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.calendar-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Unscheduled Issues Styles */
 .unscheduled-section {
-    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* Take available space */
+    min-height: 0;
+    /* Allow shrinking */
+    overflow: hidden;
+    /* Contain children */
+    margin-top: 0;
 }
 
 .unscheduled-section .sidebar-title {
@@ -6539,7 +6582,10 @@ img:not([src]) {
     font-size: 14px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 12px;
+    margin: 0;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .unscheduled-count {
@@ -6555,10 +6601,11 @@ img:not([src]) {
 }
 
 .unscheduled-list {
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border-radius: 0;
+    border: none;
+    padding: 0;
 }
 
 .unscheduled-issue {
@@ -6854,7 +6901,7 @@ img:not([src]) {
     .unscheduled-section {
         margin-top: 16px;
     }
-    
+
     .unscheduled-list {
         max-height: 300px;
     }
@@ -6865,33 +6912,33 @@ img:not([src]) {
         padding: 10px;
         gap: 10px;
     }
-    
+
     .issue-type-icon {
         width: 28px;
         height: 28px;
         font-size: 12px;
     }
-    
+
     .issue-summary {
         font-size: 12px;
     }
-    
+
     .issue-meta {
         gap: 6px;
     }
-    
+
     .info-grid {
         grid-template-columns: 1fr;
         gap: 12px;
     }
-    
+
     .notification {
         right: 10px;
         left: 10px;
         max-width: none;
         transform: translateY(-100px);
     }
-    
+
     .notification.show {
         transform: translateY(0);
     }

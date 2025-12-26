@@ -130,10 +130,15 @@ class CalendarService
     private function formatEvent(array $issue): array
     {
         // Determine start/end to use
-        // Priority: start_date/end_date -> due_date (as single day)
-
-        $start = $issue['start_date'] ?? $issue['due_date'];
-        $end = $issue['end_date'] ?? $issue['due_date'];
+        // User Request: Always use Due Date for the badge position if available.
+        // This prevents the event from spanning multiple days on the calendar.
+        if (!empty($issue['due_date'])) {
+            $start = $issue['due_date'];
+            $end = $issue['due_date'];
+        } else {
+            $start = $issue['start_date'];
+            $end = $issue['end_date'] ?? $issue['start_date'];
+        }
 
         // Color mapping based on priority
         $colors = [
@@ -158,6 +163,7 @@ class CalendarService
                 'key' => $issue['key'],
                 'project' => $issue['project_name'],
                 'projectKey' => $issue['project_key'],
+                'projectId' => $issue['project_id'],
                 'status' => $issue['status_name'],
                 'statusColor' => $issue['status_color'] ?? '#ccc',
                 'statusCategory' => $issue['status_category'], // Added for completion logic
@@ -306,11 +312,11 @@ class CalendarService
                 FIELD(ip.name, 'Urgent', 'High', 'Medium', 'Low'),
                 i.created_at DESC
         ";
-        
+
         $issues = Database::select($sql);
-        
+
         // No labels column, skip parsing
-        
+
         return $issues;
     }
 
@@ -354,7 +360,7 @@ class CalendarService
             WHERE u.is_active = 1
             ORDER BY u.display_name
         ";
-        
+
         return Database::select($sql);
     }
 

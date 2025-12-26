@@ -73,6 +73,82 @@ document.addEventListener('DOMContentLoaded', function () {
     // INITIALIZATION
     // =====================================================
 
+    function handleCalendarDrop(info) {
+        console.log('📅 [DROP] Something dropped on calendar:', info);
+
+        let dragData = null;
+
+        // Method 1: Check dragged element (FullCalendar Draggable API)
+        if (info.draggedEl) {
+            console.log('📅 [DROP] Dragged element detected via Draggable API');
+            const issueId = info.draggedEl.dataset.issueId;
+            const issueKey = info.draggedEl.dataset.issueKey;
+
+            if (issueId) {
+                dragData = {
+                    id: issueId,
+                    key: issueKey,
+                    fromUnscheduled: true
+                };
+                console.log('📅 [DROP] Got data from draggedEl:', dragData);
+            }
+        }
+
+        // Method 2: Check global fallback (Native Drag & Drop)
+        if (!dragData && window.currentDragData) {
+            dragData = window.currentDragData;
+            console.log('📅 [DROP] Using global fallback data:', dragData);
+        }
+
+        // Method 3: Try DataTransfer (Native Drag & Drop)
+        if (!dragData && info.jsEvent && info.jsEvent.dataTransfer) {
+            try {
+                const plainText = info.jsEvent.dataTransfer.getData('text/plain');
+                if (plainText) {
+                    dragData = JSON.parse(plainText);
+                    console.log('📅 [DROP] Got data from text/plain:', dragData);
+                }
+            } catch (err) {
+                // Ignore
+            }
+
+            if (!dragData) {
+                try {
+                    const jsonData = info.jsEvent.dataTransfer.getData('application/json');
+                    if (jsonData) {
+                        dragData = JSON.parse(jsonData);
+                    }
+                } catch (err) { }
+            }
+        }
+
+        if (!dragData) {
+            console.log('📅 [DROP] No valid drag data found in any method, ignoring drop');
+            return;
+        }
+
+        try {
+            if (dragData.fromUnscheduled) {
+                // This is an unscheduled issue being scheduled
+                const dropDate = info.dateStr;
+                console.log('📅 [DROP] Unscheduled issue dropped on:', dropDate);
+
+                // Find the issue data from our unscheduled issues array
+                const issueData = unscheduledIssues.find(issue => issue.id == dragData.id);
+                if (issueData) {
+                    openScheduleModal(issueData, dropDate);
+                } else {
+                    console.error('📅 [DROP] Issue data not found for ID:', dragData.id);
+                }
+            } else {
+                console.log('📅 [DROP] Not an unscheduled issue, ignoring');
+            }
+        } catch (err) {
+            console.error('📅 [DROP] Error processing drop:', err);
+        }
+    }
+
+
     function initCalendar() {
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -133,80 +209,14 @@ document.addEventListener('DOMContentLoaded', function () {
             },
 
             drop: function (info) {
-                console.log('📅 [DROP] Something dropped on calendar:', info);
-                console.log('📅 [DROP] Drop info object keys:', Object.keys(info));
-                console.log('📅 [DROP] jsEvent type:', info.jsEvent.type);
-                console.log('📅 [DROP] DataTransfer available:', !!info.jsEvent.dataTransfer);
-                
-                if (!info.jsEvent.dataTransfer) {
-                    console.log('📅 [DROP] No dataTransfer object, cannot proceed');
-                    return;
-                }
-                
-                // Try multiple methods to get drag data
-                let dragData = null;
-                
-                // Method 1: Try plain text (most common)
-                try {
-                    const plainText = info.jsEvent.dataTransfer.getData('text/plain');
-                    if (plainText) {
-                        dragData = JSON.parse(plainText);
-                        console.log('📅 [DROP] Got data from text/plain:', dragData);
-                    }
-                } catch (err) {
-                    console.log('📅 [DROP] Failed text/plain method:', err);
-                }
-                
-                // Method 2: Try custom MIME type
-                if (!dragData) {
-                    try {
-                        const jsonData = info.jsEvent.dataTransfer.getData('application/json');
-                        if (jsonData) {
-                            dragData = JSON.parse(jsonData);
-                            console.log('📅 [DROP] Got data from application/json:', dragData);
-                        }
-                    } catch (err) {
-                        console.log('📅 [DROP] Failed application/json method:', err);
-                    }
-                }
-                
-                // Method 3: Try global fallback
-                if (!dragData && window.currentDragData) {
-                    dragData = window.currentDragData;
-                    console.log('📅 [DROP] Using global fallback data:', dragData);
-                }
-                
-                if (!dragData) {
-                    console.log('📅 [DROP] No valid drag data found in any method, ignoring drop');
-                    return;
-                }
-                
-                try {
-                    if (dragData.fromUnscheduled) {
-                        // This is an unscheduled issue being scheduled
-                        const dropDate = info.dateStr;
-                        console.log('📅 [DROP] Unscheduled issue dropped on:', dropDate);
-                        
-                        // Find the issue data from our unscheduled issues array
-                        const issueData = unscheduledIssues.find(issue => issue.id == dragData.id);
-                        if (issueData) {
-                            openScheduleModal(issueData, dropDate);
-                        } else {
-                            console.error('📅 [DROP] Issue data not found for ID:', dragData.id);
-                        }
-                    } else {
-                        console.log('📅 [DROP] Not an unscheduled issue, ignoring');
-                    }
-                } catch (err) {
-                    console.error('📅 [DROP] Error processing drop:', err);
-                }
+                handleCalendarDrop(info);
             },
 
-            eventDragStart: function(info) {
+            eventDragStart: function (info) {
                 console.log('📅 [DRAG] Calendar event drag started:', info.event.title);
             },
 
-            eventDragStop: function(info) {
+            eventDragStop: function (info) {
                 console.log('📅 [DRAG] Calendar event drag stopped:', info.event.title);
             },
 
@@ -372,17 +382,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const displayTitle = titleParts.length > 1 ? titleParts[1] : titleParts[0];
 
         document.getElementById('eventModalTitle').textContent = `${props.key}: ${displayTitle}`;
-        document.getElementById('eventKey').textContent = props.key;
-        document.getElementById('eventSummary').textContent = displayTitle;
-        document.getElementById('eventProject').textContent = props.project || '';
-        document.getElementById('eventStatus').textContent = props.status || '';
-        document.getElementById('eventStatus').style.backgroundColor = props.statusColor || '#ccc';
-        document.getElementById('eventPriority').textContent = props.priority || '';
-        document.getElementById('eventDueDate').textContent = event.start ? formatDateDisplay(event.start) : '';
-        document.getElementById('eventCreatedDate').textContent = formatDateDisplay(props.created) || '';
-        document.getElementById('eventUpdatedDate').textContent = formatDateDisplay(props.updated) || '';
-        document.getElementById('eventDescription').innerHTML = props.description || 'No description';
-        document.getElementById('eventStoryPoints').textContent = props.storyPoints || '—';
+        document.getElementById('detailKey').textContent = props.key;
+        document.getElementById('detailSummary').textContent = displayTitle;
+        document.getElementById('detailProject').textContent = props.project || '';
+        document.getElementById('detailStatus').textContent = props.status || '';
+        document.getElementById('detailStatus').style.backgroundColor = props.statusColor || '#ccc';
+        document.getElementById('detailPriority').textContent = props.priority || '';
+        document.getElementById('detailDueDate').textContent = event.start ? formatDateDisplay(event.start) : '';
+        document.getElementById('detailCreatedDate').textContent = formatDateDisplay(props.created) || '';
+        document.getElementById('detailUpdatedDate').textContent = formatDateDisplay(props.updated) || '';
+        document.getElementById('detailDescription').innerHTML = props.description || 'No description';
+        document.getElementById('detailStoryPoints').textContent = props.storyPoints || '—';
 
         // Helper to get avatar URL
         const getAvatarUrl = (path) => {
@@ -422,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Labels/Tags (Dynamic)
-        const labelsContainer = document.getElementById('eventLabels');
+        const labelsContainer = document.getElementById('detailLabels');
         labelsContainer.innerHTML = ''; // Clear static content
         const typeSpan = document.createElement('span');
         typeSpan.className = 'label-tag';
@@ -445,9 +455,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // View button
         const viewBtn = document.getElementById('viewIssueBtn');
-        viewBtn.onclick = () => {
-            window.location.href = `${window.JiraConfig.webBase}/issues/${props.key}`;
-        };
+        if (viewBtn) {
+            viewBtn.onclick = () => {
+                const baseUrl = window.JiraConfig.webBase.endsWith('/')
+                    ? window.JiraConfig.webBase.slice(0, -1)
+                    : window.JiraConfig.webBase;
+                window.location.href = `${baseUrl}/issue/${props.key}`;
+            };
+        }
 
         // Show modal
         if (eventModal) {
@@ -470,7 +485,225 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event && event.stopPropagation) {
             event.stopPropagation();
         }
+
+        // Store current event data for editing
+        window.currentEventData = {
+            ...props,
+            start: event.start,
+            end: event.end,
+            allDay: event.allDay
+        };
     }
+
+    // =====================================================
+    // EDIT ISSUE FUNCTIONALITY
+    // =====================================================
+
+    window.editIssue = function () {
+        console.log('📅 [EDIT] editIssue called');
+        const data = window.currentEventData;
+
+        if (!data) {
+            console.error('❌ [EDIT] No currentEventData found');
+            alert('Error: Could not load issue data for editing.');
+            return;
+        }
+
+        console.log('📅 [EDIT] Editing issue:', data);
+
+        // Close details modal
+        window.closeEventModal();
+
+        // Open create modal with small delay to ensure DOM is ready
+        setTimeout(() => {
+            try {
+                // Open create modal
+                // We use the create modal but repurpose it for editing
+                const modal = document.getElementById('createEventModal');
+                if (!modal) {
+                    console.error('❌ [EDIT] createEventModal not found in DOM');
+                    alert('Error: Edit modal missing.');
+                    return;
+                }
+
+                // Reset form first
+                const form = document.getElementById('createEventForm');
+                if (form) form.reset();
+
+                // Set Title
+                const titleEl = modal.querySelector('.modal-title');
+                if (titleEl) titleEl.textContent = 'Edit Issue: ' + data.key;
+
+                // Set Button
+                const submitBtn = modal.querySelector('.modal-footer .jira-btn-primary');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="bi bi-check-lg"></i> Update Issue';
+                    submitBtn.onclick = window.saveEvent; // Ensure it calls saveEvent
+                }
+
+                // Set validation flag/id
+                window.editingIssueId = data.key; // We use KEY for updates usually, but API might want ID? API uses KEY in URL.
+
+                // Populate Fields
+
+                // 1. Event Type - Default to 'issue' if not clear
+                const typeSelect = document.getElementById('eventType');
+                if (typeSelect) typeSelect.value = 'issue'; // We don't have separate issue type selector here
+
+                // 2. Project - select by ID
+                const projectSelect = document.getElementById('eventProject');
+                if (projectSelect && data.projectId) {
+                    projectSelect.value = data.projectId;
+                }
+
+                // 3. Title
+                const titleInput = document.getElementById('eventTitle');
+                if (titleInput) {
+                    // Remove Key prefix if present in title
+                    let summary = data.title || '';
+                    if (data.key && summary.startsWith(data.key + ': ')) {
+                        summary = summary.substring(data.key.length + 2);
+                    }
+                    titleInput.value = summary;
+                }
+
+                // 4. Description
+                const descInput = document.getElementById('eventDesc');
+                if (descInput) descInput.value = data.description || '';
+
+                // 5. Dates
+                const startInput = document.getElementById('eventStartDate');
+                const endInput = document.getElementById('eventEndDate');
+
+                const toDateTimeLocal = (date) => {
+                    if (!date) return '';
+                    let d = new Date(date);
+                    if (isNaN(d.getTime())) return ''; // Invalid date
+                    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                    return d.toISOString().slice(0, 16);
+                };
+
+                if (startInput && data.start) startInput.value = toDateTimeLocal(data.start);
+                if (endInput) {
+                    // If end is null (single day), use start
+                    endInput.value = toDateTimeLocal(data.end || data.start);
+                }
+
+                // 6. Priority
+                const prioritySelect = document.getElementById('eventPriority');
+                if (prioritySelect && data.priority) {
+                    // Find option with text content matching priority name
+                    for (let i = 0; i < prioritySelect.options.length; i++) {
+                        if (prioritySelect.options[i].text.toLowerCase() === data.priority.toLowerCase()) {
+                            prioritySelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                console.log('📅 [EDIT] Priority set.');
+
+                // Show Modal and Lock Body
+                modal.style.display = 'flex';
+                modal.classList.add('open');
+                modal.setAttribute('aria-hidden', 'false');
+
+                // Re-apply body lock
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
+                document.body.style.top = `-${window.scrollY}px`;
+
+                console.log('📅 [EDIT] Modal displayed successfully');
+
+            } catch (err) {
+                console.error('❌ [EDIT] Error in setTimeout block:', err);
+                alert('Error opening edit form: ' + err.message);
+            }
+        }, 100);
+    };
+
+    window.saveEvent = function (e) {
+        if (e) e.preventDefault();
+
+        const btn = document.querySelector('#createEventModal .modal-footer .jira-btn-primary');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+        btn.disabled = true;
+
+        // Gather Data
+        const summary = document.getElementById('eventTitle').value;
+        const description = document.getElementById('eventDesc').value;
+        const projectId = document.getElementById('eventProject').value;
+        const priorityId = document.getElementById('eventPriority').value;
+        const startDate = document.getElementById('eventStartDate').value;
+        const endDate = document.getElementById('eventEndDate').value;
+
+        // Payload
+        const payload = {
+            summary: summary,
+            description: description,
+            project_id: projectId,
+            priority_id: priorityId,
+            start_date: startDate ? startDate.split('T')[0] : null,
+            due_date: endDate ? endDate.split('T')[0] : null
+            // Note: API expects Y-m-d for date fields usually
+        };
+
+        let url = `${window.JiraConfig.apiBase}/calendar/events`; // Default create
+        let method = 'POST';
+
+        // Check if editing
+        if (window.editingIssueId) {
+            // Updating existing Issue
+            url = `${window.JiraConfig.apiBase}/issues/${window.editingIssueId}`;
+            method = 'PUT';
+        } else {
+            // Creating new (Not fully implemented for generic events vs issues)
+            // For now, assume creating a generic calendar event or issue
+            // If eventType is 'issue', we might want to call issues endpoint? 
+            // Leaving as default calendar/events for create for now if backend supports it.
+            // But since saveEvent was missing, create was broken anyway. 
+            // I'll leave create logic basic.
+        }
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.issue) { // Issue API returns {success:true, issue:...}
+                    console.log('📅 [SAVE] Success');
+                    window.closeCreateModal();
+                    calendar.refetchEvents();
+
+                    // Clear editing state
+                    window.editingIssueId = null;
+
+                    // Reset button (create mode)
+                    const titleEl = document.querySelector('#createEventModal .modal-title');
+                    if (titleEl) titleEl.textContent = 'Create Calendar Event';
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i> Create Event';
+                } else {
+                    alert('Failed to save: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Save error:', err);
+                alert('An error occurred while saving.');
+            })
+            .finally(() => {
+                if (!window.editingIssueId) {
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i> Create Event';
+                }
+                btn.disabled = false;
+            });
+    };
 
     // =====================================================
     // ISSUE HISTORY LOADING
@@ -1199,41 +1432,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function loadUnscheduledIssues() {
         console.log('📅 [UNSCHEDULED] Loading unscheduled issues...');
-        
+
         fetch(`${window.JiraConfig.apiBase}/calendar/unscheduled`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': window.JiraConfig.csrfToken
             }
         })
-        .then(res => {
-            console.log('📅 [UNSCHEDULED] API Response Status:', res.status);
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-            }
-            return res.json();
-        })
-        .then(data => {
-            console.log('📅 [UNSCHEDULED] API Response Data:', data);
-            
-            if (!data.success) {
-                throw new Error(data.error || 'Failed to load unscheduled issues');
-            }
+            .then(res => {
+                console.log('📅 [UNSCHEDULED] API Response Status:', res.status);
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('📅 [UNSCHEDULED] API Response Data:', data);
 
-            unscheduledIssues = data.data || [];
-            console.log('📅 [UNSCHEDULED] Loaded unscheduled issues:', unscheduledIssues.length);
-            renderUnscheduledIssues();
-        })
-        .catch(err => {
-            console.error('❌ [UNSCHEDULED] Error loading unscheduled issues:', err);
-            showUnscheduledError();
-        });
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load unscheduled issues');
+                }
+
+                unscheduledIssues = data.data || [];
+                console.log('📅 [UNSCHEDULED] Loaded unscheduled issues:', unscheduledIssues.length);
+                renderUnscheduledIssues();
+            })
+            .catch(err => {
+                console.error('❌ [UNSCHEDULED] Error loading unscheduled issues:', err);
+                showUnscheduledError();
+            });
     }
 
     function renderUnscheduledIssues() {
         const unscheduledList = document.getElementById('unscheduledList');
         const unscheduledCount = document.getElementById('unscheduledCount');
-        
+
         if (!unscheduledList || !unscheduledCount) return;
 
         // Update count
@@ -1266,10 +1499,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 </div>
                 <div class="issue-assignee">
-                    ${issue.assignee_avatar ? 
-                        `<img src="${issue.assignee_avatar}" alt="${issue.assignee_name}" title="${issue.assignee_name}">` :
-                        `<div class="assignee-initials" title="Unassigned">${issue.assignee_name?.charAt(0) || 'U'}</div>`
-                    }
+                    ${issue.assignee_avatar ?
+                `<img src="${issue.assignee_avatar}" alt="${issue.assignee_name}" title="${issue.assignee_name}">` :
+                `<div class="assignee-initials" title="Unassigned">${issue.assignee_name?.charAt(0) || 'U'}</div>`
+            }
                 </div>
             </div>
         `).join('');
@@ -1281,37 +1514,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setupUnscheduledDragEvents() {
-        const issueElements = document.querySelectorAll('.unscheduled-issue');
-        
-        issueElements.forEach(element => {
-            element.addEventListener('dragstart', handleDragStart);
-            element.addEventListener('dragend', handleDragEnd);
-        });
+        // No longer needed - handled by FullCalendar.Draggable
+        // kept empty to prevent errors if called
     }
 
     function handleDragStart(e) {
         const issueElement = e.target.closest('.unscheduled-issue');
         if (!issueElement) return;
-        
+
         const issueId = issueElement.dataset.issueId;
         const issueKey = issueElement.dataset.issueKey;
-        
+
         const dragData = {
             id: issueId,
             key: issueKey,
             fromUnscheduled: true
         };
-        
+
         const dragDataJson = JSON.stringify(dragData);
-        
+
         // Set multiple formats for maximum compatibility
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', dragDataJson);
         e.dataTransfer.setData('application/json', dragDataJson);
-        
+
         // Store in global variable as fallback
         window.currentDragData = dragData;
-        
+
         issueElement.style.opacity = '0.5';
         issueElement.classList.add('dragging');
         console.log('📅 [DRAG] Started dragging unscheduled issue:', issueKey);
@@ -1325,10 +1554,10 @@ document.addEventListener('DOMContentLoaded', function () {
             issueElement.style.opacity = '';
             issueElement.classList.remove('dragging');
         }
-        
+
         // Clear global drag data
         window.currentDragData = null;
-        
+
         console.log('📅 [DRAG] Ended dragging');
     }
 
@@ -1352,7 +1581,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // SCHEDULE ISSUE MODAL
     // =====================================================
 
-    window.openScheduleModal = function(issueData, dropDate) {
+    window.openScheduleModal = function (issueData, dropDate) {
         const modal = document.getElementById('scheduleIssueModal');
         if (!modal) return;
 
@@ -1365,7 +1594,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('scheduleDueDate').value = dropDate;
         document.getElementById('scheduleStartDate').value = '';
         document.getElementById('scheduleProjectName').textContent = issueData.project_key;
-        
+
         // Set issue type
         const issueTypeElement = document.getElementById('scheduleIssueType');
         issueTypeElement.innerHTML = `
@@ -1415,7 +1644,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.style.top = `-${window.scrollY}px`;
     };
 
-    window.closeScheduleModal = function() {
+    window.closeScheduleModal = function () {
         const modal = document.getElementById('scheduleIssueModal');
         if (!modal) return;
 
@@ -1435,7 +1664,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    window.saveScheduledIssue = function() {
+    window.saveScheduledIssue = function () {
         const issueId = document.getElementById('scheduleIssueId').value;
         const dueDate = document.getElementById('scheduleDueDate').value;
         const startDate = document.getElementById('scheduleStartDate').value;
@@ -1465,38 +1694,38 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: formData
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                console.log('📅 [SCHEDULE] Issue scheduled successfully');
-                closeScheduleModal();
-                
-                // Remove from unscheduled list
-                unscheduledIssues = unscheduledIssues.filter(issue => issue.id != issueId);
-                renderUnscheduledIssues();
-                
-                // Refresh calendar
-                if (calendar) {
-                    calendar.refetchEvents();
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('📅 [SCHEDULE] Issue scheduled successfully');
+                    closeScheduleModal();
+
+                    // Remove from unscheduled list
+                    unscheduledIssues = unscheduledIssues.filter(issue => issue.id != issueId);
+                    renderUnscheduledIssues();
+
+                    // Refresh calendar
+                    if (calendar) {
+                        calendar.refetchEvents();
+                    }
+
+                    // Show success message
+                    showNotification('Issue scheduled successfully!', 'success');
+                } else {
+                    alert(data.error || 'Failed to schedule issue');
                 }
-                
-                // Show success message
-                showNotification('Issue scheduled successfully!', 'success');
-            } else {
-                alert(data.error || 'Failed to schedule issue');
-            }
-        })
-        .catch(err => {
-            console.error('❌ [SCHEDULE] Error scheduling issue:', err);
-            alert('Failed to schedule issue. Please try again.');
-        })
-        .finally(() => {
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
-        });
+            })
+            .catch(err => {
+                console.error('❌ [SCHEDULE] Error scheduling issue:', err);
+                alert('Failed to schedule issue. Please try again.');
+            })
+            .finally(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
     };
 
-    window.viewIssueDetails = function() {
+    window.viewIssueDetails = function () {
         const issueKey = document.getElementById('scheduleIssueKey').textContent;
         if (!issueKey) return;
 
@@ -1511,13 +1740,13 @@ document.addEventListener('DOMContentLoaded', function () {
             <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-info-circle'}"></i>
             ${message}
         `;
-        
+
         // Add to page
         document.body.appendChild(notification);
-        
+
         // Show animation
         setTimeout(() => notification.classList.add('show'), 100);
-        
+
         // Remove after 3 seconds
         setTimeout(() => {
             notification.classList.remove('show');
@@ -1529,7 +1758,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // CALENDAR DEBUG FUNCTIONS
     // =====================================================
 
-    window.debugCalendarDrop = function() {
+    window.debugCalendarDrop = function () {
         console.log('📅 [DEBUG] Calendar Debug Info:');
         console.log('📅 [DEBUG] Calendar object exists:', !!calendar);
         if (calendar) {
@@ -1537,7 +1766,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('📅 [DEBUG] Calendar element:', calendar.el);
         }
         console.log('📅 [DEBUG] Unscheduled issues:', unscheduledIssues.length);
-        
+
         // Test drop directly
         if (calendar) {
             const testDragData = {
@@ -1558,10 +1787,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             };
-            
+
             console.log('📅 [DEBUG] Simulating drop event...');
             try {
-                calendar.publiclyTrigger('drop', mockDropEvent);
+                handleCalendarDrop(mockDropEvent);
                 console.log('📅 [DEBUG] Drop event triggered successfully');
             } catch (err) {
                 console.error('📅 [DEBUG] Error triggering drop:', err);
@@ -1570,60 +1799,43 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Test drag data setting
-    window.testDragData = function() {
+    window.testDragData = function () {
         console.log('📅 [TEST] Testing drag data setup...');
-        
+
         const unscheduledElement = document.querySelector('.unscheduled-issue');
         if (unscheduledElement) {
             console.log('📅 [TEST] Found unscheduled issue element, simulating drag start...');
-            
+
             // Simulate dragstart event
             const dragStartEvent = new DragEvent('dragstart', {
                 bubbles: true,
                 cancelable: true,
                 dataTransfer: new DataTransfer()
             });
-            
+
             // Set drag data
             const testData = {
                 id: '37',
                 key: 'DEVOPS-4',
                 fromUnscheduled: true
             };
-            
+
             dragStartEvent.dataTransfer.setData('text/plain', JSON.stringify(testData));
             dragStartEvent.dataTransfer.setData('application/json', JSON.stringify(testData));
-            
+
             // Store globally
             window.currentDragData = testData;
-            
+
             // Trigger event
             unscheduledElement.dispatchEvent(dragStartEvent);
-            
+
             console.log('📅 [TEST] Drag start simulated, data should be set');
             console.log('📅 [TEST] Global drag data:', window.currentDragData);
         } else {
             console.log('📅 [TEST] No unscheduled issue element found');
         }
     };
-            const mockDropEvent = {
-                dateStr: '2025-12-30',
-                jsEvent: {
-                    dataTransfer: {
-                        getData: () => JSON.stringify(testDragData)
-                    }
-                }
-            }
-            };
-            
-            console.log('📅 [DEBUG] Simulating drop event...');
-            try {
-                calendar.publiclyTrigger('drop', mockDropEvent);
-            console.log('📅 [DEBUG] Drop event triggered successfully');
-            } catch (err) {
-                console.error('📅 [DEBUG] Error triggering drop:', err);
-            }
-    };
+
 
     // =====================================================
     // INITIALIZATION
@@ -1641,9 +1853,41 @@ document.addEventListener('DOMContentLoaded', function () {
     loadUsers();
     loadSidebarData();
     loadUnscheduledIssues();
+    initExternalDraggable();
 
     console.log('📅 [CALENDAR] All startup tasks completed');
 });
+
+// =====================================================
+// EXTERNAL DRAGGABLE INIT
+// =====================================================
+
+function initExternalDraggable() {
+    const containerEl = document.getElementById('unscheduledList');
+    if (!containerEl) {
+        console.log('📅 [DRAG] Unscheduled list container not found');
+        return;
+    }
+
+    if (containerEl._fcDraggable) return;
+
+    console.log('📅 [DRAG] Initializing FullCalendar Draggable...');
+
+    try {
+        new FullCalendar.Draggable(containerEl, {
+            itemSelector: '.unscheduled-issue',
+            eventData: function (eventEl) {
+                return {
+                    title: eventEl.querySelector('.issue-key')?.innerText || 'Issue',
+                };
+            }
+        });
+        containerEl._fcDraggable = true;
+        console.log('📅 [DRAG] Draggable initialized successfully');
+    } catch (err) {
+        console.error('❌ [DRAG] Failed to initialize FullCalendar Draggable:', err);
+    }
+}
 // =====================================================
 // WATCH & SHARE
 // =====================================================

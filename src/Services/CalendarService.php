@@ -68,6 +68,7 @@ class CalendarService
                 i.status_id,
                 s.name as status_name,
                 s.color as status_color,
+                s.category as status_category,
                 i.project_id,
                 proj.name as project_name,
                 proj.key as project_key,
@@ -159,6 +160,7 @@ class CalendarService
                 'projectKey' => $issue['project_key'],
                 'status' => $issue['status_name'],
                 'statusColor' => $issue['status_color'] ?? '#ccc',
+                'statusCategory' => $issue['status_category'], // Added for completion logic
                 'priority' => $issue['priority_name'],
                 'issueType' => $issue['issue_type'],
                 'description' => mb_substr(strip_tags($issue['description'] ?? ''), 0, 100) . '...',
@@ -178,20 +180,55 @@ class CalendarService
     }
 
     /**
-     * Get upcoming issues (dashboard/widget usage)
+     * Get upcoming issues (dashboard/widget usage) - Returns formatted events
      */
     public function getUpcomingIssues(int $limit = 5): array
     {
         $sql = "
-            SELECT i.*, p.key as project_key
+            SELECT
+                i.id,
+                i.issue_key as 'key',
+                i.summary as title,
+                i.description,
+                i.start_date,
+                i.end_date,
+                i.due_date,
+                i.priority_id,
+                ip.name as priority_name,
+                i.status_id,
+                s.name as status_name,
+                s.color as status_color,
+                s.category as status_category,
+                i.project_id,
+                proj.name as project_name,
+                proj.key as project_key,
+                it.name as issue_type,
+                i.assignee_id,
+                assignee.display_name as assignee_name,
+                assignee.email as assignee_email,
+                assignee.avatar as assignee_avatar,
+                i.reporter_id,
+                reporter.display_name as reporter_name,
+                reporter.email as reporter_email,
+                reporter.avatar as reporter_avatar,
+                i.created_at,
+                i.updated_at,
+                i.story_points
             FROM issues i
-            JOIN projects p ON i.project_id = p.id
+            JOIN projects proj ON i.project_id = proj.id
+            JOIN statuses s ON i.status_id = s.id
+            JOIN issue_priorities ip ON i.priority_id = ip.id
+            JOIN issue_types it ON i.issue_type_id = it.id
+            LEFT JOIN users assignee ON i.assignee_id = assignee.id
+            LEFT JOIN users reporter ON i.reporter_id = reporter.id
             WHERE i.due_date >= CURDATE()
             ORDER BY i.due_date ASC
             LIMIT :limit
         ";
 
-        return Database::select($sql, ['limit' => $limit]);
+        $issues = Database::select($sql, ['limit' => $limit]);
+
+        return array_map([$this, 'formatEvent'], $issues);
     }
 
     /**

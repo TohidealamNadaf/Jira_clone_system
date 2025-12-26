@@ -198,6 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function applyFilters(events) {
+        console.log(`📅 [CALENDAR] applyFilters called. Filter: "${currentFilter}", Events In: ${events.length}`);
+
         // Status filter
         if (statusFilter && statusFilter.value) {
             events = events.filter(event => {
@@ -222,10 +224,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Assignee filter
+        // Assignee filter (Dropdown)
         if (assigneeFilter && assigneeFilter.value) {
             events = events.filter(event => {
-                return event.extendedProps.assigneeId == assigneeFilter.value;
+                return event.extendedProps.assigneeId == assigneeFilter.value; // Loose equality
             });
         }
 
@@ -240,39 +242,42 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Tab filters
+        // Tab filters (Logic Decoupled from currentUser existence)
         const currentUser = window.JiraConfig.currentUser?.id;
-        if (currentUser) {
-            switch (currentFilter) {
-                case 'assigned':
-                    events = events.filter(event =>
-                        event.extendedProps.assigneeId === currentUser
-                    );
-                    break;
-                case 'overdue':
-                    const today = new Date().toISOString().split('T')[0];
-                    events = events.filter(event =>
-                        event.start && event.start < today
-                    );
-                    break;
-                case 'due-today':
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    events = events.filter(event =>
-                        event.start && event.start === todayStr
-                    );
-                    break;
-                case 'due-week':
-                    const weekFromNow = new Date();
-                    weekFromNow.setDate(weekFromNow.getDate() + 7);
-                    const weekStr = weekFromNow.toISOString().split('T')[0];
-                    const todayStr2 = new Date().toISOString().split('T')[0];
-                    events = events.filter(event =>
-                        event.start && event.start >= todayStr2 && event.start <= weekStr
-                    );
-                    break;
-            }
+
+        switch (currentFilter) {
+            case 'assigned':
+                if (currentUser) {
+                    events = events.filter(event => event.extendedProps.assigneeId == currentUser);
+                    console.log(`📅 [CALENDAR] Filtered 'assigned'. User: ${currentUser}. Remaining: ${events.length}`);
+                } else {
+                    console.warn('⚠️ [CALENDAR] Current User ID missing, cannot filter "assigned"');
+                }
+                break;
+
+            case 'overdue':
+                const today = new Date().toISOString().split('T')[0];
+                events = events.filter(event => event.start && event.start < today);
+                console.log(`📅 [CALENDAR] Filtered 'overdue' (< ${today}). Remaining: ${events.length}`);
+                break;
+
+            case 'due-today':
+                const todayStr = new Date().toISOString().split('T')[0];
+                events = events.filter(event => event.start && event.start === todayStr);
+                console.log(`📅 [CALENDAR] Filtered 'due-today' (== ${todayStr}). Remaining: ${events.length}`);
+                break;
+
+            case 'due-week':
+                const weekFromNow = new Date();
+                weekFromNow.setDate(weekFromNow.getDate() + 7);
+                const weekStr = weekFromNow.toISOString().split('T')[0];
+                const todayStr2 = new Date().toISOString().split('T')[0];
+                events = events.filter(event => event.start && event.start >= todayStr2 && event.start <= weekStr);
+                console.log(`📅 [CALENDAR] Filtered 'due-week' (${todayStr2} to ${weekStr}). Remaining: ${events.length}`);
+                break;
         }
 
+        console.log(`📅 [CALENDAR] applyFilters Returning: ${events.length}`);
         return events;
     }
 
@@ -542,53 +547,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // =====================================================
 
     function loadSidebarData() {
-        loadUpcomingIssues();
         loadMySchedule();
     }
 
-    function loadUpcomingIssues() {
-        fetch(`${window.JiraConfig.apiBase}/calendar/upcoming`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && data.data) {
-                    renderUpcomingIssues(data.data);
-                }
-            })
-            .catch(err => console.error('Failed to load upcoming issues:', err));
-    }
 
-    function renderUpcomingIssues(issues) {
-        if (!upcomingListEl) return;
-
-        if (upcomingCountEl) {
-            upcomingCountEl.textContent = issues.length;
-        }
-
-        if (issues.length === 0) {
-            upcomingListEl.innerHTML = `
-                <div class="empty-state">
-                    <i class="bi bi-calendar-x"></i>
-                    <p>No upcoming issues</p>
-                </div>
-            `;
-            return;
-        }
-
-        upcomingListEl.innerHTML = issues.map(issue => `
-            <div class="upcoming-item">
-                <div class="upcoming-date">${formatDateDisplay(issue.due_date)}</div>
-                <div class="upcoming-info">
-                    <div class="upcoming-title">${issue.issue_key}: ${issue.summary}</div>
-                    <div class="upcoming-project">${issue.project_key}</div>
-                </div>
-            </div>
-        `).join('');
-    }
 
     function loadMySchedule() {
         if (!scheduleListEl) return;
@@ -662,6 +624,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateSummaryStats(events) {
+        console.log('📅 [CALENDAR] Updating summary stats for', events.length, 'events');
+
         if (!events || events.length === 0) {
             if (totalIssuesEl) totalIssuesEl.textContent = '0';
             if (overdueIssuesEl) overdueIssuesEl.textContent = '0';
@@ -683,13 +647,22 @@ document.addEventListener('DOMContentLoaded', function () {
         let myIssues = 0;
 
         events.forEach(event => {
-            const eventStart = event.start;
+            const eventStart = event.start; // Format is already YYYY-MM-DD from API or ISO
+            // Ensure we compare YYYY-MM-DD parts only
+            const eventDate = eventStart.split('T')[0];
+            const isDone = event.extendedProps.statusCategory === 'done';
 
-            if (eventStart < today) overdue++;
-            if (eventStart === today) dueToday++;
-            if (eventStart >= today && eventStart <= weekStr) dueWeek++;
-            if (currentUser && event.extendedProps.assigneeId === currentUser) myIssues++;
+            if (eventDate < today && !isDone) overdue++;
+            if (eventDate === today && !isDone) dueToday++; // Optionally exclude done from 'due today' too
+            if (eventDate >= today && eventDate <= weekStr && !isDone) dueWeek++;
+
+            // Loose equality check for ID match to handle string vs int
+            if (currentUser && event.extendedProps.assigneeId == currentUser) {
+                myIssues++;
+            }
         });
+
+        console.log(`📅 [CALENDAR] Stats Calculated - Total: ${events.length}, Overdue: ${overdue}, My: ${myIssues} (User: ${currentUser})`);
 
         if (totalIssuesEl) totalIssuesEl.textContent = events.length;
         if (overdueIssuesEl) overdueIssuesEl.textContent = overdue;
@@ -990,14 +963,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // EVENT LISTENERS
     // =====================================================
 
-    filterTabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            filterTabs.forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-            currentFilter = e.target.dataset.filter;
+    // Event Delegation for Filter Tabs
+    const filterTabsContainer = document.querySelector('.filter-tabs');
+    if (filterTabsContainer) {
+        console.log('📅 [CALENDAR] Filter tabs container found, attaching listener');
+        filterTabsContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.filter-tab');
+            if (!button) return; // Clicked outside a tab button
+
+            console.log('📅 [CALENDAR] Filter tab clicked:', button.dataset.filter);
+            console.log('📅 [CALENDAR] Current User ID:', window.JiraConfig?.currentUser?.id || 'Missing');
+
+            // Remove active class from all tabs in this container
+            filterTabsContainer.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            button.classList.add('active');
+
+            currentFilter = button.dataset.filter;
+            console.log('📅 [CALENDAR] Set currentFilter to:', currentFilter);
+
             calendar.refetchEvents();
         });
-    });
+    } else {
+        console.error('❌ [CALENDAR] Filter tabs container not found!');
+    }
 
     if (moreFiltersBtn && advancedFilters) {
         moreFiltersBtn.addEventListener('click', () => {
@@ -1036,6 +1024,38 @@ document.addEventListener('DOMContentLoaded', function () {
             calendar.refetchEvents();
             if (advancedFilters) {
                 advancedFilters.style.display = 'none';
+            }
+        });
+    }
+
+    // View Switcher Logic
+    const viewSwitcher = document.querySelector('.view-switcher');
+    if (viewSwitcher) {
+        console.log('📅 [CALENDAR] View switcher found, attaching listener');
+        viewSwitcher.addEventListener('click', (e) => {
+            const button = e.target.closest('.view-btn');
+            if (!button) return;
+
+            const viewType = button.dataset.view;
+            console.log('📅 [CALENDAR] Switching view to:', viewType);
+
+            // Update UI
+            viewSwitcher.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Map view types to FullCalendar views
+            const viewMap = {
+                'month': 'dayGridMonth',
+                'week': 'timeGridWeek',
+                'day': 'timeGridDay',
+                'list': 'listWeek'
+            };
+
+            const fcView = viewMap[viewType] || 'dayGridMonth';
+
+            if (calendar) {
+                calendar.changeView(fcView);
+                updateCurrentDateDisplay();
             }
         });
     }

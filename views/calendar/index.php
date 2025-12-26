@@ -120,19 +120,7 @@
                 <div id="miniCalendar"></div>
             </div>
 
-            <!-- Upcoming Issues -->
-            <div class="upcoming-section">
-                <h3 class="sidebar-title">
-                    Upcoming
-                    <span class="count" id="upcomingCount">0</span>
-                </h3>
-                <div class="upcoming-list" id="upcomingList">
-                    <div class="empty-state">
-                        <i class="bi bi-calendar-x"></i>
-                        <p>No upcoming issues</p>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- My Schedule -->
             <div class="schedule-section">

@@ -134,18 +134,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
             drop: function (info) {
                 console.log('📅 [DROP] Something dropped on calendar:', info);
+                console.log('📅 [DROP] Drop info object keys:', Object.keys(info));
+                console.log('📅 [DROP] jsEvent type:', info.jsEvent.type);
+                console.log('📅 [DROP] DataTransfer available:', !!info.jsEvent.dataTransfer);
                 
-                // Get drag data from dataTransfer
-                const dragDataText = info.jsEvent.dataTransfer.getData('text/plain');
-                if (!dragDataText) {
-                    console.log('📅 [DROP] No drag data found, ignoring drop');
+                if (!info.jsEvent.dataTransfer) {
+                    console.log('📅 [DROP] No dataTransfer object, cannot proceed');
+                    return;
+                }
+                
+                // Try multiple methods to get drag data
+                let dragData = null;
+                
+                // Method 1: Try plain text (most common)
+                try {
+                    const plainText = info.jsEvent.dataTransfer.getData('text/plain');
+                    if (plainText) {
+                        dragData = JSON.parse(plainText);
+                        console.log('📅 [DROP] Got data from text/plain:', dragData);
+                    }
+                } catch (err) {
+                    console.log('📅 [DROP] Failed text/plain method:', err);
+                }
+                
+                // Method 2: Try custom MIME type
+                if (!dragData) {
+                    try {
+                        const jsonData = info.jsEvent.dataTransfer.getData('application/json');
+                        if (jsonData) {
+                            dragData = JSON.parse(jsonData);
+                            console.log('📅 [DROP] Got data from application/json:', dragData);
+                        }
+                    } catch (err) {
+                        console.log('📅 [DROP] Failed application/json method:', err);
+                    }
+                }
+                
+                // Method 3: Try global fallback
+                if (!dragData && window.currentDragData) {
+                    dragData = window.currentDragData;
+                    console.log('📅 [DROP] Using global fallback data:', dragData);
+                }
+                
+                if (!dragData) {
+                    console.log('📅 [DROP] No valid drag data found in any method, ignoring drop');
                     return;
                 }
                 
                 try {
-                    const dragData = JSON.parse(dragDataText);
-                    console.log('📅 [DROP] Drag data:', dragData);
-                    
                     if (dragData.fromUnscheduled) {
                         // This is an unscheduled issue being scheduled
                         const dropDate = info.dateStr;
@@ -155,7 +191,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         const issueData = unscheduledIssues.find(issue => issue.id == dragData.id);
                         if (issueData) {
                             openScheduleModal(issueData, dropDate);
+                        } else {
+                            console.error('📅 [DROP] Issue data not found for ID:', dragData.id);
                         }
+                    } else {
+                        console.log('📅 [DROP] Not an unscheduled issue, ignoring');
                     }
                 } catch (err) {
                     console.error('📅 [DROP] Error processing drop:', err);
@@ -1256,16 +1296,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const issueId = issueElement.dataset.issueId;
         const issueKey = issueElement.dataset.issueKey;
         
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', JSON.stringify({
+        const dragData = {
             id: issueId,
             key: issueKey,
             fromUnscheduled: true
-        }));
+        };
+        
+        const dragDataJson = JSON.stringify(dragData);
+        
+        // Set multiple formats for maximum compatibility
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', dragDataJson);
+        e.dataTransfer.setData('application/json', dragDataJson);
+        
+        // Store in global variable as fallback
+        window.currentDragData = dragData;
         
         issueElement.style.opacity = '0.5';
         issueElement.classList.add('dragging');
         console.log('📅 [DRAG] Started dragging unscheduled issue:', issueKey);
+        console.log('📅 [DRAG] Drag data set:', dragDataJson);
+        console.log('📅 [DRAG] Data types available:', e.dataTransfer.types);
     }
 
     function handleDragEnd(e) {
@@ -1274,6 +1325,10 @@ document.addEventListener('DOMContentLoaded', function () {
             issueElement.style.opacity = '';
             issueElement.classList.remove('dragging');
         }
+        
+        // Clear global drag data
+        window.currentDragData = null;
+        
         console.log('📅 [DRAG] Ended dragging');
     }
 
@@ -1469,6 +1524,106 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
+
+    // =====================================================
+    // CALENDAR DEBUG FUNCTIONS
+    // =====================================================
+
+    window.debugCalendarDrop = function() {
+        console.log('📅 [DEBUG] Calendar Debug Info:');
+        console.log('📅 [DEBUG] Calendar object exists:', !!calendar);
+        if (calendar) {
+            console.log('📅 [DEBUG] Calendar options:', calendar.getOption('droppable'));
+            console.log('📅 [DEBUG] Calendar element:', calendar.el);
+        }
+        console.log('📅 [DEBUG] Unscheduled issues:', unscheduledIssues.length);
+        
+        // Test drop directly
+        if (calendar) {
+            const testDragData = {
+                fromUnscheduled: true,
+                id: '37',
+                key: 'DEVOPS-4'
+            };
+            const mockDropEvent = {
+                dateStr: '2025-12-30',
+                jsEvent: {
+                    dataTransfer: {
+                        getData: (type) => {
+                            const data = type === 'text/plain' ? JSON.stringify(testDragData) : null;
+                            console.log('📅 [DEBUG] getData called for type:', type, 'returning:', data);
+                            return data;
+                        },
+                        types: ['text/plain', 'application/json']
+                    }
+                }
+            };
+            
+            console.log('📅 [DEBUG] Simulating drop event...');
+            try {
+                calendar.publiclyTrigger('drop', mockDropEvent);
+                console.log('📅 [DEBUG] Drop event triggered successfully');
+            } catch (err) {
+                console.error('📅 [DEBUG] Error triggering drop:', err);
+            }
+        }
+    };
+
+    // Test drag data setting
+    window.testDragData = function() {
+        console.log('📅 [TEST] Testing drag data setup...');
+        
+        const unscheduledElement = document.querySelector('.unscheduled-issue');
+        if (unscheduledElement) {
+            console.log('📅 [TEST] Found unscheduled issue element, simulating drag start...');
+            
+            // Simulate dragstart event
+            const dragStartEvent = new DragEvent('dragstart', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: new DataTransfer()
+            });
+            
+            // Set drag data
+            const testData = {
+                id: '37',
+                key: 'DEVOPS-4',
+                fromUnscheduled: true
+            };
+            
+            dragStartEvent.dataTransfer.setData('text/plain', JSON.stringify(testData));
+            dragStartEvent.dataTransfer.setData('application/json', JSON.stringify(testData));
+            
+            // Store globally
+            window.currentDragData = testData;
+            
+            // Trigger event
+            unscheduledElement.dispatchEvent(dragStartEvent);
+            
+            console.log('📅 [TEST] Drag start simulated, data should be set');
+            console.log('📅 [TEST] Global drag data:', window.currentDragData);
+        } else {
+            console.log('📅 [TEST] No unscheduled issue element found');
+        }
+    };
+            const mockDropEvent = {
+                dateStr: '2025-12-30',
+                jsEvent: {
+                    dataTransfer: {
+                        getData: () => JSON.stringify(testDragData)
+                    }
+                }
+            }
+            };
+            
+            console.log('📅 [DEBUG] Simulating drop event...');
+            try {
+                calendar.publiclyTrigger('drop', mockDropEvent);
+            console.log('📅 [DEBUG] Drop event triggered successfully');
+            } catch (err) {
+                console.error('📅 [DEBUG] Error triggering drop:', err);
+            }
+    };
 
     // =====================================================
     // INITIALIZATION

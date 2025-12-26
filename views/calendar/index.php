@@ -174,10 +174,18 @@
                         <i class="bi bi-download"></i>
                         Export
                     </button>
-                    <button class="jira-btn jira-btn-ghost" id="settingsBtn">
-                        <i class="bi bi-gear"></i>
-                        Settings
-                    </button>
+                <button class="jira-btn jira-btn-ghost" id="settingsBtn">
+                    <i class="bi bi-gear"></i>
+                    Settings
+                </button>
+                <button class="jira-btn jira-btn-ghost" id="debugDropBtn" onclick="debugCalendarDrop()">
+                    <i class="bi bi-bug"></i>
+                    Debug Drop
+                </button>
+                <button class="jira-btn jira-btn-ghost" id="testDragBtn" onclick="testDragData()">
+                    <i class="bi bi-cursor"></i>
+                    Test Drag
+                </button>
                 </div>
             </div>
 

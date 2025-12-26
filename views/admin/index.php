@@ -128,13 +128,26 @@
                             <i class="bi bi-arrow-right"></i>
                             <span>Project Categories</span>
                         </a>
-                        <a href="<?= url('/admin/issue-types') ?>" class="card-link">
-                            <i class="bi bi-arrow-right"></i>
-                            <span>Issue Types</span>
-                        </a>
+                    </div>
+                </div>
+
+                <!-- Issue Configuration -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <div class="card-title-wrapper">
+                            <i class="bi bi-stack"></i>
+                            <h3 class="card-title">Issue Configuration</h3>
+                        </div>
+                        <p class="card-description">Manage issue types and workflows</p>
+                    </div>
+                    <div class="card-links">
                         <a href="<?= url('/admin/workflows') ?>" class="card-link">
                             <i class="bi bi-arrow-right"></i>
                             <span>Workflows</span>
+                        </a>
+                        <a href="<?= url('/admin/issue-types') ?>" class="card-link">
+                            <i class="bi bi-arrow-right"></i>
+                            <span>Issue Types</span>
                         </a>
                     </div>
                 </div>
@@ -322,7 +335,8 @@
                         <div class="health-info">
                             <div class="health-label">Log Size</div>
                             <div class="health-status health-gray">
-                                <?= \App\Helpers\NotificationLogger::getLogFileSizeFormatted() ?></div>
+                                <?= \App\Helpers\NotificationLogger::getLogFileSizeFormatted() ?>
+                            </div>
                         </div>
                     </div>
                 </div>

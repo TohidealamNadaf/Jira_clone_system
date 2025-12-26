@@ -21,6 +21,8 @@ class RealtimeNotifications {
         this.reconnectDelay = 3000; // 3 seconds
         this.notificationSound = true;
         this.browserNotificationsEnabled = false;
+        this.audioContext = null;
+        this.hasUserGesture = false;
 
         this.init();
     }
@@ -63,6 +65,22 @@ class RealtimeNotifications {
             }
         });
 
+        // Setup audio context on first user gesture
+        const initAudio = () => {
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('🔊 [REALTIME] AudioContext initialized on user gesture');
+            }
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume().catch(e => console.log('ℹ️ [REALTIME] Audio resume pending gesture'));
+            }
+            this.hasUserGesture = true;
+            document.removeEventListener('click', initAudio);
+            document.removeEventListener('keydown', initAudio);
+        };
+        document.addEventListener('click', initAudio);
+        document.addEventListener('keydown', initAudio);
+
         console.log('✅ [REALTIME] Notification system initialized');
     }
 
@@ -90,7 +108,7 @@ class RealtimeNotifications {
             try {
                 const data = JSON.parse(event.data);
                 console.log('📨 [REALTIME] New notification received:', data);
-                
+
                 this.lastEventId = data.id;
                 this.handleNotification(data);
                 this.reconnectAttempts = 0; // Reset on success
@@ -196,12 +214,43 @@ class RealtimeNotifications {
         if (data.issueId) {
             toastElement.addEventListener('click', (e) => {
                 if (!e.target.closest('.toast-close')) {
-                    window.location.href = `/jira_clone_system/public/issues/${data.issueId}`;
+                    const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+                    const basePathClean = basePath.replace(/\/$/, '');
+                    window.location.href = basePathClean + `/issues/${data.issueId}`;
                 }
             });
         }
 
         console.log('🍞 [REALTIME] Toast notification shown');
+    }
+
+    /**
+     * Render a notification item HTML
+     */
+    renderNotificationItem(n) {
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        const basePathClean = basePath.replace(/\/$/, '');
+        const actionUrl = n.action_url || n.actionUrl || '#';
+        const title = n.title || this.getIconForType(n.type) + ' Notification';
+        const message = n.message || '';
+        const timestamp = n.timestamp || n.created_at;
+        const isRead = n.is_read || n.read_at || false;
+
+        return `
+            <a href="${actionUrl}" class="dropdown-item d-flex align-items-start gap-2 py-2" 
+               style="text-decoration: none;" data-notification-id="${n.id}">
+                <div style="flex: 1; border-left: 3px solid ${isRead ? 'transparent' : 'var(--jira-blue)'}; padding-left: 8px;">
+                    <div class="small fw-semibold text-dark">${this.escapeHtml(title)}</div>
+                    <div class="text-muted" style="font-size: 12px;">
+                        ${message ? this.escapeHtml(message).substring(0, 60) + (message.length > 60 ? '...' : '') : ''}
+                    </div>
+                    <div class="text-muted" style="font-size: 11px; margin-top: 4px;">
+                        ${this.getTimeAgo(timestamp)}
+                    </div>
+                </div>
+                ${!isRead ? '<span class="badge bg-primary ms-2" style="font-size: 10px;">New</span>' : ''}
+            </a>
+        `;
     }
 
     /**
@@ -214,7 +263,7 @@ class RealtimeNotifications {
 
         const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
         const basePathClean = basePath.replace(/\/$/, '');
-        
+
         const notification = new Notification('Jira Clone', {
             body: data.message,
             icon: basePathClean + '/assets/images/logo.png',
@@ -241,15 +290,15 @@ class RealtimeNotifications {
     updateNotificationCount() {
         const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
         const url = basePath.replace(/\/$/, '') + '/api/v1/notifications/stats';
-        
+
         fetch(url)
             .then(res => res.json())
             .then(data => {
-                const unreadCount = data.unread_count || data.unreadCount || 0;
-                const badge = document.getElementById('notificationBadge');
+                const unreadCount = data.unreadCount || (data.data ? data.data.unread : 0) || 0;
+                const badge = document.getElementById('unreadBadge');
                 if (badge) {
                     badge.textContent = unreadCount;
-                    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+                    badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
                 }
 
                 const dropdown = document.getElementById('notificationDropdown');
@@ -264,25 +313,33 @@ class RealtimeNotifications {
 
     /**
      * Update notification panel if open
-     */
-    updateNotificationPanel(data) {
-        const panel = document.getElementById('notificationPanel');
+        const panel = document.getElementById('notificationDropdown');
         if (!panel) return;
 
         // Add to top of list
-        const notificationItem = document.createElement('div');
-        notificationItem.className = 'notification-item unread';
-        notificationItem.innerHTML = `
-            <div class="notification-icon">${this.getIconForType(data.type)}</div>
-            <div class="notification-content">
-                <div class="notification-message">${this.escapeHtml(data.message)}</div>
-                <div class="notification-timestamp">${this.getTimeAgo(data.timestamp)}</div>
-            </div>
-        `;
-
-        const panelContent = panel.querySelector('.notification-items');
+        const panelContent = panel.querySelector('#notificationList');
         if (panelContent) {
-            panelContent.insertBefore(notificationItem, panelContent.firstChild);
+            // Check if this ID is already in the list to prevent duplicates
+            if (panelContent.querySelector(`[data-notification-id="${data.id}"]`)) {
+                return;
+            }
+
+            // Remove "No notifications" message if it exists
+            const emptyMsg = panelContent.querySelector('.text-muted');
+            if (emptyMsg && (emptyMsg.textContent.includes('No notifications') || emptyMsg.textContent.includes('Loading...'))) {
+                panelContent.innerHTML = '';
+            }
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = this.renderNotificationItem(data);
+            const notificationElement = tempDiv.firstElementChild;
+            
+            panelContent.insertBefore(notificationElement, panelContent.firstChild);
+            
+            // Limit to 10 items in dropdown
+            while (panelContent.children.length > 10) {
+                panelContent.lastElementChild.remove();
+            }
         }
     }
 
@@ -292,19 +349,33 @@ class RealtimeNotifications {
     loadRecentNotifications() {
         const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
         const url = basePath.replace(/\/$/, '') + '/api/v1/notifications?limit=10';
-        
+
         fetch(url)
             .then(res => res.json())
             .then(data => {
-                if (data.data && data.data.length > 0) {
-                    this.lastEventId = Math.max(...data.data.map(n => n.id)) || 0;
-                    console.log(`📥 [REALTIME] Loaded ${data.data.length} recent notifications (lastId: ${this.lastEventId})`);
-                } else if (data.notifications && data.notifications.length > 0) {
-                    this.lastEventId = Math.max(...data.notifications.map(n => n.id)) || 0;
-                    console.log(`📥 [REALTIME] Loaded ${data.notifications.length} recent notifications (lastId: ${this.lastEventId})`);
+                const notifications = data.data || data.notifications || [];
+                if (notifications.length > 0) {
+                    this.lastEventId = Math.max(...notifications.map(n => n.id)) || 0;
+                    console.log(`📥 [REALTIME] Loaded ${notifications.length} recent notifications (lastId: ${this.lastEventId})`);
+
+                    const panelContent = document.getElementById('notificationList');
+                    if (panelContent) {
+                        panelContent.innerHTML = notifications.map(n => this.renderNotificationItem(n)).join('');
+                    }
+                } else {
+                    const panelContent = document.getElementById('notificationList');
+                    if (panelContent) {
+                        panelContent.innerHTML = '<div class="px-3 py-3 text-center text-muted"><small>No notifications</small></div>';
+                    }
                 }
             })
-            .catch(err => console.error('❌ [REALTIME] Error loading notifications:', err));
+            .catch(err => {
+                console.error('❌ [REALTIME] Error loading notifications:', err);
+                const panelContent = document.getElementById('notificationList');
+                if (panelContent) {
+                    panelContent.innerHTML = '<div class="px-3 py-3 text-center text-danger"><small>Error loading</small></div>';
+                }
+            });
     }
 
     /**
@@ -316,10 +387,19 @@ class RealtimeNotifications {
             this.createToastContainer();
         }
 
-        // Setup notification dropdown if it exists
-        const dropdown = document.getElementById('notificationDropdown');
-        if (dropdown) {
-            dropdown.addEventListener('click', () => this.updateNotificationCount());
+        // Setup notification bell click refresh
+        const bell = document.getElementById('notificationBell');
+        if (bell) {
+            bell.addEventListener('click', () => {
+                // Wait for Bootstrap to toggle dropdown
+                setTimeout(() => {
+                    const isExpanded = bell.classList.contains('show') || bell.getAttribute('aria-expanded') === 'true';
+                    if (isExpanded) {
+                        this.loadRecentNotifications();
+                        this.updateNotificationCount();
+                    }
+                }, 100);
+            });
         }
     }
 
@@ -361,27 +441,48 @@ class RealtimeNotifications {
      * Play notification sound
      */
     playNotificationSound() {
+        if (!this.notificationSound) return;
+
+        // If we don't have a gesture yet, don't even try (prevents console warnings)
+        if (!this.hasUserGesture) {
+            console.log('ℹ️ [REALTIME] Sound skipped (waiting for user gesture)');
+            return;
+        }
+
         // Simple beep using Web Audio API
         try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // Try to resume if suspended
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume().catch(() => { });
+            }
+
+            // Check state again - if still suspended, browser is blocking us
+            if (this.audioContext.state !== 'running') {
+                return;
+            }
+
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
 
             oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            gainNode.connect(this.audioContext.destination);
 
             oscillator.frequency.value = 800;
             oscillator.type = 'sine';
 
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
 
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + 0.1);
 
             console.log('🔊 [REALTIME] Notification sound played');
         } catch (error) {
-            console.log('ℹ️ [REALTIME] Could not play notification sound:', error);
+            // Silently fail for audio context issues to avoid spamming the user
         }
     }
 

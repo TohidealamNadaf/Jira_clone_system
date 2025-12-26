@@ -1,1004 +1,1194 @@
-<?php \App\Core\View:: extends('layouts.app'); ?>
+<?php
+/**
+ * Admin Workflow Show View - Enterprise Jira Design
+ */
 
-<?php \App\Core\View::section('content'); ?>
+use App\Core\View;
 
-<div class="wf-page-wrapper">
+View::extends('layouts.app');
+View::share('title', 'Workflow: ' . $workflow['name']);
+View::section('content');
+?>
+
+<div class="page-wrapper wf-wrapper">
     <!-- Breadcrumb Navigation -->
-    <nav class="wf-breadcrumb">
-        <a href="<?= url('/admin') ?>" class="breadcrumb-link">
-            <i class="bi bi-gear"></i> Administration
-        </a>
-        <span class="breadcrumb-sep">/</span>
-        <a href="<?= url('/admin/workflows') ?>" class="breadcrumb-link">Workflows</a>
-        <span class="breadcrumb-sep">/</span>
-        <span class="breadcrumb-current"><?= e($workflow['name']) ?></span>
-    </nav>
+    <div class="breadcrumb-section">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="<?= url('/admin') ?>" class="breadcrumb-link">
+                        <i class="bi bi-gear"></i> Administration
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="<?= url('/admin/workflows') ?>" class="breadcrumb-link">Workflows</a>
+                </li>
+                <li class="breadcrumb-item active"><?= htmlspecialchars($workflow['name']) ?></li>
+            </ol>
+        </nav>
+    </div>
 
-    <!-- Page Header with Icon -->
-    <div class="wf-header">
-        <div class="wf-header-left">
-            <div class="wf-icon-box">
-                <i class="bi bi-diagram-3"></i>
+    <!-- Page Header Section -->
+    <div class="page-header">
+        <div class="header-left">
+            <div class="workflow-icon-circle">
+                <i class="bi bi-diagram-2"></i>
             </div>
-            <div class="wf-header-content">
-                <h1 class="wf-title"><?= e($workflow['name']) ?></h1>
-                <p class="wf-subtitle"><?= e($workflow['description'] ?: 'No description provided') ?></p>
-                <div class="wf-meta">
-                    <span class="wf-meta-item">
-                        <i class="bi bi-hexagon-fill"></i>
-                        <?= count($statuses) ?> Statuses
+            <div class="header-info">
+                <h1 class="page-title"><?= htmlspecialchars($workflow['name']) ?></h1>
+                <p class="page-meta">
+                    <span class="meta-item">
+                        <i class="bi bi-circle-fill" style="color: #4CAF50; font-size: 0.5rem; margin-right: 4px;"></i>
+                        Active
                     </span>
-                    <span class="wf-meta-item">
-                        <i class="bi bi-arrow-left-right"></i>
-                        <?= count($transitions) ?> Transitions
+                    <span class="meta-separator">•</span>
+                    <span class="meta-item" id="statusCount">
+                        <i class="bi bi-list"></i> 
+                        <span><?= count($statuses) ?> statuses</span>
                     </span>
-                </div>
+                </p>
             </div>
         </div>
-        <div class="wf-header-actions">
-            <a href="<?= url('/admin/workflows') ?>" class="wf-action-btn wf-action-secondary">
-                <i class="bi bi-arrow-left"></i>
-                Back
-            </a>
-            <button class="wf-action-btn wf-action-primary" onclick="alert('Edit workflow feature coming soon!')">
+        <div class="header-actions">
+            <button class="action-button" data-bs-toggle="modal" data-bs-target="#editWorkflowModal">
                 <i class="bi bi-pencil"></i>
-                Edit Workflow
+                <span>Edit</span>
+            </button>
+            <button class="action-button btn-danger" 
+                    <?= ($workflow['is_default'] || $workflow['project_count'] > 0) ? 'disabled' : '' ?>
+                    onclick="confirmDelete(<?= $workflow['id'] ?>, '<?= htmlspecialchars($workflow['name']) ?>')">
+                <i class="bi bi-trash"></i>
+                <span>Delete</span>
             </button>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="wf-content">
-        <!-- Workflow Visualization Card -->
-        <div class="wf-card wf-card-full">
-            <div class="wf-card-header">
-                <h2 class="wf-card-title">
-                    <i class="bi bi-diagram-3"></i>
-                    Workflow Visualization
-                </h2>
-                <p class="wf-card-subtitle">Visual representation of statuses and transitions</p>
-            </div>
-            <div class="wf-card-body">
-                <div class="wf-visualizer">
-                    <div class="wf-viz-header">
-                        <i class="bi bi-diagram-3"></i>
-                        <span>Workflow Diagram</span>
-                    </div>
-                    <p class="wf-viz-description">
-                        This workflow contains <?= count($statuses) ?> statuses connected by <?= count($transitions) ?> transitions, 
-                        defining the possible paths for issue progression.
-                    </p>
-                    <div class="wf-diagram">
-                        <?php foreach ($statuses as $index => $status): ?>
-                            <div class="wf-diagram-node" style="background-color: <?= e($status['color'] ?? '#DFE1E6') ?>15; border-color: <?= e($status['color'] ?? '#DFE1E6') ?>; color: <?= e($status['color'] ?? '#626F86') ?>">
-                                <div class="wf-node-name"><?= e($status['name']) ?></div>
-                                <?php if ($status['is_initial'] ?? false): ?>
-                                    <div class="wf-node-badge">Start</div>
-                                <?php endif; ?>
+    <!-- Main Content Area -->
+    <div class="page-content">
+        <!-- Left Column: Main Content -->
+        <div class="content-left">
+            <!-- Workflow Overview Card -->
+            <div class="card-section">
+                <div class="card-header">
+                    <h3 class="card-title">Workflow Overview</h3>
+                </div>
+                <div class="card-body">
+                    <div class="overview-grid">
+                        <div class="overview-item">
+                            <div class="overview-label">Workflow Name</div>
+                            <div class="overview-value"><?= htmlspecialchars($workflow['name']) ?></div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-label">Status</div>
+                            <div class="overview-value">
+                                <span class="status-badge status-active">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Active
+                                </span>
                             </div>
-                            <?php if ($index < count($statuses) - 1): ?>
-                                <div class="wf-diagram-arrow">
-                                    <i class="bi bi-arrow-right"></i>
-                                </div>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+                        </div>
+                        <?php if ($workflow['description']): ?>
+                            <div class="overview-item full-width">
+                                <div class="overview-label">Description</div>
+                                <div class="overview-value"><?= nl2br(htmlspecialchars($workflow['description'])) ?></div>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Two Column Layout -->
-        <div class="wf-grid">
-            <!-- Statuses Section -->
-            <div class="wf-card">
-                <div class="wf-card-header">
-                    <h2 class="wf-card-title">
-                        <i class="bi bi-circle-fill"></i>
-                        Statuses
-                    </h2>
-                    <span class="wf-card-badge"><?= count($statuses) ?></span>
-                </div>
-                <div class="wf-card-body wf-table-body">
-                    <table class="wf-table">
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Category</th>
-                                <th class="wf-text-center">Initial</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($statuses as $status): ?>
-                                <tr>
-                                    <td>
-                                        <div class="wf-status-cell">
-                                            <span class="wf-status-dot" style="background-color: <?= e($status['color'] ?? '#626F86') ?>"></span>
-                                            <strong><?= e($status['name']) ?></strong>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="wf-category-badge wf-cat-<?= e($status['category']) ?>">
-                                            <?= e(ucfirst($status['category'])) ?>
-                                        </span>
-                                    </td>
-                                    <td class="wf-text-center">
-                                        <?php if ($status['is_initial'] ?? false): ?>
-                                            <i class="bi bi-check-circle-fill wf-text-success"></i>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
-            <!-- Quick Stats Section -->
-            <div class="wf-card">
-                <div class="wf-card-header">
-                    <h2 class="wf-card-title">
-                        <i class="bi bi-info-circle"></i>
-                        Quick Stats
-                    </h2>
-                </div>
-                <div class="wf-card-body">
-                    <div class="wf-stats-grid">
-                        <div class="wf-stat-item">
-                            <div class="wf-stat-icon">
-                                <i class="bi bi-circle"></i>
-                            </div>
-                            <div class="wf-stat-content">
-                                <div class="wf-stat-value"><?= count($statuses) ?></div>
-                                <div class="wf-stat-label">Total Statuses</div>
-                            </div>
-                        </div>
-                        <div class="wf-stat-item">
-                            <div class="wf-stat-icon">
-                                <i class="bi bi-arrow-left-right"></i>
-                            </div>
-                            <div class="wf-stat-content">
-                                <div class="wf-stat-value"><?= count($transitions) ?></div>
-                                <div class="wf-stat-label">Total Transitions</div>
-                            </div>
-                        </div>
-                        <div class="wf-stat-item">
-                            <div class="wf-stat-icon">
-                                <i class="bi bi-play-circle"></i>
-                            </div>
-                            <div class="wf-stat-content">
-                                <div class="wf-stat-value">
-                                    <?php 
-                                        $initialCount = 0;
-                                        foreach ($statuses as $status) {
-                                            if ($status['is_initial'] ?? false) $initialCount++;
-                                        }
-                                        echo $initialCount;
-                                    ?>
-                                </div>
-                                <div class="wf-stat-label">Initial Status(es)</div>
-                            </div>
-                        </div>
+            <!-- Statuses and Transitions Grid -->
+            <div class="workflow-grid">
+                <!-- Statuses Card -->
+                <div class="card-section">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-list-check"></i>
+                            Statuses
+                        </h3>
+                        <button class="action-button small" data-bs-toggle="modal" data-bs-target="#addStatusModal">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Add Status</span>
+                        </button>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Transitions Section -->
-        <div class="wf-card wf-card-full">
-            <div class="wf-card-header">
-                <h2 class="wf-card-title">
-                    <i class="bi bi-arrow-left-right"></i>
-                    Transitions
-                </h2>
-                <span class="wf-card-badge"><?= count($transitions) ?></span>
-            </div>
-            <div class="wf-card-body wf-table-body">
-                <?php if (empty($transitions)): ?>
-                    <div class="wf-empty-state">
-                        <i class="bi bi-arrow-left-right"></i>
-                        <h4>No Transitions Defined</h4>
-                        <p>This workflow doesn't have any transitions yet.</p>
-                    </div>
-                <?php else: ?>
-                    <table class="wf-table">
-                        <thead>
-                            <tr>
-                                <th>Transition</th>
-                                <th>From Status</th>
-                                <th></th>
-                                <th>To Status</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($transitions as $transition): ?>
-                                <tr>
-                                    <td>
-                                        <strong class="wf-transition-name"><?= e($transition['name']) ?></strong>
-                                    </td>
-                                    <td>
-                                        <?php if ($transition['from_status_id']): ?>
-                                            <span class="wf-badge wf-badge-outline"><?= e($transition['from_status_name']) ?></span>
-                                        <?php else: ?>
-                                            <span class="wf-badge wf-badge-any">
-                                                <i class="bi bi-asterisk"></i> Any Status
+                    <div class="card-body card-body-table">
+                        <?php if (!empty($statuses)): ?>
+                            <div class="status-list">
+                                <?php foreach ($statuses as $status): ?>
+                                    <div class="status-item">
+                                        <div class="status-info">
+                                            <div class="status-header">
+                                                <span class="status-dot" style="background-color: <?= htmlspecialchars($status['color']) ?>"></span>
+                                                <span class="status-name"><?= htmlspecialchars($status['name']) ?></span>
+                                                <?php if ($status['is_initial'] ?? false): ?>
+                                                    <span class="status-badge status-initial">Initial</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <span class="status-category">
+                                                <?= ucfirst(str_replace('_', ' ', $status['category'])) ?>
                                             </span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="wf-text-center">
-                                        <i class="bi bi-arrow-right"></i>
-                                    </td>
-                                    <td>
-                                        <span class="wf-badge wf-badge-outline"><?= e($transition['to_status_name']) ?></span>
-                                    </td>
-                                    <td class="wf-text-muted"><?= e($transition['description'] ?: '—') ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php endif; ?>
+                                        </div>
+                                        <button type="button" 
+                                                class="btn-remove"
+                                                onclick="removeStatus(<?= $status['id'] ?>, '<?= htmlspecialchars($status['name']) ?>')">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <p>No statuses defined yet.</p>
+                                <p class="small text-muted">Add statuses to create the workflow structure.</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Transitions Card -->
+                <div class="card-section">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-arrow-left-right"></i>
+                            Transitions
+                        </h3>
+                        <button class="action-button small" data-bs-toggle="modal" data-bs-target="#addTransitionModal">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Add Transition</span>
+                        </button>
+                    </div>
+                    <div class="card-body card-body-table">
+                        <?php if (!empty($transitions)): ?>
+                            <div class="transition-list">
+                                <?php foreach ($transitions as $transition): ?>
+                                    <div class="transition-item">
+                                        <div class="transition-flow">
+                                            <div class="transition-from">
+                                                <?php if ($transition['from_status_id']): ?>
+                                                    <span class="transition-badge">
+                                                        <?= htmlspecialchars($transition['from_status_name']) ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="transition-badge badge-any">Any Status</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="transition-arrow">
+                                                <i class="bi bi-arrow-right"></i>
+                                            </div>
+                                            <div class="transition-to">
+                                                <span class="transition-badge">
+                                                    <?= htmlspecialchars($transition['to_status_name']) ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="transition-name">
+                                            <?= htmlspecialchars($transition['name']) ?>
+                                        </div>
+                                        <button type="button" 
+                                                class="btn-remove"
+                                                onclick="removeTransition(<?= $transition['id'] ?>, '<?= htmlspecialchars($transition['name']) ?>')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <p>No transitions defined yet.</p>
+                                <p class="small text-muted">Create transitions to define the workflow path.</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Sidebar -->
+        <div class="content-right">
+            <!-- Quick Stats Card -->
+            <div class="card-section sidebar-card">
+                <div class="card-header">
+                    <h3 class="card-title">Quick Stats</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item">
+                        <div class="stat-value"><?= count($statuses) ?></div>
+                        <div class="stat-label">Statuses</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><?= count($transitions) ?></div>
+                        <div class="stat-label">Transitions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><?= $workflow['project_count'] ?? 0 ?></div>
+                        <div class="stat-label">Used in Projects</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Status Card -->
+            <div class="card-section sidebar-card">
+                <div class="card-header">
+                    <h3 class="card-title">Workflow Status</h3>
+                </div>
+                <div class="card-body">
+                    <div class="status-info-item">
+                        <span class="status-info-label">Current Status:</span>
+                        <span class="status-info-value">
+                            <i class="bi bi-check-circle-fill" style="color: #4CAF50;"></i>
+                            Active
+                        </span>
+                    </div>
+                    <div class="status-info-item">
+                        <span class="status-info-label">Default Workflow:</span>
+                        <span class="status-info-value">
+                            <?= $workflow['is_default'] ? '✓ Yes' : '✗ No' ?>
+                        </span>
+                    </div>
+                    <div class="status-info-item">
+                        <span class="status-info-label">In Use:</span>
+                        <span class="status-info-value">
+                            <?= ($workflow['project_count'] ?? 0) > 0 ? 'Yes (' . $workflow['project_count'] . ' projects)' : 'Not used' ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card-section sidebar-card">
+                <div class="card-header">
+                    <h3 class="card-title">Need Help?</h3>
+                </div>
+                <div class="card-body">
+                    <p class="help-text">
+                        Create statuses to define the possible states of an issue. Use transitions to define which status changes are allowed.
+                    </p>
+                    <ul class="help-list">
+                        <li>Status: The state of an issue</li>
+                        <li>Transition: Allowed change between states</li>
+                        <li>Initial Status: Where new issues start</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Edit Workflow Modal -->
+<div class="modal fade" id="editWorkflowModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Workflow</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="<?= url('/admin/workflows/' . $workflow['id']) ?>" method="POST">
+                <?= csrf_field() ?>
+                <input type="hidden" name="_method" value="PUT">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Workflow Name <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required value="<?= htmlspecialchars($workflow['name']) ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><?= htmlspecialchars($workflow['description'] ?? '') ?></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Status Modal -->
+<div class="modal fade" id="addStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Status to Workflow</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="<?= url('/admin/workflows/' . $workflow['id'] . '/statuses') ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="status_id" class="form-label">Select Status <span class="required">*</span></label>
+                        <select class="form-select" id="status_id" name="status_id" required>
+                            <option value="">-- Choose a status --</option>
+                            <?php
+                            $wfStatusIds = array_column($statuses, 'id');
+                            foreach ($allStatuses as $s):
+                                if (in_array($s['id'], $wfStatusIds))
+                                    continue;
+                                ?>
+                                <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?> (<?= ucfirst($s['category'] ?? 'todo') ?>)</option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-hint">
+                            Can't find the status? <a href="<?= url('/admin/statuses') ?>">Create a new system status</a>.
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_initial" value="1" id="is_initial" <?= empty($statuses) ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="is_initial">
+                            Set as initial status
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Transition Modal -->
+<div class="modal fade" id="addTransitionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Transition</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="<?= url('/admin/workflows/' . $workflow['id'] . '/transitions') ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="t_name" class="form-label">Transition Name <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="t_name" name="name" required placeholder="e.g. Start Progress">
+                    </div>
+                    <div class="form-group">
+                        <label for="from_status_id" class="form-label">From Status</label>
+                        <select class="form-select" id="from_status_id" name="from_status_id">
+                            <option value="">Any Status (Global Transition)</option>
+                            <?php foreach ($statuses as $s): ?>
+                                <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="to_status_id" class="form-label">To Status <span class="required">*</span></label>
+                        <select class="form-select" id="to_status_id" name="to_status_id" required>
+                            <option value="">-- Choose target status --</option>
+                            <?php foreach ($statuses as $s): ?>
+                                <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Transition</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Action Forms -->
+<form id="removeStatusForm" method="POST" style="display: none;">
+    <?= csrf_field() ?>
+    <input type="hidden" name="_method" value="DELETE">
+</form>
+
+<form id="removeTransitionForm" method="POST" style="display: none;">
+    <?= csrf_field() ?>
+    <input type="hidden" name="_method" value="DELETE">
+</form>
+
+<form id="deleteWorkflowForm" method="POST" style="display: none;">
+    <?= csrf_field() ?>
+    <input type="hidden" name="_method" value="DELETE">
+</form>
+
+<script>
+function removeStatus(statusId, name) {
+    if (confirm(`Are you sure you want to remove the status "${name}" from this workflow?`)) {
+        const form = document.getElementById('removeStatusForm');
+        form.action = `<?= url('/admin/workflows/' . $workflow['id'] . '/statuses/') ?>${statusId}`;
+        form.submit();
+    }
+}
+
+function removeTransition(transitionId, name) {
+    if (confirm(`Are you sure you want to delete the transition "${name}"?`)) {
+        const form = document.getElementById('removeTransitionForm');
+        form.action = `<?= url('/admin/workflows/' . $workflow['id'] . '/transitions/') ?>${transitionId}`;
+        form.submit();
+    }
+}
+
+function confirmDelete(id, name) {
+    if (confirm(`Are you sure you want to delete the workflow "${name}"? This action cannot be undone.`)) {
+        const form = document.getElementById('deleteWorkflowForm');
+        form.action = `<?= url('/admin/workflows/') ?>${id}`;
+        form.submit();
+    }
+}
+</script>
+
 <style>
-    :root {
-        --wf-primary: #8B1956;
-        --wf-primary-dark: #6F123F;
-        --wf-primary-light: #F0DCE5;
-        --wf-dark: #161B22;
-        --wf-gray: #626F86;
-        --wf-light: #F7F8FA;
-        --wf-border: #DFE1E6;
-        --wf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-        --wf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-        --wf-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+/* ============================================
+   WORKFLOW PAGE - ENTERPRISE DESIGN
+   ============================================ */
 
-    /* ============================================
-       MAIN WRAPPER & LAYOUT
-       ============================================ */
+:root {
+    --wf-primary: #8B1956 !important;
+    --wf-primary-dark: #6F123F !important;
+    --wf-text-dark: #161B22 !important;
+    --wf-text-light: #626F86 !important;
+    --wf-bg-light: #F7F8FA !important;
+    --wf-border: #DFE1E6 !important;
+    --wf-success: #4CAF50 !important;
+    --wf-danger: #ED3C32 !important;
+    --wf-info: #0052CC !important;
+}
 
-    .wf-page-wrapper {
-        display: flex;
+.wf-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb-section {
+    background: white;
+    border-bottom: 1px solid var(--wf-border);
+    padding: 12px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.breadcrumb {
+    margin: 0;
+    font-size: 13px;
+}
+
+.breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+}
+
+.breadcrumb-link {
+    color: var(--wf-primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+}
+
+.breadcrumb-link:hover {
+    color: var(--wf-primary-dark);
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: var(--wf-text-light);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    margin: 0 8px;
+    color: var(--wf-border);
+}
+
+/* ---- Page Header ---- */
+.page-header {
+    background: white;
+    border-bottom: 1px solid var(--wf-border);
+    padding: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.header-left {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.workflow-icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(139, 25, 86, 0.1), rgba(231, 120, 23, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: var(--wf-primary);
+    flex-shrink: 0;
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--wf-text-dark);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.page-meta {
+    font-size: 13px;
+    color: var(--wf-text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.meta-separator {
+    color: var(--wf-border);
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: white;
+    border: 1px solid var(--wf-border);
+    border-radius: 6px;
+    color: var(--wf-text-dark);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.action-button:hover:not(:disabled) {
+    background: white;
+    border-color: var(--wf-primary);
+    color: var(--wf-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 25, 86, 0.15);
+}
+
+.action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-button.small {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.action-button.btn-danger {
+    border-color: #FDD;
+    color: var(--wf-danger);
+}
+
+.action-button.btn-danger:hover:not(:disabled) {
+    border-color: var(--wf-danger);
+    background: rgba(237, 60, 50, 0.05);
+}
+
+/* ---- Main Content ---- */
+.page-content {
+    display: flex;
+    gap: 24px;
+    padding: 32px;
+    background: var(--wf-bg-light);
+    min-height: calc(100vh - 300px);
+}
+
+.content-left {
+    flex: 1;
+}
+
+.content-right {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+/* ---- Cards ---- */
+.card-section {
+    background: white;
+    border: 1px solid var(--wf-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s;
+}
+
+.card-section:hover {
+    border-color: #B6C2CF;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    background: white;
+    border-bottom: 1px solid var(--wf-border);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--wf-text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-body-table {
+    padding: 0;
+}
+
+/* ---- Overview Grid ---- */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.overview-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.overview-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.overview-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--wf-text-light);
+    letter-spacing: 0.5px;
+}
+
+.overview-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--wf-text-dark);
+}
+
+/* ---- Status List ---- */
+.status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: #FAFBFC;
+    border-radius: 6px;
+    border: 1px solid var(--wf-border);
+    transition: all 0.2s;
+}
+
+.status-item:hover {
+    background: white;
+    border-color: #B6C2CF;
+}
+
+.status-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.status-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wf-text-dark);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #E3F2FD;
+    color: #0052CC;
+    white-space: nowrap;
+}
+
+.status-badge.status-active {
+    background: #E8F5E9;
+    color: var(--wf-success);
+}
+
+.status-badge.status-initial {
+    background: #FFF3E0;
+    color: #E77817;
+}
+
+.status-category {
+    font-size: 12px;
+    color: var(--wf-text-light);
+}
+
+/* ---- Transition List ---- */
+.transition-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.transition-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: #FAFBFC;
+    border-radius: 6px;
+    border: 1px solid var(--wf-border);
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.transition-item:hover {
+    background: white;
+    border-color: #B6C2CF;
+}
+
+.transition-flow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.transition-from,
+.transition-to {
+    flex-shrink: 0;
+}
+
+.transition-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #E3F2FD;
+    color: #0052CC;
+    border: 1px solid #90CAF9;
+}
+
+.transition-badge.badge-any {
+    background: #F5F5F5;
+    color: #666;
+    border-color: #D0D0D0;
+}
+
+.transition-arrow {
+    color: var(--wf-text-light);
+    font-size: 16px;
+}
+
+.transition-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wf-text-dark);
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: var(--wf-border);
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    color: var(--wf-text-light);
+    margin: 8px 0;
+}
+
+/* ---- Sidebar ---- */
+.sidebar-card {
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--wf-border);
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--wf-primary);
+}
+
+.stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--wf-text-light);
+}
+
+.status-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--wf-border);
+    font-size: 13px;
+}
+
+.status-info-item:last-child {
+    border-bottom: none;
+}
+
+.status-info-label {
+    color: var(--wf-text-light);
+    font-weight: 600;
+}
+
+.status-info-value {
+    color: var(--wf-text-dark);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.help-text {
+    font-size: 13px;
+    color: var(--wf-text-light);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.help-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    color: var(--wf-text-light);
+}
+
+.help-list li {
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.help-list li::before {
+    content: "•";
+    color: var(--wf-primary);
+    font-weight: bold;
+}
+
+/* ---- Buttons ---- */
+.btn-remove {
+    background: none;
+    border: none;
+    color: var(--wf-text-light);
+    cursor: pointer;
+    padding: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-remove:hover {
+    color: var(--wf-danger);
+    transform: scale(1.15);
+}
+
+/* ---- Forms ---- */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wf-text-dark);
+    margin-bottom: 6px;
+}
+
+.required {
+    color: var(--wf-danger);
+}
+
+.form-control,
+.form-select {
+    font-size: 13px;
+    border-color: var(--wf-border);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--wf-primary);
+    box-shadow: 0 0 0 3px rgba(139, 25, 86, 0.1);
+}
+
+.form-hint {
+    font-size: 12px;
+    color: var(--wf-text-light);
+    margin-top: 6px;
+}
+
+.form-check-label {
+    font-size: 13px;
+    color: var(--wf-text-dark);
+    cursor: pointer;
+}
+
+/* ---- Modal ---- */
+.modal-content {
+    border: 1px solid var(--wf-border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.modal-header {
+    background: white;
+    border-bottom: 1px solid var(--wf-border);
+    padding: 20px;
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--wf-text-dark);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    background: #FAFBFC;
+    border-top: 1px solid var(--wf-border);
+    padding: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.modal-footer .btn {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+}
+
+.modal-footer .btn-primary {
+    background: var(--wf-primary);
+    border-color: var(--wf-primary);
+}
+
+.modal-footer .btn-primary:hover {
+    background: var(--wf-primary-dark);
+    border-color: var(--wf-primary-dark);
+}
+
+.modal-footer .btn-outline-secondary {
+    color: var(--wf-text-light);
+    border-color: var(--wf-border);
+}
+
+.modal-footer .btn-outline-secondary:hover {
+    color: var(--wf-text-dark);
+    border-color: var(--wf-text-light);
+    background: transparent;
+}
+
+/* ---- Grid Layout ---- */
+.workflow-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+    .page-content {
         flex-direction: column;
-        min-height: calc(100vh - 80px);
-        background: var(--wf-light);
-    }
-
-    .wf-breadcrumb {
-        padding: 12px 32px;
-        background: white;
-        border-bottom: 1px solid var(--wf-border);
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-    }
-
-    .breadcrumb-link {
-        color: var(--wf-primary);
-        text-decoration: none;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: var(--wf-transition);
-    }
-
-    .breadcrumb-link:hover {
-        color: var(--wf-primary-dark);
-        text-decoration: underline;
-    }
-
-    .breadcrumb-sep {
-        color: var(--wf-gray);
-        margin: 0 8px;
-    }
-
-    .breadcrumb-current {
-        color: var(--wf-dark);
-        font-weight: 600;
-    }
-
-    /* ============================================
-       PAGE HEADER
-       ============================================ */
-
-    .wf-header {
-        padding: 32px;
-        background: white;
-        border-bottom: 1px solid var(--wf-border);
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 32px;
-    }
-
-    .wf-header-left {
-        display: flex;
-        gap: 24px;
-        flex: 1;
-    }
-
-    .wf-icon-box {
-        width: 80px;
-        height: 80px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--wf-primary-light) 0%, #F8E8F0 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 32px;
-        color: var(--wf-primary);
-    }
-
-    .wf-header-content {
-        flex: 1;
-    }
-
-    .wf-title {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--wf-dark);
-        margin: 0 0 8px 0;
-        letter-spacing: -0.2px;
-    }
-
-    .wf-subtitle {
-        font-size: 15px;
-        color: var(--wf-gray);
-        margin: 0 0 12px 0;
-    }
-
-    .wf-meta {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .wf-meta-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        color: var(--wf-gray);
-        font-weight: 500;
-    }
-
-    .wf-header-actions {
-        display: flex;
-        gap: 12px;
-        flex-shrink: 0;
-    }
-
-    /* ============================================
-       ACTION BUTTONS
-       ============================================ */
-
-    .wf-action-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: 6px;
-        border: 1px solid var(--wf-border);
-        background: white;
-        color: var(--wf-dark);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 14px;
-        transition: var(--wf-transition);
-        cursor: pointer;
-        white-space: nowrap;
-    }
-
-    .wf-action-btn:hover {
-        background: var(--wf-light);
-        border-color: var(--wf-primary);
-        color: var(--wf-primary);
-    }
-
-    .wf-action-secondary {
-        border-color: var(--wf-border);
-    }
-
-    .wf-action-secondary:hover {
-        background: var(--wf-light);
-    }
-
-    .wf-action-primary {
-        background: var(--wf-primary);
-        color: white;
-        border: none;
-    }
-
-    .wf-action-primary:hover {
-        background: var(--wf-primary-dark);
-        box-shadow: 0 4px 12px rgba(139, 25, 86, 0.2);
-        transform: translateY(-2px);
-    }
-
-    /* ============================================
-       CONTENT AREA
-       ============================================ */
-
-    .wf-content {
-        padding: 32px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-    }
-
-    .wf-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-    }
-
-    /* ============================================
-       CARDS
-       ============================================ */
-
-    .wf-card {
-        background: white;
-        border: 1px solid var(--wf-border);
-        border-radius: 8px;
-        box-shadow: var(--wf-shadow-sm);
-        overflow: hidden;
-        transition: var(--wf-transition);
-    }
-
-    .wf-card:hover {
-        box-shadow: var(--wf-shadow-md);
-    }
-
-    .wf-card-full {
-        grid-column: span 2;
-    }
-
-    .wf-card-header {
         padding: 20px;
-        border-bottom: 1px solid var(--wf-border);
-        background: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
     }
 
-    .wf-card-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--wf-dark);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        letter-spacing: -0.1px;
-    }
-
-    .wf-card-title i {
-        color: var(--wf-primary);
-        font-size: 18px;
-    }
-
-    .wf-card-subtitle {
-        font-size: 12px;
-        color: var(--wf-gray);
-        margin: 8px 0 0 0;
-    }
-
-    .wf-card-badge {
-        display: inline-block;
-        background: var(--wf-light);
-        color: var(--wf-gray);
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .wf-card-body {
-        padding: 20px;
-    }
-
-    .wf-table-body {
-        padding: 0;
-    }
-
-    /* ============================================
-       VISUALIZATION
-       ============================================ */
-
-    .wf-visualizer {
-        background: #F4F5F7;
-        border: 2px dashed var(--wf-border);
-        border-radius: 8px;
-        padding: 40px 24px;
-        text-align: center;
-    }
-
-    .wf-viz-header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 12px;
-        color: var(--wf-dark);
-    }
-
-    .wf-viz-header i {
-        color: var(--wf-primary);
-        font-size: 20px;
-    }
-
-    .wf-viz-description {
-        font-size: 13px;
-        color: var(--wf-gray);
-        margin-bottom: 24px;
-    }
-
-    .wf-diagram {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 24px;
-    }
-
-    .wf-diagram-node {
-        padding: 12px 16px;
-        border: 2px solid;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        min-width: 80px;
-        position: relative;
-        text-align: center;
-        transition: var(--wf-transition);
-    }
-
-    .wf-diagram-node:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .wf-node-name {
-        font-weight: 600;
-    }
-
-    .wf-node-badge {
-        font-size: 10px;
-        background: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        margin-top: 4px;
-        opacity: 0.8;
-    }
-
-    .wf-diagram-arrow {
-        color: var(--wf-gray);
-        font-size: 16px;
-        opacity: 0.5;
-    }
-
-    /* ============================================
-       STATS
-       ============================================ */
-
-    .wf-stats-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .wf-stat-item {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 12px;
-        background: var(--wf-light);
-        border-radius: 6px;
-        transition: var(--wf-transition);
-    }
-
-    .wf-stat-item:hover {
-        background: #ECEEF1;
-    }
-
-    .wf-stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--wf-primary);
-        font-size: 18px;
-        flex-shrink: 0;
-    }
-
-    .wf-stat-content {
-        flex: 1;
-    }
-
-    .wf-stat-value {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--wf-dark);
-        margin-bottom: 2px;
-    }
-
-    .wf-stat-label {
-        font-size: 12px;
-        color: var(--wf-gray);
-        font-weight: 500;
-    }
-
-    /* ============================================
-       TABLES
-       ============================================ */
-
-    .wf-table {
+    .content-right {
         width: 100%;
-        border-collapse: collapse;
     }
 
-    .wf-table thead th {
-        text-align: left;
-        padding: 12px 20px;
-        background: var(--wf-light);
-        color: var(--wf-gray);
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-        border-bottom: 1px solid var(--wf-border);
+    .workflow-grid {
+        grid-template-columns: 1fr;
     }
 
-    .wf-table tbody td {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--wf-border);
-        vertical-align: middle;
-        font-size: 14px;
+    .page-header {
+        flex-direction: column;
+        padding: 20px;
     }
 
-    .wf-table tbody tr:hover {
-        background: var(--wf-light);
+    .header-actions {
+        width: 100%;
     }
 
-    /* ============================================
-       STATUS CELLS
-       ============================================ */
+    .action-button {
+        flex: 1;
+        justify-content: center;
+    }
+}
 
-    .wf-status-cell {
-        display: flex;
+@media (max-width: 768px) {
+    .page-header {
+        padding: 16px;
+    }
+
+    .header-left {
+        flex-direction: column;
         align-items: center;
-        gap: 10px;
-        font-weight: 500;
-    }
-
-    .wf-status-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .wf-category-badge {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .wf-cat-todo {
-        background: #EAEBEF;
-        color: #42526E;
-    }
-
-    .wf-cat-inprogress {
-        background: #DEEBFF;
-        color: #0747A6;
-    }
-
-    .wf-cat-done {
-        background: #E3FCEF;
-        color: #006644;
-    }
-
-    /* ============================================
-       BADGES
-       ============================================ */
-
-    .wf-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .wf-badge-outline {
-        border: 1px solid var(--wf-border);
-        color: var(--wf-dark);
-        background: white;
-    }
-
-    .wf-badge-any {
-        background: #FFF0B3;
-        color: #825C00;
-        border: 1px solid #FFE580;
-    }
-
-    /* ============================================
-       TRANSITION CELLS
-       ============================================ */
-
-    .wf-transition-name {
-        color: var(--wf-dark);
-        font-weight: 600;
-    }
-
-    /* ============================================
-       EMPTY STATE
-       ============================================ */
-
-    .wf-empty-state {
         text-align: center;
-        padding: 40px 20px;
-        color: var(--wf-gray);
     }
 
-    .wf-empty-state i {
-        font-size: 48px;
-        color: var(--wf-border);
-        margin-bottom: 16px;
-        display: block;
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
     }
 
-    .wf-empty-state h4 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--wf-dark);
-        margin: 0 0 8px 0;
+    .action-button {
+        width: 100%;
     }
 
-    .wf-empty-state p {
-        font-size: 13px;
-        color: var(--wf-gray);
-        margin: 0;
+    .page-content {
+        padding: 16px;
+        gap: 16px;
     }
 
-    /* ============================================
-       UTILITIES
-       ============================================ */
-
-    .wf-text-center {
-        text-align: center !important;
+    .overview-grid {
+        grid-template-columns: 1fr;
     }
 
-    .wf-text-muted {
-        color: var(--wf-gray);
-        font-size: 13px;
+    .transition-item {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .wf-text-success {
-        color: #36B37E !important;
+    .transition-flow {
+        width: 100%;
     }
 
-    /* ============================================
-       RESPONSIVE
-       ============================================ */
+    .breadcrumb-section {
+        padding: 12px 16px;
+    }
+}
 
-    @media (max-width: 1024px) {
-        .wf-header {
-            flex-direction: column;
-            padding: 24px;
-        }
-
-        .wf-header-left {
-            width: 100%;
-        }
-
-        .wf-header-actions {
-            width: 100%;
-        }
-
-        .wf-action-btn {
-            flex: 1;
-            justify-content: center;
-        }
-
-        .wf-content {
-            padding: 20px;
-            gap: 20px;
-        }
-
-        .wf-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        .wf-card-full {
-            grid-column: span 1;
-        }
+@media (max-width: 480px) {
+    .page-header {
+        padding: 12px;
     }
 
-    @media (max-width: 768px) {
-        .wf-breadcrumb {
-            padding: 12px 16px;
-            font-size: 12px;
-            overflow-x: auto;
-        }
-
-        .wf-header {
-            padding: 16px;
-        }
-
-        .wf-icon-box {
-            width: 64px;
-            height: 64px;
-            font-size: 24px;
-        }
-
-        .wf-title {
-            font-size: 24px;
-        }
-
-        .wf-meta {
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .wf-content {
-            padding: 16px;
-            gap: 16px;
-        }
-
-        .wf-card-header {
-            padding: 16px;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .wf-card-body {
-            padding: 16px;
-        }
-
-        .wf-table thead th {
-            padding: 10px 12px;
-            font-size: 10px;
-        }
-
-        .wf-table tbody td {
-            padding: 12px;
-            font-size: 13px;
-        }
-
-        .wf-diagram {
-            gap: 6px;
-        }
-
-        .wf-diagram-node {
-            padding: 8px 12px;
-            font-size: 11px;
-            min-width: 70px;
-        }
-
-        .wf-stats-grid {
-            gap: 12px;
-        }
-
-        .wf-stat-item {
-            padding: 10px;
-        }
-
-        .wf-stat-value {
-            font-size: 18px;
-        }
+    .page-title {
+        font-size: 24px;
     }
 
-    @media (max-width: 480px) {
-        .wf-header {
-            padding: 12px;
-            gap: 16px;
-        }
-
-        .wf-icon-box {
-            width: 56px;
-            height: 56px;
-            font-size: 20px;
-        }
-
-        .wf-header-content {
-            min-width: 0;
-        }
-
-        .wf-title {
-            font-size: 20px;
-        }
-
-        .wf-subtitle {
-            font-size: 13px;
-        }
-
-        .wf-header-actions {
-            flex-direction: column;
-            width: 100%;
-            gap: 8px;
-        }
-
-        .wf-action-btn {
-            width: 100%;
-            font-size: 13px;
-            padding: 8px 12px;
-        }
-
-        .wf-breadcrumb {
-            padding: 8px 12px;
-        }
-
-        .breadcrumb-link,
-        .breadcrumb-sep {
-            display: none;
-        }
-
-        .breadcrumb-link:first-child {
-            display: flex;
-        }
-
-        .wf-diagram {
-            flex-direction: column;
-        }
-
-        .wf-diagram-arrow {
-            transform: rotate(90deg);
-        }
-
-        .wf-table {
-            font-size: 12px;
-        }
-
-        .wf-table thead {
-            display: none;
-        }
-
-        .wf-table tbody td {
-            display: block;
-            text-align: right;
-            padding-left: 50%;
-            position: relative;
-            border: none;
-            border-bottom: 1px solid var(--wf-border);
-        }
-
-        .wf-table tbody td::before {
-            content: attr(data-label);
-            position: absolute;
-            left: 12px;
-            font-weight: 600;
-            color: var(--wf-gray);
-        }
-
-        .wf-table tbody tr {
-            display: block;
-            margin-bottom: 12px;
-            border: 1px solid var(--wf-border);
-            border-radius: 4px;
-            padding: 12px 0;
-        }
+    .workflow-icon-circle {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
     }
+
+    .page-content {
+        padding: 12px;
+    }
+
+    .status-item,
+    .transition-item {
+        padding: 12px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .card-header .action-button {
+        width: 100%;
+    }
+}
 </style>
 
-<?php \App\Core\View::endSection(); ?>
+<?php View::endSection() ?>

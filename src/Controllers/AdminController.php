@@ -157,6 +157,7 @@ class AdminController extends Controller
             'role_id' => 'required|integer',
             'timezone' => 'nullable|max:50',
             'is_admin' => 'nullable|boolean',
+            'status' => 'nullable|in:active,inactive,pending',
         ]);
 
         try {
@@ -182,7 +183,7 @@ class AdminController extends Controller
                 'email' => $data['email'],
                 'password_hash' => password_hash($data['password'], PASSWORD_ARGON2ID),
                 'timezone' => $data['timezone'] ?? 'UTC',
-                'is_active' => 1,
+                'is_active' => ($data['status'] ?? 'active') === 'active' ? 1 : 0,
                 'is_admin' => (bool) ($data['is_admin'] ?? false),
             ]);
 
@@ -226,11 +227,21 @@ class AdminController extends Controller
 
         $userId = (int) $request->param('id');
 
-        $user = Database::selectOne("SELECT * FROM users WHERE id = ?", [$userId]);
+        // Fetch user with their primary role
+        $user = Database::selectOne("
+            SELECT u.*, ur.role_id 
+            FROM users u
+            LEFT JOIN user_roles ur ON u.id = ur.user_id
+            WHERE u.id = ?
+            LIMIT 1
+        ", [$userId]);
 
         if (!$user) {
             abort(404, 'User not found');
         }
+
+        // Map is_active to status for the form dropdown
+        $user['status'] = ($user['is_active'] ?? 1) ? 'active' : 'inactive';
 
         $roles = Database::select("SELECT * FROM roles ORDER BY name");
         $timezones = timezone_identifiers_list();
@@ -239,7 +250,7 @@ class AdminController extends Controller
             'editUser' => $user,
             'roles' => $roles,
             'timezones' => $timezones,
-            'isAdmin' => $user['is_admin'] ?? false,
+            'isAdmin' => (bool) ($user['is_admin'] ?? false),
         ]);
     }
 
@@ -902,7 +913,13 @@ class AdminController extends Controller
     {
         $workflowId = (int) $request->param('id');
 
-        $workflow = Database::selectOne("SELECT * FROM workflows WHERE id = ?", [$workflowId]);
+        $workflow = Database::selectOne(
+            "SELECT w.*, 
+                (SELECT COUNT(*) FROM project_workflows pw WHERE pw.workflow_id = w.id) as project_count
+         FROM workflows w
+         WHERE w.id = ?",
+            [$workflowId]
+        );
 
         if (!$workflow) {
             abort(404, 'Workflow not found');
@@ -928,11 +945,14 @@ class AdminController extends Controller
             [$workflowId]
         );
 
+        $allStatuses = Database::select("SELECT * FROM statuses ORDER BY name");
+
         if ($request->wantsJson()) {
             $this->json([
                 'workflow' => $workflow,
                 'statuses' => $statuses,
                 'transitions' => $transitions,
+                'allStatuses' => $allStatuses,
             ]);
         }
 
@@ -940,7 +960,254 @@ class AdminController extends Controller
             'workflow' => $workflow,
             'statuses' => $statuses,
             'transitions' => $transitions,
+            'allStatuses' => $allStatuses,
         ]);
+    }
+
+    public function storeWorkflow(Request $request): void
+    {
+        $data = $request->validate([
+            'name' => 'required|max:100',
+            'description' => 'nullable|max:500',
+        ]);
+
+        try {
+            $existing = Database::selectOne(
+                "SELECT id FROM workflows WHERE name = ?",
+                [$data['name']]
+            );
+
+            if ($existing) {
+                throw new \InvalidArgumentException('Workflow name already exists.');
+            }
+
+            $id = Database::insert('workflows', [
+                'name' => $data['name'],
+                'description' => $data['description'] ?? null,
+                'is_active' => 1,
+                'is_default' => 0,
+            ]);
+
+            $this->logAudit('workflow_created', 'workflow', (int) $id, null, $data['name']);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'id' => $id], 201);
+            }
+
+            $this->redirect(url('/admin/workflows/' . $id));
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 400);
+            }
+            Session::flash('error', $e->getMessage());
+            $this->back();
+        }
+    }
+
+    public function updateWorkflow(Request $request): void
+    {
+        $id = (int) $request->param('id');
+        $data = $request->validate([
+            'name' => 'required|max:100',
+            'description' => 'nullable|max:500',
+        ]);
+
+        try {
+            $existing = Database::selectOne(
+                "SELECT id FROM workflows WHERE name = ? AND id != ?",
+                [$data['name'], $id]
+            );
+
+            if ($existing) {
+                throw new \InvalidArgumentException('Workflow name already exists.');
+            }
+
+            Database::update('workflows', [
+                'name' => $data['name'],
+                'description' => $data['description'] ?? null,
+            ], 'id = ?', [$id]);
+
+            $this->logAudit('workflow_updated', 'workflow', $id, null, $data['name']);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirect(url('/admin/workflows/' . $id));
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 400);
+            }
+            Session::flash('error', $e->getMessage());
+            $this->back();
+        }
+    }
+
+    public function deleteWorkflow(Request $request): void
+    {
+        $id = (int) $request->param('id');
+
+        try {
+            $workflow = Database::selectOne("SELECT * FROM workflows WHERE id = ?", [$id]);
+            if (!$workflow) {
+                throw new \InvalidArgumentException('Workflow not found.');
+            }
+
+            if ($workflow['is_default']) {
+                throw new \InvalidArgumentException('Cannot delete the default workflow.');
+            }
+
+            // Check if workflow is in use by any project
+            $inUse = Database::selectOne("SELECT 1 FROM project_workflows WHERE workflow_id = ?", [$id]);
+            if ($inUse) {
+                throw new \InvalidArgumentException('Cannot delete a workflow that is assigned to projects.');
+            }
+
+            Database::delete('workflows', 'id = ?', [$id]);
+            $this->logAudit('workflow_deleted', 'workflow', $id, null, $workflow['name']);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirect(url('/admin/workflows'));
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 400);
+            }
+            Session::flash('error', $e->getMessage());
+            $this->back();
+        }
+    }
+
+    public function addStatusToWorkflow(Request $request): void
+    {
+        $workflowId = (int) $request->param('id');
+        $data = $request->validate([
+            'status_id' => 'required|integer',
+            'is_initial' => 'nullable|boolean',
+        ]);
+
+        try {
+            $exists = Database::selectOne(
+                "SELECT 1 FROM workflow_statuses WHERE workflow_id = ? AND status_id = ?",
+                [$workflowId, $data['status_id']]
+            );
+
+            if ($exists) {
+                throw new \InvalidArgumentException('Status is already in this workflow.');
+            }
+
+            Database::insert('workflow_statuses', [
+                'workflow_id' => $workflowId,
+                'status_id' => $data['status_id'],
+                'is_initial' => (int) ($data['is_initial'] ?? 0),
+            ]);
+
+            $this->logAudit('workflow_status_added', 'workflow', $workflowId, (string) $data['status_id']);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirect(url('/admin/workflows/' . $workflowId));
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 400);
+            }
+            Session::flash('error', $e->getMessage());
+            $this->back();
+        }
+    }
+
+    public function removeStatusFromWorkflow(Request $request): void
+    {
+        $workflowId = (int) $request->param('id');
+        $statusId = (int) $request->param('statusId');
+
+        try {
+            // Check if status is used in any transitions
+            $inUse = Database::selectOne(
+                "SELECT 1 FROM workflow_transitions 
+                 WHERE workflow_id = ? AND (from_status_id = ? OR to_status_id = ?)",
+                [$workflowId, $statusId, $statusId]
+            );
+
+            if ($inUse) {
+                throw new \InvalidArgumentException('Cannot remove status because it is used in transitions.');
+            }
+
+            Database::delete('workflow_statuses', 'workflow_id = ? AND status_id = ?', [$workflowId, $statusId]);
+            $this->logAudit('workflow_status_removed', 'workflow', $workflowId, (string) $statusId);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirect(url('/admin/workflows/' . $workflowId));
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 400);
+            }
+            Session::flash('error', $e->getMessage());
+            $this->back();
+        }
+    }
+
+    public function addTransitionToWorkflow(Request $request): void
+    {
+        $workflowId = (int) $request->param('id');
+        $data = $request->validate([
+            'name' => 'required|max:100',
+            'from_status_id' => 'nullable|integer',
+            'to_status_id' => 'required|integer',
+        ]);
+
+        try {
+            Database::insert('workflow_transitions', [
+                'workflow_id' => $workflowId,
+                'name' => $data['name'],
+                'from_status_id' => $data['from_status_id'] ?: null,
+                'to_status_id' => $data['to_status_id'],
+            ]);
+
+            $this->logAudit('workflow_transition_added', 'workflow', $workflowId, null, $data['name']);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirect(url('/admin/workflows/' . $workflowId));
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 400);
+            }
+            Session::flash('error', $e->getMessage());
+            $this->back();
+        }
+    }
+
+    public function removeTransitionFromWorkflow(Request $request): void
+    {
+        $workflowId = (int) $request->param('id');
+        $transitionId = (int) $request->param('transitionId');
+
+        try {
+            Database::delete('workflow_transitions', 'id = ? AND workflow_id = ?', [$transitionId, $workflowId]);
+            $this->logAudit('workflow_transition_removed', 'workflow', $workflowId, (string) $transitionId);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirect(url('/admin/workflows/' . $workflowId));
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 400);
+            }
+            Session::flash('error', $e->getMessage());
+            $this->back();
+        }
     }
 
     public function issueTypes(Request $request): string

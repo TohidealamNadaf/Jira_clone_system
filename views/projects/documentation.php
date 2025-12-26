@@ -4,189 +4,196 @@
 
 
 <div class="doc-wrapper">
-    <!-- Breadcrumb Navigation -->
-    <nav class="doc-breadcrumb">
-        <a href="<?= url('/dashboard') ?>" class="breadcrumb-item">
-            <i class="bi bi-house-door"></i> Dashboard
-        </a>
-        <span class="breadcrumb-divider">/</span>
-        <a href="<?= url('/projects') ?>" class="breadcrumb-item">Projects</a>
-        <span class="breadcrumb-divider">/</span>
-        <a href="<?= url("/projects/{$project['key']}") ?>" class="breadcrumb-item">
-            <?= e($project['name']) ?>
-        </a>
-        <span class="breadcrumb-divider">/</span>
-        <span class="breadcrumb-current">Documentation</span>
-    </nav>
+    <!-- Standard Breadcrumb Navigation -->
+    <div class="breadcrumb-section">
+        <div class="breadcrumb">
+            <a href="<?= url('/') ?>" class="breadcrumb-link">
+                <i class="bi bi-house-door"></i> Home
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="<?= url('/projects') ?>" class="breadcrumb-link">Projects</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="<?= url("/projects/{$project['key']}") ?>" class="breadcrumb-link">
+                <?= e($project['name']) ?>
+            </a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">Documentation</span>
+        </div>
+    </div>
 
-    <!-- Page Header Section -->
-    <div class="doc-header-section">
-        <div class="doc-header-content">
-            <div class="doc-header-info">
-                <h1 class="doc-page-title">Documentation Hub</h1>
-                <p class="doc-page-subtitle">Central repository for project documents, guides, and resources</p>
+    <!-- Header Section with Actions -->
+    <div class="doc-header-wrapper">
+
+        <div class="doc-header-main">
+            <div class="doc-title-block">
+                <div class="doc-icon-badge">
+                    <i class="bi bi-folder2-open"></i>
+                </div>
+                <div>
+                    <h1 class="doc-page-title">Documentation Hub</h1>
+                    <p class="doc-page-subtitle">Manage, track, and collaborate on project resources.</p>
+                </div>
             </div>
-            <div class="doc-header-action">
-                <button type="button" class="btn btn-primary doc-upload-btn" data-bs-toggle="modal"
+            <div class="doc-header-actions">
+                <button type="button" class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal"
                     data-bs-target="#uploadModal">
-                    <i class="bi bi-cloud-upload"></i> Upload Document
+                    <i class="bi bi-cloud-upload me-2"></i> Upload Document
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="doc-stats-grid">
-        <div class="doc-stat-card">
-            <div class="doc-stat-icon">
-                <i class="bi bi-file-earmark-text"></i>
-            </div>
-            <div class="doc-stat-content">
-                <div class="doc-stat-value"><?= $stats['total_documents'] ?></div>
-                <div class="doc-stat-label">Total Documents</div>
-            </div>
-        </div>
-
-        <div class="doc-stat-card">
-            <div class="doc-stat-icon category-design">
-                <i class="bi bi-palette"></i>
-            </div>
-            <div class="doc-stat-content">
-                <div class="doc-stat-value"><?= $stats['designs'] ?></div>
-                <div class="doc-stat-label">Design Files</div>
-            </div>
-        </div>
-
-        <div class="doc-stat-card">
-            <div class="doc-stat-icon category-technical">
-                <i class="bi bi-gear"></i>
-            </div>
-            <div class="doc-stat-content">
-                <div class="doc-stat-value"><?= $stats['technical'] ?></div>
-                <div class="doc-stat-label">Technical Docs</div>
-            </div>
-        </div>
-
-        <div class="doc-stat-card">
-            <div class="doc-stat-icon category-report">
-                <i class="bi bi-bar-chart"></i>
-            </div>
-            <div class="doc-stat-content">
-                <div class="doc-stat-value">
-                    <?= $stats['total_size'] > 0 ? App\Services\ProjectDocumentationService::formatFileSize($stats['total_size']) : '0 B' ?>
+    <div class="doc-body-content">
+        <!-- Stats Row -->
+        <div class="doc-stats-row">
+            <div class="doc-stat-card">
+                <div class="stat-icon-wrapper bg-soft-primary">
+                    <i class="bi bi-file-earmark-text"></i>
                 </div>
-                <div class="doc-stat-label">Total Size</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="doc-filters">
-        <div class="doc-filters-left">
-            <div class="search-box">
-                <i class="bi bi-search"></i>
-                <input type="text" id="docSearch" placeholder="Search documents..." value="<?= e($filters['search']) ?>"
-                    class="form-control">
+                <div class="stat-info">
+                    <div class="stat-value"><?= $stats['total_documents'] ?></div>
+                    <div class="stat-label">Total Files</div>
+                </div>
             </div>
 
-            <select id="categoryFilter" class="form-select">
-                <option value="">All Categories</option>
-                <?php foreach ($categories as $value => $label): ?>
-                    <option value="<?= $value ?>" <?= $filters['category'] === $value ? 'selected' : '' ?>>
-                        <?= $label ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+            <div class="doc-stat-card">
+                <div class="stat-icon-wrapper bg-soft-info">
+                    <i class="bi bi-palette"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><?= $stats['designs'] ?></div>
+                    <div class="stat-label">Designs</div>
+                </div>
+            </div>
 
-        <div class="doc-filters-right">
-            <button id="clearFilters" class="btn btn-outline-secondary">
-                <i class="bi bi-x-circle"></i> Clear Filters
-            </button>
-        </div>
-    </div>
+            <div class="doc-stat-card">
+                <div class="stat-icon-wrapper bg-soft-success">
+                    <i class="bi bi-gear"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><?= $stats['technical'] ?></div>
+                    <div class="stat-label">Technical</div>
+                </div>
+            </div>
 
-    <!-- Documents List -->
-    <div class="doc-content">
-        <?php if (!empty($documents)): ?>
-            <div class="doc-list" id="documentList">
-                <?php foreach ($documents as $document): ?>
-                    <div class="doc-item" data-id="<?= $document['id'] ?>" data-category="<?= $document['category'] ?>"
-                        data-title="<?= strtolower($document['title']) ?>"
-                        data-filename="<?= strtolower($document['original_filename']) ?>">
-
-                        <!-- Document Icon -->
-                        <div class="doc-icon">
-                            <i
-                                class="<?= App\Services\ProjectDocumentationService::getFileIcon($document['mime_type'], $document['filename']) ?>"></i>
-                        </div>
-
-                        <!-- Document Info -->
-                        <div class="doc-info">
-                            <h4 class="doc-title"><?= e($document['title']) ?></h4>
-                            <p class="doc-description"><?= e($document['description'] ?? 'No description') ?></p>
-                            <div class="doc-meta">
-                                <span class="doc-category category-<?= $document['category'] ?>">
-                                    <?= $categories[$document['category']] ?>
-                                </span>
-                                <span
-                                    class="doc-size"><?= App\Services\ProjectDocumentationService::formatFileSize($document['size']) ?></span>
-                                <span class="doc-version">v<?= e($document['version']) ?></span>
-                                <?php if ($document['download_count'] > 0): ?>
-                                    <span class="doc-downloads">
-                                        <i class="bi bi-download"></i> <?= $document['download_count'] ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="doc-footer">
-                                <span class="doc-author">
-                                    <i class="bi bi-person"></i>
-                                    <?= e($document['first_name'] . ' ' . $document['last_name']) ?>
-                                </span>
-                                <span class="doc-date">
-                                    <i class="bi bi-calendar"></i>
-                                    <?= date('M j, Y', strtotime($document['created_at'])) ?>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Document Actions -->
-                        <div class="doc-actions">
-                            <a href="<?= url("/projects/{$project['key']}/documentation/{$document['id']}/download") ?>"
-                                class="btn btn-primary btn-sm" title="Download">
-                                <i class="bi bi-download"></i>
-                            </a>
-                            <button class="btn btn-outline-primary btn-sm view-doc" data-bs-toggle="modal"
-                                data-bs-target="#previewModal"
-                                data-url="<?= url("/projects/{$project['key']}/documentation/{$document['id']}/download") ?>"
-                                data-mime="<?= $document['mime_type'] ?>"
-                                data-filename="<?= e($document['original_filename']) ?>" title="Preview">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm edit-doc" data-id="<?= $document['id'] ?>"
-                                title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-outline-danger btn-sm delete-doc" data-id="<?= $document['id'] ?>"
-                                title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
+            <div class="doc-stat-card">
+                <div class="stat-icon-wrapper bg-soft-warning">
+                    <i class="bi bi-hdd"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">
+                        <?= $stats['total_size'] > 0 ? App\Services\ProjectDocumentationService::formatFileSize($stats['total_size']) : '0 B' ?>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <div class="doc-empty-state">
-                <div class="doc-empty-icon">
-                    <i class="bi bi-file-earmark-x"></i>
+                    <div class="stat-label">Storage Used</div>
                 </div>
-                <h3>No Documents Found</h3>
-                <p>Start by uploading your first document to the project repository.</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                    <i class="bi bi-cloud-upload"></i> Upload First Document
+            </div>
+        </div>
+
+        <!-- Filters & Toolbar -->
+        <div class="doc-toolbar">
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="docSearch" placeholder="Filter documents by name..."
+                    value="<?= e($filters['search']) ?>" class="form-control search-input">
+            </div>
+
+            <div class="filter-wrapper">
+                <select id="categoryFilter" class="form-select filter-select">
+                    <option value="">All Categories</option>
+                    <?php foreach ($categories as $value => $label): ?>
+                        <option value="<?= $value ?>" <?= $filters['category'] === $value ? 'selected' : '' ?>>
+                            <?= $label ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <button id="clearFilters" class="btn btn-outline-secondary btn-icon-text">
+                    <i class="bi bi-x-lg"></i> Clear
                 </button>
             </div>
-        <?php endif; ?>
+        </div>
+
+        <!-- Documents Grid/List -->
+        <div class="doc-list-container">
+            <?php if (!empty($documents)): ?>
+                <div class="doc-grid" id="documentList">
+                    <?php foreach ($documents as $document): ?>
+                        <div class="doc-item card-hover" data-id="<?= $document['id'] ?>"
+                            data-category="<?= $document['category'] ?>" data-title="<?= strtolower($document['title']) ?>"
+                            data-filename="<?= strtolower($document['original_filename']) ?>">
+
+                            <div class="doc-item-left">
+                                <div class="doc-file-icon">
+                                    <i
+                                        class="<?= App\Services\ProjectDocumentationService::getFileIcon($document['mime_type'], $document['filename']) ?>"></i>
+                                </div>
+                                <div class="doc-content-info">
+                                    <div class="doc-header-row">
+                                        <h4 class="doc-title"><?= e($document['title']) ?></h4>
+                                        <span class="doc-badge category-<?= $document['category'] ?>">
+                                            <?= $categories[$document['category']] ?>
+                                        </span>
+                                    </div>
+                                    <p class="doc-orig-filename"><?= e($document['original_filename']) ?></p>
+                                    <div class="doc-meta-row">
+                                        <span title="Version">v<?= e($document['version']) ?></span>
+                                        <span class="meta-dot">•</span>
+                                        <span><?= App\Services\ProjectDocumentationService::formatFileSize($document['size']) ?></span>
+                                        <span class="meta-dot">•</span>
+                                        <span><?= date('M j, Y', strtotime($document['created_at'])) ?></span>
+                                        <span class="meta-dot">•</span>
+                                        <span class="doc-uploader">
+                                            <i class="bi bi-person-circle"></i>
+                                            <?= e($document['first_name'] . ' ' . $document['last_name']) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="doc-item-actions">
+                                <?php if ($document['download_count'] > 0): ?>
+                                    <div class="download-stat" title="Total Downloads">
+                                        <i class="bi bi-arrow-down-circle"></i> <?= $document['download_count'] ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="btn-group">
+                                    <a href="<?= url("/projects/{$project['key']}/documentation/{$document['id']}/download") ?>"
+                                        class="btn btn-light btn-sm" title="Download">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <button class="btn btn-light btn-sm view-doc" data-bs-toggle="modal"
+                                        data-bs-target="#previewModal"
+                                        data-url="<?= url("/projects/{$project['key']}/documentation/{$document['id']}/download") ?>"
+                                        data-mime="<?= $document['mime_type'] ?>"
+                                        data-filename="<?= e($document['original_filename']) ?>" title="Preview">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-light btn-sm edit-doc" data-id="<?= $document['id'] ?>"
+                                        title="Edit Metadata">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-light btn-sm delete-doc text-danger" data-id="<?= $document['id'] ?>"
+                                        title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="empty-state-card">
+                    <div class="empty-icon-circle">
+                        <i class="bi bi-folder-plus"></i>
+                    </div>
+                    <h3>No documents yet</h3>
+                    <p>There are no documents in this project. Upload your first file to get started.</p>
+                    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="bi bi-cloud-upload me-2"></i> Upload File
+                    </button>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
 
@@ -206,8 +213,8 @@
                     <div class="mb-3">
                         <label class="form-label">Select File *</label>
                         <div class="drag-drop-zone" id="dropZone">
-                            <i class="bi bi-cloud-arrow-up"></i>
-                            <p>Drag & drop your file here or <span class="text-primary">browse</span></p>
+                            <i class="bi bi-cloud-arrow-up-fill"></i>
+                            <p>Drag & drop your file here or <span class="text-plum cursor-pointer">browse</span></p>
                             <span class="file-info text-muted">Supported formats: PDF, Word, Excel, Images,
                                 Videos</span>
                             <input type="file" id="documentFile" name="document" required hidden
@@ -381,750 +388,695 @@
 </div>
 
 <style>
-    /* Documentation Hub Redesign - Enterprise Jira-like UI */
+    /* 
+     * PROJECT DOCUMENTATION - PREMIUM COMPACT UI
+     * Theme: "Lumina Plum" | Style: Glassmorphic & Standard Scale
+     */
 
-    .doc-wrapper {
-        background: var(--bg-secondary);
-        min-height: calc(100vh - 100px);
-        padding: 0;
+    :root {
+        --plum-900: #500724;
+        --plum-700: #8B1956;
+        --plum-600: #AC2066;
+        --plum-500: #D42F7C;
+        --plum-100: #FCE7F3;
+        --plum-50: #FDF2F8;
+
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.4);
+
+        --text-msg: #374151;
+        --text-head: #111827;
+
+        --radius-lg: 16px;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+
+        --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    /* Breadcrumb Navigation */
-    .doc-breadcrumb {
+    body {
+        background: #F3F4F6 !important;
+    }
+
+    /* Main Container */
+    .doc-wrapper {
+        min-height: calc(100vh - 60px);
+        background:
+            radial-gradient(circle at 10% 20%, rgba(139, 25, 86, 0.03) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(37, 99, 235, 0.03) 0%, transparent 40%),
+            #F8FAFC;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        padding-bottom: 40px;
+        position: relative;
+    }
+
+    /* Decorative Top Mesh (Reduced height) */
+    .doc-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 200px;
+        top: 0;
+        left: 0;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #F8FAFC 100%),
+            linear-gradient(to right, rgba(139, 25, 86, 0.05), rgba(59, 130, 246, 0.05));
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* ----------------------------------------------------
+       BREADCRUMB SECTION (Standard Consistency)
+       ---------------------------------------------------- */
+    .breadcrumb-section {
         background: var(--bg-primary);
-        padding: 12px 20px;
+        border-bottom: 1px solid var(--border-color, #DFE1E6);
+        padding: 8px 24px;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 15;
+    }
+
+    .breadcrumb {
         display: flex;
         align-items: center;
-        gap: 4px;
-        border-bottom: 1px solid var(--border-color);
+        gap: 8px;
+        margin: 0;
+        padding: 0;
         font-size: 13px;
     }
 
-    .doc-breadcrumb .breadcrumb-item {
-        color: var(--jira-blue);
+    .breadcrumb-link {
+        color: var(--plum-700);
         text-decoration: none;
-        display: flex;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: var(--transition-base);
+        cursor: pointer;
     }
 
-    .doc-breadcrumb .breadcrumb-item:hover {
-        color: var(--jira-blue-dark);
+    .breadcrumb-link:hover {
+        color: var(--plum-900);
+        text-decoration: underline;
     }
 
-    .doc-breadcrumb .breadcrumb-divider {
-        color: var(--text-secondary);
-        margin: 0 4px;
+    .breadcrumb-separator {
+        color: #64748B;
+        margin: 0 2px;
+        font-weight: 300;
     }
 
-    .doc-breadcrumb .breadcrumb-current {
-        color: var(--text-primary);
-        font-weight: 500;
+    .breadcrumb-current {
+        color: var(--text-head);
+        font-weight: 600;
     }
 
-    /* Page Header Section */
-    .doc-header-section {
-        background: var(--bg-primary);
-        padding: 20px 20px 16px;
-        border-bottom: 1px solid var(--border-color);
+    /* ----------------------------------------------------
+       HEADER SECTION (Compacted)
+       ---------------------------------------------------- */
+    .doc-header-wrapper {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+        position: relative;
+        z-index: 10;
+        margin-bottom: 1.5rem;
     }
 
-    .doc-header-content {
-        max-width: 100%;
+    .doc-header-main {
+        padding: 1.25rem 1.5rem;
+        /* Standardized spacing */
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
+        align-items: center;
+        /* Center vertically for cleaner row */
     }
 
-    .doc-header-info {
-        flex: 1;
+    .doc-title-block {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .doc-icon-badge {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--plum-700), var(--plum-500));
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        box-shadow: 0 4px 12px -2px rgba(139, 25, 86, 0.25);
     }
 
     .doc-page-title {
-        font-size: 26px;
+        font-size: 1.5rem;
+        /* Reduced from 2rem */
         font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 4px 0;
-        letter-spacing: -0.2px;
+        color: var(--text-head);
+        margin: 0;
+        letter-spacing: -0.01em;
     }
 
     .doc-page-subtitle {
-        font-size: 13px;
-        color: var(--text-secondary);
-        margin: 0;
-        line-height: 1.4;
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-top: 0;
+        font-weight: 400;
     }
 
-    .doc-header-action {
-        display: flex;
-        align-items: center;
-        flex-shrink: 0;
+    .doc-header-actions .btn-primary {
+        background: linear-gradient(135deg, var(--plum-700) 0%, var(--plum-600) 100%);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(139, 25, 86, 0.15);
+        transition: all 0.2s ease;
     }
 
-    .doc-upload-btn {
-        white-space: nowrap;
+    .doc-header-actions .btn-primary:hover {
+        box-shadow: 0 4px 8px rgba(139, 25, 86, 0.25);
+        transform: translateY(-1px);
     }
 
-    /* Content Area */
-    .doc-content {
-        padding: 16px 20px;
+    /* ----------------------------------------------------
+       STATS & CONTENT (Compacted)
+       ---------------------------------------------------- */
+    .doc-body-content {
+        max-width: 1200px;
+        /* Tighter container */
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 5;
     }
 
-    /* Statistics Grid */
-    .doc-stats-grid {
+    .doc-stats-row {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 16px;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .doc-stat-card {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 16px;
+        background: white;
+        border-radius: var(--radius-md);
+        padding: 1rem;
         display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition-base);
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid rgba(229, 231, 235, 0.6);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .doc-stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--jira-blue);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
     }
 
-    .doc-stat-icon {
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
-        background: var(--jira-blue-light);
-        border-radius: 8px;
+    .stat-icon-wrapper {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--jira-blue);
         font-size: 20px;
     }
 
-    .doc-stat-icon.category-design {
-        background: rgba(24, 144, 255, 0.1);
-        color: #1890ff;
+    .bg-soft-primary {
+        background: #EEF2FF;
+        color: #4338CA;
     }
 
-    .doc-stat-icon.category-technical {
-        background: rgba(82, 196, 26, 0.1);
-        color: #52c41a;
+    .bg-soft-info {
+        background: #F0F9FF;
+        color: #0369A1;
     }
 
-    .doc-stat-icon.category-report {
-        background: rgba(250, 140, 22, 0.1);
-        color: #fa8c16;
+    .bg-soft-success {
+        background: #F0FDF4;
+        color: #15803D;
     }
 
-    .doc-stat-content {
-        flex: 1;
+    .bg-soft-warning {
+        background: #FFFBEB;
+        color: #B45309;
     }
 
-    .doc-stat-value {
-        font-size: 24px;
+    .stat-info .stat-value {
+        font-size: 1.25rem;
+        /* Standard H4 size */
         font-weight: 700;
-        color: var(--text-primary);
-        line-height: 1;
-        margin-bottom: 4px;
+        color: var(--text-head);
+        line-height: 1.1;
     }
 
-    .doc-stat-label {
-        font-size: 13px;
-        color: var(--text-secondary);
+    .stat-info .stat-label {
+        font-size: 0.813rem;
+        color: #6B7280;
         font-weight: 500;
     }
 
-    /* Filters Section */
-    .doc-filters {
+    /* ----------------------------------------------------
+       TOOLBAR (Standard Input Sizes)
+       ---------------------------------------------------- */
+    .doc-toolbar {
+        background: white;
+        padding: 0.75rem;
+        border-radius: var(--radius-md);
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: center;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 12px 16px;
-        margin-bottom: 16px;
-        box-shadow: var(--shadow-sm);
-        gap: 12px;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #E5E7EB;
     }
 
-    .doc-filters-left {
-        display: flex;
-        gap: 10px;
-        align-items: center;
+    .search-wrapper {
         flex: 1;
-    }
-
-    .search-box {
+        max-width: 360px;
         position: relative;
-        flex: 1;
-        max-width: 320px;
     }
 
-    .search-box i {
+    .search-input {
+        background: #F9FAFB !important;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 8px !important;
+        padding-left: 2.5rem !important;
+        height: 38px !important;
+        /* Standard height */
+        font-size: 0.875rem;
+    }
+
+    .search-input:focus {
+        background: white !important;
+        border-color: var(--plum-500) !important;
+        box-shadow: 0 0 0 3px var(--plum-100) !important;
+    }
+
+    .search-icon {
         position: absolute;
-        left: 10px;
+        left: 0.875rem;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--text-secondary);
-        z-index: 1;
-        font-size: 13px;
+        color: #9CA3AF;
+        font-size: 0.875rem;
+        pointer-events: none;
     }
 
-    .search-box input {
-        padding-left: 32px;
-        padding-right: 12px;
-        height: 32px;
-        font-size: 13px;
-        width: 100%;
+    .filter-wrapper {
+        display: flex;
+        gap: 0.5rem;
     }
 
-    .doc-filters-left .form-select {
-        height: 32px;
-        font-size: 13px;
-        min-width: 220px;
-        padding-top: 2px;
-        padding-bottom: 2px;
+    .filter-select {
+        background-color: #F9FAFB;
+        border: 1px solid #E5E7EB !important;
+        border-radius: 8px !important;
+        height: 38px !important;
+        /* Standard height */
+        padding: 0 2rem 0 0.75rem !important;
+        font-size: 0.875rem;
+        color: #374151;
+        cursor: pointer;
+        min-width: 160px;
     }
 
-    .doc-filters-right {
-        flex-shrink: 0;
+    .btn-icon-text {
+        height: 38px;
+        padding: 0 12px;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    /* Document List */
-    .doc-list {
+    /* ----------------------------------------------------
+       DOCUMENT LIST (Compact Rows)
+       ---------------------------------------------------- */
+    .doc-grid {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 0.75rem;
     }
 
     .doc-item {
+        background: white;
+        border: 1px solid #E5E7EB;
+        border-radius: var(--radius-md);
+        padding: 0.75rem 1rem;
+        /* Compact padding */
         display: flex;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 12px;
-        gap: 12px;
-        align-items: flex-start;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition-base);
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.15s ease;
     }
 
     .doc-item:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--jira-blue);
+        border-color: var(--plum-300, #F472B6);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transform: translateY(-1px);
     }
 
-    .doc-icon {
+    .doc-item-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .doc-file-icon {
         width: 40px;
         height: 40px;
-        min-width: 40px;
-        background: var(--jira-blue-light);
+        background: #F1F5F9;
+        color: #64748B;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--jira-blue);
-        font-size: 16px;
+        font-size: 18px;
     }
 
-    .doc-info {
+    .doc-item:hover .doc-file-icon {
+        background: var(--plum-50);
+        color: var(--plum-700);
+    }
+
+    .doc-content-info {
         flex: 1;
         min-width: 0;
     }
 
-    .doc-info .doc-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin: 0 0 4px 0;
-        word-break: break-word;
-    }
-
-    .doc-description {
-        font-size: 12px;
-        color: var(--text-secondary);
-        margin: 0 0 8px 0;
-        line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .doc-meta {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        margin-bottom: 8px;
-        font-size: 11px;
-        flex-wrap: wrap;
-    }
-
-    .doc-category {
-        padding: 3px 8px;
-        border-radius: 3px;
-        font-weight: 500;
-        text-transform: uppercase;
-        font-size: 10px;
-        letter-spacing: 0.3px;
-    }
-
-    .doc-category.category-requirement {
-        background: rgba(82, 196, 26, 0.1);
-        color: #52c41a;
-    }
-
-    .doc-category.category-design {
-        background: rgba(24, 144, 255, 0.1);
-        color: #1890ff;
-    }
-
-    .doc-category.category-technical {
-        background: rgba(250, 173, 20, 0.1);
-        color: #faad14;
-    }
-
-    .doc-category.category-user_guide {
-        background: rgba(114, 46, 209, 0.1);
-        color: #722ed1;
-    }
-
-    .doc-category.category-training {
-        background: rgba(24, 144, 255, 0.1);
-        color: #1890ff;
-    }
-
-    .doc-category.category-report {
-        background: rgba(250, 140, 22, 0.1);
-        color: #fa8c16;
-    }
-
-    .doc-category.category-other {
-        background: rgba(140, 140, 140, 0.1);
-        color: #8c8c8c;
-    }
-
-    .doc-size,
-    .doc-version,
-    .doc-downloads {
-        color: var(--text-secondary);
-    }
-
-    .doc-footer {
-        display: flex;
-        gap: 10px;
-        font-size: 11px;
-        color: var(--text-secondary);
-        flex-wrap: wrap;
-    }
-
-    .doc-author,
-    .doc-date {
+    .doc-header-row {
         display: flex;
         align-items: center;
-        gap: 4px;
-    }
-
-    .doc-actions {
-        display: flex;
-        gap: 4px;
-        flex-shrink: 0;
-    }
-
-    .doc-actions .btn {
-        padding: 4px 10px;
-        font-size: 12px;
-        height: 28px;
-    }
-
-    /* Empty State */
-    .doc-empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        border-style: dashed;
-    }
-
-    .doc-empty-icon {
-        font-size: 48px;
-        color: var(--text-secondary);
-        margin-bottom: 12px;
-        opacity: 0.5;
-    }
-
-    .doc-empty-state h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin: 0 0 6px 0;
-    }
-
-    .doc-empty-state p {
-        color: var(--text-secondary);
-        margin: 0 0 16px 0;
-        font-size: 13px;
-    }
-
-    /* Modal Styles */
-    .modal-content {
-        border: none;
-        box-shadow: var(--shadow-lg);
-        border-radius: 8px;
-    }
-
-    .modal-header {
-        background: var(--bg-primary);
-        border-bottom: 1px solid var(--border-color);
-        padding: 16px 20px;
-    }
-
-    .modal-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .modal-body {
-        padding: 20px;
-        background: var(--bg-primary);
-    }
-
-    .modal-body .mb-3 {
-        margin-bottom: 14px !important;
-    }
-
-    .modal-body .form-label {
-        font-size: 13px;
-        font-weight: 500;
-        margin-bottom: 6px;
-        color: var(--text-primary);
-    }
-
-    .modal-body .form-control,
-    .modal-body .form-select {
-        font-size: 13px;
-        height: 32px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-    }
-
-    .modal-body .form-control:focus,
-    .modal-body .form-select:focus {
-        border-color: var(--jira-blue);
-        box-shadow: 0 0 0 3px rgba(139, 25, 86, 0.1);
-    }
-
-    .modal-body .form-text {
-        font-size: 12px;
-        color: var(--text-secondary);
-        margin-top: 4px;
-    }
-
-    .modal-body textarea.form-control {
-        height: auto;
-        min-height: 80px;
-        resize: vertical;
-        font-size: 13px;
-    }
-
-    .modal-body .form-check {
-        margin-top: 8px;
-    }
-
-    .modal-body .form-check-label {
-        font-size: 13px;
-        color: var(--text-primary);
-        margin-left: 6px;
-    }
-
-    .modal-footer {
-        background: var(--bg-secondary);
-        border-top: 1px solid var(--border-color);
-        padding: 12px 20px;
         gap: 8px;
+        margin-bottom: 2px;
     }
 
-    .modal-footer .btn {
-        font-size: 13px;
-        padding: 6px 16px;
+    .doc-title {
+        font-size: 0.938rem;
+        /* 15px */
+        font-weight: 600;
+        color: var(--text-head);
+        margin: 0;
+    }
+
+    .doc-badge {
+        font-size: 0.688rem;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    /* Badge Colors */
+    .category-design {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563EB;
+    }
+
+    .category-technical {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+    }
+
+    .category-report {
+        background: rgba(245, 158, 11, 0.1);
+        color: #D97706;
+    }
+
+    .category-requirement {
+        background: rgba(139, 92, 246, 0.1);
+        color: #7C3AED;
+    }
+
+    .category-other {
+        background: #F3F4F6;
+        color: #4B5563;
+    }
+
+    .doc-orig-filename {
+        font-family: 'SF Mono', 'Menlo', monospace;
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        margin: 0;
+    }
+
+    .doc-meta-row {
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+
+    .doc-uploader {
+        background: none;
+        padding: 0;
+        color: #6B7280;
+        font-weight: 400;
+    }
+
+    /* Actions */
+    .doc-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .download-stat {
+        font-size: 0.813rem;
+        color: #9CA3AF;
+    }
+
+    .btn-group {
+        background: transparent;
+        padding: 0;
+        gap: 2px;
+    }
+
+    .btn-group .btn {
+        width: 32px;
         height: 32px;
+        border-radius: 6px !important;
+        border: 1px solid #E5E7EB;
+        background: white;
+        color: #64748B;
+        font-size: 14px;
     }
 
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .doc-wrapper {
-            padding: 0;
-        }
-
-        .doc-breadcrumb {
-            padding: 12px 20px;
-        }
-
-        .doc-header-section {
-            padding: 24px 20px 20px;
-        }
-
-        .doc-content {
-            padding: 20px;
-        }
-
-        .doc-stats-grid {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .doc-header-content {
-            flex-direction: column;
-            gap: 16px;
-        }
+    .btn-group .btn:hover {
+        border-color: var(--plum-700);
+        color: var(--plum-700);
+        background: var(--plum-50);
     }
 
-    @media (max-width: 768px) {
-        .doc-breadcrumb {
-            padding: 12px 16px;
-            font-size: 13px;
-        }
-
-        .doc-header-section {
-            padding: 20px 16px 16px;
-        }
-
-        .doc-header-content {
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .doc-page-title {
-            font-size: 24px;
-        }
-
-        .doc-page-subtitle {
-            font-size: 13px;
-        }
-
-        .doc-content {
-            padding: 16px;
-        }
-
-        .doc-stats-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .doc-filters {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 12px;
-            padding: 12px;
-        }
-
-        .doc-filters-left {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .search-box {
-            max-width: none;
-        }
-
-        .doc-filters-left .form-select {
-            min-width: auto;
-            width: 100%;
-        }
-
-        .doc-item {
-            flex-direction: column;
-            padding: 12px;
-            gap: 12px;
-        }
-
-        .doc-icon {
-            width: 40px;
-            height: 40px;
-            min-width: 40px;
-            font-size: 16px;
-        }
-
-        .doc-meta {
-            justify-content: flex-start;
-            gap: 8px;
-        }
-
-        .doc-footer {
-            gap: 8px;
-        }
-
-        .doc-actions {
-            width: 100%;
-            justify-content: flex-start;
-        }
-
-        .doc-empty-state {
-            padding: 40px 16px;
-        }
+    .btn-group .btn.delete-doc:hover {
+        border-color: #EF4444;
+        color: #EF4444;
+        background: #FEF2F2;
     }
 
-    @media (max-width: 480px) {
-        .doc-header-section {
-            padding: 16px 12px 12px;
-        }
-
-        .doc-page-title {
-            font-size: 20px;
-        }
-
-        .doc-content {
-            padding: 12px;
-        }
-
-        .doc-breadcrumb {
-            padding: 10px 12px;
-            font-size: 12px;
-            gap: 2px;
-        }
-
-        .search-box input {
-            height: 32px;
-            font-size: 13px;
-        }
-
-        .doc-filters {
-            padding: 10px;
-            gap: 10px;
-        }
-
-        .doc-stat-card {
-            padding: 12px;
-            gap: 12px;
-        }
-
-        .doc-stat-value {
-            font-size: 20px;
-        }
-
-        .doc-stat-label {
-            font-size: 12px;
-        }
-
-        .doc-item {
-            padding: 10px;
-        }
-
-        .doc-info .doc-title {
-            font-size: 14px;
-        }
-
-        .doc-description {
-            font-size: 12px;
-            -webkit-line-clamp: 1;
-        }
-    }
-
-    /* Drag & Drop Styles */
+    /* ----------------------------------------------------
+       UPLOAD MODAL & DRAG-DROP (Premium Lumina Style)
+       ---------------------------------------------------- */
     .drag-drop-zone {
-        border: 2px dashed var(--border-color);
-        border-radius: 8px;
-        padding: 30px 20px;
+        border: 2px dashed #D1D5DB;
+        border-radius: var(--radius-md);
+        padding: 2.5rem 1.5rem;
         text-align: center;
-        background: var(--bg-secondary);
-        transition: all 0.2s ease;
+        background: #F9FAFB;
         cursor: pointer;
+        transition: all 0.2s var(--transition-spring);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
         position: relative;
     }
 
     .drag-drop-zone:hover,
     .drag-drop-zone.dragover {
-        border-color: var(--jira-blue);
-        background: rgba(24, 144, 255, 0.05);
+        border-color: var(--plum-600);
+        background: var(--plum-50);
+        transform: translateY(-2px);
     }
 
     .drag-drop-zone i {
-        font-size: 32px;
-        color: var(--text-secondary);
-        margin-bottom: 10px;
-        display: block;
+        font-size: 2.5rem;
+        color: var(--plum-500);
+        margin-bottom: 0.25rem;
     }
 
     .drag-drop-zone p {
-        margin: 0 0 5px;
+        font-size: 0.938rem;
         font-weight: 500;
-        color: var(--text-primary);
+        color: #374151;
+        margin: 0;
     }
 
     .drag-drop-zone .file-info {
-        font-size: 11px;
-        display: block;
+        font-size: 0.813rem;
+        color: #6B7280;
     }
 
-    /* Fix Dropdown Cutoff */
+    .text-plum {
+        color: var(--plum-700) !important;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #F3F4F6;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .modal-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-head);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-footer {
+        background: #F9FAFB;
+        border-top: 1px solid #F3F4F6;
+        padding: 1rem 1.5rem;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-head);
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-body .form-control,
     .modal-body .form-select {
-        height: 38px !important;
-        /* Increased height */
-        padding-top: 6px !important;
-        /* Adjusted padding */
-        padding-bottom: 6px !important;
-        line-height: 1.5;
+        border-radius: 8px;
+        border: 1px solid #E5E7EB;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.938rem;
+        transition: all 0.2s;
     }
 
-    #previewModal {
-        z-index: 10000 !important;
-        /* Ensure on top of everything including multiple backdrops */
+    .modal-body .form-control:focus,
+    .modal-body .form-select:focus {
+        border-color: var(--plum-500);
+        box-shadow: 0 0 0 4px var(--plum-100);
+        outline: none;
     }
 
-    .modal-xxl-custom {
-        width: 95vw !important;
-        max-width: 95vw !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        margin-top: 10px !important;
+    /* Primary Button Global Consistency */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--plum-700) 0%, var(--plum-600) 100%) !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(139, 25, 86, 0.15) !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
     }
 
-    #previewModal .modal-content {
-        height: 90vh;
-        /* Consistent height */
-    }
-
-    /* Fix "Stuck" dark color on buttons after modal close (Focus State) */
-    .doc-actions .btn:focus {
-        box-shadow: none !important;
-        background-color: transparent !important;
-    }
-    
-    .doc-actions .btn-outline-primary:focus {
-        color: var(--jira-blue) !important;
-        border-color: var(--jira-blue) !important;
-    }
-    
-    .doc-actions .btn-outline-secondary:focus {
-        color: #6c757d !important;
-        border-color: #6c757d !important;
-    }
-
-    .doc-actions .btn-outline-danger:focus {
-        color: #dc3545 !important;
-        border-color: #dc3545 !important;
-    }
-    
-    /* Ensure Hover still works */
-    .doc-actions .btn-outline-primary:hover {
-        background-color: var(--jira-blue) !important;
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--plum-600) 0%, var(--plum-500) 100%) !important;
+        box-shadow: 0 4px 12px rgba(139, 25, 86, 0.25) !important;
+        transform: translateY(-1px);
         color: white !important;
+    }
+
+    /* Modal spacing tweaks */
+    #uploadModal .modal-body,
+    #editModal .modal-body {
+        padding: 1.5rem;
+    }
+
+    /* Empty State */
+    .empty-state-card {
+        background: white;
+        border-radius: 12px;
+        padding: 4rem 2rem;
+        text-align: center;
+        border: 2px dashed #E5E7EB;
+    }
+
+    .empty-icon-circle {
+        width: 80px;
+        height: 80px;
+        background: #F9FAFB;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 32px;
+        color: #9CA3AF;
+    }
+
+    /* Animation */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .doc-item {
+        animation: slideIn 0.3s ease-out forwards;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+
+        .doc-header-main,
+        .doc-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .search-wrapper {
+            max-width: none;
+        }
+
+        .doc-item {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .doc-item-actions {
+            border-top: 1px solid #F3F4F6;
+            padding-top: 0.75rem;
+            justify-content: space-between;
+        }
     }
 </style>
 

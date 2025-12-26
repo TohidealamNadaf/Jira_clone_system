@@ -267,7 +267,18 @@ $router->group(['prefix' => '/admin', 'middleware' => ['auth', 'admin', 'csrf']]
 
     // Workflow Management
     $router->get('/workflows', [AdminController::class, 'workflows'])->name('admin.workflows');
+    $router->post('/workflows', [AdminController::class, 'storeWorkflow'])->name('admin.workflows.store');
     $router->get('/workflows/{id}', [AdminController::class, 'showWorkflow'])->name('admin.workflows.show');
+    $router->put('/workflows/{id}', [AdminController::class, 'updateWorkflow'])->name('admin.workflows.update');
+    $router->delete('/workflows/{id}', [AdminController::class, 'deleteWorkflow'])->name('admin.workflows.delete');
+
+    // Workflow Statuses
+    $router->post('/workflows/{id}/statuses', [AdminController::class, 'addStatusToWorkflow'])->name('admin.workflows.statuses.add');
+    $router->delete('/workflows/{id}/statuses/{statusId}', [AdminController::class, 'removeStatusFromWorkflow'])->name('admin.workflows.statuses.remove');
+
+    // Workflow Transitions
+    $router->post('/workflows/{id}/transitions', [AdminController::class, 'addTransitionToWorkflow'])->name('admin.workflows.transitions.add');
+    $router->delete('/workflows/{id}/transitions/{transitionId}', [AdminController::class, 'removeTransitionFromWorkflow'])->name('admin.workflows.transitions.remove');
 
     // Issue Types
     $router->get('/issue-types', [AdminController::class, 'issueTypes'])->name('admin.issue-types');

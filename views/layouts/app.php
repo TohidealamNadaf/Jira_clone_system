@@ -23,8 +23,6 @@
     <!-- TinyMCE (Community Edition via CDNJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
 
-    <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <!-- Custom CSS -->
     <link href="<?= asset('css/app.css') ?>" rel="stylesheet">
     <!-- Design Consistency CSS - Ensures all users see identical layout -->

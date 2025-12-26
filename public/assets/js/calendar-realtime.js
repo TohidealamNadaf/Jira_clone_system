@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
             dayMaxEvents: true,
             eventMaxStack: 3,
             themeSystem: 'standard',
+            dropAccept: '.unscheduled-issue', // Only accept drops from our unscheduled issues
 
             events: function (info, successCallback, failureCallback) {
                 fetchEvents(info)
@@ -129,6 +130,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
             dateClick: function (info) {
                 openCreateEventModal(info.dateStr);
+            },
+
+            drop: function (info) {
+                console.log('📅 [DROP] Something dropped on calendar:', info);
+                
+                // Get drag data from dataTransfer
+                const dragDataText = info.jsEvent.dataTransfer.getData('text/plain');
+                if (!dragDataText) {
+                    console.log('📅 [DROP] No drag data found, ignoring drop');
+                    return;
+                }
+                
+                try {
+                    const dragData = JSON.parse(dragDataText);
+                    console.log('📅 [DROP] Drag data:', dragData);
+                    
+                    if (dragData.fromUnscheduled) {
+                        // This is an unscheduled issue being scheduled
+                        const dropDate = info.dateStr;
+                        console.log('📅 [DROP] Unscheduled issue dropped on:', dropDate);
+                        
+                        // Find the issue data from our unscheduled issues array
+                        const issueData = unscheduledIssues.find(issue => issue.id == dragData.id);
+                        if (issueData) {
+                            openScheduleModal(issueData, dropDate);
+                        }
+                    }
+                } catch (err) {
+                    console.error('📅 [DROP] Error processing drop:', err);
+                }
+            },
+
+            eventDragStart: function(info) {
+                console.log('📅 [DRAG] Calendar event drag started:', info.event.title);
+            },
+
+            eventDragStop: function(info) {
+                console.log('📅 [DRAG] Calendar event drag stopped:', info.event.title);
             },
 
             datesSet: function (info) {
@@ -1113,6 +1152,325 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // =====================================================
+    // UNSCHEDULED ISSUES FUNCTIONALITY
+    // =====================================================
+
+    let unscheduledIssues = [];
+
+    function loadUnscheduledIssues() {
+        console.log('📅 [UNSCHEDULED] Loading unscheduled issues...');
+        
+        fetch(`${window.JiraConfig.apiBase}/calendar/unscheduled`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
+            }
+        })
+        .then(res => {
+            console.log('📅 [UNSCHEDULED] API Response Status:', res.status);
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log('📅 [UNSCHEDULED] API Response Data:', data);
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load unscheduled issues');
+            }
+
+            unscheduledIssues = data.data || [];
+            console.log('📅 [UNSCHEDULED] Loaded unscheduled issues:', unscheduledIssues.length);
+            renderUnscheduledIssues();
+        })
+        .catch(err => {
+            console.error('❌ [UNSCHEDULED] Error loading unscheduled issues:', err);
+            showUnscheduledError();
+        });
+    }
+
+    function renderUnscheduledIssues() {
+        const unscheduledList = document.getElementById('unscheduledList');
+        const unscheduledCount = document.getElementById('unscheduledCount');
+        
+        if (!unscheduledList || !unscheduledCount) return;
+
+        // Update count
+        unscheduledCount.textContent = unscheduledIssues.length;
+
+        if (unscheduledIssues.length === 0) {
+            unscheduledList.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <p>All issues scheduled</p>
+                </div>
+            `;
+            return;
+        }
+
+        const issuesHtml = unscheduledIssues.map(issue => `
+            <div class="unscheduled-issue" 
+                 data-issue-id="${issue.id}" 
+                 data-issue-key="${issue.key}"
+                 draggable="true">
+                <div class="issue-type-icon" style="background-color: ${issue.issue_type_color || '#6b7280'}">
+                    <i class="bi ${issue.issue_type_icon || 'bi-bug'}"></i>
+                </div>
+                <div class="issue-details">
+                    <div class="issue-key">${issue.key}</div>
+                    <div class="issue-summary">${issue.summary}</div>
+                    <div class="issue-meta">
+                        <span class="project-name">${issue.project_key}</span>
+                        <span class="priority-badge ${issue.priority_name?.toLowerCase()}">${issue.priority_name}</span>
+                    </div>
+                </div>
+                <div class="issue-assignee">
+                    ${issue.assignee_avatar ? 
+                        `<img src="${issue.assignee_avatar}" alt="${issue.assignee_name}" title="${issue.assignee_name}">` :
+                        `<div class="assignee-initials" title="Unassigned">${issue.assignee_name?.charAt(0) || 'U'}</div>`
+                    }
+                </div>
+            </div>
+        `).join('');
+
+        unscheduledList.innerHTML = issuesHtml;
+
+        // Add drag event listeners
+        setupUnscheduledDragEvents();
+    }
+
+    function setupUnscheduledDragEvents() {
+        const issueElements = document.querySelectorAll('.unscheduled-issue');
+        
+        issueElements.forEach(element => {
+            element.addEventListener('dragstart', handleDragStart);
+            element.addEventListener('dragend', handleDragEnd);
+        });
+    }
+
+    function handleDragStart(e) {
+        const issueElement = e.target.closest('.unscheduled-issue');
+        if (!issueElement) return;
+        
+        const issueId = issueElement.dataset.issueId;
+        const issueKey = issueElement.dataset.issueKey;
+        
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            id: issueId,
+            key: issueKey,
+            fromUnscheduled: true
+        }));
+        
+        issueElement.style.opacity = '0.5';
+        issueElement.classList.add('dragging');
+        console.log('📅 [DRAG] Started dragging unscheduled issue:', issueKey);
+    }
+
+    function handleDragEnd(e) {
+        const issueElement = e.target.closest('.unscheduled-issue');
+        if (issueElement) {
+            issueElement.style.opacity = '';
+            issueElement.classList.remove('dragging');
+        }
+        console.log('📅 [DRAG] Ended dragging');
+    }
+
+    function showUnscheduledError() {
+        const unscheduledList = document.getElementById('unscheduledList');
+        if (!unscheduledList) return;
+
+        unscheduledList.innerHTML = `
+            <div class="error-state">
+                <i class="bi bi-exclamation-triangle"></i>
+                <p>Failed to load unscheduled issues</p>
+                <button class="jira-btn jira-btn-ghost small" onclick="loadUnscheduledIssues()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Retry
+                </button>
+            </div>
+        `;
+    }
+
+    // =====================================================
+    // SCHEDULE ISSUE MODAL
+    // =====================================================
+
+    window.openScheduleModal = function(issueData, dropDate) {
+        const modal = document.getElementById('scheduleIssueModal');
+        if (!modal) return;
+
+        console.log('📅 [SCHEDULE] Opening schedule modal for:', issueData.key, 'on date:', dropDate);
+
+        // Populate modal with issue data
+        document.getElementById('scheduleIssueId').value = issueData.id;
+        document.getElementById('scheduleIssueKey').textContent = issueData.key;
+        document.getElementById('scheduleIssueSummary').textContent = issueData.summary;
+        document.getElementById('scheduleDueDate').value = dropDate;
+        document.getElementById('scheduleStartDate').value = '';
+        document.getElementById('scheduleProjectName').textContent = issueData.project_key;
+        
+        // Set issue type
+        const issueTypeElement = document.getElementById('scheduleIssueType');
+        issueTypeElement.innerHTML = `
+            <i class="bi ${issueData.issue_type_icon || 'bi-bug'}"></i>
+            ${issueData.issue_type || 'Issue'}
+        `;
+        issueTypeElement.style.backgroundColor = issueData.issue_type_color || '#6b7280';
+
+        // Set priority
+        const priorityElement = document.getElementById('schedulePriority');
+        priorityElement.textContent = issueData.priority_name;
+        priorityElement.className = `priority-badge ${issueData.priority_name?.toLowerCase()}`;
+
+        // Set assignee
+        const assigneeElement = document.getElementById('scheduleAssignee');
+        if (issueData.assignee_avatar && issueData.assignee_name) {
+            assigneeElement.innerHTML = `
+                <img class="assignee-avatar" src="${issueData.assignee_avatar}" alt="${issueData.assignee_name}">
+                <span>${issueData.assignee_name}</span>
+            `;
+        } else {
+            assigneeElement.innerHTML = `
+                <div class="assignee-initials">U</div>
+                <span>Unassigned</span>
+            `;
+        }
+
+        // Set created date
+        if (issueData.created_at) {
+            const createdDate = new Date(issueData.created_at);
+            document.getElementById('scheduleCreatedDate').textContent = createdDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Show modal
+        modal.style.display = 'flex';
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.top = `-${window.scrollY}px`;
+    };
+
+    window.closeScheduleModal = function() {
+        const modal = document.getElementById('scheduleIssueModal');
+        if (!modal) return;
+
+        modal.style.display = 'none';
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+
+        // Restore body scroll
+        const scrollY = document.body.style.top;
+        document.body.style.overflow = 'auto';
+        document.body.style.position = 'static';
+        document.body.style.width = 'auto';
+        document.body.style.top = '';
+
+        if (scrollY) {
+            window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+    };
+
+    window.saveScheduledIssue = function() {
+        const issueId = document.getElementById('scheduleIssueId').value;
+        const dueDate = document.getElementById('scheduleDueDate').value;
+        const startDate = document.getElementById('scheduleStartDate').value;
+
+        if (!issueId || !dueDate) {
+            alert('Due date is required');
+            return;
+        }
+
+        const btn = document.querySelector('#scheduleIssueModal .modal-footer .jira-btn-primary');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Scheduling...';
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('issue_id', issueId);
+        formData.append('due_date', dueDate);
+        if (startDate) {
+            formData.append('start_date', startDate);
+        }
+
+        fetch(`${window.JiraConfig.apiBase}/calendar/schedule-issue`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log('📅 [SCHEDULE] Issue scheduled successfully');
+                closeScheduleModal();
+                
+                // Remove from unscheduled list
+                unscheduledIssues = unscheduledIssues.filter(issue => issue.id != issueId);
+                renderUnscheduledIssues();
+                
+                // Refresh calendar
+                if (calendar) {
+                    calendar.refetchEvents();
+                }
+                
+                // Show success message
+                showNotification('Issue scheduled successfully!', 'success');
+            } else {
+                alert(data.error || 'Failed to schedule issue');
+            }
+        })
+        .catch(err => {
+            console.error('❌ [SCHEDULE] Error scheduling issue:', err);
+            alert('Failed to schedule issue. Please try again.');
+        })
+        .finally(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    };
+
+    window.viewIssueDetails = function() {
+        const issueKey = document.getElementById('scheduleIssueKey').textContent;
+        if (!issueKey) return;
+
+        window.open(`${window.JiraConfig.webBase}/issues/${issueKey}`, '_blank');
+    };
+
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-info-circle'}"></i>
+            ${message}
+        `;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Show animation
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // =====================================================
     // INITIALIZATION
     // =====================================================
 
@@ -1127,6 +1485,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loadIssueTypes();
     loadUsers();
     loadSidebarData();
+    loadUnscheduledIssues();
 
     console.log('📅 [CALENDAR] All startup tasks completed');
 });

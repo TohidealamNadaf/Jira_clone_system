@@ -114,32 +114,34 @@
     <!-- Calendar Container -->
     <div class="calendar-main">
         <div class="calendar-sidebar">
-            <!-- Mini Calendar -->
-            <div class="mini-calendar-section">
-                <h3 class="sidebar-title">Jump to date</h3>
-                <div id="miniCalendar"></div>
-            </div>
-
-
-
-            <!-- My Schedule -->
-            <div class="schedule-section">
-                <h3 class="sidebar-title">My Schedule</h3>
-                <div class="schedule-list" id="scheduleList">
+            <!-- Unscheduled Issues -->
+            <div class="unscheduled-section">
+                <h3 class="sidebar-title">
+                    <i class="bi bi-calendar-x"></i>
+                    Unscheduled Issues
+                    <span class="unscheduled-count" id="unscheduledCount">0</span>
+                </h3>
+                <div class="unscheduled-list" id="unscheduledList">
                     <div class="empty-state">
-                        <i class="bi bi-clock"></i>
-                        <p>No scheduled items</p>
+                        <i class="bi bi-check-circle"></i>
+                        <p>All issues scheduled</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Team Schedule -->
-            <div class="team-schedule-section">
-                <h3 class="sidebar-title">Team Schedule</h3>
-                <div class="team-list" id="teamList">
+
+
+            <!-- Unscheduled Issues -->
+            <div class="unscheduled-section">
+                <h3 class="sidebar-title">
+                    <i class="bi bi-calendar-x"></i>
+                    Unscheduled Issues
+                    <span class="unscheduled-count" id="unscheduledCount">0</span>
+                </h3>
+                <div class="unscheduled-list" id="unscheduledList">
                     <div class="empty-state">
-                        <i class="bi bi-people"></i>
-                        <p>No team items</p>
+                        <i class="bi bi-check-circle"></i>
+                        <p>All issues scheduled</p>
                     </div>
                 </div>
             </div>
@@ -571,7 +573,91 @@
     </div>
 </div>
 
-<?php \App\Core\View::endSection(); ?>
+<!-- Schedule Issue Modal -->
+<div class="jira-modal" id="scheduleIssueModal" onclick="handleBackdropClick(event, 'schedule')" aria-hidden="true">
+    <div class="modal-dialog modal-standard">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Schedule Issue</h2>
+                <button class="modal-close" onclick="closeScheduleModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body-scroll">
+                <div class="issue-preview" id="issuePreview">
+                    <div class="issue-type-badge" id="scheduleIssueType">
+                        <i class="bi bi-bug"></i>
+                        Bug
+                    </div>
+                    <div class="issue-basic">
+                        <h3 class="issue-key" id="scheduleIssueKey">PROJ-123</h3>
+                        <h4 class="issue-summary" id="scheduleIssueSummary">Fix calendar loading issue</h4>
+                    </div>
+                </div>
+
+                <form id="scheduleIssueForm">
+                    <input type="hidden" id="scheduleIssueId" name="issue_id">
+                    
+                    <div class="form-section">
+                        <h3>Schedule Details</h3>
+                        <div class="form-group">
+                            <label for="scheduleDueDate">Due Date *</label>
+                            <input type="date" id="scheduleDueDate" name="due_date" class="jira-input" required>
+                            <small class="form-help">The date you dropped this issue on will be set as the due date</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleStartDate">Start Date</label>
+                            <input type="date" id="scheduleStartDate" name="start_date" class="jira-input">
+                            <small class="form-help">Optional: When work should begin on this issue</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Issue Information</h3>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <label>Project</label>
+                                <span id="scheduleProjectName">Project Alpha</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Priority</label>
+                                <span class="priority-badge" id="schedulePriority">Medium</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Assignee</label>
+                                <div class="assignee-info" id="scheduleAssignee">
+                                    <img class="assignee-avatar" src="" alt="">
+                                    <span>John Doe</span>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <label>Created</label>
+                                <span id="scheduleCreatedDate">Dec 20, 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="footer-left">
+                    <button class="jira-btn jira-btn-ghost" onclick="viewIssueDetails()">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        View Issue
+                    </button>
+                </div>
+                <div class="footer-right">
+                    <button class="jira-btn jira-btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+                    <button class="jira-btn jira-btn-primary" onclick="saveScheduledIssue()">
+                        <i class="bi bi-check-lg"></i>
+                        Schedule Issue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+ <?php \App\Core\View::endSection(); ?>
 
 <?php \App\Core\View::section('styles'); ?>
 <!-- Calendar styles are included in app.css -->

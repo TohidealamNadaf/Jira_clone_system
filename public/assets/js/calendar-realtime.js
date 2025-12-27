@@ -73,6 +73,82 @@ document.addEventListener('DOMContentLoaded', function () {
     // INITIALIZATION
     // =====================================================
 
+    function handleCalendarDrop(info) {
+        console.log('📅 [DROP] Something dropped on calendar:', info);
+
+        let dragData = null;
+
+        // Method 1: Check dragged element (FullCalendar Draggable API)
+        if (info.draggedEl) {
+            console.log('📅 [DROP] Dragged element detected via Draggable API');
+            const issueId = info.draggedEl.dataset.issueId;
+            const issueKey = info.draggedEl.dataset.issueKey;
+
+            if (issueId) {
+                dragData = {
+                    id: issueId,
+                    key: issueKey,
+                    fromUnscheduled: true
+                };
+                console.log('📅 [DROP] Got data from draggedEl:', dragData);
+            }
+        }
+
+        // Method 2: Check global fallback (Native Drag & Drop)
+        if (!dragData && window.currentDragData) {
+            dragData = window.currentDragData;
+            console.log('📅 [DROP] Using global fallback data:', dragData);
+        }
+
+        // Method 3: Try DataTransfer (Native Drag & Drop)
+        if (!dragData && info.jsEvent && info.jsEvent.dataTransfer) {
+            try {
+                const plainText = info.jsEvent.dataTransfer.getData('text/plain');
+                if (plainText) {
+                    dragData = JSON.parse(plainText);
+                    console.log('📅 [DROP] Got data from text/plain:', dragData);
+                }
+            } catch (err) {
+                // Ignore
+            }
+
+            if (!dragData) {
+                try {
+                    const jsonData = info.jsEvent.dataTransfer.getData('application/json');
+                    if (jsonData) {
+                        dragData = JSON.parse(jsonData);
+                    }
+                } catch (err) { }
+            }
+        }
+
+        if (!dragData) {
+            console.log('📅 [DROP] No valid drag data found in any method, ignoring drop');
+            return;
+        }
+
+        try {
+            if (dragData.fromUnscheduled) {
+                // This is an unscheduled issue being scheduled
+                const dropDate = info.dateStr;
+                console.log('📅 [DROP] Unscheduled issue dropped on:', dropDate);
+
+                // Find the issue data from our unscheduled issues array
+                const issueData = unscheduledIssues.find(issue => issue.id == dragData.id);
+                if (issueData) {
+                    openScheduleModal(issueData, dropDate);
+                } else {
+                    console.error('📅 [DROP] Issue data not found for ID:', dragData.id);
+                }
+            } else {
+                console.log('📅 [DROP] Not an unscheduled issue, ignoring');
+            }
+        } catch (err) {
+            console.error('📅 [DROP] Error processing drop:', err);
+        }
+    }
+
+
     function initCalendar() {
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -84,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
             dayMaxEvents: true,
             eventMaxStack: 3,
             themeSystem: 'standard',
+            dropAccept: '.unscheduled-issue', // Only accept drops from our unscheduled issues
 
             events: function (info, successCallback, failureCallback) {
                 fetchEvents(info)
@@ -129,6 +206,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
             dateClick: function (info) {
                 openCreateEventModal(info.dateStr);
+            },
+
+            drop: function (info) {
+                handleCalendarDrop(info);
+            },
+
+            eventDragStart: function (info) {
+                console.log('📅 [DRAG] Calendar event drag started:', info.event.title);
+            },
+
+            eventDragStop: function (info) {
+                console.log('📅 [DRAG] Calendar event drag stopped:', info.event.title);
             },
 
             datesSet: function (info) {
@@ -198,6 +287,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function applyFilters(events) {
+        console.log(`📅 [CALENDAR] applyFilters called. Filter: "${currentFilter}", Events In: ${events.length}`);
+
         // Status filter
         if (statusFilter && statusFilter.value) {
             events = events.filter(event => {
@@ -222,10 +313,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Assignee filter
+        // Assignee filter (Dropdown)
         if (assigneeFilter && assigneeFilter.value) {
             events = events.filter(event => {
-                return event.extendedProps.assigneeId == assigneeFilter.value;
+                return event.extendedProps.assigneeId == assigneeFilter.value; // Loose equality
             });
         }
 
@@ -240,39 +331,42 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Tab filters
+        // Tab filters (Logic Decoupled from currentUser existence)
         const currentUser = window.JiraConfig.currentUser?.id;
-        if (currentUser) {
-            switch (currentFilter) {
-                case 'assigned':
-                    events = events.filter(event =>
-                        event.extendedProps.assigneeId === currentUser
-                    );
-                    break;
-                case 'overdue':
-                    const today = new Date().toISOString().split('T')[0];
-                    events = events.filter(event =>
-                        event.start && event.start < today
-                    );
-                    break;
-                case 'due-today':
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    events = events.filter(event =>
-                        event.start && event.start === todayStr
-                    );
-                    break;
-                case 'due-week':
-                    const weekFromNow = new Date();
-                    weekFromNow.setDate(weekFromNow.getDate() + 7);
-                    const weekStr = weekFromNow.toISOString().split('T')[0];
-                    const todayStr2 = new Date().toISOString().split('T')[0];
-                    events = events.filter(event =>
-                        event.start && event.start >= todayStr2 && event.start <= weekStr
-                    );
-                    break;
-            }
+
+        switch (currentFilter) {
+            case 'assigned':
+                if (currentUser) {
+                    events = events.filter(event => event.extendedProps.assigneeId == currentUser);
+                    console.log(`📅 [CALENDAR] Filtered 'assigned'. User: ${currentUser}. Remaining: ${events.length}`);
+                } else {
+                    console.warn('⚠️ [CALENDAR] Current User ID missing, cannot filter "assigned"');
+                }
+                break;
+
+            case 'overdue':
+                const today = new Date().toISOString().split('T')[0];
+                events = events.filter(event => event.start && event.start < today);
+                console.log(`📅 [CALENDAR] Filtered 'overdue' (< ${today}). Remaining: ${events.length}`);
+                break;
+
+            case 'due-today':
+                const todayStr = new Date().toISOString().split('T')[0];
+                events = events.filter(event => event.start && event.start === todayStr);
+                console.log(`📅 [CALENDAR] Filtered 'due-today' (== ${todayStr}). Remaining: ${events.length}`);
+                break;
+
+            case 'due-week':
+                const weekFromNow = new Date();
+                weekFromNow.setDate(weekFromNow.getDate() + 7);
+                const weekStr = weekFromNow.toISOString().split('T')[0];
+                const todayStr2 = new Date().toISOString().split('T')[0];
+                events = events.filter(event => event.start && event.start >= todayStr2 && event.start <= weekStr);
+                console.log(`📅 [CALENDAR] Filtered 'due-week' (${todayStr2} to ${weekStr}). Remaining: ${events.length}`);
+                break;
         }
 
+        console.log(`📅 [CALENDAR] applyFilters Returning: ${events.length}`);
         return events;
     }
 
@@ -288,17 +382,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const displayTitle = titleParts.length > 1 ? titleParts[1] : titleParts[0];
 
         document.getElementById('eventModalTitle').textContent = `${props.key}: ${displayTitle}`;
-        document.getElementById('eventKey').textContent = props.key;
-        document.getElementById('eventSummary').textContent = displayTitle;
-        document.getElementById('eventProject').textContent = props.project || '';
-        document.getElementById('eventStatus').textContent = props.status || '';
-        document.getElementById('eventStatus').style.backgroundColor = props.statusColor || '#ccc';
-        document.getElementById('eventPriority').textContent = props.priority || '';
-        document.getElementById('eventDueDate').textContent = event.start ? formatDateDisplay(event.start) : '';
-        document.getElementById('eventCreatedDate').textContent = formatDateDisplay(props.created) || '';
-        document.getElementById('eventUpdatedDate').textContent = formatDateDisplay(props.updated) || '';
-        document.getElementById('eventDescription').innerHTML = props.description || 'No description';
-        document.getElementById('eventStoryPoints').textContent = props.storyPoints || '—';
+        document.getElementById('detailKey').textContent = props.key;
+        document.getElementById('detailSummary').textContent = displayTitle;
+        document.getElementById('detailProject').textContent = props.project || '';
+        document.getElementById('detailStatus').textContent = props.status || '';
+        document.getElementById('detailStatus').style.backgroundColor = props.statusColor || '#ccc';
+        document.getElementById('detailPriority').textContent = props.priority || '';
+        document.getElementById('detailDueDate').textContent = event.start ? formatDateDisplay(event.start) : '';
+        document.getElementById('detailCreatedDate').textContent = formatDateDisplay(props.created) || '';
+        document.getElementById('detailUpdatedDate').textContent = formatDateDisplay(props.updated) || '';
+        document.getElementById('detailDescription').innerHTML = props.description || 'No description';
+        document.getElementById('detailStoryPoints').textContent = props.storyPoints || '—';
 
         // Helper to get avatar URL
         const getAvatarUrl = (path) => {
@@ -338,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Labels/Tags (Dynamic)
-        const labelsContainer = document.getElementById('eventLabels');
+        const labelsContainer = document.getElementById('detailLabels');
         labelsContainer.innerHTML = ''; // Clear static content
         const typeSpan = document.createElement('span');
         typeSpan.className = 'label-tag';
@@ -361,9 +455,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // View button
         const viewBtn = document.getElementById('viewIssueBtn');
-        viewBtn.onclick = () => {
-            window.location.href = `${window.JiraConfig.webBase}/issues/${props.key}`;
-        };
+        if (viewBtn) {
+            viewBtn.onclick = () => {
+                const baseUrl = window.JiraConfig.webBase.endsWith('/')
+                    ? window.JiraConfig.webBase.slice(0, -1)
+                    : window.JiraConfig.webBase;
+                window.location.href = `${baseUrl}/issue/${props.key}`;
+            };
+        }
 
         // Show modal
         if (eventModal) {
@@ -386,7 +485,250 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event && event.stopPropagation) {
             event.stopPropagation();
         }
+
+        // Store current event data for editing
+        window.currentEventData = {
+            ...props,
+            start: event.start,
+            end: event.end,
+            allDay: event.allDay
+        };
     }
+
+    // =====================================================
+    // EDIT ISSUE FUNCTIONALITY
+    // =====================================================
+
+    window.editIssue = function () {
+        console.log('📅 [EDIT] editIssue called');
+        const data = window.currentEventData;
+
+        if (!data) {
+            console.error('❌ [EDIT] No currentEventData found');
+            alert('Error: Could not load issue data for editing.');
+            return;
+        }
+
+        console.log('📅 [EDIT] Editing issue:', data);
+
+        // Close details modal
+        window.closeEventModal();
+
+        // Open create modal with small delay to ensure DOM is ready
+        setTimeout(() => {
+            try {
+                // Open create modal
+                // We use the create modal but repurpose it for editing
+                const modal = document.getElementById('createEventModal');
+                if (!modal) {
+                    console.error('❌ [EDIT] createEventModal not found in DOM');
+                    alert('Error: Edit modal missing.');
+                    return;
+                }
+
+                // Reset form first
+                const form = document.getElementById('createEventForm');
+                if (form) form.reset();
+
+                // Set Title
+                const titleEl = modal.querySelector('.modal-title');
+                if (titleEl) titleEl.textContent = 'Edit Issue: ' + data.key;
+
+                // Set Button
+                const submitBtn = modal.querySelector('.modal-footer .jira-btn-primary');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="bi bi-check-lg"></i> Update Issue';
+                    submitBtn.onclick = window.saveEvent; // Ensure it calls saveEvent
+                }
+
+                // Set validation flag/id
+                window.editingIssueId = data.key; // We use KEY for updates usually, but API might want ID? API uses KEY in URL.
+
+                // Populate Fields
+
+                // 1. Event Type / Issue Type
+                const typeSelect = document.getElementById('issueType');
+                if (typeSelect && data.issueTypeId) {
+                    typeSelect.value = data.issueTypeId;
+                } else if (typeSelect && data.issueType) {
+                    // Try matching by text if ID missing
+                    for (let i = 0; i < typeSelect.options.length; i++) {
+                        if (typeSelect.options[i].text.toLowerCase() === data.issueType.toLowerCase()) {
+                            typeSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                // 2. Project - select by ID
+                const projectSelect = document.getElementById('eventProject');
+                if (projectSelect && data.projectId) {
+                    projectSelect.value = data.projectId;
+                }
+
+                // 3. Title
+                const titleInput = document.getElementById('eventTitle');
+                if (titleInput) {
+                    // Remove Key prefix if present in title
+                    let summary = data.title || '';
+                    if (data.key && summary.startsWith(data.key + ': ')) {
+                        summary = summary.substring(data.key.length + 2);
+                    }
+                    titleInput.value = summary;
+                }
+
+                // 4. Description
+                const descInput = document.getElementById('eventDesc');
+                if (descInput) {
+                    descInput.value = data.description || '';
+                    // If TinyMCE is already initialized (re-opening), set content
+                    if (typeof tinymce !== 'undefined' && tinymce.get('eventDesc')) {
+                        tinymce.get('eventDesc').setContent(data.description || '');
+                    }
+                }
+
+                // 5. Dates
+                const startInput = document.getElementById('eventStartDate');
+                const endInput = document.getElementById('eventEndDate');
+
+                const toDateTimeLocal = (date) => {
+                    if (!date) return '';
+                    let d = new Date(date);
+                    if (isNaN(d.getTime())) return ''; // Invalid date
+                    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                    return d.toISOString().slice(0, 16);
+                };
+
+                if (startInput && data.start) startInput.value = toDateTimeLocal(data.start);
+                if (endInput) {
+                    // If end is null (single day), use start
+                    endInput.value = toDateTimeLocal(data.end || data.start);
+                }
+
+                // 6. Priority
+                const prioritySelect = document.getElementById('eventPriority');
+                if (prioritySelect && data.priority) {
+                    // Find option with text content matching priority name
+                    for (let i = 0; i < prioritySelect.options.length; i++) {
+                        if (prioritySelect.options[i].text.toLowerCase() === data.priority.toLowerCase()) {
+                            prioritySelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                console.log('📅 [EDIT] Priority set.');
+
+                // Show Modal and Lock Body
+                modal.style.display = 'flex';
+                modal.classList.add('open');
+                modal.setAttribute('aria-hidden', 'false');
+
+                // Re-apply body lock
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
+                document.body.style.top = `-${window.scrollY}px`;
+
+                console.log('📅 [EDIT] Modal displayed successfully');
+
+                // Init TinyMCE after modal is visible
+                setTimeout(() => {
+                    initTinyMCE('#eventDesc');
+                }, 100);
+
+            } catch (err) {
+                console.error('❌ [EDIT] Error in setTimeout block:', err);
+                alert('Error opening edit form: ' + err.message);
+            }
+        }, 100);
+    };
+
+    window.saveEvent = function (e) {
+        if (e) e.preventDefault();
+
+        const btn = document.querySelector('#createEventModal .modal-footer .jira-btn-primary');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+        btn.disabled = true;
+
+        // Gather Data
+        const summary = document.getElementById('eventTitle').value;
+        const projectId = document.getElementById('eventProject').value;
+        const priorityId = document.getElementById('eventPriority').value;
+        const issueTypeId = document.getElementById('issueType').value;
+        const startDate = document.getElementById('eventStartDate').value;
+        const endDate = document.getElementById('eventEndDate').value;
+
+        // Sync TinyMCE header
+        if (typeof tinymce !== 'undefined' && tinymce.get('eventDesc')) {
+            tinymce.triggerSave();
+        }
+        const description = document.getElementById('eventDesc').value;
+        const payload = {
+            summary: summary,
+            description: description,
+            project_id: projectId,
+            priority_id: priorityId,
+            issue_type_id: issueTypeId,
+            start_date: startDate ? startDate.split('T')[0] : null,
+            due_date: endDate ? endDate.split('T')[0] : null
+        };
+
+        let url = `${window.JiraConfig.apiBase}/calendar/events`; // Default create
+        let method = 'POST';
+
+        // Check if editing
+        if (window.editingIssueId) {
+            // Updating existing Issue
+            url = `${window.JiraConfig.apiBase}/issues/${window.editingIssueId}`;
+            method = 'PUT';
+        } else {
+            // Creating new (Not fully implemented for generic events vs issues)
+            // For now, assume creating a generic calendar event or issue
+            // If eventType is 'issue', we might want to call issues endpoint? 
+            // Leaving as default calendar/events for create for now if backend supports it.
+            // But since saveEvent was missing, create was broken anyway. 
+            // I'll leave create logic basic.
+        }
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.issue) { // Issue API returns {success:true, issue:...}
+                    console.log('📅 [SAVE] Success');
+                    window.closeCreateModal();
+                    calendar.refetchEvents();
+
+                    // Clear editing state
+                    window.editingIssueId = null;
+
+                    // Reset button (create mode)
+                    const titleEl = document.querySelector('#createEventModal .modal-title');
+                    if (titleEl) titleEl.textContent = 'Create Calendar Event';
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i> Create Event';
+                } else {
+                    alert('Failed to save: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Save error:', err);
+                alert('An error occurred while saving.');
+            })
+            .finally(() => {
+                if (!window.editingIssueId) {
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i> Create Event';
+                }
+                btn.disabled = false;
+            });
+    };
 
     // =====================================================
     // ISSUE HISTORY LOADING
@@ -542,53 +884,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // =====================================================
 
     function loadSidebarData() {
-        loadUpcomingIssues();
         loadMySchedule();
     }
 
-    function loadUpcomingIssues() {
-        fetch(`${window.JiraConfig.apiBase}/calendar/upcoming`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && data.data) {
-                    renderUpcomingIssues(data.data);
-                }
-            })
-            .catch(err => console.error('Failed to load upcoming issues:', err));
-    }
 
-    function renderUpcomingIssues(issues) {
-        if (!upcomingListEl) return;
-
-        if (upcomingCountEl) {
-            upcomingCountEl.textContent = issues.length;
-        }
-
-        if (issues.length === 0) {
-            upcomingListEl.innerHTML = `
-                <div class="empty-state">
-                    <i class="bi bi-calendar-x"></i>
-                    <p>No upcoming issues</p>
-                </div>
-            `;
-            return;
-        }
-
-        upcomingListEl.innerHTML = issues.map(issue => `
-            <div class="upcoming-item">
-                <div class="upcoming-date">${formatDateDisplay(issue.due_date)}</div>
-                <div class="upcoming-info">
-                    <div class="upcoming-title">${issue.issue_key}: ${issue.summary}</div>
-                    <div class="upcoming-project">${issue.project_key}</div>
-                </div>
-            </div>
-        `).join('');
-    }
 
     function loadMySchedule() {
         if (!scheduleListEl) return;
@@ -662,6 +961,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateSummaryStats(events) {
+        console.log('📅 [CALENDAR] Updating summary stats for', events.length, 'events');
+
         if (!events || events.length === 0) {
             if (totalIssuesEl) totalIssuesEl.textContent = '0';
             if (overdueIssuesEl) overdueIssuesEl.textContent = '0';
@@ -683,13 +984,22 @@ document.addEventListener('DOMContentLoaded', function () {
         let myIssues = 0;
 
         events.forEach(event => {
-            const eventStart = event.start;
+            const eventStart = event.start; // Format is already YYYY-MM-DD from API or ISO
+            // Ensure we compare YYYY-MM-DD parts only
+            const eventDate = eventStart.split('T')[0];
+            const isDone = event.extendedProps.statusCategory === 'done';
 
-            if (eventStart < today) overdue++;
-            if (eventStart === today) dueToday++;
-            if (eventStart >= today && eventStart <= weekStr) dueWeek++;
-            if (currentUser && event.extendedProps.assigneeId === currentUser) myIssues++;
+            if (eventDate < today && !isDone) overdue++;
+            if (eventDate === today && !isDone) dueToday++; // Optionally exclude done from 'due today' too
+            if (eventDate >= today && eventDate <= weekStr && !isDone) dueWeek++;
+
+            // Loose equality check for ID match to handle string vs int
+            if (currentUser && event.extendedProps.assigneeId == currentUser) {
+                myIssues++;
+            }
         });
+
+        console.log(`📅 [CALENDAR] Stats Calculated - Total: ${events.length}, Overdue: ${overdue}, My: ${myIssues} (User: ${currentUser})`);
 
         if (totalIssuesEl) totalIssuesEl.textContent = events.length;
         if (overdueIssuesEl) overdueIssuesEl.textContent = overdue;
@@ -823,6 +1133,17 @@ document.addEventListener('DOMContentLoaded', function () {
                             typeFilter.appendChild(opt);
                         });
                     }
+
+                    const createModalType = document.getElementById('issueType');
+                    if (createModalType) {
+                        createModalType.innerHTML = '';
+                        data.data.forEach(type => {
+                            const opt = document.createElement('option');
+                            opt.value = type.id;
+                            opt.textContent = type.name;
+                            createModalType.appendChild(opt);
+                        });
+                    }
                 }
             })
             .catch(err => console.error('Failed to load issue types:', err));
@@ -883,6 +1204,11 @@ document.addEventListener('DOMContentLoaded', function () {
             createEventModal.classList.add('open');
             createEventModal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
+
+            // Initialize TinyMCE
+            setTimeout(() => {
+                initTinyMCE('#eventDesc');
+            }, 100);
             document.body.style.position = 'fixed';
             document.body.style.width = '100%';
             document.body.style.top = `-${window.scrollY}px`;
@@ -929,6 +1255,11 @@ document.addEventListener('DOMContentLoaded', function () {
             createEventModal.style.display = 'none';
             createEventModal.classList.remove('open');
             createEventModal.setAttribute('aria-hidden', 'true');
+
+            // Remove TinyMCE
+            if (typeof tinymce !== 'undefined') {
+                tinymce.remove('#eventDesc');
+            }
 
             const scrollY = document.body.style.top;
             document.body.style.overflow = 'auto';
@@ -990,14 +1321,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // EVENT LISTENERS
     // =====================================================
 
-    filterTabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            filterTabs.forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-            currentFilter = e.target.dataset.filter;
+    // Event Delegation for Filter Tabs
+    const filterTabsContainer = document.querySelector('.filter-tabs');
+    if (filterTabsContainer) {
+        console.log('📅 [CALENDAR] Filter tabs container found, attaching listener');
+        filterTabsContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.filter-tab');
+            if (!button) return; // Clicked outside a tab button
+
+            console.log('📅 [CALENDAR] Filter tab clicked:', button.dataset.filter);
+            console.log('📅 [CALENDAR] Current User ID:', window.JiraConfig?.currentUser?.id || 'Missing');
+
+            // Remove active class from all tabs in this container
+            filterTabsContainer.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            button.classList.add('active');
+
+            currentFilter = button.dataset.filter;
+            console.log('📅 [CALENDAR] Set currentFilter to:', currentFilter);
+
             calendar.refetchEvents();
         });
-    });
+    } else {
+        console.error('❌ [CALENDAR] Filter tabs container not found!');
+    }
 
     if (moreFiltersBtn && advancedFilters) {
         moreFiltersBtn.addEventListener('click', () => {
@@ -1036,6 +1382,38 @@ document.addEventListener('DOMContentLoaded', function () {
             calendar.refetchEvents();
             if (advancedFilters) {
                 advancedFilters.style.display = 'none';
+            }
+        });
+    }
+
+    // View Switcher Logic
+    const viewSwitcher = document.querySelector('.view-switcher');
+    if (viewSwitcher) {
+        console.log('📅 [CALENDAR] View switcher found, attaching listener');
+        viewSwitcher.addEventListener('click', (e) => {
+            const button = e.target.closest('.view-btn');
+            if (!button) return;
+
+            const viewType = button.dataset.view;
+            console.log('📅 [CALENDAR] Switching view to:', viewType);
+
+            // Update UI
+            viewSwitcher.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Map view types to FullCalendar views
+            const viewMap = {
+                'month': 'dayGridMonth',
+                'week': 'timeGridWeek',
+                'day': 'timeGridDay',
+                'list': 'listWeek'
+            };
+
+            const fcView = viewMap[viewType] || 'dayGridMonth';
+
+            if (calendar) {
+                calendar.changeView(fcView);
+                updateCurrentDateDisplay();
             }
         });
     }
@@ -1093,6 +1471,419 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // =====================================================
+    // UNSCHEDULED ISSUES FUNCTIONALITY
+    // =====================================================
+
+    let unscheduledIssues = [];
+
+    function loadUnscheduledIssues() {
+        console.log('📅 [UNSCHEDULED] Loading unscheduled issues...');
+
+        fetch(`${window.JiraConfig.apiBase}/calendar/unscheduled`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
+            }
+        })
+            .then(res => {
+                console.log('📅 [UNSCHEDULED] API Response Status:', res.status);
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('📅 [UNSCHEDULED] API Response Data:', data);
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load unscheduled issues');
+                }
+
+                unscheduledIssues = data.data || [];
+                console.log('📅 [UNSCHEDULED] Loaded unscheduled issues:', unscheduledIssues.length);
+                renderUnscheduledIssues();
+            })
+            .catch(err => {
+                console.error('❌ [UNSCHEDULED] Error loading unscheduled issues:', err);
+                showUnscheduledError();
+            });
+    }
+
+    function renderUnscheduledIssues() {
+        const unscheduledList = document.getElementById('unscheduledList');
+        const unscheduledCount = document.getElementById('unscheduledCount');
+
+        if (!unscheduledList || !unscheduledCount) return;
+
+        // Update count
+        unscheduledCount.textContent = unscheduledIssues.length;
+
+        if (unscheduledIssues.length === 0) {
+            unscheduledList.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <p>All issues scheduled</p>
+                </div>
+            `;
+            return;
+        }
+
+        const issuesHtml = unscheduledIssues.map(issue => `
+            <div class="unscheduled-issue" 
+                 data-issue-id="${issue.id}" 
+                 data-issue-key="${issue.key}"
+                 draggable="true">
+                <div class="issue-type-icon" style="background-color: ${issue.issue_type_color || '#6b7280'}">
+                    <i class="bi ${issue.issue_type_icon || 'bi-bug'}"></i>
+                </div>
+                <div class="issue-details">
+                    <div class="issue-key">${issue.key}</div>
+                    <div class="issue-summary">${issue.summary}</div>
+                    <div class="issue-meta">
+                        <span class="project-name">${issue.project_key}</span>
+                        <span class="priority-badge ${issue.priority_name?.toLowerCase()}">${issue.priority_name}</span>
+                    </div>
+                </div>
+                <div class="issue-assignee">
+                    ${issue.assignee_avatar ?
+                `<img src="${issue.assignee_avatar}" alt="${issue.assignee_name}" title="${issue.assignee_name}">` :
+                `<div class="assignee-initials" title="Unassigned">${issue.assignee_name?.charAt(0) || 'U'}</div>`
+            }
+                </div>
+            </div>
+        `).join('');
+
+        unscheduledList.innerHTML = issuesHtml;
+
+        // Add drag event listeners
+        setupUnscheduledDragEvents();
+    }
+
+    function setupUnscheduledDragEvents() {
+        // No longer needed - handled by FullCalendar.Draggable
+        // kept empty to prevent errors if called
+    }
+
+    function handleDragStart(e) {
+        const issueElement = e.target.closest('.unscheduled-issue');
+        if (!issueElement) return;
+
+        const issueId = issueElement.dataset.issueId;
+        const issueKey = issueElement.dataset.issueKey;
+
+        const dragData = {
+            id: issueId,
+            key: issueKey,
+            fromUnscheduled: true
+        };
+
+        const dragDataJson = JSON.stringify(dragData);
+
+        // Set multiple formats for maximum compatibility
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', dragDataJson);
+        e.dataTransfer.setData('application/json', dragDataJson);
+
+        // Store in global variable as fallback
+        window.currentDragData = dragData;
+
+        issueElement.style.opacity = '0.5';
+        issueElement.classList.add('dragging');
+        console.log('📅 [DRAG] Started dragging unscheduled issue:', issueKey);
+        console.log('📅 [DRAG] Drag data set:', dragDataJson);
+        console.log('📅 [DRAG] Data types available:', e.dataTransfer.types);
+    }
+
+    function handleDragEnd(e) {
+        const issueElement = e.target.closest('.unscheduled-issue');
+        if (issueElement) {
+            issueElement.style.opacity = '';
+            issueElement.classList.remove('dragging');
+        }
+
+        // Clear global drag data
+        window.currentDragData = null;
+
+        console.log('📅 [DRAG] Ended dragging');
+    }
+
+    function showUnscheduledError() {
+        const unscheduledList = document.getElementById('unscheduledList');
+        if (!unscheduledList) return;
+
+        unscheduledList.innerHTML = `
+            <div class="error-state">
+                <i class="bi bi-exclamation-triangle"></i>
+                <p>Failed to load unscheduled issues</p>
+                <button class="jira-btn jira-btn-ghost small" onclick="loadUnscheduledIssues()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Retry
+                </button>
+            </div>
+        `;
+    }
+
+    // =====================================================
+    // SCHEDULE ISSUE MODAL
+    // =====================================================
+
+    window.openScheduleModal = function (issueData, dropDate) {
+        const modal = document.getElementById('scheduleIssueModal');
+        if (!modal) return;
+
+        console.log('📅 [SCHEDULE] Opening schedule modal for:', issueData.key, 'on date:', dropDate);
+
+        // Populate modal with issue data
+        document.getElementById('scheduleIssueId').value = issueData.id;
+        document.getElementById('scheduleIssueKey').textContent = issueData.key;
+        document.getElementById('scheduleIssueSummary').textContent = issueData.summary;
+        document.getElementById('scheduleDueDate').value = dropDate;
+        document.getElementById('scheduleStartDate').value = '';
+        document.getElementById('scheduleProjectName').textContent = issueData.project_key;
+
+        // Set issue type
+        const issueTypeElement = document.getElementById('scheduleIssueType');
+        issueTypeElement.innerHTML = `
+            <i class="bi ${issueData.issue_type_icon || 'bi-bug'}"></i>
+            ${issueData.issue_type || 'Issue'}
+        `;
+        issueTypeElement.style.backgroundColor = issueData.issue_type_color || '#6b7280';
+
+        // Set priority
+        const priorityElement = document.getElementById('schedulePriority');
+        priorityElement.textContent = issueData.priority_name;
+        priorityElement.className = `priority-badge ${issueData.priority_name?.toLowerCase()}`;
+
+        // Set assignee
+        const assigneeElement = document.getElementById('scheduleAssignee');
+        if (issueData.assignee_avatar && issueData.assignee_name) {
+            assigneeElement.innerHTML = `
+                <img class="assignee-avatar" src="${issueData.assignee_avatar}" alt="${issueData.assignee_name}">
+                <span>${issueData.assignee_name}</span>
+            `;
+        } else {
+            assigneeElement.innerHTML = `
+                <div class="assignee-initials">U</div>
+                <span>Unassigned</span>
+            `;
+        }
+
+        // Set created date
+        if (issueData.created_at) {
+            const createdDate = new Date(issueData.created_at);
+            document.getElementById('scheduleCreatedDate').textContent = createdDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Show modal
+        modal.style.display = 'flex';
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.top = `-${window.scrollY}px`;
+    };
+
+    window.closeScheduleModal = function () {
+        const modal = document.getElementById('scheduleIssueModal');
+        if (!modal) return;
+
+        modal.style.display = 'none';
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+
+        // Restore body scroll
+        const scrollY = document.body.style.top;
+        document.body.style.overflow = 'auto';
+        document.body.style.position = 'static';
+        document.body.style.width = 'auto';
+        document.body.style.top = '';
+
+        if (scrollY) {
+            window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
+    };
+
+    window.saveScheduledIssue = function () {
+        const issueId = document.getElementById('scheduleIssueId').value;
+        const dueDate = document.getElementById('scheduleDueDate').value;
+        const startDate = document.getElementById('scheduleStartDate').value;
+
+        if (!issueId || !dueDate) {
+            alert('Due date is required');
+            return;
+        }
+
+        const btn = document.querySelector('#scheduleIssueModal .modal-footer .jira-btn-primary');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Scheduling...';
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('issue_id', issueId);
+        formData.append('due_date', dueDate);
+        if (startDate) {
+            formData.append('start_date', startDate);
+        }
+
+        fetch(`${window.JiraConfig.apiBase}/calendar/schedule-issue`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': window.JiraConfig.csrfToken
+            },
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('📅 [SCHEDULE] Issue scheduled successfully');
+                    closeScheduleModal();
+
+                    // Remove from unscheduled list
+                    unscheduledIssues = unscheduledIssues.filter(issue => issue.id != issueId);
+                    renderUnscheduledIssues();
+
+                    // Refresh calendar
+                    if (calendar) {
+                        calendar.refetchEvents();
+                    }
+
+                    // Show success message
+                    showNotification('Issue scheduled successfully!', 'success');
+                } else {
+                    alert(data.error || 'Failed to schedule issue');
+                }
+            })
+            .catch(err => {
+                console.error('❌ [SCHEDULE] Error scheduling issue:', err);
+                alert('Failed to schedule issue. Please try again.');
+            })
+            .finally(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+    };
+
+    window.viewIssueDetails = function () {
+        const issueKey = document.getElementById('scheduleIssueKey').textContent;
+        if (!issueKey) return;
+
+        window.open(`${window.JiraConfig.webBase}/issues/${issueKey}`, '_blank');
+    };
+
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-info-circle'}"></i>
+            ${message}
+        `;
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Show animation
+        setTimeout(() => notification.classList.add('show'), 100);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // =====================================================
+    // CALENDAR DEBUG FUNCTIONS
+    // =====================================================
+
+    window.debugCalendarDrop = function () {
+        console.log('📅 [DEBUG] Calendar Debug Info:');
+        console.log('📅 [DEBUG] Calendar object exists:', !!calendar);
+        if (calendar) {
+            console.log('📅 [DEBUG] Calendar options:', calendar.getOption('droppable'));
+            console.log('📅 [DEBUG] Calendar element:', calendar.el);
+        }
+        console.log('📅 [DEBUG] Unscheduled issues:', unscheduledIssues.length);
+
+        // Test drop directly
+        if (calendar) {
+            const testDragData = {
+                fromUnscheduled: true,
+                id: '37',
+                key: 'DEVOPS-4'
+            };
+            const mockDropEvent = {
+                dateStr: '2025-12-30',
+                jsEvent: {
+                    dataTransfer: {
+                        getData: (type) => {
+                            const data = type === 'text/plain' ? JSON.stringify(testDragData) : null;
+                            console.log('📅 [DEBUG] getData called for type:', type, 'returning:', data);
+                            return data;
+                        },
+                        types: ['text/plain', 'application/json']
+                    }
+                }
+            };
+
+            console.log('📅 [DEBUG] Simulating drop event...');
+            try {
+                handleCalendarDrop(mockDropEvent);
+                console.log('📅 [DEBUG] Drop event triggered successfully');
+            } catch (err) {
+                console.error('📅 [DEBUG] Error triggering drop:', err);
+            }
+        }
+    };
+
+    // Test drag data setting
+    window.testDragData = function () {
+        console.log('📅 [TEST] Testing drag data setup...');
+
+        const unscheduledElement = document.querySelector('.unscheduled-issue');
+        if (unscheduledElement) {
+            console.log('📅 [TEST] Found unscheduled issue element, simulating drag start...');
+
+            // Simulate dragstart event
+            const dragStartEvent = new DragEvent('dragstart', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: new DataTransfer()
+            });
+
+            // Set drag data
+            const testData = {
+                id: '37',
+                key: 'DEVOPS-4',
+                fromUnscheduled: true
+            };
+
+            dragStartEvent.dataTransfer.setData('text/plain', JSON.stringify(testData));
+            dragStartEvent.dataTransfer.setData('application/json', JSON.stringify(testData));
+
+            // Store globally
+            window.currentDragData = testData;
+
+            // Trigger event
+            unscheduledElement.dispatchEvent(dragStartEvent);
+
+            console.log('📅 [TEST] Drag start simulated, data should be set');
+            console.log('📅 [TEST] Global drag data:', window.currentDragData);
+        } else {
+            console.log('📅 [TEST] No unscheduled issue element found');
+        }
+    };
+
+
+    // =====================================================
     // INITIALIZATION
     // =====================================================
 
@@ -1107,9 +1898,42 @@ document.addEventListener('DOMContentLoaded', function () {
     loadIssueTypes();
     loadUsers();
     loadSidebarData();
+    loadUnscheduledIssues();
+    initExternalDraggable();
 
     console.log('📅 [CALENDAR] All startup tasks completed');
 });
+
+// =====================================================
+// EXTERNAL DRAGGABLE INIT
+// =====================================================
+
+function initExternalDraggable() {
+    const containerEl = document.getElementById('unscheduledList');
+    if (!containerEl) {
+        console.log('📅 [DRAG] Unscheduled list container not found');
+        return;
+    }
+
+    if (containerEl._fcDraggable) return;
+
+    console.log('📅 [DRAG] Initializing FullCalendar Draggable...');
+
+    try {
+        new FullCalendar.Draggable(containerEl, {
+            itemSelector: '.unscheduled-issue',
+            eventData: function (eventEl) {
+                return {
+                    title: eventEl.querySelector('.issue-key')?.innerText || 'Issue',
+                };
+            }
+        });
+        containerEl._fcDraggable = true;
+        console.log('📅 [DRAG] Draggable initialized successfully');
+    } catch (err) {
+        console.error('❌ [DRAG] Failed to initialize FullCalendar Draggable:', err);
+    }
+}
 // =====================================================
 // WATCH & SHARE
 // =====================================================

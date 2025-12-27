@@ -68,6 +68,7 @@ class CalendarService
                 i.status_id,
                 s.name as status_name,
                 s.color as status_color,
+                s.category as status_category,
                 i.project_id,
                 proj.name as project_name,
                 proj.key as project_key,
@@ -129,10 +130,15 @@ class CalendarService
     private function formatEvent(array $issue): array
     {
         // Determine start/end to use
-        // Priority: start_date/end_date -> due_date (as single day)
-
-        $start = $issue['start_date'] ?? $issue['due_date'];
-        $end = $issue['end_date'] ?? $issue['due_date'];
+        // User Request: Always use Due Date for the badge position if available.
+        // This prevents the event from spanning multiple days on the calendar.
+        if (!empty($issue['due_date'])) {
+            $start = $issue['due_date'];
+            $end = $issue['due_date'];
+        } else {
+            $start = $issue['start_date'];
+            $end = $issue['end_date'] ?? $issue['start_date'];
+        }
 
         // Color mapping based on priority
         $colors = [
@@ -157,10 +163,13 @@ class CalendarService
                 'key' => $issue['key'],
                 'project' => $issue['project_name'],
                 'projectKey' => $issue['project_key'],
+                'projectId' => $issue['project_id'],
                 'status' => $issue['status_name'],
                 'statusColor' => $issue['status_color'] ?? '#ccc',
+                'statusCategory' => $issue['status_category'], // Added for completion logic
                 'priority' => $issue['priority_name'],
                 'issueType' => $issue['issue_type'],
+                'issueTypeId' => $issue['issue_type_id'],
                 'description' => mb_substr(strip_tags($issue['description'] ?? ''), 0, 100) . '...',
                 'assigneeId' => $issue['assignee_id'],
                 'assigneeName' => $issue['assignee_name'],
@@ -178,20 +187,56 @@ class CalendarService
     }
 
     /**
-     * Get upcoming issues (dashboard/widget usage)
+     * Get upcoming issues (dashboard/widget usage) - Returns formatted events
      */
     public function getUpcomingIssues(int $limit = 5): array
     {
         $sql = "
-            SELECT i.*, p.key as project_key
+            SELECT
+                i.id,
+                i.issue_key as 'key',
+                i.summary as title,
+                i.description,
+                i.start_date,
+                i.end_date,
+                i.due_date,
+                i.priority_id,
+                ip.name as priority_name,
+                i.status_id,
+                s.name as status_name,
+                s.color as status_color,
+                s.category as status_category,
+                i.project_id,
+                proj.name as project_name,
+                proj.key as project_key,
+                it.name as issue_type,
+                i.issue_type_id,
+                i.assignee_id,
+                assignee.display_name as assignee_name,
+                assignee.email as assignee_email,
+                assignee.avatar as assignee_avatar,
+                i.reporter_id,
+                reporter.display_name as reporter_name,
+                reporter.email as reporter_email,
+                reporter.avatar as reporter_avatar,
+                i.created_at,
+                i.updated_at,
+                i.story_points
             FROM issues i
-            JOIN projects p ON i.project_id = p.id
+            JOIN projects proj ON i.project_id = proj.id
+            JOIN statuses s ON i.status_id = s.id
+            JOIN issue_priorities ip ON i.priority_id = ip.id
+            JOIN issue_types it ON i.issue_type_id = it.id
+            LEFT JOIN users assignee ON i.assignee_id = assignee.id
+            LEFT JOIN users reporter ON i.reporter_id = reporter.id
             WHERE i.due_date >= CURDATE()
             ORDER BY i.due_date ASC
             LIMIT :limit
         ";
 
-        return Database::select($sql, ['limit' => $limit]);
+        $issues = Database::select($sql, ['limit' => $limit]);
+
+        return array_map([$this, 'formatEvent'], $issues);
     }
 
     /**
@@ -221,6 +266,65 @@ class CalendarService
     }
 
     /**
+     * Get unscheduled issues (issues without start_date and due_date)
+     */
+    public function getUnscheduledIssues(): array
+    {
+        $sql = "
+            SELECT
+                i.id,
+                i.issue_key as 'key',
+                i.summary,
+                i.description,
+                i.priority_id,
+                ip.name as priority_name,
+                i.status_id,
+                s.name as status_name,
+                s.color as status_color,
+                s.category as status_category,
+                i.project_id,
+                proj.name as project_name,
+                proj.key as project_key,
+                proj.key as project_key,
+                it.name as issue_type,
+                i.issue_type_id,
+                it.icon as issue_type_icon,
+                it.color as issue_type_color,
+                i.assignee_id,
+                assignee.display_name as assignee_name,
+                assignee.email as assignee_email,
+                assignee.avatar as assignee_avatar,
+                i.reporter_id,
+                reporter.display_name as reporter_name,
+                reporter.email as reporter_email,
+                reporter.avatar as reporter_avatar,
+                i.created_at,
+                i.updated_at,
+                i.story_points
+            FROM issues i
+            JOIN projects proj ON i.project_id = proj.id
+            JOIN statuses s ON i.status_id = s.id
+            JOIN issue_priorities ip ON i.priority_id = ip.id
+            JOIN issue_types it ON i.issue_type_id = it.id
+            LEFT JOIN users assignee ON i.assignee_id = assignee.id
+            LEFT JOIN users reporter ON i.reporter_id = reporter.id
+            WHERE 
+                i.start_date IS NULL
+                AND i.due_date IS NULL
+                AND s.category != 'done'
+            ORDER BY 
+                FIELD(ip.name, 'Urgent', 'High', 'Medium', 'Low'),
+                i.created_at DESC
+        ";
+
+        $issues = Database::select($sql);
+
+        // No labels column, skip parsing
+
+        return $issues;
+    }
+
+    /**
      * Get statuses for filter dropdown
      */
     public function getStatusesForFilter(): array
@@ -245,11 +349,23 @@ class CalendarService
     }
 
     /**
-     * Get users for assignee/reporter filter dropdown
+     * API: Get users for assignee filter
      */
     public function getUsersForFilter(): array
     {
-        return Database::select("SELECT id, display_name as name, email FROM users WHERE is_active = 1 ORDER BY display_name ASC");
+        $sql = "
+            SELECT DISTINCT
+                u.id,
+                u.display_name,
+                u.email,
+                u.avatar
+            FROM users u
+            JOIN issues i ON (i.assignee_id = u.id OR i.reporter_id = u.id)
+            WHERE u.is_active = 1
+            ORDER BY u.display_name
+        ";
+
+        return Database::select($sql);
     }
 
     /**

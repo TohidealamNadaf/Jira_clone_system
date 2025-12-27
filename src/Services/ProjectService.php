@@ -86,7 +86,7 @@ class ProjectService
     public function getProjectByKey(string $key): ?array
     {
         $project = Database::selectOne(
-            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.created_by, p.created_at, p.updated_at,
+            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.budget, p.budget_currency, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
                     pc.name as category_name,
                     creator.display_name as created_by_name
@@ -104,7 +104,7 @@ class ProjectService
     public function getProjectById(int $id): ?array
     {
         $project = Database::selectOne(
-            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.created_by, p.created_at, p.updated_at,
+            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.budget, p.budget_currency, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
                     pc.name as category_name,
                     creator.display_name as created_by_name
@@ -567,6 +567,7 @@ class ProjectService
      */
     public function setProjectBudget(int $projectId, float $budget, string $currency = 'USD'): bool
     {
+        // 1. Update the projects table (Primary Source)
         $rowsAffected = Database::update(
             'projects',
             [
@@ -577,7 +578,40 @@ class ProjectService
             [$projectId]
         );
 
-        return $rowsAffected > 0;
+        // 2. Sync to project_budgets table (Secondary/Legacy Source for Dashboard)
+        try {
+            $existing = Database::selectOne(
+                "SELECT id FROM project_budgets WHERE project_id = ?",
+                [$projectId]
+            );
+
+            if ($existing) {
+                Database::update(
+                    'project_budgets',
+                    [
+                        'total_budget' => $budget,
+                        'currency' => $currency
+                    ],
+                    'project_id = ?',
+                    [$projectId]
+                );
+            } else {
+                // If it doesn't exist, we create it (preserving 0 cost initially)
+                Database::insert('project_budgets', [
+                    'project_id' => $projectId,
+                    'total_budget' => $budget,
+                    'total_cost' => 0.00,
+                    'currency' => $currency,
+                    'start_date' => date('Y-m-d'),
+                    'alert_threshold' => 80.00 // Default threshold
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Log sync error but don't fail the main request
+            error_log("Failed to sync budget to project_budgets table: " . $e->getMessage());
+        }
+
+        return true;
     }
 
     /**

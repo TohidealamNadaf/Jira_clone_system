@@ -114,47 +114,24 @@
     <!-- Calendar Container -->
     <div class="calendar-main">
         <div class="calendar-sidebar">
-            <!-- Mini Calendar -->
-            <div class="mini-calendar-section">
-                <h3 class="sidebar-title">Jump to date</h3>
-                <div id="miniCalendar"></div>
-            </div>
-
-            <!-- Upcoming Issues -->
-            <div class="upcoming-section">
+            <!-- Unscheduled Issues -->
+            <div class="unscheduled-section">
                 <h3 class="sidebar-title">
-                    Upcoming
-                    <span class="count" id="upcomingCount">0</span>
+                    <i class="bi bi-calendar-x"></i>
+                    Unscheduled Issues
+                    <span class="unscheduled-count" id="unscheduledCount">0</span>
                 </h3>
-                <div class="upcoming-list" id="upcomingList">
+                <div class="unscheduled-list" id="unscheduledList">
                     <div class="empty-state">
-                        <i class="bi bi-calendar-x"></i>
-                        <p>No upcoming issues</p>
+                        <i class="bi bi-check-circle"></i>
+                        <p>All issues scheduled</p>
                     </div>
                 </div>
             </div>
 
-            <!-- My Schedule -->
-            <div class="schedule-section">
-                <h3 class="sidebar-title">My Schedule</h3>
-                <div class="schedule-list" id="scheduleList">
-                    <div class="empty-state">
-                        <i class="bi bi-clock"></i>
-                        <p>No scheduled items</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Team Schedule -->
-            <div class="team-schedule-section">
-                <h3 class="sidebar-title">Team Schedule</h3>
-                <div class="team-list" id="teamList">
-                    <div class="empty-state">
-                        <i class="bi bi-people"></i>
-                        <p>No team items</p>
-                    </div>
-                </div>
-            </div>
+
+
         </div>
 
         <div class="calendar-content">
@@ -187,6 +164,14 @@
                     <button class="jira-btn jira-btn-ghost" id="settingsBtn">
                         <i class="bi bi-gear"></i>
                         Settings
+                    </button>
+                    <button class="jira-btn jira-btn-ghost" id="debugDropBtn" onclick="debugCalendarDrop()">
+                        <i class="bi bi-bug"></i>
+                        Debug Drop
+                    </button>
+                    <button class="jira-btn jira-btn-ghost" id="testDragBtn" onclick="testDragData()">
+                        <i class="bi bi-cursor"></i>
+                        Test Drag
                     </button>
                 </div>
             </div>
@@ -239,23 +224,23 @@
                         Bug
                     </div>
                     <div class="event-basic">
-                        <h3 class="event-key" id="eventKey">PROJ-123</h3>
-                        <h4 class="event-summary" id="eventSummary">Fix calendar loading issue</h4>
+                        <h3 class="event-key" id="detailKey">PROJ-123</h3>
+                        <h4 class="event-summary" id="detailSummary">Fix calendar loading issue</h4>
                     </div>
-                </div> 
+                </div>
 
                 <div class="event-details-grid">
                     <div class="detail-row">
                         <label>Project</label>
-                        <span id="eventProject">Project Alpha</span>
+                        <span id="detailProject">Project Alpha</span>
                     </div>
                     <div class="detail-row">
                         <label>Status</label>
-                        <span class="status-badge" id="eventStatus">In Progress</span>
+                        <span class="status-badge" id="detailStatus">In Progress</span>
                     </div>
                     <div class="detail-row">
                         <label>Priority</label>
-                        <span class="priority-badge urgent" id="eventPriority">Urgent</span>
+                        <span class="priority-badge urgent" id="detailPriority">Urgent</span>
                     </div>
                     <div class="detail-row">
                         <label>Assignee</label>
@@ -273,36 +258,36 @@
                     </div>
                     <div class="detail-row">
                         <label>Due Date</label>
-                        <span id="eventDueDate">Dec 24, 2025</span>
+                        <span id="detailDueDate">Dec 24, 2025</span>
                     </div>
                     <div class="detail-row">
                         <label>Created</label>
-                        <span id="eventCreatedDate">Dec 20, 2025</span>
+                        <span id="detailCreatedDate">Dec 20, 2025</span>
                     </div>
                     <div class="detail-row">
                         <label>Updated</label>
-                        <span id="eventUpdatedDate">Dec 22, 2025</span>
+                        <span id="detailUpdatedDate">Dec 22, 2025</span>
                     </div>
                     <div class="detail-row">
                         <label>Story Points</label>
-                        <span id="eventStoryPoints">5</span>
+                        <span id="detailStoryPoints">5</span>
                     </div>
                     <div class="detail-row">
                         <label>Labels</label>
-                        <div class="labels-container" id="eventLabels">
+                        <div class="labels-container" id="detailLabels">
                             <span class="label-tag">backend</span>
                             <span class="label-tag">urgent</span>
                         </div>
                     </div>
-                </div> 
+                </div>
 
                 <div class="event-description">
                     <h4>Description</h4>
-                    <div class="description-content" id="eventDescription">
+                    <div class="description-content" id="detailDescription">
                         The calendar page is not loading properly and shows no styling. Need to investigate the CSS
                         loading issue and fix the design.
                     </div>
-                </div> 
+                </div>
 
                 <div class="event-timeline">
                     <h4>Recent Activity</h4>
@@ -377,13 +362,9 @@
                         <h3>Event Details</h3>
                         <div class="form-row">
                             <div class="form-group half">
-                                <label>Event Type</label>
-                                <select id="eventType" class="jira-select">
-                                    <option value="issue">Issue Due Date</option>
-                                    <option value="sprint">Sprint Start/End</option>
-                                    <option value="milestone">Milestone</option>
-                                    <option value="reminder">Reminder</option>
-                                    <option value="meeting">Meeting</option>
+                                <label>Issue Type</label>
+                                <select id="issueType" class="jira-select">
+                                    <option value="">Select type...</option>
                                 </select>
                             </div>
                             <div class="form-group half">
@@ -583,6 +564,91 @@
     </div>
 </div>
 
+<!-- Schedule Issue Modal -->
+<div class="jira-modal" id="scheduleIssueModal" onclick="handleBackdropClick(event, 'schedule')" aria-hidden="true">
+    <div class="modal-dialog modal-standard">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Schedule Issue</h2>
+                <button class="modal-close" onclick="closeScheduleModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body-scroll">
+                <div class="issue-preview" id="issuePreview">
+                    <div class="issue-type-badge" id="scheduleIssueType">
+                        <i class="bi bi-bug"></i>
+                        Bug
+                    </div>
+                    <div class="issue-basic">
+                        <h3 class="issue-key" id="scheduleIssueKey">PROJ-123</h3>
+                        <h4 class="issue-summary" id="scheduleIssueSummary">Fix calendar loading issue</h4>
+                    </div>
+                </div>
+
+                <form id="scheduleIssueForm">
+                    <input type="hidden" id="scheduleIssueId" name="issue_id">
+
+                    <div class="form-section">
+                        <h3>Schedule Details</h3>
+                        <div class="form-group">
+                            <label for="scheduleDueDate">Due Date *</label>
+                            <input type="date" id="scheduleDueDate" name="due_date" class="jira-input" required>
+                            <small class="form-help">The date you dropped this issue on will be set as the due
+                                date</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleStartDate">Start Date</label>
+                            <input type="date" id="scheduleStartDate" name="start_date" class="jira-input">
+                            <small class="form-help">Optional: When work should begin on this issue</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Issue Information</h3>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <label>Project</label>
+                                <span id="scheduleProjectName">Project Alpha</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Priority</label>
+                                <span class="priority-badge" id="schedulePriority">Medium</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Assignee</label>
+                                <div class="assignee-info" id="scheduleAssignee">
+                                    <img class="assignee-avatar" src="" alt="">
+                                    <span>John Doe</span>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <label>Created</label>
+                                <span id="scheduleCreatedDate">Dec 20, 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="footer-left">
+                    <button class="jira-btn jira-btn-ghost" onclick="viewIssueDetails()">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        View Issue
+                    </button>
+                </div>
+                <div class="footer-right">
+                    <button class="jira-btn jira-btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+                    <button class="jira-btn jira-btn-primary" onclick="saveScheduledIssue()">
+                        <i class="bi bi-check-lg"></i>
+                        Schedule Issue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php \App\Core\View::endSection(); ?>
 
 <?php \App\Core\View::section('styles'); ?>
@@ -605,6 +671,5 @@
 </script>
 
 <!-- FullCalendar -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script src="<?= asset('js/calendar-realtime.js') ?>"></script>
 <?php \App\Core\View::endSection(); ?>

@@ -23,8 +23,6 @@
     <!-- TinyMCE (Community Edition via CDNJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
 
-    <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <!-- Custom CSS -->
     <link href="<?= asset('css/app.css') ?>" rel="stylesheet">
     <!-- Design Consistency CSS - Ensures all users see identical layout -->
@@ -479,10 +477,52 @@
 
                     <!-- Admin -->
                     <?php if ($user['is_admin'] ?? false): ?>
-                        <a href="<?= url('/admin') ?>" class="nav-link-simple">
-                            <i class="bi bi-gear"></i>
-                            <span>Admin</span>
-                        </a>
+                        <div class="nav-dropdown">
+                            <button class="nav-dropdown-btn">
+                                <i class="bi bi-gear"></i>
+                                <span>Admin</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-panel">
+                                <a href="<?= url('/admin') ?>" class="dropdown-item">
+                                    <i class="bi bi-house-gear"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Administration Home</div>
+                                        <div class="item-desc">Dashboard overview</div>
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="<?= url('/admin/users') ?>" class="dropdown-item">
+                                    <i class="bi bi-people"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">User Management</div>
+                                        <div class="item-desc">Manage users and roles</div>
+                                    </div>
+                                </a>
+                                <a href="<?= url('/admin/projects') ?>" class="dropdown-item">
+                                    <i class="bi bi-folder"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Projects</div>
+                                        <div class="item-desc">Manage all projects</div>
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="<?= url('/admin/workflows') ?>" class="dropdown-item">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Workflows</div>
+                                        <div class="item-desc">Issue lifecycles</div>
+                                    </div>
+                                </a>
+                                <a href="<?= url('/admin/issue-types') ?>" class="dropdown-item">
+                                    <i class="bi bi-stack"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Issue Types</div>
+                                        <div class="item-desc">Configure types</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -1065,95 +1105,6 @@
         }
     </style>
 
-    <!-- Notification JavaScript -->
-    <script>
-        // Load notifications on bell cl                ick
-        document.getElementById('notificationBell').addEventListener('click', function (e) {
-            if (this.getAttribute('aria-expanded') === 'true') {
-                loadNotifications();
-            }
-        });
-
-        function loadNotifications() {
-            const appUrl = '<?= url("/") ?>';
-            fetch(appUrl + 'api/v1/notifications?limit=5', {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-                .then(r => r.json())
-                .then(data => {
-                    const unreadBadge = document.getElementById('unreadBadge');
-                    const notificationList = document.getElementById('notificationList');
-
-                    // Update badge
-                    if (data.unread_count > 0) {
-                        unreadBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                        unreadBadge.style.display = 'inline-block';
-                    } else {
-                        unreadBadge.style.display = 'none';
-                    }
-
-                    // Update notification list
-                    if (!data.data || data.data.length === 0) {
-                        notificationList.innerHTML = '<div class="px-3 py-3 text-center text-muted"><small>No notifications</small></div>';
-                        return;
-                    }
-
-                    notificationList.innerHTML = data.data.map(n => `
-                <a href="${n.action_url || '#'}" class="dropdown-item d-flex align-items-start gap-2 py-2" style="text-decoration: none;">
-                    <div style="flex: 1; border-left: 3px solid ${n.is_read ? 'transparent' : 'var(--jira-blue)'}; padding-left: 8px;">
-                        <div class="small fw-semibold text-dark">${escapeHtml(n.title)}</div>
-                        <div class="text-muted" style="font-size: 12px;">
-                            ${n.message ? escapeHtml(n.message).substring(0, 60) + '...' : ''}
-                        </div>
-                        <div class="text-muted" style="font-size: 11px; margin-top: 4px;">
-                            ${formatTime(n.created_at)}
-                        </div>
-                    </div>
-                    ${!n.is_read ? '<span class="badge bg-primary ms-2">New</span>' : ''}
-                </a>
-            `).join('');
-                })
-                .catch(err => {
-                    console.error('Error loading notifications:', err);
-                    document.getElementById('notificationList').innerHTML = '<div class="px-3 py-3 text-center text-danger"><small>Error loading notifications</small></div>';
-                });
-        }
-
-        // Initial load
-        loadNotifications();
-
-        // Refresh every 30 seconds
-        setInterval(loadNotifications, 30000);
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
-
-            if (minutes < 1) return 'Just now';
-            if (minutes < 60) return minutes + 'm ago';
-            if (hours < 24) return hours + 'h ago';
-            if (days < 7) return days + 'd ago';
-
-            return date.toLocaleDateString();
-        }
-    </script>
 
     <!-- Flash Messages -->
     <?php foreach (['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'info' => 'info'] as $type => $class): ?>
@@ -2079,6 +2030,12 @@
 
 
 
+
+    <!-- jQuery (Required for some plugins) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>

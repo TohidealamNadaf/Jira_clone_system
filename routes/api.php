@@ -193,6 +193,8 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
         $router->get('/calendar/priorities', [CalendarController::class, 'priorities']);
         $router->get('/calendar/issue-types', [CalendarController::class, 'issueTypes']);
         $router->get('/calendar/users', [CalendarController::class, 'users']);
+        $router->get('/calendar/unscheduled', [CalendarController::class, 'unscheduled']);
+        $router->post('/calendar/schedule-issue', [CalendarController::class, 'scheduleIssue']);
 
         // Calendar Events API (for create modal functionality)
         $router->get('/calendar-events/types', [CalendarEventController::class, 'getEventTypes']);

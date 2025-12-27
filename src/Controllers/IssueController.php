@@ -13,6 +13,7 @@ use App\Core\Session;
 use App\Services\IssueService;
 use App\Services\ProjectService;
 use App\Services\NotificationService;
+use App\Core\Database;
 
 class IssueController extends Controller
 {
@@ -602,6 +603,15 @@ class IssueController extends Controller
      */
     public function store(Request $request): void
     {
+        $logFile = __DIR__ . '/../../public/debug_log.txt';
+        $log = function ($msg) use ($logFile) {
+            file_put_contents($logFile, date('[Y-m-d H:i:s] ') . $msg . "\n", FILE_APPEND);
+        };
+
+        $log("IssueController::store called.");
+        $log("FILES: " . print_r($_FILES, true));
+        $log("POST: " . print_r($_POST, true));
+
         // Validate required fields
         $data = $request->validate([
             'project_id' => 'required|integer',
@@ -609,7 +619,9 @@ class IssueController extends Controller
             'summary' => 'required|max:500',
             'description' => 'nullable|max:2000000',
             'priority_id' => 'nullable|integer',
-            'assignee_id' => 'nullable|integer'
+            'assignee_id' => 'nullable|integer',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
         ]);
 
         try {
@@ -624,6 +636,71 @@ class IssueController extends Controller
 
             // Create issue using service
             $issue = $this->issueService->createIssue($data, $userId);
+
+            // Handle attachments if present
+            if (isset($_FILES['attachments'])) {
+                error_log("DEBUG: Processing attachments...");
+                $files = [];
+                // Normalize $_FILES structure
+                if (is_array($_FILES['attachments']['name'])) {
+                    $count = count($_FILES['attachments']['name']);
+                    for ($i = 0; $i < $count; $i++) {
+                        if ($_FILES['attachments']['error'][$i] === UPLOAD_ERR_OK) {
+                            $files[] = [
+                                'name' => $_FILES['attachments']['name'][$i],
+                                'type' => $_FILES['attachments']['type'][$i],
+                                'tmp_name' => $_FILES['attachments']['tmp_name'][$i],
+                                'error' => $_FILES['attachments']['error'][$i],
+                                'size' => $_FILES['attachments']['size'][$i],
+                            ];
+                        }
+                    }
+                } else {
+                    // Single file handling (fallback)
+                    if ($_FILES['attachments']['error'] === UPLOAD_ERR_OK) {
+                        $files[] = $_FILES['attachments'];
+                    }
+                }
+
+                $uploadedCount = 0;
+                foreach ($files as $file) {
+                    $log("Processing file: " . $file['name']);
+                    $uploaded = $this->uploadFile($file, 'attachments');
+
+                    if ($uploaded) {
+                        $log("File uploaded successfully. Path: " . $uploaded['path']);
+                        try {
+                            Database::insert('issue_attachments', [
+                                'issue_id' => $issue['id'],
+                                'uploaded_by' => $userId,
+                                'filename' => $uploaded['filename'],
+                                'original_name' => $uploaded['original_name'],
+                                'mime_type' => $uploaded['mime_type'],
+                                'file_size' => $uploaded['size'],
+                                'file_path' => $uploaded['path'],
+                                'created_at' => date('Y-m-d H:i:s'),
+                            ]);
+                            $log("Database insert success.");
+                            $uploadedCount++;
+                        } catch (\Exception $e) {
+                            $log("Database insert FAILED: " . $e->getMessage());
+                        }
+                    } else {
+                        $log("uploadFile returned null.");
+                    }
+                }
+
+                if ($uploadedCount > 0) {
+                    // Record history for attachments
+                    Database::insert('issue_history', [
+                        'issue_id' => $issue['id'],
+                        'user_id' => $userId,
+                        'field' => 'attachment',
+                        'new_value' => "$uploadedCount files attached",
+                        'created_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
 
             // Return success response
             $this->json([

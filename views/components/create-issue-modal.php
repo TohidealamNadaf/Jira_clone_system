@@ -210,63 +210,63 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="createIssueForm">
+                <form id="global-modal-createIssueForm">
                     <!-- Project Field -->
                     <div class="form-group">
-                        <label for="issueProject" class="form-label">
+                        <label for="global-modal-issueProject" class="form-label">
                             Project<span class="required-star">*</span>
                         </label>
-                        <select class="form-select" id="issueProject" name="project" required>
+                        <select class="form-select" id="global-modal-issueProject" name="project" required>
                             <option value="">Select a project</option>
                         </select>
                     </div>
 
                     <!-- Issue Type Field -->
                     <div class="form-group">
-                        <label for="issueType" class="form-label">
+                        <label for="global-modal-issueType" class="form-label">
                             Issue Type<span class="required-star">*</span>
                         </label>
-                        <select class="form-select" id="issueType" name="issueType" required>
+                        <select class="form-select" id="global-modal-issueType" name="issueType" required>
                             <option value="">Select issue type</option>
                         </select>
                     </div>
 
                     <!-- Summary Field -->
                     <div class="form-group">
-                        <label for="issueSummary" class="form-label">
+                        <label for="global-modal-issueSummary" class="form-label">
                             Summary<span class="required-star">*</span>
                         </label>
-                        <input type="text" class="form-control" id="issueSummary" name="summary"
+                        <input type="text" class="form-control" id="global-modal-issueSummary" name="summary"
                             placeholder="Enter issue summary" required maxlength="500">
                     </div>
 
                     <!-- Description Field -->
                     <div class="form-group">
-                        <label for="issueDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="issueDescription" name="description" rows="3"
+                        <label for="global-modal-issueDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="global-modal-issueDescription" name="description" rows="3"
                             placeholder="Enter issue description" maxlength="5000"></textarea>
                     </div>
 
                     <!-- Attachments Drag & Drop -->
                     <div class="form-group">
                         <label class="form-label">Attachments</label>
-                        <div class="upload-zone" id="uploadZone">
-                            <input type="file" id="fileInput" multiple style="display: none;">
+                        <div class="upload-zone" id="global-modal-uploadZone">
+                            <input type="file" id="global-modal-fileInput" multiple style="display: none;">
                             <div class="upload-zone-icon">
                                 <i class="bi bi-cloud-arrow-up"></i>
                             </div>
                             <div class="upload-zone-text">Drop files here or click to upload</div>
                             <div class="upload-zone-hint">Max file size: 10MB</div>
                         </div>
-                        <div class="file-preview-list" id="filePreviewList"></div>
+                        <div class="file-preview-list" id="global-modal-filePreviewList"></div>
                     </div>
 
                     <!-- Assignee Field -->
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="issueAssignee" class="form-label">Assignee</label>
-                                <select class="form-select" id="issueAssignee" name="assignee">
+                                <label for="global-modal-issueAssignee" class="form-label">Assignee</label>
+                                <select class="form-select" id="global-modal-issueAssignee" name="assignee">
                                     <option value="">Automatic</option>
                                 </select>
                             </div>
@@ -298,8 +298,8 @@
 
                     <!-- Priority Field -->
                     <div class="form-group">
-                        <label for="issuePriority" class="form-label">Priority</label>
-                        <select class="form-select" id="issuePriority" name="priority">
+                        <label for="global-modal-issuePriority" class="form-label">Priority</label>
+                        <select class="form-select" id="global-modal-issuePriority" name="priority">
                             <option value="">Select priority</option>
                         </select>
                     </div>
@@ -308,14 +308,15 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="issueStartDate" class="form-label">Start Date</label>
-                                <input type="date" class="form-control" id="issueStartDate" name="start_date">
+                                <label for="global-modal-issueStartDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="global-modal-issueStartDate"
+                                    name="start_date">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="issueEndDate" class="form-label">End Date</label>
-                                <input type="date" class="form-control" id="issueEndDate" name="end_date">
+                                <label for="global-modal-issueEndDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="global-modal-issueEndDate" name="end_date">
                             </div>
                         </div>
                     </div>
@@ -323,7 +324,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="createIssueBtn">Create</button>
+                <button type="button" class="btn btn-primary" id="global-modal-createIssueBtn">Create</button>
             </div>
         </div>
     </div>

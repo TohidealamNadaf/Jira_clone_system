@@ -218,7 +218,7 @@ class CalendarController extends Controller
         }
 
         try {
-            $isWatching = $this->calendarService->toggleWatch($key, $user->id);
+            $isWatching = $this->calendarService->toggleWatch($key, $user['id']);
             $this->json(['success' => true, 'isWatching' => $isWatching]);
         } catch (\Exception $e) {
             $this->json(['success' => false, 'error' => $e->getMessage()], 500);
@@ -240,8 +240,60 @@ class CalendarController extends Controller
         }
 
         try {
-            $isWatching = $this->calendarService->getWatchStatus($key, $user->id);
+            $isWatching = $this->calendarService->getWatchStatus($key, $user['id']);
             $this->json(['success' => true, 'isWatching' => $isWatching]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Get Unscheduled Issues
+     */
+    public function unscheduled(): void
+    {
+        $this->authorize('issues.view');
+        try {
+            $issues = $this->calendarService->getUnscheduledIssues();
+            $this->json(['success' => true, 'data' => $issues]);
+        } catch (\Exception $e) {
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Schedule Unscheduled Issue
+     */
+    public function scheduleIssue(Request $request): void
+    {
+        $this->authorize('issues.edit');
+        
+        $issueId = $request->input('issue_id');
+        $dueDate = $request->input('due_date');
+        $startDate = $request->input('start_date');
+
+        if (!$issueId || !$dueDate) {
+            $this->json(['success' => false, 'error' => 'Issue ID and due date are required'], 400);
+            return;
+        }
+
+        try {
+            $updated = \App\Core\Database::update(
+                'issues',
+                [
+                    'due_date' => $dueDate,
+                    'start_date' => $startDate ?: null,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ],
+                'id = ?',
+                [$issueId]
+            );
+
+            if ($updated) {
+                $this->json(['success' => true, 'message' => 'Issue scheduled successfully']);
+            } else {
+                $this->json(['success' => false, 'error' => 'Failed to schedule issue'], 500);
+            }
         } catch (\Exception $e) {
             $this->json(['success' => false, 'error' => $e->getMessage()], 500);
         }

@@ -39,7 +39,8 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
                         </div>
                         <h1 class="issue-key"><?= e($issue['issue_key']) ?></h1>
-                        <span class="issue-status-badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
+                        <span class="issue-status-badge"
+                            style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </div>
@@ -358,7 +359,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                                     <!-- File Icon based on type -->
                                     <div class="attachment-icon">
                                         <?php
-                                        $ext = strtolower(pathinfo($attachment['original_filename'], PATHINFO_EXTENSION));
+                                        $ext = strtolower(pathinfo($attachment['original_name'], PATHINFO_EXTENSION));
                                         $iconClass = 'file-earmark';
                                         $bgColor = '#8B1956';
 
@@ -393,15 +394,15 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                                     <!-- Attachment Info -->
                                     <div class="attachment-info">
                                         <a href="<?= url("/attachments/{$attachment['id']}") ?>" target="_blank"
-                                            class="attachment-name" title="<?= e($attachment['original_filename']) ?>">
-                                            <?= e($attachment['original_filename']) ?>
+                                            class="attachment-name" title="<?= e($attachment['original_name']) ?>">
+                                            <?= e($attachment['original_name']) ?>
                                         </a>
                                         <div class="attachment-meta">
                                             <span class="file-size">
                                                 <i class="bi bi-disc"></i>
                                                 <?php
                                                 // Format file size
-                                                $size = $attachment['size'];
+                                                $size = $attachment['file_size'];
                                                 if ($size < 1024) {
                                                     echo $size . ' B';
                                                 } elseif ($size < 1024 * 1024) {
@@ -484,12 +485,12 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                                             style="background-color: <?= e($link['status_color'] ?? '#ccc') ?>; color: white !important;">
                                             <?= e($link['status_name'] ?? 'Unknown') ?>
                                         </span>
-                                        </div>
-                                        <?php endforeach; ?>
-                                        <?php endif; ?>
-                                        <?php if (!empty($links['inward'] ?? [])): ?>
-                                        <?php foreach ($links['inward'] as $link): ?>
-                                        <div class="link-item">
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                            <?php if (!empty($links['inward'] ?? [])): ?>
+                                <?php foreach ($links['inward'] as $link): ?>
+                                    <div class="link-item">
                                         <span class="link-badge"
                                             style="background-color: <?= e($link['issue_type_color'] ?? '#ccc') ?>">
                                             <i class="bi bi-<?= e($link['issue_type_icon'] ?? 'link') ?>"></i>
@@ -594,7 +595,8 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Status</span>
-                        <span class="detail-badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
+                        <span class="detail-badge"
+                            style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </div>

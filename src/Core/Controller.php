@@ -41,24 +41,24 @@ abstract class Controller
         while (ob_get_level() > 0) {
             ob_end_clean();
         }
-        
+
         // Set HTTP response code
         http_response_code($status);
-        
+
         // Set proper JSON headers BEFORE any output
         header('Content-Type: application/json; charset=utf-8', true);
         header('Cache-Control: no-cache, no-store, must-revalidate', true);
         header('Pragma: no-cache', true);
         header('Expires: 0', true);
-        
+
         // Encode and output JSON
         $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        
+
         // Final safety: ensure headers are actually sent
         if (!headers_sent()) {
             header('Content-Length: ' . strlen($json), true);
         }
-        
+
         echo $json;
         exit();
     }
@@ -167,19 +167,27 @@ abstract class Controller
      */
     protected function uploadFile(array $file, string $directory = ''): ?array
     {
+        $logFile = __DIR__ . '/../../public/debug_log.txt';
+        $log = function ($msg) use ($logFile) {
+            file_put_contents($logFile, date('[Y-m-d H:i:s] [Controller] ') . $msg . "\n", FILE_APPEND);
+        };
+
         if ($file['error'] !== UPLOAD_ERR_OK) {
+            $log("uploadFile failed. Error code: " . $file['error']);
             return null;
         }
 
         // Validate file type
         $allowedTypes = config('upload.allowed_types', []);
         if (!empty($allowedTypes) && !in_array($file['type'], $allowedTypes)) {
+            $log("uploadFile failed. Invalid type: " . $file['type']);
             return null;
         }
 
         // Validate file size
         $maxSize = config('upload.max_size', 10 * 1024 * 1024);
         if ($file['size'] > $maxSize) {
+            $log("uploadFile failed. Size exceeded: " . $file['size']);
             return null;
         }
 
@@ -197,12 +205,15 @@ abstract class Controller
         $fullPath = public_path($uploadPath . '/' . $subPath);
 
         if (!is_dir($fullPath)) {
-            mkdir($fullPath, 0755, true);
+            if (!mkdir($fullPath, 0755, true)) {
+                $log("uploadFile failed. mkdir failed: " . $fullPath);
+            }
         }
 
         // Move uploaded file
         $destination = $fullPath . '/' . $filename;
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
+            $log("uploadFile failed. move_uploaded_file failed: " . $destination . " (Tmp: " . $file['tmp_name'] . ")");
             return null;
         }
 

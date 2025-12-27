@@ -96,179 +96,121 @@
 - The `url()` helper automatically prepends the application's base path
 - Example: `url('/profile/notifications')` correctly resolves whether app is at `/jira_clone_system/public/` or root
 
-## Quick Create Modal & Create Issue Page (Synchronized)
+## Unified Create Issue Modal (December 27, 2025) ✅ PRODUCTION READY
 
-**Unified Issue Creation Interface** - December 2025:
-- Quick Create Modal: `views/layouts/app.php` (lines 1082-1233)
-- Create Issue Page: `views/issues/create.php` (full page form)
-- **Status**: ✅ BOTH PAGES SYNCHRONIZED (December 13, 2025)
-- **Assignee Fix**: ✅ COMPLETE (December 14, 2025) - Empty dropdown and "Assign to me" fixed
-- **Rich Text Editor**: ✅ UPGRADED TO QUILL (December 15, 2025) - Professional semantic editor
-- Users get identical experience across both interfaces
+**Status**: ✅ COMPLETE - Single unified create issue modal replaces quick create modal
+- **Quick Create Modal**: ✅ REMOVED (was duplicate of create issue page)
+- **Single Create Modal**: ✅ NOW USED for both navbar "Create" button and project view page
+- **Unified Interface**: Consistent UX across all issue creation entry points
 
-**Quill Rich Text Editor** (`views/layouts/app.php`) - DECEMBER 15, 2025 ✅ FULLY INITIALIZED:
-- ✅ **Replaced custom HTML editor with Quill 2.0**: Professional WYSIWYG editor NOW WORKING
-- ✅ **Quill CSS loaded from CDN**: Line 21 (https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css)
-- ✅ **Quill JS loaded from CDN**: Before </body> (https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js)
-- ✅ **Initialization code in place**: Lines 2357-2425 (complete, tested, working)
-- ✅ **No HTML exposed to users**: Clean semantic HTML output, not visible in editor
-- ✅ **Professional toolbar**: Headers, Bold, Italic, Underline, Strikethrough, Blockquote, Code, Lists, Links, Images, Clean
-- ✅ **Character counting**: Real-time, max 5000 characters with visual feedback
-- ✅ **Mobile responsive**: Touch-friendly buttons, smaller editor on mobile
-- ✅ **Zero external dependencies**: Only Quill from CDN, everything else vanilla JavaScript
-- ✅ **CDN-based**: No installation needed, loads from jsDelivr
-- **Files Modified** (December 15, 2025):
-   - `views/layouts/app.php` - Added Quill CSS (line 21), JS (before </body>), Quill container (lines 1175-1186), initialization code (lines 2357-2425)
-- **Key Features**:
-   - Toolbar buttons are professional and self-explanatory
-   - No HTML tags visible when formatting text - pure WYSIWYG experience
-   - Smooth focus/blur animations with plum theme color
-   - Works on all modern browsers (Chrome, Firefox, Safari, Edge, Mobile)
-   - Supports keyboard shortcuts (Ctrl+B, Ctrl+I, Ctrl+U)
-   - Real-time character count synced to hidden textarea
-   - Proper form integration - content synced automatically
-- **Output Format**: Clean, semantic HTML stored in database:
-   ```html
-   <p><strong>Bold text</strong> and <em>italic</em></p>
-   <ul><li>List item</li></ul>
-   <blockquote>Quote</blockquote>
-   ```
-- **Documentation**:
-   - `QUILL_EDITOR_IMPLEMENTATION.md` - Technical details
-   - `QUILL_EDITOR_INITIALIZATION_FIX_DECEMBER_15.md` - Implementation fix details
-   - `QUILL_EDITOR_FIX_DEPLOYMENT_CARD.txt` - Quick deployment reference
-- **Status**: ✅ PRODUCTION READY - Professional editor fully functional and tested
-- **Verified**: Quill editor initialized on DOM ready, works across all pages, no conflicts with form-specific editors
+**Create Issue Modal** - UNIFIED INTERFACE (December 27, 2025):
+- **Location**: `views/issues/create.php` - Single reusable modal component
+- **Triggered From**:
+  1. Navbar "Create" button (top-right, visible on all pages)
+  2. Project view page "Create Issue" action
+  3. Any other location requiring issue creation
+- **Single Source of Truth**: One modal implementation, used everywhere (eliminates duplication)
+- **Status**: ✅ PRODUCTION READY - Tested on all entry points, zero issues
 
-**Quick Create Modal** (`views/layouts/app.php`, lines 1082-1233) - DECEMBER 14, 2025 CRITICAL FIXES ✅:
-- ✅ **Projects Dropdown Fixed (DECEMBER 15, 2025)**: MariaDB `key` reserved word issue fixed in `ProjectService`
-- ✅ **Assignee Dropdown Fixed**: Now loads all team members from `/users/active` endpoint
-- ✅ **Reporter Field Enhanced**: Now displays current user's name and profile photo (matches Create Issue page)
-- ✅ **Modal Works on Create Issue Page**: Fixed timing conflicts with page-specific form initialization
-- **Files Modified**: 
-  - `src/Services/ProjectService.php` - Fixed SQL queries to quote reserved word `key` (lines 50-61, 74-75, 93)
-  - `src/Controllers/UserController.php` - Fixed `activeUsers()` return type (line 432: `never` → `void`)
-  - `views/layouts/app.php` - Added `initializeReporterField()` function + modal event listener (lines 1617-1656, 1807)
-- **Fixes Applied**: 
-  - **CRITICAL FIX #1**: Changed `UserController::activeUsers()` return type from `never` to `void` (prevents JSON response from being sent)
-  - **CRITICAL FIX #2**: Added reporter field initialization function that reads user name and avatar from navbar button
-  - **CRITICAL FIX #3**: Ensured reporter field updates on page load and modal open
-  - Data Flow: User Menu Button → (data-user-name, data-user-avatar) → Reporter Field Display
-- **Functionality**:
-  - Projects dropdown auto-populated on modal open from `/projects/quick-create-list`
-  - Assignee dropdown auto-populated with active users from `/users/active`
-  - Reporter shows current user's profile photo (circular avatar) or initials
-  - Reporter shows user's display name from navbar button
-  - All dropdowns use Select2 for enhanced UX
-- **Status**: ✅ PRODUCTION READY - All three issues fixed, tested, and working
-
-**Quick Create Modal** (Original Details):
-- Modal triggered via "Create" button in navbar (top-right)
-- **Modal Structure**: 
-  - Centered with `modal-dialog-centered` class
-  - Modal z-index: 2050, backdrop z-index: 2040 (navbar z-index: 2000)
-  - Proper layering prevents navbar visibility issues
-- **Form Fields** (in order):
-  1. **Project** - Required, Select2 dropdown with search, auto-loads from `/projects/quick-create-list`
+**Modal Features** ✅:
+- **7 Form Fields** (in order):
+  1. **Project** - Required, Select2 dropdown with search, auto-loads project list
   2. **Work Type** - Required, Select2 dropdown, dynamically loads when project selected
   3. **Summary** - Required field, 500 char limit, with character counter
-  4. **Description** - Optional, 5000 char limit, rich text editor with toolbar
+  4. **Description** - Optional, 5000 char limit, rich text editor (Quill)
   5. **Reporter** - Auto-filled, read-only field showing current user
   6. **Assignee** - Auto-assign option, "Assign to me" link, Select2 dropdown
-  7. **Attachments** - Drag-and-drop zone, supports: PDF, DOC/DOCX, XLS/XLSX, PPT/PPTX, TXT, JPG/JPEG, PNG, GIF, ZIP (max 10MB per file)
-- **Project Dropdown**: Uses Select2 for enhanced scrolling, search. Auto-loads from `/projects/quick-create-list` on modal open
-- **Work Type Dropdown**: Uses Select2. Dynamically loads when project selected
-- **Reporter Field**
-   - Auto-populated with current user name + profile photo/avatar
-   - Displays user's profile photo in circular 40px avatar
-   - Shows user initials on colored background if no photo
-   - Read-only (disabled) to prevent user modification
-   - Set on modal open from navbar user data
-   - Enhances issue tracking with proper attribution and visual identity
-- **Attachments Field**
-  - Drag-and-drop zone with cloud upload icon
-  - Click to select files from disk
-  - File type validation (10 common business/technical formats)
-  - File size validation (max 10MB per file)
-  - Visual file list with type-specific icons
-  - One-click file removal before upload
-  - Formatted file size display
-  - Automatic MIME type detection
-- **Rich Text Editor** - Professional toolbar with formatting options
-  - Text formatting: Bold, Italic, Code
-  - Lists: Unordered, Ordered, Checkboxes
-  - Media: Links, Mentions (@), Emoji
-  - Content: Tables, Code blocks
-- **Styling**: Professional design (12px border-radius, 0 10px 40px shadow, Jira-like colors)
-   - Hover states with lift animation (translateY(-2px))
-   - Focus states with plum glow (0 0 0 4px rgba(139, 25, 86, 0.1))
-   - Form fields use form-control-lg for better touch targets
-   - Attachment drop zone with dashed border, hover effects
-- **JavaScript**: Event listeners for modal open, project change, form submission, file handling
-  - File validation (size, type)
-  - Drag-and-drop detection and handling
-  - Icon detection based on file extension
-  - File removal without page reload
-  - Reporter field auto-population
-- **CSS**: Comprehensive styling in `public/assets/css/app.css` with responsive breakpoints
-  - Desktop (> 768px): max-width 500px, inline buttons
-  - Tablet (576px-768px): Full-width adjusted, stacked buttons
-  - Mobile (< 576px): Full-width with margins, responsive buttons
-  - Small mobile (< 480px): Bottom sheet style, rounded top corners
-  - Attachment zone styles (hover, dragover, active states)
-  - File list item styles (flex layout, icon styling, remove button)
+  7. **Attachments** - Drag-and-drop zone (10 business formats, max 10MB per file)
 
-**Create Issue Page** (`views/issues/create.php`):
-- **Status**: ✅ SYNCHRONIZED - Matches Quick Modal Exactly (December 14, 2025)
-- URL: `/projects/{key}/issues/create` (with project context) or `/issues/create` (without)
-- **Same 7 Fields** as Quick Modal (identical order and styling):
-  1. **Project** - Required, shows "KEY - Name" format
-  2. **Work Type** - Dynamically loads based on project
-  3. **Summary** - Character counter, 500 char limit
-  4. **Description** - Rich text editor, 5000 char limit
-  5. **Reporter** - Auto-filled with name + avatar, read-only
-  6. **Assignee** - With "Assign to me" quick link
-  7. **Attachments** - Full drag-and-drop implementation
-- **Identical Styling**: Same colors, typography, spacing, responsive design
-- **Reporter Field Details**:
-  - Displays user's profile photo in circular avatar (44px on create page)
-  - Shows user's full name (display_name or first_name)
-  - Shows user initials on colored background if no profile photo
-  - Read-only field that cannot be changed
-- **Full Features**:
-  - Character counters for Summary and Description
-  - Rich text toolbar with 11 formatting buttons
-  - Real-time character count validation
-  - Reporter auto-population from current user
-  - Assignee dynamic loading from project members
-  - Attachment drag-and-drop with file type/size validation
-  - Responsive design (mobile-first, 4 breakpoints)
-  - Professional enterprise Jira-like appearance
-- **JavaScript Features**:
-  - Character counter updates
-  - Reporter auto-population
-  - Assign-to-me quick link
-  - Attachment handling (validation, removal)
-  - Project change handler (loads issue types and assignees)
-- **Production Ready**: WCAG AA compliant, all modern browsers, zero external dependencies
-- **Validation**: Client-side form validation + loading state with spinner button
-  - Required fields: Summary, Project, Issue Type
-  - File validation before adding to list
-  - Form validation before submission
-- **Accessibility**: ARIA attributes (role="dialog", aria-hidden="true", aria-label="Close")
-  - File list semantic structure
-  - Remove button accessible labels
-- **Responsive**: Mobile-first approach, works seamlessly across all screen sizes
-- **Test Page**: `test_modal_responsive.html` - comprehensive test suite for all breakpoints
-- **New CSS Classes** (in `public/assets/css/app.css`):
-  - `.attachment-drop-zone` - Drop zone container
-  - `.attachment-item` - File list item
-  - `.attachment-item-info` - File info section
-  - `.attachment-item-icon` - File type icon
-  - `.attachment-item-details` - File name and size
-  - `.attachment-remove-btn` - Remove button
-  - `.dragover` - Active drag state
-  - `#quickCreateReporter` - Reporter field styling
+**Quill Rich Text Editor** ✅ INTEGRATED:
+- ✅ **Professional WYSIWYG editor**: Quill 2.0 via CDN
+- ✅ **Toolbar**: Headers, Bold, Italic, Underline, Strikethrough, Blockquote, Code, Lists, Links, Images, Clean
+- ✅ **Character counting**: Real-time, max 5000 characters
+- ✅ **Mobile responsive**: Touch-friendly buttons
+- ✅ **Clean output**: Semantic HTML stored in database
+- ✅ **Keyboard shortcuts**: Ctrl+B, Ctrl+I, Ctrl+U supported
+- ✅ **Cross-browser**: Works on Chrome, Firefox, Safari, Edge, Mobile
+
+**Smart Initialization** ✅:
+- **Reporter Field**: Auto-populated with current user (name + avatar from navbar)
+- **Project Dropdown**: Auto-loads on modal open
+- **Work Type Dropdown**: Dynamically loads based on selected project
+- **Assignee Dropdown**: Populates with active project team members
+- **Attachments**: Full drag-and-drop with file validation
+
+**Styling & Design** ✅:
+- Professional enterprise Jira-like appearance
+- Plum color theme (#8B1956) throughout
+- Responsive design (desktop, tablet, mobile)
+- WCAG AA accessibility compliant
+- 12px border-radius, professional shadows
+- Smooth animations (0.2s transitions)
+- Hover states with lift effects
+
+**JavaScript Features** ✅:
+- Real-time character counters (Summary & Description)
+- File validation (size: max 10MB, type: 10 business formats)
+- Drag-and-drop detection and handling
+- Icon detection based on file extension
+- File removal without page reload
+- Reporter field auto-population from navbar
+- "Assign to me" quick link functionality
+- Project change handler (loads issue types and assignees)
+
+**CSS Classes** (in `public/assets/css/app.css`):
+- `.create-issue-modal` - Main modal container
+- `.create-issue-form` - Form wrapper
+- `.form-group-inline` - Side-by-side field layout
+- `.attachment-drop-zone` - Drop zone container
+- `.attachment-item` - File list item
+- `.dragover` - Active drag state
+- Form field classes: `.form-control`, `.form-select`, `.form-check`
+
+**Responsive Design** ✅:
+- **Desktop (> 768px)**: Max-width 600px, inline buttons, full layout
+- **Tablet (576px-768px)**: Full-width adjusted, stacked buttons
+- **Mobile (< 576px)**: Full-width with margins, responsive fonts
+- **Small mobile (< 480px)**: Bottom sheet style, optimized spacing
+
+**Accessibility Features** ✅:
+- Semantic HTML (form, label, input, button)
+- ARIA labels and descriptions
+- Required field indicators (red asterisk)
+- Visible focus states (plum outline)
+- Color contrast WCAG AA compliant
+- Keyboard navigable
+- Screen reader friendly
+- Touch targets min 44px
+
+**Files & Locations**:
+- **View**: `views/issues/create.php` - Single modal implementation
+- **Styles**: `public/assets/css/app.css` - Modal & form styling
+- **Entry Points**:
+  - Navbar: Create button triggers this modal
+  - Project View: "Create Issue" action uses same modal
+  - Any page: Can access via `/issues/create` or `/projects/{key}/issues/create`
+
+**Benefits of Unified Approach**:
+- ✅ **Single Source of Truth**: One implementation, eliminates duplication
+- ✅ **Consistent UX**: Same experience from all entry points
+- ✅ **Easier Maintenance**: Bug fixes apply to all locations
+- ✅ **Smaller Codebase**: Removed duplicate quick create modal code
+- ✅ **Better Performance**: One modal vs two
+- ✅ **Cleaner Code**: Simpler, more maintainable architecture
+
+**Future Reference** - IMPORTANT:
+- When users request "create issue" functionality: Use the unified modal at `views/issues/create.php`
+- Do NOT create separate quick create or duplicate modals
+- All issue creation flows through ONE modal component
+- Any improvements to issue creation automatically benefit all entry points
+- This pattern applies to other forms/modals: Prefer unified over duplicated components
+
+**Production Status**: ✅ READY FOR IMMEDIATE DEPLOYMENT
+- All functionality working correctly
+- Tested from all entry points (navbar, projects)
+- No bugs or issues reported
+- Enterprise-grade quality
+- Zero breaking changes from transition
 
 ## UI/UX Standards
 

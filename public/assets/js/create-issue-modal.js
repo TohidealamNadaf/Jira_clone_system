@@ -134,9 +134,9 @@ document.addEventListener('DOMContentLoaded', function () {
      * Populate project dropdown with options
      */
     function populateProjectDropdown(projects) {
-        const projectSelect = document.getElementById('issueProject');
+        const projectSelect = document.getElementById('global-modal-issueProject');
         if (!projectSelect) {
-            console.warn('⚠️ Project dropdown (#issueProject) not found');
+            console.warn('⚠️ Project dropdown (#global-modal-issueProject) not found');
             return;
         }
 
@@ -160,9 +160,9 @@ document.addEventListener('DOMContentLoaded', function () {
      * Populate assignee dropdown with users
      */
     function populateAssigneeDropdown(users) {
-        const assigneeSelect = document.getElementById('issueAssignee');
+        const assigneeSelect = document.getElementById('global-modal-issueAssignee');
         if (!assigneeSelect) {
-            console.warn('⚠️ Assignee dropdown (#issueAssignee) not found');
+            console.warn('⚠️ Assignee dropdown (#global-modal-issueAssignee) not found');
             return;
         }
 
@@ -190,9 +190,9 @@ document.addEventListener('DOMContentLoaded', function () {
      * Load issue types globally
      */
     async function loadIssueTypesForProject() {
-        const issueTypeSelect = document.getElementById('issueType');
+        const issueTypeSelect = document.getElementById('global-modal-issueType');
         if (!issueTypeSelect) {
-            console.warn('⚠️ Issue type dropdown (#issueType) not found');
+            console.warn('⚠️ Issue type dropdown (#global-modal-issueType) not found');
             return;
         }
 
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Populate issue type dropdown
      */
     function populateIssueTypeDropdown(issueTypes) {
-        const issueTypeSelect = document.getElementById('issueType');
+        const issueTypeSelect = document.getElementById('global-modal-issueType');
         if (!issueTypeSelect) return;
 
         issueTypeSelect.innerHTML = '<option value="">Select issue type</option>';
@@ -240,9 +240,9 @@ document.addEventListener('DOMContentLoaded', function () {
      * Load priority options
      */
     async function loadPriorityOptions() {
-        const prioritySelect = document.getElementById('issuePriority');
+        const prioritySelect = document.getElementById('global-modal-issuePriority');
         if (!prioritySelect) {
-            console.warn('⚠️ Priority dropdown (#issuePriority) not found');
+            console.warn('⚠️ Priority dropdown (#global-modal-issuePriority) not found');
             return;
         }
 
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Populate priority dropdown
      */
     function populatePriorityDropdown(priorities) {
-        const prioritySelect = document.getElementById('issuePriority');
+        const prioritySelect = document.getElementById('global-modal-issuePriority');
         if (!prioritySelect) return;
 
         prioritySelect.innerHTML = '<option value="">Select priority</option>';
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Setup project change handler
      */
     function setupProjectChangeHandler() {
-        const projectSelect = document.getElementById('issueProject');
+        const projectSelect = document.getElementById('global-modal-issueProject');
         if (!projectSelect) return;
 
         projectSelect.addEventListener('change', function () {
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (projectId) {
                 loadIssueTypesForProject();
             } else {
-                const issueTypeSelect = document.getElementById('issueType');
+                const issueTypeSelect = document.getElementById('global-modal-issueType');
                 if (issueTypeSelect) {
                     issueTypeSelect.innerHTML = '<option value="">Select a project first</option>';
                 }
@@ -307,8 +307,11 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * Submit issue form via AJAX
      */
+    /**
+     * Submit issue form via AJAX
+     */
     async function submitCreateIssueForm() {
-        const form = document.getElementById('createIssueForm');
+        const form = document.getElementById('global-modal-createIssueForm');
         if (!form) {
             console.error('❌ Create Issue Form not found');
             return;
@@ -316,22 +319,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             // Get form values
-            const projectSelect = document.getElementById('issueProject');
+            const projectSelect = document.getElementById('global-modal-issueProject');
             const projectId = projectSelect.value;
             const projectKey = projectSelect.options[projectSelect.selectedIndex].dataset.projectKey;
-            const issueTypeId = document.getElementById('issueType').value;
-            const summary = document.getElementById('issueSummary').value;
+            const issueTypeId = document.getElementById('global-modal-issueType').value;
+            const summary = document.getElementById('global-modal-issueSummary').value;
 
             // Sync TinyMCE content to textarea
-            if (typeof tinymce !== 'undefined' && tinymce.get('issueDescription')) {
-                tinymce.get('issueDescription').save();
+            if (typeof tinymce !== 'undefined' && tinymce.get('global-modal-issueDescription')) {
+                tinymce.get('global-modal-issueDescription').save();
             }
 
-            const description = document.getElementById('issueDescription').value || '';
-            const assigneeId = document.getElementById('issueAssignee').value;
-            const priorityId = document.getElementById('issuePriority').value;
-            const startDate = document.getElementById('issueStartDate').value;
-            const endDate = document.getElementById('issueEndDate').value;
+            const description = document.getElementById('global-modal-issueDescription').value || '';
+            const assigneeId = document.getElementById('global-modal-issueAssignee').value;
+            const priorityId = document.getElementById('global-modal-issuePriority').value;
+            const startDate = document.getElementById('global-modal-issueStartDate').value;
+            const endDate = document.getElementById('global-modal-issueEndDate').value;
 
             // Validate dates
             if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
@@ -363,37 +366,37 @@ document.addEventListener('DOMContentLoaded', function () {
             const endpoint = basePath + '/issues/store';
 
             console.log('📤 [CREATE-ISSUE-MODAL] Submitting issue to:', endpoint);
-            console.log('📋 [CREATE-ISSUE-MODAL] Form data:', {
-                projectId,
-                projectKey,
-                issueTypeId,
-                summary,
-                assigneeId,
-                priorityId,
-                startDate,
-                endDate
-            });
 
-            const requestBody = {
-                project_id: parseInt(projectId),
-                issue_type_id: parseInt(issueTypeId),
-                summary: summary.trim(),
-                description: description,
-                assignee_id: assigneeId ? parseInt(assigneeId) : null,
-                priority_id: priorityId ? parseInt(priorityId) : null,
-                start_date: startDate ? startDate : null,
-                end_date: endDate ? endDate : null
-            };
+            // Create FormData object to handle files + validation data
+            const formData = new FormData();
+            formData.append('project_id', parseInt(projectId));
+            formData.append('issue_type_id', parseInt(issueTypeId));
+            formData.append('summary', summary.trim());
+            formData.append('description', description);
 
-            console.log('📦 [CREATE-ISSUE-MODAL] Request body:', requestBody);
+            if (assigneeId) formData.append('assignee_id', parseInt(assigneeId));
+            if (priorityId) formData.append('priority_id', parseInt(priorityId));
+            if (startDate) formData.append('start_date', startDate);
+            if (endDate) formData.append('end_date', endDate);
+
+            // Append input files
+            if (selectedFiles.size > 0) {
+                console.log(`📎 Appending ${selectedFiles.size} files...`);
+                selectedFiles.forEach(file => {
+                    formData.append('attachments[]', file);
+                });
+            }
+
+            // CSRF Token
+            const csrfToken = getCsrfToken();
 
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': getCsrfToken()
+                    'X-CSRF-Token': csrfToken
+                    // Content-Type must be undefined for FormData
                 },
-                body: JSON.stringify(requestBody),
+                body: formData,
                 credentials: 'include'
             });
 
@@ -420,6 +423,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Reset form
                 form.reset();
+                selectedFiles.clear(); // Clear files
+                updateFilePreview();
 
                 // Reload page after delay
                 setTimeout(() => {
@@ -438,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('❌ [CREATE-ISSUE-MODAL] Stack trace:', error.stack);
             alert('❌ Network error. Please check console and try again.');
         } finally {
-            const submitBtn = document.getElementById('createIssueBtn');
+            const submitBtn = document.getElementById('global-modal-createIssueBtn');
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Create';
@@ -477,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 loadCreateIssueModalData().then(() => {
                     // Pre-select project if specified
                     if (preProjectId || preProjectKey) {
-                        const projectSelect = document.getElementById('issueProject');
+                        const projectSelect = document.getElementById('global-modal-issueProject');
                         if (projectSelect) {
                             if (preProjectId) {
                                 projectSelect.value = preProjectId;
@@ -500,16 +505,16 @@ document.addEventListener('DOMContentLoaded', function () {
         setupProjectChangeHandler();
 
         // Attach submit button handler (inside modal)
-        const createIssueBtn = document.getElementById('createIssueBtn');
+        const createIssueBtn = document.getElementById('global-modal-createIssueBtn');
         if (createIssueBtn) {
             createIssueBtn.addEventListener('click', function (event) {
                 event.preventDefault();
                 console.log('🔘 [CREATE-ISSUE-MODAL] Modal submit button clicked');
                 submitCreateIssueForm();
             });
-            console.log('✅ Modal submit button (#createIssueBtn) click handler attached');
+            console.log('✅ Modal submit button (#global-modal-createIssueBtn) click handler attached');
         } else {
-            console.error('❌ Modal submit button (#createIssueBtn) not found');
+            console.error('❌ Modal submit button (#global-modal-createIssueBtn) not found');
         }
 
         // Load data when modal opens
@@ -524,7 +529,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Initialize TinyMCE
             if (typeof tinymce !== 'undefined') {
                 tinymce.init({
-                    selector: '#issueDescription',
+                    selector: '#global-modal-issueDescription',
                     height: 300,
                     menubar: false,
                     plugins: [
@@ -630,7 +635,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Destroy TinyMCE when modal closes to prevent issues
         createIssueModal.addEventListener('hidden.bs.modal', function () {
             if (typeof tinymce !== 'undefined') {
-                tinymce.remove('#issueDescription');
+                tinymce.remove('#global-modal-issueDescription');
             }
         });
 
@@ -671,8 +676,8 @@ document.addEventListener('DOMContentLoaded', function () {
      * Setup Drag & Drop Handlers
      */
     function setupDragAndDrop() {
-        const dropZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('global-modal-uploadZone');
+        const fileInput = document.getElementById('global-modal-fileInput');
 
         if (!dropZone || !fileInput) {
             console.warn('⚠️ Drag & Drop zone not found');
@@ -741,7 +746,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Update file preview list
      */
     function updateFilePreview() {
-        const previewList = document.getElementById('filePreviewList');
+        const previewList = document.getElementById('global-modal-filePreviewList');
         if (!previewList) return;
 
         previewList.innerHTML = '';
@@ -780,149 +785,7 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * Submit issue form via AJAX
      */
-    async function submitCreateIssueForm() {
-        const form = document.getElementById('createIssueForm');
-        if (!form) {
-            console.error('❌ Create Issue Form not found');
-            return;
-        }
 
-        try {
-            // Get form values
-            const projectSelect = document.getElementById('issueProject');
-            const projectId = projectSelect.value;
-            const projectKey = projectSelect.options[projectSelect.selectedIndex].dataset.projectKey;
-            const issueTypeId = document.getElementById('issueType').value;
-            const summary = document.getElementById('issueSummary').value;
-
-            // Sync TinyMCE content to textarea
-            if (typeof tinymce !== 'undefined' && tinymce.get('issueDescription')) {
-                tinymce.get('issueDescription').save();
-            }
-
-            const description = document.getElementById('issueDescription').value || '';
-            const assigneeId = document.getElementById('issueAssignee').value;
-            const priorityId = document.getElementById('issuePriority').value;
-
-            // Validate required fields
-            if (!projectId || !issueTypeId || !summary.trim()) {
-                alert('⚠️ Please fill in all required fields (Project, Issue Type, Summary)');
-                return;
-            }
-
-            if (!projectKey) {
-                alert('⚠️ Unable to determine project key');
-                return;
-            }
-
-            const submitBtn = document.getElementById('createIssueBtn');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
-            }
-
-            const basePath = getBasePath();
-            const endpoint = basePath + '/issues/store';
-
-            const requestBody = {
-                project_id: parseInt(projectId),
-                issue_type_id: parseInt(issueTypeId),
-                summary: summary.trim(),
-                description: description,
-                assignee_id: assigneeId ? parseInt(assigneeId) : null,
-                priority_id: priorityId ? parseInt(priorityId) : null
-            };
-
-            // 1. Create Issue
-            console.log('📤 Creating issue...');
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': getCsrfToken()
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.success) {
-                console.log('✅ Issue created:', result.issue_key);
-                const issueKey = result.issue_key;
-
-                // 2. Upload Attachments (if any)
-                if (selectedFiles.size > 0) {
-                    if (submitBtn) submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading files...';
-
-                    console.log(`📤 Uploading ${selectedFiles.size} attachments for ${issueKey}...`);
-
-                    // Upload files sequentially or in parallel
-                    // Using parallel for speed
-                    const uploadPromises = Array.from(selectedFiles).map(async (file) => {
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        formData.append('issueKey', issueKey); // Add issueKey if needed by backend param
-
-                        // Note: The AttachmentController::store expects 'issueKey' as a parameter in the URL or Body? 
-                        // The controller uses $request->param('issueKey'). If it's a route param, we need the right URL.
-                        // Route is likely /api/issues/{key}/attachments based on standard REST
-                        // Let's verify route in next steps or assume /issues/{key}/attachments based on implementation plan context
-                        // Looking at AttachmentController it redirects back to /issue/{key} so it might be a standard POST form submit controller
-                        // But we want JSON response. The controller supports wantsJson().
-
-                        // We will construct the URL correctly:
-                        const uploadUrl = basePath + `/issues/${issueKey}/attachments`;
-
-                        try {
-                            const upResponse = await fetch(uploadUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRF-Token': getCsrfToken(),
-                                    'Accept': 'application/json' // Force JSON response
-                                },
-                                body: formData
-                            });
-
-                            if (!upResponse.ok) {
-                                throw new Error(`Upload failed for ${file.name}`);
-                            }
-                            return { file: file.name, status: 'success' };
-                        } catch (err) {
-                            console.error(`❌ Failed to upload ${file.name}`, err);
-                            return { file: file.name, status: 'error', error: err };
-                        }
-                    });
-
-                    await Promise.all(uploadPromises);
-                    console.log('✅ All uploads processed');
-                }
-
-                alert(`✅ Issue ${issueKey} created successfully!`);
-                modal.hide();
-                form.reset();
-                selectedFiles.clear();
-                updateFilePreview();
-
-                setTimeout(() => {
-                    window.location.href = basePath + '/projects/' + projectKey + '/board';
-                }, 1000);
-
-            } else {
-                const errorMessage = result.error || result.message || 'Failed to create issue';
-                alert('❌ ' + errorMessage);
-            }
-
-        } catch (error) {
-            console.error('❌ Error submitting form:', error);
-            alert('❌ Network error. Please check console and try again.');
-        } finally {
-            const submitBtn = document.getElementById('createIssueBtn');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Create';
-            }
-        }
-    }
 
     // Run initialization
     initialize();

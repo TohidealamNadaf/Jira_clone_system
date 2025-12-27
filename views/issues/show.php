@@ -50,6 +50,15 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                                 <i class="bi bi-pencil"></i> Edit
                             </a>
                         <?php endif; ?>
+                        <!-- Attachments Button -->
+                        <button type="button" class="btn btn-sm btn-outline" data-bs-toggle="modal"
+                            data-bs-target="#attachmentsModal">
+                            <i class="bi bi-paperclip"></i> Attachments
+                            <?php if (!empty($issue['attachments'])): ?>
+                                <span class="badge bg-secondary text-white ms-1"
+                                    style="font-size: 0.7rem; padding: 2px 6px;"><?= count($issue['attachments']) ?></span>
+                            <?php endif; ?>
+                        </button>
                         <div class="dropdown-container">
                             <button class="btn btn-sm btn-outline" onclick="toggleMenu(this)">
                                 <i class="bi bi-three-dots"></i>
@@ -333,103 +342,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 </div>
             </div>
 
-            <!-- Attachments Section -->
-            <div class="section-card">
-                <div class="section-header">
-                    <h3 class="section-title">
-                        <i class="bi bi-paperclip"></i> Attachments
-                        <?php if (!empty($issue['attachments'])): ?>
-                            <span class="section-badge"><?= count($issue['attachments']) ?></span>
-                        <?php endif; ?>
-                    </h3>
-                </div>
-                <div class="section-content">
-                    <?php if (empty($issue['attachments'])): ?>
-                        <!-- Empty State -->
-                        <div class="empty-state">
-                            <div class="empty-icon"><i class="bi bi-file-earmark"></i></div>
-                            <p class="empty-text">No attachments yet. Upload files to help reference and solve this issue.
-                            </p>
-                        </div>
-                    <?php else: ?>
-                        <!-- Attachments Grid -->
-                        <div class="attachments-grid">
-                            <?php foreach ($issue['attachments'] as $attachment): ?>
-                                <div class="attachment-item">
-                                    <!-- File Icon based on type -->
-                                    <div class="attachment-icon">
-                                        <?php
-                                        $ext = strtolower(pathinfo($attachment['original_name'], PATHINFO_EXTENSION));
-                                        $iconClass = 'file-earmark';
-                                        $bgColor = '#8B1956';
-
-                                        if (in_array($ext, ['pdf'])) {
-                                            $iconClass = 'file-pdf';
-                                            $bgColor = '#D1453B';
-                                        } elseif (in_array($ext, ['doc', 'docx'])) {
-                                            $iconClass = 'file-word';
-                                            $bgColor = '#2B579A';
-                                        } elseif (in_array($ext, ['xls', 'xlsx'])) {
-                                            $iconClass = 'file-spreadsheet';
-                                            $bgColor = '#217346';
-                                        } elseif (in_array($ext, ['ppt', 'pptx'])) {
-                                            $iconClass = 'file-slides';
-                                            $bgColor = '#D24726';
-                                        } elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
-                                            $iconClass = 'file-image';
-                                            $bgColor = '#546E7A';
-                                        } elseif (in_array($ext, ['zip', 'rar', '7z'])) {
-                                            $iconClass = 'file-zip';
-                                            $bgColor = '#FF9800';
-                                        } elseif (in_array($ext, ['txt'])) {
-                                            $iconClass = 'file-text';
-                                            $bgColor = '#757575';
-                                        }
-                                        ?>
-                                        <div class="file-icon-circle" style="background-color: <?= $bgColor ?>">
-                                            <i class="bi bi-<?= $iconClass ?>"></i>
-                                        </div>
-                                    </div>
-
-                                    <!-- Attachment Info -->
-                                    <div class="attachment-info">
-                                        <a href="<?= url("/attachments/{$attachment['id']}") ?>" target="_blank"
-                                            class="attachment-name" title="<?= e($attachment['original_name']) ?>">
-                                            <?= e($attachment['original_name']) ?>
-                                        </a>
-                                        <div class="attachment-meta">
-                                            <span class="file-size">
-                                                <i class="bi bi-disc"></i>
-                                                <?php
-                                                // Format file size
-                                                $size = $attachment['file_size'];
-                                                if ($size < 1024) {
-                                                    echo $size . ' B';
-                                                } elseif ($size < 1024 * 1024) {
-                                                    echo round($size / 1024, 1) . ' KB';
-                                                } else {
-                                                    echo round($size / (1024 * 1024), 1) . ' MB';
-                                                }
-                                                ?>
-                                            </span>
-                                            <span class="file-time">
-                                                <i class="bi bi-clock"></i>
-                                                <?= time_ago($attachment['created_at']) ?>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Download Button -->
-                                    <a href="<?= url("/attachments/{$attachment['id']}") ?>" target="_blank"
-                                        class="attachment-download" title="Download">
-                                        <i class="bi bi-download"></i>
-                                    </a>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <!-- Attachments Section moved to Modal -->
 
             <!-- Work Logs Section -->
             <?php if (!empty($issue['worklogs'])): ?>
@@ -2400,5 +2313,284 @@ $currentUserId = $authUser ? $authUser['id'] : null;
         };
     });
 </script>
+
+<!-- Attachments Modal -->
+<div class="modal fade" id="attachmentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-paperclip me-2"></i>Attachments
+                    <?php if (!empty($issue['attachments'])): ?>
+                    <span class="badge bg-secondary ms-2"><?= count($issue['attachments']) ?></span>
+                    <?php endif; ?>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <?php if (empty($issue['attachments'])): ?>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-file-earmark"></i></div>
+                    <p class="empty-text">No attachments yet.</p>
+                </div>
+                <?php else: ?>
+                <div class="attachments-grid">
+                    <?php foreach ($issue['attachments'] as $attachment): ?>
+                    <div class="attachment-item">
+                        <div class="attachment-icon">
+                            <?php
+                            $ext = strtolower(pathinfo($attachment['original_name'], PATHINFO_EXTENSION));
+                            $iconClass = 'file-earmark';
+                            $bgColor = '#8B1956';
+
+                            if (in_array($ext, ['pdf'])) {
+                                $iconClass = 'file-pdf';
+                                $bgColor = '#D1453B';
+                            } elseif (in_array($ext, ['doc', 'docx'])) {
+                                $iconClass = 'file-word';
+                                $bgColor = '#2B579A';
+                            } elseif (in_array($ext, ['xls', 'xlsx'])) {
+                                $iconClass = 'file-spreadsheet';
+                                $bgColor = '#217346';
+                            } elseif (in_array($ext, ['ppt', 'pptx'])) {
+                                $iconClass = 'file-slides';
+                                $bgColor = '#D24726';
+                            } elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
+                                $iconClass = 'file-image';
+                                $bgColor = '#546E7A';
+                            } elseif (in_array($ext, ['zip', 'rar', '7z'])) {
+                                $iconClass = 'file-zip';
+                                $bgColor = '#FF9800';
+                            } elseif (in_array($ext, ['txt'])) {
+                                $iconClass = 'file-text';
+                                $bgColor = '#757575';
+                            }
+                            ?>
+                            <div class="file-icon-circle" style="background-color: <?= $bgColor ?>">
+                                <i class="bi bi-<?= $iconClass ?>"></i>
+                            </div>
+                        </div>
+
+                        <div class="attachment-info">
+                            <a href="<?= url("/attachments/{$attachment['id']}") ?>" target="_blank"
+                                class="attachment-name" title="<?= e($attachment['original_name']) ?>">
+                                <?= e($attachment['original_name']) ?>
+                            </a>
+                            <div class="attachment-meta">
+                                <span class="file-size">
+                                    <i class="bi bi-disc"></i>
+                                    <?php
+                                    $size = $attachment['file_size'];
+                                    if ($size < 1024) {
+                                        echo $size . ' B';
+                                    } elseif ($size < 1024 * 1024) {
+                                        echo round($size / 1024, 1) . ' KB';
+                                    } else {
+                                        echo round($size / (1024 * 1024), 1) . ' MB';
+                                    }
+                                    ?>
+                                </span>
+                                <span class="file-time">
+                                    <i class="bi bi-clock"></i>
+                                    <?= time_ago($attachment['created_at']) ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="attachment-action-btn preview-trigger"
+                                data-url="<?= url("/attachments/{$attachment['id']}") ?>"
+                                data-mime="<?= $attachment['mime_type'] ?>"
+                                data-filename="<?= e($attachment['original_name']) ?>" title="Preview">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <a href="<?= url("/attachments/{$attachment['id']}") ?>" target="_blank"
+                                class="attachment-action-btn" title="Download">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 800px; margin-top: 10px;">
+        <div class="modal-content h-100" style="min-height: 80vh;">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-eye"></i> <span id="previewTitle">File Preview</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" id="previewBody">
+                <div class="d-flex justify-content-center align-items-center h-100 text-muted">
+                    <div class="spinner-border text-primary me-2" role="status"></div>
+                    <span>Loading preview...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Preview Functionality
+        const previewModalEl = document.getElementById('previewModal');
+        const attachmentsModalEl = document.getElementById('attachmentsModal');
+
+        let previewModalInstance = null;
+        let attachmentsModalInstance = null;
+
+        // Initialize instances
+        if (previewModalEl) previewModalInstance = new bootstrap.Modal(previewModalEl);
+        if (attachmentsModalEl) attachmentsModalInstance = new bootstrap.Modal(attachmentsModalEl); // Create new or get existing
+
+        // Handle Preview Button Click
+        document.querySelectorAll('.preview-trigger').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const url = this.getAttribute('data-url');
+                const mime = this.getAttribute('data-mime');
+                const filename = this.getAttribute('data-filename');
+
+                // Update Content
+                const previewBody = document.getElementById('previewBody');
+                const previewTitle = document.getElementById('previewTitle');
+
+                previewTitle.textContent = filename;
+                previewBody.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 p-5"><div class="spinner-border text-primary me-2"></div> Loading...</div>';
+
+                // 1. Hide Attachments Modal
+                // We use getting instance from DOM element to be safe
+                const currentAttModal = bootstrap.Modal.getInstance(attachmentsModalEl);
+                if (currentAttModal) {
+                    currentAttModal.hide();
+                }
+
+                // 2. Show Preview Modal (after short delay to allow nice transition)
+                setTimeout(() => {
+                    if (previewModalInstance) {
+                        previewModalInstance.show();
+                        // Render content
+                        renderPreview(url, mime, previewBody, filename);
+                    }
+                }, 200);
+            });
+        });
+
+        // Handle Preview Modal Close -> Restore Attachments Modal
+        if (previewModalEl) {
+            previewModalEl.addEventListener('hidden.bs.modal', function () {
+                // Re-open attachments modal
+                if (attachmentsModalEl) {
+                    const currentAttModal = new bootstrap.Modal(attachmentsModalEl);
+                    currentAttModal.show();
+                }
+            });
+        }
+
+        function renderPreview(url, mime, container, filename) {
+            // Append preview param for local files
+            const previewUrl = url + (url.includes('?') ? '&' : '?') + 'preview=1';
+
+            // Native Browser Support (PDF, Image, Audio, Video, Text)
+            const nativeTypes = [
+                'application/pdf',
+                'image/',
+                'video/',
+                'audio/',
+                'text/',
+                'application/json',
+                'application/javascript'
+            ];
+
+            const isNative = nativeTypes.some(type => mime.startsWith(type) || mime === 'application/pdf');
+
+            if (isNative) {
+                if (mime === 'application/pdf') {
+                    container.innerHTML = `<iframe src="${previewUrl}" width="100%" height="100%" style="border:none; min-height: 80vh;"></iframe>`;
+                } else if (mime.startsWith('image/')) {
+                    container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 bg-light p-4"><img src="${previewUrl}" class="img-fluid" style="max-height: 80vh;"></div>`;
+                } else if (mime.startsWith('video/')) {
+                    container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 bg-black"><video controls class="w-100" style="max-height: 80vh;"><source src="${previewUrl}" type="${mime}"></video></div>`;
+                } else if (mime.startsWith('audio/')) {
+                    container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 bg-light p-5"><audio controls class="w-75"><source src="${previewUrl}" type="${mime}"></audio></div>`;
+                } else {
+                    // Text/Code
+                    fetch(previewUrl).then(res => res.text()).then(txt => {
+                        container.innerHTML = `<pre class="p-4 bg-light m-0 overflow-auto" style="height: 80vh;"><code>${txt.replace(/</g, '&lt;')}</code></pre>`;
+                    });
+                }
+            }
+            // Google Docs Viewer for Office Files (DOC, PPT, XLS)
+            else {
+                const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) || window.location.hostname.endsWith('.test');
+
+                if (isLocalhost) {
+                    container.innerHTML = `
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-5">
+                            <i class="bi bi-laptop display-1 text-muted mb-3"></i>
+                            <h4>Localhost / Private Network Detected</h4>
+                            <p class="text-muted mb-4" style="max-width: 400px;">
+                                Google Docs Viewer requires a public URL to preview Office documents (${mime}). 
+                                Since you are running locally, this service cannot reach your file.
+                            </p>
+                            <a href="${url}" class="btn btn-primary"><i class="bi bi-download"></i> Download File Instead</a>
+                        </div>
+                    `;
+                } else {
+                    // Public Server - Use Google Viewer
+                    const encodedUrl = encodeURIComponent(window.location.origin + url + '&preview=1');
+                    const googleViewerUrl = `https://docs.google.com/viewer?url=${encodedUrl}&embedded=true`;
+
+                    container.innerHTML = `
+                        <div class="d-flex flex-column h-100">
+                            <div class="alert alert-info m-0 rounded-0 p-2 small">
+                                <i class="bi bi-info-circle"></i> Preview via Google Docs
+                            </div>
+                            <iframe src="${googleViewerUrl}" width="100%" height="100%" style="border:none; flex:1; min-height: 70vh;"></iframe>
+                        </div>
+                    `;
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    .attachment-action-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        color: #6B778C;
+        transition: all 0.2s;
+        background: transparent;
+        border: none;
+        text-decoration: none;
+    }
+
+    .attachment-action-btn:hover {
+        background-color: #EBECF0;
+        color: #172B4D;
+    }
+
+    button.attachment-action-btn {
+        padding: 0;
+        /* Reset button padding */
+    }
+</style>
 
 <?php \App\Core\View::endSection(); ?>

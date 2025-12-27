@@ -124,8 +124,11 @@ class AttachmentController extends Controller
             abort(404, 'File not found');
         }
 
+        // Check for preview mode
+        $disposition = $request->query('preview') ? 'inline' : 'attachment';
+
         header('Content-Type: ' . $attachment['mime_type']);
-        header('Content-Disposition: attachment; filename="' . $attachment['original_name'] . '"');
+        header('Content-Disposition: ' . $disposition . '; filename="' . $attachment['original_name'] . '"');
         header('Content-Length: ' . $attachment['file_size']);
         header('Cache-Control: private, max-age=0, must-revalidate');
         header('Pragma: public');

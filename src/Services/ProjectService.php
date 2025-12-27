@@ -50,10 +50,24 @@ class ProjectService
         $projects = Database::select(
             "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
-                    pc.name as category_name
+                    pc.name as category_name,
+                    COALESCE(issue_counts.total_issues, 0) as issue_count,
+                    COALESCE(member_counts.total_members, 0) as member_count
              FROM projects p
              LEFT JOIN users u ON p.lead_id = u.id
              LEFT JOIN project_categories pc ON p.category_id = pc.id
+             LEFT JOIN (
+                 SELECT project_id, COUNT(*) as total_issues
+                 FROM issues
+                 GROUP BY project_id
+             ) issue_counts ON p.id = issue_counts.project_id
+             LEFT JOIN (
+                 SELECT project_id, COUNT(*) as total_members
+                 FROM project_members pm
+                 JOIN users u2 ON pm.user_id = u2.id
+                 WHERE u2.is_active = 1
+                 GROUP BY project_id
+             ) member_counts ON p.id = member_counts.project_id
              WHERE $whereClause
              ORDER BY p.name ASC
              LIMIT $perPage OFFSET $offset",
@@ -72,7 +86,7 @@ class ProjectService
     public function getProjectByKey(string $key): ?array
     {
         $project = Database::selectOne(
-            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at,
+            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.budget, p.budget_currency, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
                     pc.name as category_name,
                     creator.display_name as created_by_name
@@ -90,17 +104,49 @@ class ProjectService
     public function getProjectById(int $id): ?array
     {
         $project = Database::selectOne(
-            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at,
+            "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.budget, p.budget_currency, p.created_by, p.created_at, p.updated_at,
                     u.display_name as lead_name,
-                    pc.name as category_name
+                    pc.name as category_name,
+                    creator.display_name as created_by_name
              FROM projects p
              LEFT JOIN users u ON p.lead_id = u.id
+             LEFT JOIN users creator ON p.created_by = creator.id
              LEFT JOIN project_categories pc ON p.category_id = pc.id
              WHERE p.id = ?",
             [$id]
         );
 
         return $project ?: null;
+    }
+
+    /**
+     * Get all projects a user has access to
+     * (member of project or is admin)
+     */
+    public function getUserProjects(int $userId, bool $includeArchived = false): array
+    {
+        $archivedClause = $includeArchived ? '' : 'AND p.is_archived = 0';
+
+        return Database::select(
+            "SELECT DISTINCT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, 
+                    p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.budget, p.budget_currency,
+                    p.created_at, p.updated_at,
+                    u.display_name as lead_name,
+                    pc.name as category_name,
+                    pm.role_id,
+                    r.name as role_name,
+                    COALESCE(pm.created_at, p.created_at) as joined_at,
+                    0 as is_primary
+             FROM projects p
+             LEFT JOIN users u ON p.lead_id = u.id
+             LEFT JOIN project_categories pc ON p.category_id = pc.id
+             LEFT JOIN project_members pm ON p.id = pm.project_id AND pm.user_id = ?
+             LEFT JOIN roles r ON pm.role_id = r.id
+             WHERE (pm.user_id = ? OR p.lead_id = ? OR ? = 1)
+             $archivedClause
+             ORDER BY p.name ASC",
+            [$userId, $userId, $userId, 0]  // Last param for future admin check
+        );
     }
 
     public function createProject(array $data, int $userId): array
@@ -140,6 +186,7 @@ class ProjectService
                 'category_id' => $categoryId,
                 'default_assignee' => $data['default_assignee'] ?? 'unassigned',
                 'avatar' => $data['avatar'] ?? null,
+                'is_private' => $data['is_private'] ?? 0,
                 'created_by' => $userId,
             ]);
 
@@ -185,6 +232,7 @@ class ProjectService
             'default_assignee' => $data['default_assignee'] ?? null,
             'avatar' => $data['avatar'] ?? null,
             'is_archived' => $data['is_archived'] ?? null,
+            'is_private' => $data['is_private'] ?? null,
         ], fn($v) => $v !== null);
 
         if (!empty($updateData)) {
@@ -288,7 +336,6 @@ class ProjectService
         return Database::select(
             "SELECT id, name, slug, description
              FROM roles
-             WHERE is_system = 0 OR slug IN ('project-admin', 'project-member', 'project-viewer')
              ORDER BY name ASC"
         );
     }
@@ -361,6 +408,22 @@ class ProjectService
     {
         return Database::select(
             "SELECT * FROM versions WHERE project_id = ? ORDER BY sort_order ASC, release_date DESC",
+            [$projectId]
+        );
+    }
+
+    /**
+     * Get workflows associated with a project
+     */
+    public function getWorkflows(int $projectId): array
+    {
+        return Database::select(
+            "SELECT w.*, pw.issue_type_id, it.name as issue_type_name
+             FROM workflows w
+             JOIN project_workflows pw ON w.id = pw.workflow_id
+             LEFT JOIN issue_types it ON pw.issue_type_id = it.id
+             WHERE pw.project_id = ?
+             ORDER BY pw.issue_type_id IS NULL DESC, it.name ASC",
             [$projectId]
         );
     }
@@ -478,6 +541,127 @@ class ProjectService
         if (empty($data['name'])) {
             throw new \InvalidArgumentException('Version name is required');
         }
+    }
+
+    /**
+     * Get project budget
+     * 
+     * @param int $projectId
+     * @return array|null
+     */
+    public function getProjectBudget(int $projectId): ?array
+    {
+        return Database::selectOne(
+            "SELECT budget, budget_currency FROM projects WHERE id = ?",
+            [$projectId]
+        );
+    }
+
+    /**
+     * Set project budget
+     * 
+     * @param int $projectId
+     * @param float $budget
+     * @param string $currency
+     * @return bool
+     */
+    public function setProjectBudget(int $projectId, float $budget, string $currency = 'USD'): bool
+    {
+        // 1. Update the projects table (Primary Source)
+        $rowsAffected = Database::update(
+            'projects',
+            [
+                'budget' => $budget,
+                'budget_currency' => $currency
+            ],
+            'id = ?',
+            [$projectId]
+        );
+
+        // 2. Sync to project_budgets table (Secondary/Legacy Source for Dashboard)
+        try {
+            $existing = Database::selectOne(
+                "SELECT id FROM project_budgets WHERE project_id = ?",
+                [$projectId]
+            );
+
+            if ($existing) {
+                Database::update(
+                    'project_budgets',
+                    [
+                        'total_budget' => $budget,
+                        'currency' => $currency
+                    ],
+                    'project_id = ?',
+                    [$projectId]
+                );
+            } else {
+                // If it doesn't exist, we create it (preserving 0 cost initially)
+                Database::insert('project_budgets', [
+                    'project_id' => $projectId,
+                    'total_budget' => $budget,
+                    'total_cost' => 0.00,
+                    'currency' => $currency,
+                    'start_date' => date('Y-m-d'),
+                    'alert_threshold' => 80.00 // Default threshold
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Log sync error but don't fail the main request
+            error_log("Failed to sync budget to project_budgets table: " . $e->getMessage());
+        }
+
+        return true;
+    }
+
+    /**
+     * Get budget remaining for project
+     * 
+     * @param int $projectId
+     * @return array
+     */
+    public function getBudgetStatus(int $projectId): array
+    {
+        $project = $this->getProjectById($projectId);
+        if (!$project) {
+            return [
+                'budget' => 0.00,
+                'spent' => 0.00,
+                'remaining' => 0.00,
+                'percentage_used' => 0,
+                'currency' => 'USD'
+            ];
+        }
+
+        $totalBudget = (float) ($project['budget'] ?? 0);
+        $currency = $project['budget_currency'] ?? 'USD';
+
+        // Get total spent from time tracking
+        $spent = 0.0;
+        try {
+            $result = Database::selectOne(
+                "SELECT COALESCE(SUM(total_cost), 0) as total_spent 
+                 FROM issue_time_logs 
+                 WHERE project_id = ? AND status = 'stopped'",
+                [$projectId]
+            );
+            $spent = (float) ($result['total_spent'] ?? 0);
+        } catch (\Exception $e) {
+            // Table might not exist yet
+            $spent = 0.0;
+        }
+
+        $remaining = $totalBudget - $spent;
+        $percentageUsed = $totalBudget > 0 ? round(($spent / $totalBudget) * 100, 2) : 0;
+
+        return [
+            'budget' => $totalBudget,
+            'spent' => $spent,
+            'remaining' => max(0, $remaining),
+            'percentage_used' => min(100, $percentageUsed),
+            'currency' => $currency,
+            'is_exceeded' => $spent > $totalBudget
+        ];
     }
 
     private function logAudit(string $action, string $entityType, ?int $entityId, ?array $oldValues, ?array $newValues, int $userId): void

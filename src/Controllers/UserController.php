@@ -446,4 +446,120 @@ class UserController extends Controller
 
         $this->json($users);
     }
+
+    /**
+     * Show settings page
+     */
+    public function settings(Request $request): string
+    {
+        $user = $this->user();
+        $userId = $this->userId();
+
+        // Get user settings from database (table may not exist yet)
+        $userSettings = [];
+        try {
+            $userSettings = Database::selectOne(
+                "SELECT * FROM user_settings WHERE user_id = ?",
+                [$userId]
+            ) ?? [];
+        } catch (\Exception $e) {
+            // Table doesn't exist yet - return empty settings
+            // User can create table via setup-settings-table.php
+            $userSettings = [];
+        }
+
+        if ($request->wantsJson()) {
+            return $this->json($userSettings);
+        }
+
+        return $this->view('profile.settings', [
+            'user' => $user,
+            'userSettings' => $userSettings,
+        ]);
+    }
+
+    /**
+     * Update user settings
+     */
+    public function updateSettings(Request $request): void
+    {
+        $userId = $this->userId();
+
+        // Check if user_settings table exists
+        $tableExists = false;
+        try {
+            Database::selectValue(
+                "SELECT id FROM user_settings WHERE user_id = ? LIMIT 1",
+                [$userId]
+            );
+            $tableExists = true;
+        } catch (\Exception $e) {
+            // Table doesn't exist
+            Session::flash('error', 'Database table not initialized. Please <a href="' . url('/setup-settings-table.php') . '">create the settings table</a> first.');
+            $this->redirect(url('/profile/settings'));
+            return;
+        }
+
+        // Validate settings - include time tracking rates
+        $validated = $request->validate([
+            'theme' => 'nullable|in:light,dark,auto',
+            'language' => 'nullable|in:en,es,fr,de',
+            'items_per_page' => 'nullable|in:10,25,50,100',
+            'timezone' => 'nullable|max:50',
+            'date_format' => 'nullable|max:50',
+            'annual_package' => 'nullable|numeric|min:0',
+            'rate_currency' => 'nullable|in:USD,EUR,GBP,INR,AUD,CAD,SGD,JPY',
+        ]);
+
+        // Prepare settings data
+        $settings = [
+            'language' => $validated['language'] ?? 'en',
+            'timezone' => $validated['timezone'] ?? 'UTC',
+            'date_format' => $validated['date_format'] ?? 'MM/DD/YYYY',
+            'items_per_page' => (int)($validated['items_per_page'] ?? 25),
+            'auto_refresh' => $request->input('auto_refresh') ? 1 : 0,
+            'compact_view' => $request->input('compact_view') ? 1 : 0,
+            'show_profile' => $request->input('show_profile') ? 1 : 0,
+            'show_activity' => $request->input('show_activity') ? 1 : 0,
+            'show_email' => $request->input('show_email') ? 1 : 0,
+            'high_contrast' => $request->input('high_contrast') ? 1 : 0,
+            'reduce_motion' => $request->input('reduce_motion') ? 1 : 0,
+            'large_text' => $request->input('large_text') ? 1 : 0,
+        ];
+
+        // Add time tracking rates if provided
+        if (!empty($validated['annual_package'])) {
+            $settings['annual_package'] = (float)$validated['annual_package'];
+        }
+        if (!empty($validated['rate_currency'])) {
+            $settings['rate_currency'] = $validated['rate_currency'];
+        }
+
+        try {
+            // Check if settings exist
+            $existing = Database::selectOne(
+                "SELECT id FROM user_settings WHERE user_id = ?",
+                [$userId]
+            );
+
+            if ($existing) {
+                // Update existing settings
+                $settings['updated_at'] = date('Y-m-d H:i:s');
+                Database::update('user_settings', $settings, 'user_id = ?', [$userId]);
+            } else {
+                // Insert new settings
+                $settings['user_id'] = $userId;
+                $settings['created_at'] = date('Y-m-d H:i:s');
+                $settings['updated_at'] = date('Y-m-d H:i:s');
+                Database::insert('user_settings', $settings);
+            }
+
+            // Redirect with success message
+            Session::flash('success', 'Settings saved successfully');
+            $this->redirect(url('/profile/settings'));
+        } catch (\Exception $e) {
+            Session::flash('error', 'Failed to save settings: ' . $e->getMessage());
+            $this->redirect(url('/profile/settings'));
+        }
+    }
 }

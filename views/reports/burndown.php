@@ -130,7 +130,7 @@
                             <td><?= e($issue['summary']) ?></td>
                             <td><?= e($issue['assignee_name'] ?? 'Unassigned') ?></td>
                             <td>
-                                <span class="badge" style="background-color: <?= e($issue['status_color']) ?>">
+                                <span class="badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                                     <?= e($issue['status_name']) ?>
                                 </span>
                             </td>

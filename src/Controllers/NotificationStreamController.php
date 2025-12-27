@@ -21,12 +21,28 @@ class NotificationStreamController extends Controller
      */
     public function stream(): void
     {
-        // Get current user
+        // Disable error display for SSE stream to avoid corrupting the output
+        ini_set('display_errors', '0');
+        error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+
+        // Get current user and close session write lock immediately
+        // This is CRITICAL for SSE in PHP to avoid blocking other requests
         $user = Session::user();
         if (!$user) {
             http_response_code(401);
-            exit('Unauthorized');
+            echo "event: error\n";
+            echo "data: Unauthorized\n\n";
+            exit;
         }
+
+        // Release the session lock so other pages can load
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        // Increase execution time limit for long-running stream
+        set_time_limit(0);
+        ignore_user_abort(false);
 
         // Set SSE headers
         header('Content-Type: text/event-stream');
@@ -35,9 +51,14 @@ class NotificationStreamController extends Controller
         header('X-Accel-Buffering: no');
         header('Access-Control-Allow-Origin: *');
 
+        // Clean any existing output buffers
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         // Get last notification ID from client
         $lastId = $_GET['lastId'] ?? 0;
-        
+
         // Send initial comment (keeps connection alive)
         echo ": SSE stream started\n\n";
         flush();
@@ -47,53 +68,63 @@ class NotificationStreamController extends Controller
         $maxDuration = 1800; // 30 minutes
 
         while ((time() - $startTime) < $maxDuration) {
-            // Check for new notifications
-            $sql = "SELECT id, user_id, issue_id, type, data, created_at, read_at 
-                    FROM notifications 
-                    WHERE user_id = ? AND id > ? 
-                    ORDER BY id ASC 
-                    LIMIT 10";
-            
-            $notifications = Database::select($sql, [$user['id'], $lastId]);
+            // Check if connection is still active
+            if (connection_aborted()) {
+                break;
+            }
 
-            if (!empty($notifications)) {
-                foreach ($notifications as $notification) {
-                    // Update last ID
-                    $lastId = $notification['id'];
+            try {
+                // Check for new notifications - FIX: Use correct column names
+                $sql = "SELECT id, user_id, type, title, message, action_url, 
+                               related_issue_id, related_project_id, priority, actor_user_id,
+                               created_at, read_at 
+                        FROM notifications 
+                        WHERE user_id = ? AND id > ? 
+                        ORDER BY id ASC 
+                        LIMIT 10";
 
-                    // Prepare notification data
-                    $data = json_decode($notification['data'], true) ?? [];
-                    $message = $this->buildNotificationMessage($notification['type'], $data);
+                $notifications = Database::select($sql, [$user['id'], $lastId]);
 
-                    // Format SSE event
-                    $eventData = [
-                        'id' => $notification['id'],
-                        'type' => $notification['type'],
-                        'message' => $message,
-                        'data' => $data,
-                        'issueId' => $notification['issue_id'],
-                        'timestamp' => $notification['created_at'],
-                        'isRead' => !is_null($notification['read_at']),
-                    ];
+                if (!empty($notifications)) {
+                    foreach ($notifications as $notification) {
+                        // Update last ID
+                        $lastId = $notification['id'];
 
-                    // Send SSE event
-                    echo "id: " . $notification['id'] . "\n";
-                    echo "event: notification\n";
-                    echo "data: " . json_encode($eventData) . "\n\n";
-                    flush();
+                        // Format SSE event - FIX: Use title and message from DB
+                        $eventData = [
+                            'id' => $notification['id'],
+                            'type' => $notification['type'],
+                            'title' => $notification['title'],
+                            'message' => $notification['message'],
+                            'actionUrl' => $notification['action_url'],
+                            'actorUserId' => $notification['actor_user_id'] ?? null,
+                            'issueId' => $notification['related_issue_id'],
+                            'projectId' => $notification['related_project_id'],
+                            'priority' => $notification['priority'],
+                            'timestamp' => $notification['created_at'],
+                            'isRead' => !is_null($notification['read_at']),
+                        ];
 
-                    // Mark as read
-                    Database::update('notifications', 
-                        ['read_at' => date('Y-m-d H:i:s')], 
-                        'id = ?', 
-                        [$notification['id']]
-                    );
+                        // Send SSE event
+                        echo "id: " . $notification['id'] . "\n";
+                        echo "event: notification\n";
+                        echo "data: " . json_encode($eventData) . "\n\n";
+                        flush();
+                    }
                 }
+            } catch (\Exception $e) {
+                // Log error but don't stop the stream unless it's critical
+                error_log("[REALTIME ERROR] Stream database error: " . $e->getMessage());
+                echo "event: error\n";
+                echo "data: Internal error\n\n";
+                flush();
+                sleep(5); // Wait a bit longer on error
+                continue;
             }
 
             // Sleep for 2 seconds before checking again
             sleep(2);
-            
+
             // Send keep-alive comment
             echo ": keep-alive\n\n";
             flush();
@@ -137,11 +168,11 @@ class NotificationStreamController extends Controller
         }
 
         $count = Database::selectValue(
-            "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND read_at IS NULL",
+            "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0",
             [$user['id']]
         );
 
-        $this->json(['unreadCount' => $count ?? 0]);
+        $this->json(['unreadCount' => (int) ($count ?? 0)]);
     }
 
     /**
@@ -155,9 +186,11 @@ class NotificationStreamController extends Controller
             return;
         }
 
-        $limit = (int)($_GET['limit'] ?? 10);
+        $limit = (int) ($_GET['limit'] ?? 10);
         $notifications = Database::select(
-            "SELECT id, user_id, issue_id, type, data, created_at, read_at 
+            "SELECT id, user_id, type, title, message, action_url, 
+                    related_issue_id, related_project_id, priority, 
+                    created_at, read_at 
              FROM notifications 
              WHERE user_id = ? 
              ORDER BY id DESC 
@@ -167,15 +200,16 @@ class NotificationStreamController extends Controller
 
         $formatted = [];
         foreach ($notifications as $notif) {
-            $data = json_decode($notif['data'], true) ?? [];
             $formatted[] = [
                 'id' => $notif['id'],
                 'type' => $notif['type'],
-                'message' => $this->buildNotificationMessage($notif['type'], $data),
+                'title' => $notif['title'],
+                'message' => $notif['message'],
                 'timestamp' => $notif['created_at'],
                 'isRead' => !is_null($notif['read_at']),
-                'issueKey' => $data['issueKey'] ?? null,
-                'issueId' => $notif['issue_id'],
+                'actionUrl' => $notif['action_url'],
+                'issueId' => $notif['related_issue_id'],
+                'projectId' => $notif['related_project_id'],
             ];
         }
 
@@ -193,7 +227,7 @@ class NotificationStreamController extends Controller
             return;
         }
 
-        $notificationId = (int)$_POST['notificationId'];
+        $notificationId = (int) $_POST['notificationId'];
 
         $notification = Database::selectOne(
             "SELECT id, user_id FROM notifications WHERE id = ?",
@@ -205,7 +239,8 @@ class NotificationStreamController extends Controller
             return;
         }
 
-        Database::update('notifications',
+        Database::update(
+            'notifications',
             ['read_at' => date('Y-m-d H:i:s')],
             'id = ?',
             [$notificationId]
@@ -225,7 +260,8 @@ class NotificationStreamController extends Controller
             return;
         }
 
-        Database::update('notifications',
+        Database::update(
+            'notifications',
             ['read_at' => date('Y-m-d H:i:s')],
             'user_id = ? AND read_at IS NULL',
             [$user['id']]

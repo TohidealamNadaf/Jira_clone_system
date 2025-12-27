@@ -159,7 +159,7 @@
                         </span>
                     </td>
                     <td class="col-status">
-                        <span class="badge-status" style="background-color: <?= e($issue['status_color']) ?>20; color: <?= e($issue['status_color']) ?>;">
+                        <span class="badge-status" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                             <?= e($issue['status_name']) ?>
                         </span>
                     </td>
@@ -296,7 +296,7 @@
 .breadcrumb-section {
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border-color);
-    padding: 12px 32px;
+    padding: 8px 20px;
     flex-shrink: 0;
 }
 
@@ -340,7 +340,7 @@
    ======================================== */
 .page-header-section {
     background: var(--bg-primary);
-    padding: 24px 32px;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 }
@@ -356,10 +356,10 @@
 }
 
 .page-title {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
     letter-spacing: -0.3px;
 }
 
@@ -406,11 +406,11 @@
    ======================================== */
 .filters-card {
     background: var(--bg-primary);
-    margin: 24px 32px;
-    padding: 20px;
+    margin: 16px 20px;
+    padding: 12px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .filters-form {
@@ -420,7 +420,7 @@
 
 .filter-row {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
     align-items: flex-end;
 }
@@ -522,10 +522,10 @@
    ======================================== */
 .empty-state-card {
     background: var(--bg-primary);
-    margin: 24px 32px;
-    padding: 60px 32px;
+    margin: 16px 20px;
+    padding: 40px 24px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 6px;
     text-align: center;
 }
 
@@ -559,11 +559,11 @@
    ======================================== */
 .issues-table-container {
     background: var(--bg-primary);
-    margin: 24px 32px;
+    margin: 16px 20px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .issues-table {
@@ -578,13 +578,13 @@
 }
 
 .table-header-row th {
-    padding: 12px 16px;
-    font-size: 12px;
+    padding: 10px 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--text-secondary);
     text-align: left;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     white-space: nowrap;
 }
 
@@ -599,8 +599,8 @@
 }
 
 .issues-table td {
-    padding: 16px;
-    font-size: 14px;
+    padding: 12px;
+    font-size: 13px;
     color: var(--text-primary);
     vertical-align: middle;
 }
@@ -725,11 +725,11 @@
    Pagination
    ======================================== */
 .pagination-section {
-    margin: 24px 32px;
+    margin: 16px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 32px;
+    gap: 20px;
 }
 
 .pagination-nav {
@@ -839,13 +839,13 @@
     .empty-state-card,
     .issues-table-container,
     .pagination-section {
-        margin: 12px 16px;
-        padding: 16px;
+        margin: 8px 12px;
+        padding: 12px;
         border-radius: 6px;
     }
 
     .page-title {
-        font-size: 24px;
+        font-size: 20px;
     }
 
     .header-subtitle {

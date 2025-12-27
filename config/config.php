@@ -12,7 +12,7 @@ return [
         'name' => 'CWAYS MIS',
         'env' => 'development', // development, production
         'debug' => true,
-        'url' => 'http://localhost/jira_clone_system/public',
+        'url' => 'http://localhost:8081/jira_clone_system/public',
         'timezone' => 'UTC',
         'locale' => 'en',
         'key' => 'd62ba6fe4db129cdfbb444e1961575c7', // Change this!
@@ -29,7 +29,7 @@ return [
         'collation' => 'utf8mb4_unicode_ci',
     ],
 
-    
+
 
     // Session
     'session' => [
@@ -66,16 +66,7 @@ return [
     'upload' => [
         'max_size' => 10 * 1024 * 1024, // 10MB
         'path' => 'uploads',
-        'allowed_types' => [
-            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'text/plain', 'text/csv',
-            'application/zip', 'application/x-rar-compressed',
-        ],
+        'allowed_types' => [],
     ],
 
     // Cache

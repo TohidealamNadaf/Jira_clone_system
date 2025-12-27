@@ -110,11 +110,89 @@ function url(string $path = ''): string
 }
 
 /**
+ * Get application base path (for JavaScript use)
+ * Returns just the path part, not the full URL
+ * Examples: '/jira_clone_system/public', '/', '/apps/jira/public'
+ */
+function basePath(): string
+{
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    
+    // Determine the base path from the request
+    if (preg_match('#^(/[^/]+/[^/]+)(/|$)#', $requestUri, $matches)) {
+        return $matches[1]; // /jira_clone_system/public
+    } elseif (preg_match('#^/[^/\.]+(/|$)#', $requestUri) && strpos($requestUri, '/index.php') === false) {
+        $parts = explode('/', trim($requestUri, '/'));
+        if (count($parts) > 0 && !in_array($parts[0], ['login', 'dashboard', 'projects', 'issues', 'api', 'admin', 'search', 'reports'])) {
+            $basePath = '/' . $parts[0];
+            if (is_dir($_SERVER['DOCUMENT_ROOT'] . $basePath . '/public')) {
+                return $basePath . '/public';
+            }
+            return $basePath;
+        }
+    }
+    
+    return '/'; // Default root path
+}
+
+/**
  * Generate asset URL
  */
 function asset(string $path): string
 {
     return url('assets/' . ltrim($path, '/'));
+}
+
+/**
+ * Generate avatar URL
+ * Handles both relative and absolute avatar paths
+ */
+function avatar(?string $avatarPath, string $defaultName = 'U'): string
+{
+    if (empty($avatarPath)) {
+        // Return default avatar with initials
+        return '';
+    }
+    
+    // If avatar is already a full URL, use it as-is
+    if (filter_var($avatarPath, FILTER_VALIDATE_URL)) {
+        return $avatarPath;
+    }
+    
+    // If it's a relative path starting with /uploads/, convert to proper URL
+    if (str_starts_with($avatarPath, '/uploads/')) {
+        return url($avatarPath);
+    }
+    
+    // If it's just a filename, assume it's in uploads/avatars/
+    if (!str_contains($avatarPath, '/')) {
+        return url("/uploads/avatars/$avatarPath");
+    }
+    
+    // Otherwise, treat as relative path
+    return url($avatarPath);
+}
+
+/**
+ * Get avatar initials for default display
+ */
+function avatarInitials(string $name, string $email = ''): string
+{
+    $name = trim($name);
+    if (empty($name)) {
+        // Use email first part if name is empty
+        $emailParts = explode('@', $email);
+        return strtoupper(substr($emailParts[0] ?? 'U', 0, 1));
+    }
+    
+    $nameParts = explode(' ', $name);
+    if (count($nameParts) >= 2) {
+        // Take first letter of first and last name
+        return strtoupper(substr($nameParts[0], 0, 1) . substr(end($nameParts), 0, 1));
+    } else {
+        // Take first two letters of single name
+        return strtoupper(substr($name, 0, 2));
+    }
 }
 
 /**
@@ -543,9 +621,23 @@ function markdown(string $text): string
  */
 function json(mixed $data, int $status = 200): never
 {
+    // Clear any output buffer to prevent mixing content types
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    
     http_response_code($status);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    header('Content-Type: application/json; charset=utf-8', true);
+    header('Cache-Control: no-cache, no-store, must-revalidate', true);
+    header('Pragma: no-cache', true);
+    header('Expires: 0', true);
+    
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if (!headers_sent()) {
+        header('Content-Length: ' . strlen($json), true);
+    }
+    
+    echo $json;
     exit;
 }
 

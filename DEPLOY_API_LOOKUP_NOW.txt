@@ -1,0 +1,70 @@
+================================================================================
+API LOOKUP ENDPOINTS FIX - DEPLOYMENT CARD
+================================================================================
+
+STATUS: 🟢 PRODUCTION READY - Deploy Immediately
+
+ISSUE:
+  ❌ GET /api/v1/issue-types returns 404
+  ❌ GET /api/v1/priorities returns 404
+  ❌ Quick Create Modal shows no issue types/priorities
+  ❌ Create Issue page shows broken dropdowns
+
+ROOT CAUSE:
+  Routes registered in BOTH routes/web.php and routes/api.php
+  Web.php route with auth middleware matched first → redirect to login
+
+SOLUTION:
+  ✅ Removed duplicate routes from routes/web.php
+  ✅ Removed duplicate routes from routes/api.php authenticated group
+  ✅ Keep public routes in routes/api.php only
+
+DEPLOYMENT (5 minutes):
+
+1. Verify fixes:
+   curl http://localhost:8081/jira_clone_system/public/api/v1/issue-types
+   → Should return JSON array, not 404
+
+2. Clear cache:
+   Delete storage/cache/* directory
+
+3. Hard refresh browser:
+   CTRL + SHIFT + DEL → Clear all
+   OR
+   CTRL + F5 in browser tab
+
+4. Test functionality:
+   - Open Quick Create Modal (navbar Create button)
+   - Check Issue Type dropdown loads (Epic, Story, Task, Bug, Sub-task)
+   - Check Priority dropdown loads (Highest, High, Medium, Low, Lowest)
+   - Check browser console (F12) for NO 404 errors
+   - Check Network tab for successful API calls (200 status)
+
+VERIFY SUCCESS:
+  ✅ /api/v1/issue-types returns 200 with JSON data
+  ✅ /api/v1/priorities returns 200 with JSON data
+  ✅ Quick Create Modal shows all issue types
+  ✅ Quick Create Modal shows all priorities
+  ✅ No console errors (F12 Developer Tools)
+  ✅ Create issue form works end-to-end
+
+FILES CHANGED:
+  1. routes/web.php - Removed API endpoint definitions
+  2. routes/api.php - Removed duplicate authenticated routes
+
+RISK LEVEL: 🟢 VERY LOW
+  - Pure routing fix
+  - No database changes
+  - No file structure changes
+  - No breaking changes
+  - Zero functionality impact
+
+ROLLBACK (if needed):
+  This is additive fix - just revert file changes
+  No data loss possible
+
+TIMING: ~5 minutes total
+
+================================================================================
+                          READY TO DEPLOY NOW
+================================================================================

@@ -51,28 +51,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    /**
-     * Get all projects for quick create dropdown (no filtering)
-     */
-    public function quickCreateList(Request $request): void
-    {
-        // Return ALL projects with issue types for quick create modal
-        $projects = $this->projectService->getAllProjects([], 1, 1000);
-        
-        // Get all issue types (global, not per-project)
-        $allIssueTypes = Database::select(
-            "SELECT id, name, icon, color FROM issue_types ORDER BY sort_order ASC"
-        );
-        
-        // Add same issue types to each project
-        if (!empty($projects['items'])) {
-            foreach ($projects['items'] as &$project) {
-                $project['issue_types'] = $allIssueTypes;
-            }
-        }
-        
-        $this->json($projects);
-    }
+
 
     public function create(Request $request): string
     {
@@ -132,38 +111,7 @@ class ProjectController extends Controller
             abort(404, 'Project not found');
         }
 
-        // Add issue types for quick create modal (global issue types)
-        $issueTypes = Database::select(
-            "SELECT id, name, icon, color FROM issue_types ORDER BY sort_order ASC"
-        );
-        $project['issue_types'] = $issueTypes;
 
-        // Add statuses for quick create modal
-        $statuses = Database::select(
-            "SELECT id, name, color, category FROM statuses ORDER BY sort_order ASC"
-        );
-        $project['statuses'] = $statuses;
-
-        // Add sprints for quick create modal
-        $sprints = Database::select(
-            "SELECT s.id, s.name FROM sprints s 
-             INNER JOIN boards b ON s.board_id = b.id 
-             WHERE b.project_id = ? AND s.status != 'completed' 
-             ORDER BY s.start_date DESC",
-            [$project['id']]
-        );
-        $project['sprints'] = $sprints;
-
-        // Add labels for quick create modal
-        $labels = Database::select(
-            "SELECT DISTINCT l.id, l.name FROM labels l
-             INNER JOIN issue_labels il ON l.id = il.label_id
-             INNER JOIN issues i ON il.issue_id = i.id
-             WHERE i.project_id = ?
-             ORDER BY l.name ASC",
-            [$project['id']]
-        );
-        $project['labels'] = $labels;
 
         if ($request->wantsJson()) {
             $this->json($project);
@@ -233,6 +181,9 @@ class ProjectController extends Controller
             ];
         }, $recentIssues);
 
+        // Get project members
+        $members = $this->projectService->getProjectMembers($project['id']);
+
         // Get recent activity
         $activities = $this->activityService->getProjectActivities($project['id'], 10);
 
@@ -240,6 +191,7 @@ class ProjectController extends Controller
             'project' => $project,
             'stats' => $stats,
             'recentIssues' => $recentIssues,
+            'members' => $members,
             'activities' => $activities,
         ]);
     }
@@ -428,6 +380,37 @@ class ProjectController extends Controller
             'is_archived' => 'nullable|boolean',
         ]);
 
+        // Handle Avatar Upload
+        if ($file = $request->file('avatar')) {
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            $maxSize = 5 * 1024 * 1024; // 5MB
+
+            if (!in_array($file['type'], $allowedTypes)) {
+                Session::flash('error', 'Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.');
+                $this->redirect(url("/projects/{$key}/settings#details"));
+            }
+
+            if ($file['size'] > $maxSize) {
+                Session::flash('error', 'File size exceeds 5MB limit.');
+                $this->redirect(url("/projects/{$key}/settings#details"));
+            }
+
+            $uploadDir = __DIR__ . '/../../public/uploads/avatars';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = 'project_' . $project['id'] . '_' . uniqid() . '.' . $extension;
+            $targetPath = $uploadDir . '/' . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $data['avatar'] = '/uploads/avatars/' . $filename;
+            } else {
+                error_log('Failed to move uploaded avatar: ' . print_r($file, true));
+            }
+        }
+
         try {
             $updated = $this->projectService->updateProject($project['id'], $data, $this->userId());
 
@@ -500,6 +483,28 @@ class ProjectController extends Controller
             'versions' => $versions,
             'categories' => $categories,
             'users' => $users,
+        ]);
+    }
+
+    /**
+     * Show project workflows
+     */
+    public function workflows(Request $request): string
+    {
+        $key = $request->param('key');
+        $project = $this->projectService->getProjectByKey($key);
+
+        if (!$project) {
+            abort(404, 'Project not found');
+        }
+
+        $this->authorize('projects.view', $project['id']);
+
+        $workflows = $this->projectService->getWorkflows($project['id']);
+
+        return $this->view('projects.workflows', [
+            'project' => $project,
+            'workflows' => $workflows,
         ]);
     }
 
@@ -580,7 +585,7 @@ class ProjectController extends Controller
     {
         $key = $request->param('key');
         $userId = (int) $request->param('userId');
-        
+
         $project = $this->projectService->getProjectByKey($key);
 
         if (!$project) {
@@ -627,7 +632,7 @@ class ProjectController extends Controller
     {
         $key = $request->param('key');
         $userId = (int) $request->param('userId');
-        
+
         $project = $this->projectService->getProjectByKey($key);
 
         if (!$project) {
@@ -743,7 +748,7 @@ class ProjectController extends Controller
     {
         $key = $request->param('key');
         $versionId = (int) $request->param('versionId');
-        
+
         $project = $this->projectService->getProjectByKey($key);
 
         if (!$project) {
@@ -757,6 +762,62 @@ class ProjectController extends Controller
             $this->json(['success' => true, 'version' => $version]);
         } catch (\InvalidArgumentException $e) {
             $this->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * API endpoint for getting projects (for AJAX requests from web views)
+     * Used by time tracking dashboard project selector and other UI components
+     */
+    public function apiProjects(): never
+    {
+        try {
+            $user = Session::user();
+
+            if (!$user || !isset($user['id'])) {
+                $this->json(['error' => 'Unauthorized'], 401);
+            }
+
+            // Get all projects the user has access to
+            $projects = Database::select(
+                "SELECT p.id, p.`key`, p.name FROM projects p 
+                 WHERE p.is_archived = 0 
+                 ORDER BY p.name ASC"
+            );
+
+            // Return array format for easy parsing
+            $this->json([
+                'success' => true,
+                'data' => $projects,
+                'count' => count($projects)
+            ], 200);
+        } catch (\Exception $e) {
+            error_log('[API-PROJECTS] Error: ' . $e->getMessage());
+            $this->json([
+                'error' => 'Failed to load projects',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get projects list for quick create modal
+     */
+    public function quickCreateList(Request $request): void
+    {
+        try {
+            // Get projects user has access to
+            $projects = $this->projectService->getUserProjects($this->userId());
+
+            // Return JSON response
+            $this->json($projects);
+
+        } catch (\Exception $e) {
+            error_log('[QUICK-CREATE-LIST] Error: ' . $e->getMessage());
+            $this->json([
+                'error' => 'Failed to load projects',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

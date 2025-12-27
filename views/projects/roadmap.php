@@ -1,520 +1,1437 @@
+<?php \App\Core\View::extends('layouts.app'); ?>
+
 <?php
 /**
- * Project Roadmap View - Enterprise Jira-style Roadmap
- * Displays epics and versions with timeline visualization for a specific project
+ * Helper function to calculate the width of a Gantt bar based on item dates and timeline range
  */
-
-declare(strict_types=1);
-
-\App\Core\View::extends('layouts.app');
+function calculateBarWidth($item, $timeline) {
+    $startDate = new DateTime($item['start_date']);
+    $endDate = new DateTime($item['end_date']);
+    $timelineStart = new DateTime($timeline['start_date']);
+    $timelineEnd = new DateTime($timeline['end_date']);
+    
+    // Calculate total days in timeline
+    $totalDays = $timelineStart->diff($timelineEnd)->days;
+    if ($totalDays === 0) {
+        $totalDays = 1;
+    }
+    
+    // Calculate item duration in days
+    $itemDays = $startDate->diff($endDate)->days;
+    if ($itemDays === 0) {
+        $itemDays = 1;
+    }
+    
+    // Calculate percentage width
+    $percentage = ($itemDays / $totalDays) * 100;
+    
+    // Cap at 100%
+    return min($percentage, 100);
+}
 ?>
 
-<div class="container-fluid px-4 py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="<?= url('/') ?>">Home</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="<?= url('/projects') ?>">Projects</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="<?= url('/projects/' . ($projectKey ?? '')) ?>">
-                            <?= htmlspecialchars($projectKey ?? '') ?>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active">Roadmap</li>
-                </ol>
-            </nav>
-            <h1 class="h3 mt-2 mb-0">Project Roadmap</h1>
-            <p class="text-muted mb-0">Epics and releases planned for <?= htmlspecialchars($projectKey ?? '') ?></p>
-        </div>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="alert alert-info">
-        <i class="bi bi-hourglass-split"></i> Loading roadmap data...
-    </div>
-
-    <!-- Roadmap Container -->
-    <div id="roadmapContainer" style="display: none;">
-        <!-- Stats Cards -->
-        <div class="row mb-4" id="statsContainer"></div>
-
-        <!-- Timeline Visualization -->
-        <div class="card mb-4" id="timelineCard">
-            <div class="card-header bg-light">
-                <h6 class="mb-0">Timeline View</h6>
-            </div>
-            <div class="card-body" id="timelineContainer"></div>
-        </div>
-
-        <!-- Epics Section -->
-        <div class="card mb-4" id="epicsCard">
-            <div class="card-header bg-light">
-                <h6 class="mb-0">
-                    <i class="bi bi-lightning-fill"></i> Epics
-                    <span class="badge bg-secondary ms-2" id="epicCount">0</span>
-                </h6>
-            </div>
-            <div class="card-body" id="epicsContainer"></div>
-        </div>
-
-        <!-- Versions Section -->
-        <div class="card" id="versionsCard">
-            <div class="card-header bg-light">
-                <h6 class="mb-0">
-                    <i class="bi bi-tag-fill"></i> Versions / Releases
-                    <span class="badge bg-secondary ms-2" id="versionCount">0</span>
-                </h6>
-            </div>
-            <div class="card-body" id="versionsContainer"></div>
-        </div>
-    </div>
-
-    <!-- Empty State -->
-    <div id="emptyState" class="alert alert-info" style="display: none;">
-        <i class="bi bi-info-circle"></i> No epics or versions found for this project.
-    </div>
-</div>
+<?php \App\Core\View::section('content'); ?>
 
 <style>
-    .roadmap-item {
-        padding: 16px;
-        border-left: 4px solid #8B1956;
-        background: #f8f9fa;
-        margin-bottom: 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.2s ease;
+    /* ============================================
+       ROADMAP PAGE - COMPACT DESIGN
+       ============================================ */
+
+    :root {
+        --jira-blue: #8B1956;
+        --jira-blue-dark: #6F123F;
+        --jira-dark: #161B22;
+        --jira-gray: #626F86;
+        --jira-light: #F7F8FA;
+        --jira-border: #DFE1E6;
     }
-    
-    .roadmap-item:hover {
-        background: #f0f0f0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
     }
-    
-    .roadmap-item-header {
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-dialog {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.16);
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--jira-border);
         display: flex;
         justify-content: space-between;
-        align-items: start;
-        margin-bottom: 8px;
+        align-items: center;
     }
-    
-    .roadmap-item-title {
-        font-size: 14px;
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 18px;
         font-weight: 600;
-        color: #161B22;
+        color: var(--jira-dark);
     }
-    
-    .roadmap-item-key {
-        font-size: 12px;
-        color: #626F86;
-        font-family: monospace;
-        background: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-    }
-    
-    .roadmap-progress-bar {
-        height: 24px;
-        background: #e5e5e5;
-        border-radius: 4px;
-        overflow: hidden;
-        margin: 8px 0;
-    }
-    
-    .roadmap-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #8B1956, #A0245B);
-        border-radius: 4px;
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: var(--jira-gray);
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 12px;
-        font-weight: 600;
-        transition: width 0.3s ease;
+        transition: color 0.2s;
     }
-    
-    .roadmap-dates {
-        font-size: 12px;
-        color: #626F86;
-        margin-top: 8px;
+
+    .modal-close:hover {
+        color: var(--jira-dark);
     }
-    
-    .roadmap-meta {
-        display: flex;
-        gap: 16px;
-        font-size: 12px;
-        margin-top: 12px;
-        flex-wrap: wrap;
-    }
-    
-    .roadmap-meta-item {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .status-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 3px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .status-active { background: #d4edda; color: #155724; }
-    .status-released { background: #cce5ff; color: #004085; }
-    .status-archived { background: #e2e3e5; color: #383d41; }
-    
-    .stats-card {
-        background: white;
-        border: 1px solid #e5e5e5;
-        border-radius: 8px;
+
+    .modal-body {
         padding: 20px;
-        text-align: center;
+        overflow-y: auto;
+        flex: 1;
     }
-    
-    .stats-card-value {
-        font-size: 32px;
-        font-weight: 700;
-        color: #8B1956;
-        margin: 8px 0;
-    }
-    
-    .stats-card-label {
-        font-size: 13px;
-        color: #626F86;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .timeline-bar {
-        height: 40px;
-        background: linear-gradient(90deg, #8B1956, #A0245B);
-        border-radius: 4px;
+
+    .modal-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--jira-border);
         display: flex;
-        align-items: center;
-        padding: 0 8px;
-        color: white;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
         font-size: 12px;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-weight: 600;
+        color: var(--jira-dark);
     }
-    
-    .timeline-row {
-        display: flex;
-        align-items: center;
-        margin-bottom: 24px;
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--jira-blue);
+        box-shadow: 0 0 0 4px rgba(139, 25, 86, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-help {
+        font-size: 11px;
+        color: var(--jira-gray);
+        margin-top: 4px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
     }
-    
-    .timeline-label {
-        min-width: 150px;
-        font-size: 13px;
-        font-weight: 600;
-        color: #161B22;
+
+    .required {
+        color: #EF4444;
     }
-    
-    .timeline-track {
-        flex: 1;
-        height: 40px;
-        background: #f0f0f0;
+
+    /* Modal Error */
+    .modal-error {
+        display: none;
+        padding: 12px;
+        background: #FEE2E2;
+        border: 1px solid #FECACA;
         border-radius: 4px;
+        color: #7F1D1D;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+    .modal-error.show {
+        display: block;
+    }
+
+    /* Buttons */
+    .btn-cancel,
+    .btn-submit {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel {
+        background: white;
+        border: 1px solid var(--jira-border);
+        color: var(--jira-dark);
+    }
+
+    .btn-cancel:hover {
+        background: var(--jira-light);
+        border-color: #B6C2CF;
+    }
+
+    .btn-submit {
+        background: var(--jira-blue);
+        color: white;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+        background: var(--jira-blue-dark);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+        .modal-dialog {
+            width: 95%;
+            max-height: calc(100vh - 40px);
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .page-wrapper {
+        background-color: var(--jira-light);
+        min-height: calc(100vh - 80px);
+        padding: 0;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        background: white;
+        border-bottom: 1px solid var(--jira-border);
+        padding: 10px 20px;
+        font-size: 12px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .breadcrumb-nav a {
+        color: var(--jira-blue);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .breadcrumb-nav a:hover {
+        color: var(--jira-blue-dark);
+        text-decoration: underline;
+    }
+
+    .breadcrumb-sep {
+        color: var(--jira-gray);
+    }
+
+    /* Header */
+    .page-header {
+        background: white;
+        border-bottom: 1px solid var(--jira-border);
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-title {
+        flex: 1;
+    }
+
+    .header-title h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--jira-dark);
+        margin: 0;
+    }
+
+    .header-title p {
+        font-size: 12px;
+        color: var(--jira-gray);
+        margin: 4px 0 0 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 8px 12px;
+        background: white;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        color: var(--jira-dark);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+        background: var(--jira-light);
+        border-color: #B6C2CF;
+    }
+
+    .btn-action.primary {
+        background: var(--jira-blue);
+        color: white;
+        border-color: var(--jira-blue);
+    }
+
+    .btn-action.primary:hover {
+        background: var(--jira-blue-dark);
+        border-color: var(--jira-blue-dark);
+    }
+
+    /* Main Container */
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 16px 20px;
+    }
+
+    /* Metrics Row */
+    .metrics-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .metric-box {
+        background: white;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        padding: 12px;
+        border-left: 3px solid var(--jira-blue);
+    }
+
+    .metric-box:hover {
+        border-color: #B6C2CF;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .metric-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--jira-gray);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .metric-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--jira-dark);
+    }
+
+    .metric-sub {
+        font-size: 11px;
+        color: var(--jira-gray);
+        margin-top: 2px;
+    }
+
+    /* Alert */
+    .alert {
+        background: #FEE2E2;
+        border: 1px solid #FECACA;
+        border-radius: 4px;
+        padding: 12px;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: #7F1D1D;
+    }
+
+    .alert strong {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    /* Filters */
+    .filters-bar {
+        background: white;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        padding: 12px;
+        margin-bottom: 16px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+    }
+
+    .filters-bar select,
+    .filters-bar button {
+        padding: 6px 10px;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        font-size: 12px;
+        background: white;
+        color: var(--jira-dark);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filters-bar select:focus,
+    .filters-bar button:focus {
+        outline: none;
+        border-color: var(--jira-blue);
+    }
+
+    .filters-bar button:hover {
+        background: var(--jira-light);
+    }
+
+    /* Gantt Table */
+    .gantt-wrapper {
+        background: white;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .gantt-header {
+        background: var(--jira-light);
+        padding: 12px;
+        border-bottom: 1px solid var(--jira-border);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--jira-dark);
+    }
+
+    .gantt-container {
+        overflow-x: auto;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .gantt-row {
+        display: flex;
+        border-bottom: 1px solid var(--jira-border);
+        height: 50px;
+        align-items: center;
+        transition: background-color 0.2s;
+    }
+
+    .gantt-row:hover {
+        background-color: var(--jira-light);
+    }
+
+    .gantt-row:last-child {
+        border-bottom: none;
+    }
+
+    .gantt-info {
+        flex: 0 0 250px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border-right: 1px solid var(--jira-border);
+        min-width: 250px;
+    }
+
+    .gantt-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .gantt-icon.epic {
+        background: #6366F1;
+    }
+
+    .gantt-icon.feature {
+        background: var(--jira-blue);
+    }
+
+    .gantt-icon.milestone {
+        background: #E77817;
+    }
+
+    .gantt-title {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--jira-dark);
+        cursor: pointer;
+        transition: color 0.2s;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .gantt-title:hover {
+        color: var(--jira-blue);
+        text-decoration: underline;
+    }
+
+    .gantt-meta {
+        font-size: 11px;
+        color: var(--jira-gray);
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .gantt-timeline {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        min-width: 300px;
         position: relative;
+    }
+
+    .gantt-bar {
+        height: 28px;
+        border-radius: 3px;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        padding: 0 4px;
+    }
+
+    .gantt-bar:hover {
+        transform: scaleY(1.2);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .gantt-bar.planned {
+        background: #9CA3AF;
+    }
+
+    .gantt-bar.in_progress {
+        background: #3B82F6;
+    }
+
+    .gantt-bar.on_track {
+        background: #10B981;
+    }
+
+    .gantt-bar.at_risk {
+        background: #F59E0B;
+    }
+
+    .gantt-bar.delayed {
+        background: #EF4444;
+    }
+
+    .gantt-bar.completed {
+        background: #6B7280;
+    }
+
+    .gantt-progress {
+        position: absolute;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px 0 0 3px;
+        transition: width 0.3s ease;
+    }
+
+    .gantt-status {
+        flex: 0 0 110px;
+        padding: 0 12px;
+        text-align: center;
+        border-left: 1px solid var(--jira-border);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-badge.planned {
+        background: #E5E7EB;
+        color: #374151;
+    }
+
+    .status-badge.in_progress {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .status-badge.on_track {
+        background: #DCFCE7;
+        color: #065F46;
+    }
+
+    .status-badge.at_risk {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .status-badge.delayed {
+        background: #FEE2E2;
+        color: #7F1D1D;
+    }
+
+    .status-badge.completed {
+        background: #F3F4F6;
+        color: #374151;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--jira-gray);
+    }
+
+    .empty-state-icon {
+        font-size: 40px;
+        margin-bottom: 8px;
+    }
+
+    .empty-state-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--jira-dark);
+        margin: 0 0 4px 0;
+    }
+
+    .empty-state-text {
+        font-size: 12px;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .metrics-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filters-bar {
+            grid-template-columns: 1fr;
+        }
+
+        .gantt-info {
+            flex: 0 0 200px;
+            min-width: 200px;
+        }
+
+        .gantt-title {
+            font-size: 11px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header {
+            padding: 12px;
+        }
+
+        .page-container {
+            padding: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+        }
+
+        .metrics-row {
+            grid-template-columns: 1fr;
+        }
+
+        .gantt-info {
+            flex: 0 0 150px;
+            min-width: 150px;
+        }
+
+        .gantt-meta {
+            display: none;
+        }
+
+        .filters-bar {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ============================================
+       MODAL STYLES
+       ============================================ */
+
+    .modal-overlay {
+        display: none !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active {
+        display: flex !important;
+    }
+
+    .modal-dialog {
+        background: white;
+        border-radius: 6px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        pointer-events: auto;
+    }
+
+    .modal-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--jira-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--jira-dark);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--jira-gray);
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+        color: var(--jira-dark);
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-footer {
+        padding: 12px 16px;
+        border-top: 1px solid var(--jira-border);
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--jira-dark);
+        margin-bottom: 4px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        font-size: 13px;
+        color: var(--jira-dark);
+        background: white;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--jira-blue);
+        box-shadow: 0 0 0 3px rgba(139, 25, 86, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .form-row .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-group .required {
+        color: #EF4444;
+    }
+
+    .modal-footer button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-submit {
+        background: var(--jira-blue);
+        color: white;
+    }
+
+    .btn-submit:hover {
+        background: var(--jira-blue-dark);
+    }
+
+    .btn-cancel {
+        background: white;
+        color: var(--jira-dark);
+        border: 1px solid var(--jira-border);
+    }
+
+    .btn-cancel:hover {
+        background: var(--jira-light);
+    }
+
+    .modal-error {
+        display: none;
+        background: #FEE2E2;
+        border: 1px solid #FECACA;
+        color: #7F1D1D;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+        font-size: 12px;
+    }
+
+    .modal-error.show {
+        display: block;
+    }
+
+    .form-help {
+        font-size: 11px;
+        color: var(--jira-gray);
+        margin-top: 2px;
     }
 </style>
 
+<div class="page-wrapper">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-nav">
+        <a href="<?= url('/dashboard') ?>">Dashboard</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="<?= url("/projects/{$project['key']}") ?>"><?= htmlspecialchars($project['name']) ?></a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Roadmap</span>
+    </div>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-title">
+            <h1>Project Roadmap</h1>
+            <p>Strategic timeline and milestone tracking</p>
+        </div>
+        <div class="header-actions">
+            <?php if (can('issues.create', $project['id'])): ?>
+                <button class="btn-action primary" onclick="showCreateItemModal()">
+                    <i class="bi bi-plus-lg"></i> Add Item
+                </button>
+            <?php endif; ?>
+            <a href="<?= url('/roadmap?project=' . $project['key']) ?>" class="btn-action" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="bi bi-globe"></i> Global Roadmap
+            </a>
+            <button class="btn-action" onclick="exportRoadmap()">
+                <i class="bi bi-download"></i> Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="page-container">
+        <!-- Metrics -->
+        <div class="metrics-row">
+            <div class="metric-box">
+                <div class="metric-label">Total Items</div>
+                <div class="metric-value"><?= $summary['total_items'] ?></div>
+                <div class="metric-sub"><?= $summary['at_risk_count'] ?> at risk</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">Progress</div>
+                <div class="metric-value"><?= $summary['average_progress'] ?>%</div>
+                <div class="metric-sub"><?= $summary['completed_issues'] ?>/<?= $summary['total_issues'] ?> done</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">Est. Hours</div>
+                <div class="metric-value"><?= number_format($summary['total_estimated_hours'], 0) ?></div>
+                <div class="metric-sub"><?= number_format($summary['total_actual_hours'], 0) ?> logged</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">Completion</div>
+                <div class="metric-value"><?= $summary['issue_completion_rate'] ?>%</div>
+                <div class="metric-sub">Done / Total</div>
+            </div>
+        </div>
+
+        <!-- Alert -->
+        <?php if ($summary['at_risk_count'] > 0): ?>
+            <div class="alert">
+                <strong>⚠️ <?= $summary['at_risk_count'] ?> items at risk</strong>
+                Check status and dependencies to keep the project on track
+            </div>
+        <?php endif; ?>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <select onchange="applyFilters()">
+                <option value="">All Status</option>
+                <option value="planned" <?= $filters['status'] === 'planned' ? 'selected' : '' ?>>Planned</option>
+                <option value="in_progress" <?= $filters['status'] === 'in_progress' ? 'selected' : '' ?>>In Progress</option>
+                <option value="on_track" <?= $filters['status'] === 'on_track' ? 'selected' : '' ?>>On Track</option>
+                <option value="at_risk" <?= $filters['status'] === 'at_risk' ? 'selected' : '' ?>>At Risk</option>
+                <option value="delayed" <?= $filters['status'] === 'delayed' ? 'selected' : '' ?>>Delayed</option>
+                <option value="completed" <?= $filters['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
+            </select>
+            <select onchange="applyFilters()">
+                <option value="">All Types</option>
+                <option value="epic" <?= $filters['type'] === 'epic' ? 'selected' : '' ?>>Epic</option>
+                <option value="feature" <?= $filters['type'] === 'feature' ? 'selected' : '' ?>>Feature</option>
+                <option value="milestone" <?= $filters['type'] === 'milestone' ? 'selected' : '' ?>>Milestone</option>
+            </select>
+            <select onchange="applyFilters()">
+                <option value="">All Owners</option>
+                <?php foreach ($projectMembers as $member): ?>
+                    <option value="<?= htmlspecialchars($member['user_id']) ?>" <?= $filters['owner_id'] == $member['user_id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($member['user_name'] ?? 'Unknown') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <button class="btn-action" onclick="clearFilters()">Clear</button>
+        </div>
+
+        <!-- Gantt Table -->
+        <div class="gantt-wrapper">
+            <div class="gantt-header">📊 Timeline</div>
+            <?php if (!empty($roadmapItems)): ?>
+                <div class="gantt-container">
+                    <?php foreach ($roadmapItems as $item): ?>
+                        <div class="gantt-row">
+                            <div class="gantt-info">
+                                <div class="gantt-icon <?= htmlspecialchars($item['type']) ?>">
+                                    <?= htmlspecialchars(strtoupper(substr($item['type'], 0, 1))) ?>
+                                </div>
+                                <div>
+                                    <div class="gantt-title" onclick="showItemDetail(<?= intval($item['id']) ?>)">
+                                        <?= htmlspecialchars($item['title']) ?>
+                                    </div>
+                                    <div class="gantt-meta">
+                                        <?= date('M d', strtotime($item['start_date'])) ?> - <?= date('M d', strtotime($item['end_date'])) ?> • <?= intval($item['progress_percentage'] ?? $item['progress']['percentage'] ?? 0) ?>%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="gantt-timeline">
+                                <div class="gantt-bar <?= htmlspecialchars($item['status']) ?>"
+                                     style="width: <?= calculateBarWidth($item, $timeline) ?>%"
+                                     title="<?= htmlspecialchars($item['title']) ?>"
+                                     onclick="showItemDetail(<?= intval($item['id']) ?>)">
+                                    <div class="gantt-progress" style="width: <?= intval($item['progress_percentage'] ?? $item['progress']['percentage'] ?? 0) ?>%"></div>
+                                    <span style="position: relative; z-index: 2;">
+                                         <?= date('M d', strtotime($item['start_date'])) ?>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="gantt-status">
+                                <span class="status-badge <?= htmlspecialchars($item['status']) ?>">
+                                    <?= str_replace('_', ' ', htmlspecialchars($item['status'])) ?>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-title">No roadmap items</div>
+                    <div class="empty-state-text">Create your first roadmap item to get started</div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Creating Roadmap Item -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h2>Add Roadmap Item</h2>
+            <button class="modal-close" type="button" onclick="closeCreateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-error" id="modalError"></div>
+            <div id="createItemForm">
+                <input type="hidden" id="csrf_token" value="<?= csrf_token() ?>">
+                <input type="hidden" id="project_id" value="<?= intval($project['id']) ?>">
+
+                <!-- Title -->
+                <div class="form-group">
+                    <label for="item_title">
+                        Title <span class="required">*</span>
+                    </label>
+                    <input type="text" id="item_title" placeholder="Enter roadmap item title" maxlength="200">
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="item_description">Description</label>
+                    <textarea id="item_description" placeholder="Optional description or notes"></textarea>
+                </div>
+
+                <!-- Type and Status -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item_type">
+                            Type <span class="required">*</span>
+                        </label>
+                        <select id="item_type">
+                            <option value="">Select Type</option>
+                            <option value="epic">Epic</option>
+                            <option value="feature">Feature</option>
+                            <option value="milestone">Milestone</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="item_status">
+                            Status <span class="required">*</span>
+                        </label>
+                        <select id="item_status">
+                            <option value="">Select Status</option>
+                            <option value="planned">Planned</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="on_track">On Track</option>
+                            <option value="at_risk">At Risk</option>
+                            <option value="delayed">Delayed</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item_start_date">
+                            Start Date <span class="required">*</span>
+                        </label>
+                        <input type="date" id="item_start_date">
+                    </div>
+                    <div class="form-group">
+                        <label for="item_end_date">
+                            End Date <span class="required">*</span>
+                        </label>
+                        <input type="date" id="item_end_date">
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="form-group">
+                    <label for="item_progress">
+                        Progress (%) <span class="required">*</span>
+                    </label>
+                    <input type="number" id="item_progress" min="0" max="100" value="0">
+                    <div class="form-help">Enter a value between 0 and 100</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" type="button" onclick="closeCreateModal()">Cancel</button>
+            <button class="btn-submit" type="button" onclick="submitCreateItem(event)">Create Item</button>
+        </div>
+    </div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const projectKey = <?= json_encode($projectKey ?? '') ?>;
-    const roadmapContainer = document.getElementById('roadmapContainer');
-    const emptyState = document.getElementById('emptyState');
-    const loadingIndicator = document.getElementById('loadingIndicator');
+
+
+function showCreateItemModal() {
+    console.log('[ROADMAP MODAL] Opening modal');
     
-    if (!projectKey) {
-        loadingIndicator.style.display = 'none';
-        emptyState.textContent = '❌ No project key provided';
-        emptyState.style.display = 'block';
+    const modal = document.getElementById('createModal');
+    const errorDiv = document.getElementById('modalError');
+    
+    if (!modal) {
+        console.error('[ROADMAP MODAL] Modal element not found!');
         return;
     }
     
-    // Load roadmap data
-    loadRoadmap();
+    // Clear error
+    errorDiv.classList.remove('show');
+    errorDiv.textContent = '';
     
-    function loadRoadmap() {
-        fetch(`/api/v1/roadmap/project?project=${projectKey}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            }
+    // Reset form fields
+    document.getElementById('item_title').value = '';
+    document.getElementById('item_description').value = '';
+    document.getElementById('item_type').value = '';
+    document.getElementById('item_status').value = '';
+    document.getElementById('item_progress').value = '0';
+    
+    // Set default dates to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('item_start_date').value = today;
+    document.getElementById('item_end_date').value = today;
+    
+    // Show modal
+    modal.classList.add('active');
+    console.log('[ROADMAP MODAL] Modal opened, active class added');
+    console.log('[ROADMAP MODAL] Modal display:', window.getComputedStyle(modal).display);
+}
+
+function closeCreateModal() {
+    console.log('[ROADMAP MODAL] Closing modal');
+    const modal = document.getElementById('createModal');
+    modal.classList.remove('active');
+    console.log('[ROADMAP MODAL] Modal closed, active class removed');
+}
+
+function submitCreateItem(event) {
+    console.log('[ROADMAP MODAL] submitCreateItem() called');
+    
+    const errorDiv = document.getElementById('modalError');
+    const submitBtn = event ? event.target : document.querySelector('.btn-submit');
+    
+    // Get form values
+    const title = document.getElementById('item_title').value.trim();
+    const description = document.getElementById('item_description').value.trim();
+    const type = document.getElementById('item_type').value;
+    const status = document.getElementById('item_status').value;
+    const startDate = document.getElementById('item_start_date').value;
+    const endDate = document.getElementById('item_end_date').value;
+    const progress = document.getElementById('item_progress').value;
+    const csrfToken = document.getElementById('csrf_token').value;
+    const projectId = document.getElementById('project_id').value;
+    
+    console.log('[ROADMAP MODAL] Form values:', { title, type, status, startDate, endDate });
+    
+    // Validate required fields
+    if (!title) {
+        console.log('[ROADMAP MODAL] Validation failed: Title is empty');
+        errorDiv.textContent = 'Title is required';
+        errorDiv.classList.add('show');
+        return;
+    }
+    
+    if (!type) {
+        console.log('[ROADMAP MODAL] Validation failed: Type is empty');
+        errorDiv.textContent = 'Type is required';
+        errorDiv.classList.add('show');
+        return;
+    }
+    
+    if (!status) {
+        console.log('[ROADMAP MODAL] Validation failed: Status is empty');
+        errorDiv.textContent = 'Status is required';
+        errorDiv.classList.add('show');
+        return;
+    }
+    
+    if (!startDate) {
+        console.log('[ROADMAP MODAL] Validation failed: Start date is empty');
+        errorDiv.textContent = 'Start date is required';
+        errorDiv.classList.add('show');
+        return;
+    }
+    
+    if (!endDate) {
+        console.log('[ROADMAP MODAL] Validation failed: End date is empty');
+        errorDiv.textContent = 'End date is required';
+        errorDiv.classList.add('show');
+        return;
+    }
+    
+    // Validate dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (start > end) {
+        console.log('[ROADMAP MODAL] Validation failed: Start date after end date');
+        errorDiv.textContent = 'Start date must be before end date';
+        errorDiv.classList.add('show');
+        return;
+    }
+    
+    // Validate progress
+    const prog = parseInt(progress);
+    if (prog < 0 || prog > 100) {
+        console.log('[ROADMAP MODAL] Validation failed: Progress out of range');
+        errorDiv.textContent = 'Progress must be between 0 and 100';
+        errorDiv.classList.add('show');
+        return;
+    }
+    
+    console.log('[ROADMAP MODAL] All validations passed, submitting...');
+    console.log('[ROADMAP MODAL] Sending POST to:', '<?= url("/projects/{$project['key']}/roadmap") ?>');
+    
+    // Show loading state
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+    }
+    
+    // Send to API - use correct endpoint format
+    console.log('[ROADMAP MODAL] Submitting to URL:', '<?= url("/projects/{$project['key']}/roadmap") ?>');
+    console.log('[ROADMAP MODAL] Data being sent:', JSON.stringify({
+        project_id: parseInt(projectId),
+        title: title,
+        description: description,
+        type: type,
+        status: status,
+        start_date: startDate,
+        end_date: endDate,
+        progress: prog
+    }));
+    
+    fetch('<?= url("/projects/{$project['key']}/roadmap") ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({
+            project_id: parseInt(projectId),
+            title: title,
+            description: description,
+            type: type,
+            status: status,
+            start_date: startDate,
+            end_date: endDate,
+            progress: prog
         })
-        .then(response => response.json())
-        .then(data => {
-            loadingIndicator.style.display = 'none';
+    })
+    .then(response => {
+        console.log('[ROADMAP MODAL] Response status:', response.status);
+        console.log('[ROADMAP MODAL] Response headers:', response.headers.get('content-type'));
+        
+        // Check content type
+        const contentType = response.headers.get('content-type');
+        const isJson = contentType && contentType.includes('application/json');
+        
+        // If JSON response, parse it
+        if (isJson) {
+            return response.json().then(data => ({
+                ...data,
+                _status: response.status,
+                _isJson: true
+            }));
+        }
+        
+        // If not JSON (redirect, etc.), just return status
+        if (response.status === 201 || response.status === 302 || response.status === 200) {
+            console.log('[ROADMAP MODAL] HTTP ' + response.status + ' - Success!');
+            return { success: true, _status: response.status, _isJson: false };
+        }
+        
+        // Error response
+        return response.text().then(text => ({
+            error: 'Server error: ' + text.substring(0, 200),
+            _status: response.status,
+            _isJson: false
+        }));
+    })
+    .then(result => {
+        console.log('[ROADMAP MODAL] Response result:', result);
+        
+        // Check if request was successful
+        const isSuccess = result && (result.success || result.status === 'success' || result._status === 201 || result._status === 302 || result._status === 200);
+        
+        if (isSuccess) {
+            console.log('[ROADMAP MODAL] ✅ Success! Closing modal and reloading...');
+            console.log('[ROADMAP MODAL] Result data:', result);
             
-            if (data.success) {
-                const roadmapData = data.data;
-                
-                // Check if there's any data to display
-                const hasEpics = roadmapData.epics && roadmapData.epics.length > 0;
-                const hasVersions = roadmapData.versions && roadmapData.versions.length > 0;
-                
-                if (!hasEpics && !hasVersions) {
-                    emptyState.style.display = 'block';
-                    return;
-                }
-                
-                renderRoadmap(roadmapData);
-                roadmapContainer.style.display = 'block';
-            } else {
-                emptyState.textContent = '❌ Error loading roadmap. Please try again.';
-                emptyState.style.display = 'block';
+            // Close modal and reload page
+            closeCreateModal();
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            // Error occurred
+            const errorMsg = result?.message || result?.error || 'Failed to create roadmap item';
+            console.log('[ROADMAP MODAL] ❌ Error:', errorMsg);
+            console.log('[ROADMAP MODAL] Full result:', result);
+            
+            errorDiv.textContent = errorMsg;
+            errorDiv.classList.add('show');
+            
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Item';
             }
-        })
-        .catch(error => {
-            console.error('Error loading roadmap:', error);
-            loadingIndicator.style.display = 'none';
-            emptyState.textContent = '❌ Error loading roadmap. Please check console.';
-            emptyState.style.display = 'block';
-        });
-    }
-    
-    function renderRoadmap(data) {
-        const epics = data.epics || [];
-        const versions = data.versions || [];
-        const stats = data.stats || {};
+        }
+    })
+    .catch(error => {
+        console.error('[ROADMAP MODAL] Fetch error:', error);
+        errorDiv.textContent = 'Error: ' + error.message + '. This feature requires API endpoint implementation.';
+        errorDiv.classList.add('show');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Item';
+        }
+    });
+}
+
+    // Setup modal event listeners when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('[ROADMAP MODAL] DOMContentLoaded fired, setting up modal listeners');
         
-        // Render stats
-        renderStats(stats);
+        const modalOverlay = document.getElementById('createModal');
+        const modalDialog = document.querySelector('.modal-dialog');
         
-        // Render timeline
-        renderTimeline(epics, versions);
-        
-        // Render epics
-        renderEpics(epics);
-        
-        // Render versions
-        renderVersions(versions);
-    }
-    
-    function renderStats(stats) {
-        const statsContainer = document.getElementById('statsContainer');
-        statsContainer.innerHTML = '';
-        
-        const statCards = [
-            { label: 'Total Issues', value: stats.total_issues || 0 },
-            { label: 'Completed', value: stats.completed_issues || 0 },
-            { label: 'In Progress', value: stats.in_progress_issues || 0 },
-            { label: 'Not Started', value: stats.not_started_issues || 0 }
-        ];
-        
-        statCards.forEach(stat => {
-            const card = document.createElement('div');
-            card.className = 'col-md-3 mb-3';
-            card.innerHTML = `
-                <div class="stats-card">
-                    <div class="stats-card-label">${stat.label}</div>
-                    <div class="stats-card-value">${stat.value}</div>
-                </div>
-            `;
-            statsContainer.appendChild(card);
-        });
-    }
-    
-    function renderTimeline(epics, versions) {
-        const container = document.getElementById('timelineContainer');
-        container.innerHTML = '';
-        
-        const allItems = [
-            ...epics.map(e => ({
-                type: 'epic',
-                key: e.key,
-                title: e.summary,
-                start: e.start_date,
-                end: e.end_date || e.start_date
-            })),
-            ...versions.map(v => ({
-                type: 'version',
-                key: v.name,
-                title: v.name,
-                start: v.start_date,
-                end: v.release_date || v.start_date
-            }))
-        ];
-        
-        if (allItems.length === 0) {
-            container.innerHTML = '<p class="text-muted">No items to display in timeline</p>';
+        if (!modalOverlay) {
+            console.error('[ROADMAP MODAL] Modal overlay not found!');
             return;
         }
         
-        // Calculate date range
-        const dates = allItems
-            .filter(i => i.start && i.end)
-            .flatMap(i => [new Date(i.start), new Date(i.end)])
-            .sort((a, b) => a - b);
-        
-        if (dates.length === 0) {
-            container.innerHTML = '<p class="text-muted">No dates available for timeline</p>';
+        if (!modalDialog) {
+            console.error('[ROADMAP MODAL] Modal dialog not found!');
             return;
         }
         
-        const minDate = dates[0];
-        const maxDate = dates[dates.length - 1];
-        const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24) || 1;
+        console.log('[ROADMAP MODAL] Modal elements found, attaching listeners');
         
-        // Render items
-        allItems.forEach(item => {
-            if (!item.start || !item.end) return;
+        // Close modal when clicking on overlay background (not the dialog itself)
+        // Use BUBBLING phase (false) not CAPTURE phase to allow onclick handlers to fire
+        modalOverlay.addEventListener('click', function(event) {
+            console.log('[ROADMAP MODAL] Click detected on overlay, target:', event.target);
             
-            const itemStart = new Date(item.start);
-            const itemEnd = new Date(item.end);
-            
-            const startOffset = ((itemStart - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100;
-            const width = ((itemEnd - itemStart) / (1000 * 60 * 60 * 24)) / totalDays * 100;
-            
-            const row = document.createElement('div');
-            row.className = 'timeline-row';
-            row.innerHTML = `
-                <div class="timeline-label">
-                    <span class="roadmap-item-key">${htmlEscape(item.key)}</span>
-                </div>
-                <div class="timeline-track">
-                    <div class="timeline-bar" style="margin-left: ${Math.max(0, startOffset)}%; width: ${Math.max(2, width)}%; min-width: 2px;">
-                        ${width > 15 ? htmlEscape(item.title) : ''}
-                    </div>
-                </div>
-            `;
-            container.appendChild(row);
-        });
-    }
-    
-    function renderEpics(epics) {
-        const container = document.getElementById('epicsContainer');
-        const countBadge = document.getElementById('epicCount');
+            // Only close if clicking directly on the overlay background
+            if (event.target === modalOverlay) {
+                console.log('[ROADMAP MODAL] Closing because overlay was clicked');
+                closeCreateModal();
+            }
+        }, false); // FIXED: Use bubbling phase to allow onclick handlers to execute
         
-        container.innerHTML = '';
-        countBadge.textContent = epics.length;
-        
-        if (epics.length === 0) {
-            container.innerHTML = '<p class="text-muted">No epics found for this project</p>';
-            return;
-        }
-        
-        epics.forEach(epic => {
-            const progress = epic.progress || 0;
-            const startDate = epic.start_date ? new Date(epic.start_date).toLocaleDateString() : 'Not set';
-            const endDate = epic.end_date ? new Date(epic.end_date).toLocaleDateString() : 'Not set';
-            
-            const item = document.createElement('div');
-            item.className = 'roadmap-item';
-            item.innerHTML = `
-                <div class="roadmap-item-header">
-                    <div>
-                        <div class="roadmap-item-title">${htmlEscape(epic.summary)}</div>
-                        <div class="roadmap-item-key">${htmlEscape(epic.key)}</div>
-                    </div>
-                    <span class="status-badge status-${epic.status_name ? epic.status_name.toLowerCase() : 'active'}">
-                        ${htmlEscape(epic.status_name || 'Active')}
-                    </span>
-                </div>
-                
-                <div class="roadmap-progress-bar">
-                    <div class="roadmap-progress-fill" style="width: ${progress}%;">
-                        ${progress}%
-                    </div>
-                </div>
-                
-                <div class="roadmap-dates">
-                    <i class="bi bi-calendar"></i> ${startDate} — ${endDate}
-                </div>
-                
-                <div class="roadmap-meta">
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-list-check"></i>
-                        <span>${epic.issue_count || 0} issues</span>
-                    </div>
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-checkmark-circle"></i>
-                        <span>${epic.completed_count || 0} completed</span>
-                    </div>
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-exclamation-circle"></i>
-                        <span>Priority: ${htmlEscape(epic.priority || 'Medium')}</span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(item);
-        });
-    }
-    
-    function renderVersions(versions) {
-        const container = document.getElementById('versionsContainer');
-        const countBadge = document.getElementById('versionCount');
-        
-        container.innerHTML = '';
-        countBadge.textContent = versions.length;
-        
-        if (versions.length === 0) {
-            container.innerHTML = '<p class="text-muted">No versions found for this project</p>';
-            return;
-        }
-        
-        versions.forEach(version => {
-            const progress = version.progress || 0;
-            const startDate = version.start_date ? new Date(version.start_date).toLocaleDateString() : 'Not set';
-            const releaseDate = version.release_date ? new Date(version.release_date).toLocaleDateString() : 'Not set';
-            
-            const item = document.createElement('div');
-            item.className = 'roadmap-item';
-            item.innerHTML = `
-                <div class="roadmap-item-header">
-                    <div>
-                        <div class="roadmap-item-title">${htmlEscape(version.name)}</div>
-                    </div>
-                    <span class="status-badge status-${version.status ? version.status.toLowerCase() : 'active'}">
-                        ${htmlEscape(version.status || 'Active')}
-                    </span>
-                </div>
-                
-                <div class="roadmap-progress-bar">
-                    <div class="roadmap-progress-fill" style="width: ${progress}%;">
-                        ${progress}%
-                    </div>
-                </div>
-                
-                <div class="roadmap-dates">
-                    <i class="bi bi-calendar"></i> ${startDate} — ${releaseDate}
-                </div>
-                
-                <div class="roadmap-meta">
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-list-check"></i>
-                        <span>${version.issue_count || 0} issues</span>
-                    </div>
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-checkmark-circle"></i>
-                        <span>${version.completed_count || 0} completed</span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(item);
-        });
-    }
-    
-    function htmlEscape(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-});
+        console.log('[ROADMAP MODAL] Event listeners successfully attached');
+    });
+
+function showItemDetail(itemId) {
+    fetch(`<?= url("/api/v1/roadmap/{$project['id']}/items/") ?>${itemId}`)
+        .then(r => r.json())
+        .then(d => console.log('Item:', d.item))
+        .catch(e => console.error('Error:', e));
+}
+
+function exportRoadmap() {
+    alert('Export functionality coming soon');
+}
+
+function applyFilters() {
+    const params = new URLSearchParams();
+    window.location.search = params.toString();
+}
+
+function clearFilters() {
+    window.location = window.location.pathname;
+}
 </script>
+
+<?php \App\Core\View::endSection(); ?>

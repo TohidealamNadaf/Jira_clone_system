@@ -51,7 +51,7 @@ class AttachmentController extends Controller
 
             $attachmentId = Database::insert('issue_attachments', [
                 'issue_id' => $issue['id'],
-                'author_id' => $this->userId(),
+                'uploaded_by' => $this->userId(),
                 'filename' => $uploaded['filename'],
                 'original_name' => $uploaded['original_name'],
                 'mime_type' => $uploaded['mime_type'],
@@ -63,7 +63,7 @@ class AttachmentController extends Controller
             $attachment = Database::selectOne(
                 "SELECT a.*, u.display_name as author_name
                  FROM issue_attachments a
-                 JOIN users u ON a.author_id = u.id
+                 JOIN users u ON a.uploaded_by = u.id
                  WHERE a.id = ?",
                 [$attachmentId]
             );
@@ -150,7 +150,7 @@ class AttachmentController extends Controller
             abort(404, 'Attachment not found');
         }
 
-        if ($attachment['author_id'] !== $this->userId()) {
+        if ($attachment['uploaded_by'] !== $this->userId()) {
             $this->authorize('attachments.delete_all', $attachment['project_id']);
         }
 

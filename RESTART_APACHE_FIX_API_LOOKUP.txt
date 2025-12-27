@@ -1,0 +1,107 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║            RESTART APACHE TO FIX API LOOKUP ENDPOINTS 404 ERRORS             ║
+║                            December 21, 2025                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+WHAT WAS FIXED
+──────────────
+✅ API lookup endpoints now properly registered
+✅ Issue types, priorities, statuses, link types endpoints available
+✅ Routes added to public throttle group (no auth required)
+✅ Same pattern as login/refresh endpoints
+
+ROUTES UPDATED
+──────────────
+File: routes/api.php (lines 40-43)
+
+Added to public throttle group:
+  GET /api/v1/issue-types
+  GET /api/v1/priorities
+  GET /api/v1/statuses
+  GET /api/v1/link-types
+
+HOW TO RESTART APACHE
+─────────────────────
+
+OPTION 1: Using Laragon (Easiest)
+──────────────────────────────────
+1. Look for Laragon icon in system tray (bottom-right Windows)
+2. Click Laragon icon → Opens Laragon dashboard
+3. Find "Apache" button with status indicator
+4. Click "Restart" button (or stop then start)
+5. Wait for "Apache started" message
+
+OPTION 2: Using Laragon Menu
+──────────────────────────────
+1. Click Laragon icon
+2. Find "Tools" or "Services"
+3. Click "Apache" → "Restart"
+4. Wait for confirmation
+
+OPTION 3: Using XAMPP Control Panel
+────────────────────────────────────
+1. Find XAMPP Control Panel in Windows Start
+2. Click "Apache" → "Stop"
+3. Wait 2-3 seconds
+4. Click "Apache" → "Start"
+5. Verify status shows "Running"
+
+OPTION 4: Command Line (Advanced)
+──────────────────────────────────
+1. Open Command Prompt (Win+R, type "cmd", press Enter)
+2. Type: net stop Apache2.4
+3. Wait for confirmation
+4. Type: net start Apache2.4
+5. Wait for "Service started successfully"
+
+AFTER RESTARTING
+────────────────
+1. Clear browser cache
+   - Press CTRL+SHIFT+DEL
+   - Select "Cached images and files"
+   - Click "Clear"
+
+2. Hard refresh browser
+   - Press CTRL+F5 (or CTRL+Shift+R on Mac)
+   - This forces browser to reload JavaScript
+
+3. Test the fix
+   - Open Create Issue Modal
+   - Check console (F12) for error messages
+   - Should see: ✅ Issue types loaded
+   - Should see: ✅ Loaded priorities
+
+4. Verify dropdowns work
+   - Click Issue Type dropdown → should show options
+   - Click Priority dropdown → should show options
+   - No more "404 Not Found" errors
+
+TROUBLESHOOTING
+───────────────
+If still seeing 404 after restart:
+
+[ ] Check Apache is actually running
+    - Laragon should show green "On" status
+    - Or run: netstat -an | findstr :80
+    - Should show LISTENING
+
+[ ] Check if browser cached bad response
+    - Press CTRL+F5 (hard refresh)
+    - Or clear entire cache (CTRL+SHIFT+DEL)
+    - Restart browser completely
+
+[ ] Check if routes file was saved
+    - Open: routes/api.php
+    - Look for lines 40-43
+    - Should see /issue-types, /priorities, etc.
+    - Should be inside throttle group
+
+[ ] Check if PHP errors occurred
+    - Open: storage/logs/
+    - Look for recent error logs
+    - Check for syntax errors in routes/api.php
+
+ESTIMATED TIME: 2-3 minutes
+STATUS: ✅ Ready to restart Apache
+
+Next: Clear cache → Hard refresh → Test modal

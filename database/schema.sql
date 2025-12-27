@@ -178,6 +178,8 @@ CREATE TABLE `projects` (
     `avatar` VARCHAR(255) DEFAULT NULL,
     `is_archived` TINYINT(1) NOT NULL DEFAULT 0,
     `issue_count` INT UNSIGNED NOT NULL DEFAULT 0,
+    `budget` DECIMAL(12, 2) DEFAULT 0.00 COMMENT 'Project budget in default currency',
+    `budget_currency` VARCHAR(3) DEFAULT 'USD' COMMENT 'Budget currency code',
     `created_by` INT UNSIGNED DEFAULT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

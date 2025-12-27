@@ -13,6 +13,7 @@ use App\Core\Session;
 use App\Services\IssueService;
 use App\Services\ProjectService;
 use App\Services\NotificationService;
+use App\Core\Database;
 
 class IssueController extends Controller
 {
@@ -93,82 +94,7 @@ class IssueController extends Controller
         ]);
     }
 
-    public function create(Request $request): string
-    {
-        $projectKey = $request->param('key') ?? $request->input('project');
-        $project = null;
 
-        if ($projectKey) {
-            $project = $this->projectService->getProjectByKey($projectKey);
-            if ($project) {
-                $this->authorize('issues.create', $project['id']);
-                // Load full project details including related data
-                $project = $this->issueService->getProjectWithDetails($project['id']);
-            }
-        }
-
-        return $this->view('issues.create', [
-            'project' => $project,
-            'projects' => $this->issueService->getProjects(),
-            'issueTypes' => $this->issueService->getIssueTypes(),
-            'priorities' => $this->issueService->getPriorities(),
-        ]);
-    }
-
-    public function store(Request $request): void
-    {
-        $data = $request->validate([
-            'project_id' => 'required|integer',
-            'issue_type_id' => 'required|integer',
-            'summary' => 'required|max:500',
-            'description' => 'nullable|max:50000',
-            'priority_id' => 'nullable|integer',
-            'assignee_id' => 'nullable|integer',
-            'parent_id' => 'nullable|integer',
-            'epic_id' => 'nullable|integer',
-            'sprint_id' => 'nullable|integer',
-            'story_points' => 'nullable|numeric|min:0|max:999',
-            'original_estimate' => 'nullable|integer|min:0',
-            'due_date' => 'nullable|date',
-            'labels' => 'nullable|array',
-            'components' => 'nullable|array',
-            'fix_versions' => 'nullable|array',
-        ]);
-
-        // Convert empty strings to null for optional foreign key fields
-        foreach (['assignee_id', 'epic_id', 'parent_id', 'sprint_id'] as $field) {
-            if (isset($data[$field]) && ($data[$field] === '' || $data[$field] === 0)) {
-                $data[$field] = null;
-            }
-        }
-
-        $this->authorize('issues.create', (int) $data['project_id']);
-
-        try {
-            $issue = $this->issueService->createIssue($data, $this->userId());
-
-            // Dispatch notification for issue creation
-            NotificationService::dispatchIssueCreated($issue['id'], $this->userId());
-
-            if ($request->wantsJson()) {
-                $this->json(['success' => true, 'issue' => sanitize_issue_for_json($issue)], 201);
-            }
-
-            $this->redirectWith(
-                url("/issue/{$issue['issue_key']}"),
-                'success',
-                "Issue {$issue['issue_key']} created successfully."
-            );
-        } catch (\InvalidArgumentException $e) {
-            if ($request->wantsJson()) {
-                $this->json(['error' => $e->getMessage()], 422);
-            }
-
-            Session::flash('error', $e->getMessage());
-            Session::flash('_old_input', $data);
-            $this->back();
-        }
-    }
 
     public function show(Request $request): string
     {
@@ -243,7 +169,7 @@ class IssueController extends Controller
 
         $data = $request->validate([
             'summary' => 'nullable|max:500',
-            'description' => 'nullable|max:50000',
+            'description' => 'nullable|max:2000000',
             'issue_type_id' => 'nullable|integer',
             'priority_id' => 'nullable|integer',
             'assignee_id' => 'nullable|integer',
@@ -252,6 +178,8 @@ class IssueController extends Controller
             'original_estimate' => 'nullable|integer|min:0',
             'remaining_estimate' => 'nullable|integer|min:0',
             'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'environment' => 'nullable|max:10000',
             'labels' => 'nullable|array',
             'components' => 'nullable|array',
@@ -669,4 +597,158 @@ class IssueController extends Controller
         $transitions = $this->issueService->getAvailableTransitions($issue['id']);
         $this->json($transitions);
     }
+
+    /**
+     * Store a new issue (AJAX endpoint)
+     */
+    public function store(Request $request): void
+    {
+        $logFile = __DIR__ . '/../../public/debug_log.txt';
+        $log = function ($msg) use ($logFile) {
+            file_put_contents($logFile, date('[Y-m-d H:i:s] ') . $msg . "\n", FILE_APPEND);
+        };
+
+        $log("IssueController::store called.");
+        $log("FILES: " . print_r($_FILES, true));
+        $log("POST: " . print_r($_POST, true));
+
+        // Validate required fields
+        $data = $request->validate([
+            'project_id' => 'required|integer',
+            'issue_type_id' => 'required|integer',
+            'summary' => 'required|max:500',
+            'description' => 'nullable|max:2000000',
+            'priority_id' => 'nullable|integer',
+            'assignee_id' => 'nullable|integer',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+        ]);
+
+        try {
+            // Get current user ID from session (note: stored as '_user' with underscore)
+            $user = Session::user();
+            $userId = $user['id'] ?? 0;
+
+            if (!$userId) {
+                $this->json(['error' => 'User not authenticated'], 401);
+                return;
+            }
+
+            // Create issue using service
+            $issue = $this->issueService->createIssue($data, $userId);
+
+            // Handle attachments if present
+            if (isset($_FILES['attachments'])) {
+                error_log("DEBUG: Processing attachments...");
+                $files = [];
+                // Normalize $_FILES structure
+                if (is_array($_FILES['attachments']['name'])) {
+                    $count = count($_FILES['attachments']['name']);
+                    for ($i = 0; $i < $count; $i++) {
+                        if ($_FILES['attachments']['error'][$i] === UPLOAD_ERR_OK) {
+                            $files[] = [
+                                'name' => $_FILES['attachments']['name'][$i],
+                                'type' => $_FILES['attachments']['type'][$i],
+                                'tmp_name' => $_FILES['attachments']['tmp_name'][$i],
+                                'error' => $_FILES['attachments']['error'][$i],
+                                'size' => $_FILES['attachments']['size'][$i],
+                            ];
+                        }
+                    }
+                } else {
+                    // Single file handling (fallback)
+                    if ($_FILES['attachments']['error'] === UPLOAD_ERR_OK) {
+                        $files[] = $_FILES['attachments'];
+                    }
+                }
+
+                $uploadedCount = 0;
+                foreach ($files as $file) {
+                    $log("Processing file: " . $file['name']);
+                    $uploaded = $this->uploadFile($file, 'attachments');
+
+                    if ($uploaded) {
+                        $log("File uploaded successfully. Path: " . $uploaded['path']);
+                        try {
+                            Database::insert('issue_attachments', [
+                                'issue_id' => $issue['id'],
+                                'uploaded_by' => $userId,
+                                'filename' => $uploaded['filename'],
+                                'original_name' => $uploaded['original_name'],
+                                'mime_type' => $uploaded['mime_type'],
+                                'file_size' => $uploaded['size'],
+                                'file_path' => $uploaded['path'],
+                                'created_at' => date('Y-m-d H:i:s'),
+                            ]);
+                            $log("Database insert success.");
+                            $uploadedCount++;
+                        } catch (\Exception $e) {
+                            $log("Database insert FAILED: " . $e->getMessage());
+                        }
+                    } else {
+                        $log("uploadFile returned null.");
+                    }
+                }
+
+                if ($uploadedCount > 0) {
+                    // Record history for attachments
+                    Database::insert('issue_history', [
+                        'issue_id' => $issue['id'],
+                        'user_id' => $userId,
+                        'field' => 'attachment',
+                        'new_value' => "$uploadedCount files attached",
+                        'created_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            // Return success response
+            $this->json([
+                'success' => true,
+                'issue_id' => $issue['id'],
+                'issue_key' => $issue['issue_key'],
+                'message' => 'Issue created successfully',
+                'issue' => $issue
+            ]);
+
+        } catch (\InvalidArgumentException $e) {
+            // Validation error
+            $this->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 422);
+
+        } catch (\Exception $e) {
+            // General error
+            error_log("Issue creation failed: " . $e->getMessage());
+            $this->json([
+                'success' => false,
+                'error' => 'Failed to create issue. Please try again.'
+            ], 500);
+        }
     }
+
+    /**
+     * Get issue types for dropdown/select lists
+     * Used by quick create modal and issue creation forms
+     */
+    public function getIssueTypes(Request $request): void
+    {
+        try {
+            $sql = "SELECT id, name, description, icon, color, is_subtask, is_default, sort_order 
+                    FROM issue_types 
+                    ORDER BY sort_order ASC, name ASC";
+
+            $types = \App\Core\Database::select($sql);
+
+            // Return JSON response
+            $this->json($types);
+        } catch (\Exception $e) {
+            error_log("Failed to fetch issue types: " . $e->getMessage());
+            $this->json([
+                'error' => 'Failed to load issue types',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+}

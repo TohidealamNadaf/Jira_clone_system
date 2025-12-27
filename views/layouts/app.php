@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+    <meta name="app-base-path" content="<?= e(basePath()) ?>">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -18,21 +19,28 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
-    <!-- Quill Rich Text Editor CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
-    <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+
+    <!-- TinyMCE (Community Edition via CDNJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+
     <!-- Custom CSS -->
     <link href="<?= asset('css/app.css') ?>" rel="stylesheet">
     <!-- Design Consistency CSS - Ensures all users see identical layout -->
     <link href="<?= asset('css/design-consistency.css') ?>" rel="stylesheet">
     <!-- Real-Time Notifications CSS -->
     <link href="<?= asset('css/realtime-notifications.css') ?>" rel="stylesheet">
+    <!-- Time Tracking CSS -->
+    <link rel="stylesheet" href="<?= url('/assets/css/floating-timer.css') ?>">
+    <!-- Time Tracking Dashboard CSS -->
+    <link rel="stylesheet" href="<?= url('/assets/css/time-tracking.css') ?>">
 
     <!-- Apply theme colors from settings -->
     <?php
     $primaryColor = \App\Core\Database::selectValue("SELECT value FROM settings WHERE `key` = 'primary_color'") ?? '#8B1956';
     $defaultTheme = \App\Core\Database::selectValue("SELECT value FROM settings WHERE `key` = 'default_theme'") ?? 'light';
+
+    // Get current user for navbar
+    $user = \App\Core\Session::user();
     ?>
     <style>
         /* Prevent scrollbar layout shift */
@@ -311,6 +319,17 @@
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
             transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
         }
+
+        /* TinyMCE in Bootstrap Modal Fix */
+        .tox-tinymce {
+            z-index: 2000;
+            /* Ensure editor is above modal */
+        }
+
+        .tox-tinymce-aux {
+            z-index: 3000 !important;
+            /* Ensure dialogs/tooltips are above everything */
+        }
     </style>
 
     <?php \App\Core\View::yield('styles') ?>
@@ -458,10 +477,52 @@
 
                     <!-- Admin -->
                     <?php if ($user['is_admin'] ?? false): ?>
-                        <a href="<?= url('/admin') ?>" class="nav-link-simple">
-                            <i class="bi bi-gear"></i>
-                            <span>Admin</span>
-                        </a>
+                        <div class="nav-dropdown">
+                            <button class="nav-dropdown-btn">
+                                <i class="bi bi-gear"></i>
+                                <span>Admin</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-panel">
+                                <a href="<?= url('/admin') ?>" class="dropdown-item">
+                                    <i class="bi bi-house-gear"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Administration Home</div>
+                                        <div class="item-desc">Dashboard overview</div>
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="<?= url('/admin/users') ?>" class="dropdown-item">
+                                    <i class="bi bi-people"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">User Management</div>
+                                        <div class="item-desc">Manage users and roles</div>
+                                    </div>
+                                </a>
+                                <a href="<?= url('/admin/projects') ?>" class="dropdown-item">
+                                    <i class="bi bi-folder"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Projects</div>
+                                        <div class="item-desc">Manage all projects</div>
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="<?= url('/admin/workflows') ?>" class="dropdown-item">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Workflows</div>
+                                        <div class="item-desc">Issue lifecycles</div>
+                                    </div>
+                                </a>
+                                <a href="<?= url('/admin/issue-types') ?>" class="dropdown-item">
+                                    <i class="bi bi-stack"></i>
+                                    <div class="item-content">
+                                        <div class="item-title">Issue Types</div>
+                                        <div class="item-desc">Configure types</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -474,9 +535,8 @@
                     <input type="text" name="q" placeholder="Search issues..." autocomplete="off">
                 </form>
 
-                <!-- Quick Create Button -->
-                <button class="navbar-action-btn create-btn" data-bs-toggle="modal" data-bs-target="#quickCreateModal"
-                    title="Create issue">
+                <!-- Create Button -->
+                <button class="navbar-action-btn create-btn" id="openCreateIssueModal" title="Create Issue">
                     <i class="bi bi-plus-lg"></i>
                     <span class="d-none d-md-inline">Create</span>
                 </button>
@@ -503,17 +563,20 @@
                 <div class="navbar-action-dropdown">
                     <button class="navbar-action-btn user-btn" id="userMenu" title="User menu"
                         data-user-name="<?= e($user['display_name'] ?? ($user['first_name'] . ' ' . $user['last_name']) ?? 'User') ?>"
-                        data-user-avatar="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>">
-                        <img src="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
+                        data-user-avatar="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>">
+                        <img src="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
                             alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>" class="user-avatar">
                         <i class="bi bi-chevron-down d-none d-md-inline"></i>
                     </button>
                     <div class="dropdown-panel user-panel">
                         <div class="panel-header user-header">
-                            <img src="<?= e($user['avatar'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
-                                alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>" class="user-avatar-large">
+                            <img src="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
+                                alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>"
+                                class="user-avatar-large">
                             <div>
-                                <div class="user-name"><?= e($user['display_name'] ?? ($user['first_name'] . ' ' . $user['last_name']) ?? 'User') ?></div>
+                                <div class="user-name">
+                                    <?= e($user['display_name'] ?? ($user['first_name'] . ' ' . $user['last_name']) ?? 'User') ?>
+                                </div>
                                 <div class="user-email"><?= e($user['email'] ?? '') ?></div>
                             </div>
                         </div>
@@ -1042,109 +1105,20 @@
         }
     </style>
 
-    <!-- Notification JavaScript -->
-    <script>
-            // Load notifications on bell cl                ick
-        document.getElementById('notificationBell').addEventListener('click', function (e) {
-            if (this.getAttribute('aria-expanded') === 'true') {
-                loadNotifications();
-            }
-        });
-
-        function loadNotifications() {
-            const appUrl = '<?= url("/") ?>';
-            fetch(appUrl + 'api/v1/notifications?limit=5', {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-                .then(r => r.json())
-                .then(data => {
-                    const unreadBadge = document.getElementById('unreadBadge');
-                    const notificationList = document.getElementById('notificationList');
-
-                    // Update badge
-                    if (data.unread_count > 0) {
-                        unreadBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                        unreadBadge.style.display = 'inline-block';
-                    } else {
-                        unreadBadge.style.display = 'none';
-                    }
-
-                    // Update notification list
-                    if (!data.data || data.data.length === 0) {
-                        notificationList.innerHTML = '<div class="px-3 py-3 text-center text-muted"><small>No notifications</small></div>';
-                        return;
-                    }
-
-                    notificationList.innerHTML = data.data.map(n => `
-                <a href="${n.action_url || '#'}" class="dropdown-item d-flex align-items-start gap-2 py-2" style="text-decoration: none;">
-                    <div style="flex: 1; border-left: 3px solid ${n.is_read ? 'transparent' : 'var(--jira-blue)'}; padding-left: 8px;">
-                        <div class="small fw-semibold text-dark">${escapeHtml(n.title)}</div>
-                        <div class="text-muted" style="font-size: 12px;">
-                            ${n.message ? escapeHtml(n.message).substring(0, 60) + '...' : ''}
-                        </div>
-                        <div class="text-muted" style="font-size: 11px; margin-top: 4px;">
-                            ${formatTime(n.created_at)}
-                        </div>
-                    </div>
-                    ${!n.is_read ? '<span class="badge bg-primary ms-2">New</span>' : ''}
-                </a>
-            `).join('');
-                })
-                .catch(err => {
-                    console.error('Error loading notifications:', err);
-                    document.getElementById('notificationList').innerHTML = '<div class="px-3 py-3 text-center text-danger"><small>Error loading notifications</small></div>';
-                });
-        }
-
-        // Initial load
-        loadNotifications();
-
-        // Refresh every 30 seconds
-        setInterval(loadNotifications, 30000);
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
-
-            if (minutes < 1) return 'Just now';
-            if (minutes < 60) return minutes + 'm ago';
-            if (hours < 24) return hours + 'h ago';
-            if (days < 7) return days + 'd ago';
-
-            return date.toLocaleDateString();
-        }
-    </script>
 
     <!-- Flash Messages -->
     <?php foreach (['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'info' => 'info'] as $type => $class): ?>
-            <?php if ($message = $flash[$type] ?? null): ?>
-                    <div class="alert alert-<?= $class ?> alert-dismissible fade show m-3" role="alert">
-                        <?= e($message) ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-            <?php endif; ?>
+        <?php if ($message = $flash[$type] ?? null): ?>
+            <div class="alert alert-<?= $class ?> alert-dismissible fade show m-3" role="alert">
+                <?= e($message) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
     <?php endforeach; ?>
 
     <!-- Main Content - Consistent for All Users -->
-    <main class="p-0" id="mainContent" style="background: var(--bg-secondary); min-height: calc(100vh - 200px); padding: 0;">
-        <div style="max-width: 1400px; margin: 0 auto; padding: 32px; width: 100%;">
+    <main class="p-0" id="mainContent" style="background: transparent; min-height: calc(100vh - 200px); padding: 0;">
+        <div style="width: 100%;">
             <?= \App\Core\View::yield('content') ?>
         </div>
     </main>
@@ -1165,400 +1139,12 @@
         </div>
     </footer>
 
-    <!-- Quick Create Modal - Jira-Like Design -->
-    <div class="modal fade" id="quickCreateModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" style="max-width: 700px;">
-            <div class="modal-content quick-create-modal-jira">
-                <div class="modal-header border-bottom">
-                    <h5 class="modal-title fw-bold">Create Issue</h5>
-                    <small class="text-muted ms-2" id="initialStatusText">This is the initial status upon
-                        creation</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                    <form id="quickCreateForm" class="quick-create-form-jira">
-                        <!-- Project & Issue Type (Compact) - MOVED TO TOP -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Project <span class="text-danger">*</span></label>
-                                <select class="form-select jira-input" name="project_id" required
-                                    id="quickCreateProject">
-                                    <option value="">Loading projects...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Work Type <span
-                                        class="text-danger">*</span></label>
-                                <select class="form-select jira-input" name="issue_type_id" required
-                                    id="quickCreateIssueType">
-                                    <option value="">Select a project first...</option>
-                                </select>
-                            </div>
-                        </div>
 
-                        <!-- Summary Field (Required) -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Summary <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-lg jira-input" name="summary" required
-                                placeholder="What needs to be done?" maxlength="500" id="quickCreateSummary">
-                            <div class="invalid-feedback d-block mt-1" id="summaryError"></div>
-                            <small class="form-text text-muted d-block mt-1">
-                                <span id="summaryChar">0</span>/500 characters
-                            </small>
-                        </div>
 
-                        <!-- Description Field with Quill Rich Text Editor + Inline Attachments -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Description</label>
-                             <div style="border: 1px solid #DFE1E6; border-radius: 4px; overflow: hidden;">
-                                 <!-- Quill Editor Container -->
-                                 <div id="quickCreateDescriptionEditor" style="background: white; min-height: 200px;"></div>
-                                 <!-- Inline Attachments Section Below Editor -->
-                                 <div id="descriptionAttachmentsContainer" style="display: none; border-top: 1px solid #DFE1E6; background-color: #F7F8FA; padding: 12px;">
-                                     <div style="font-weight: 500; font-size: 13px; color: #161B22; margin-bottom: 12px; padding-left: 8px;">Attached files:</div>
-                                     <div id="descriptionAttachmentsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                                 </div>
-                                 <!-- Hidden file input for description attachments -->
-                                 <input type="file" id="descriptionAttachmentInput" multiple style="display: none;" 
-                                     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip,.mov,.mp4,.webm,.webp">
-                             </div>
-                             <!-- Hidden textarea to store content -->
-                             <textarea name="description" id="quickCreateDescription" style="display:none;"></textarea>
-                             <small class="form-text text-muted d-block mt-2">
-                                 <span id="descChar">0</span>/5000 characters
-                             </small>
-                         </div>
 
-                        <!-- Reporter Field (Auto-filled, Read-only) - With Avatar -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Reporter</label>
-                            <div class="reporter-field-wrapper"
-                                style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #DFE1E6; border-radius: 4px; background-color: #F7F8FA;">
-                                <div id="quickCreateReporterAvatar"
-                                    style="width: 44px; height: 44px; border-radius: 50%; background-color: #8B1956; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; flex-shrink: 0;">
-                                    C
-                                </div>
-                                <div style="flex: 1;">
-                                    <div id="quickCreateReporterName"
-                                        style="font-weight: 500; color: #161B22; font-size: 14px;">Current User</div>
-                                    <small class="form-text text-muted d-block" style="margin-top: 2px;">You are
-                                        automatically set as the reporter</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Assignee Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Assignee</label>
-                             <div class="assignee-wrapper">
-                                 <select class="form-select form-select-lg jira-input" name="assignee_id"
-                                     id="quickCreateAssignee">
-                                     <option value="">Automatic</option>
-                                 </select>
-                                 <a href="#" class="assignee-link ms-2" id="assignToMeLink">Assign to me</a>
-                             </div>
-                         </div>
-
-                         <!-- Status Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Status</label>
-                             <select class="form-select jira-input" name="status_id" id="quickCreateStatus">
-                                 <option value="">Default</option>
-                             </select>
-                         </div>
-
-                         <!-- Sprint Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Sprint</label>
-                             <select class="form-select jira-input" name="sprint_id" id="quickCreateSprint">
-                                 <option value="">None (Backlog)</option>
-                             </select>
-                         </div>
-
-                         <!-- Labels Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Labels</label>
-                             <select class="form-select jira-input" name="labels" id="quickCreateLabels" 
-                                     placeholder="Select labels..." multiple>
-                                 <option value="">No labels</option>
-                             </select>
-                             <small class="form-text text-muted d-block mt-1">Hold Ctrl/Cmd to select multiple</small>
-                         </div>
-
-                         <!-- Start Date Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Start Date</label>
-                             <input type="date" class="form-control jira-input" name="start_date" 
-                                    id="quickCreateStartDate">
-                         </div>
-
-                         <!-- Due Date Field -->
-                         <div class="mb-4">
-                             <label class="form-label fw-semibold">Due Date</label>
-                             <input type="date" class="form-control jira-input" name="due_date" 
-                                    id="quickCreateDueDate">
-                         </div>
-
-                         <!-- Attachments Field -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Attachments</label>
-                            <div class="attachment-drop-zone" id="quickCreateAttachmentZone" style="
-                                 border: 2px dashed #DFE1E6;
-                                 border-radius: 8px;
-                                 padding: 20px;
-                                 text-align: center;
-                                 cursor: pointer;
-                                 transition: all 0.2s ease;
-                                 background-color: #F7F8FA;
-                             ">
-                                <i class="bi bi-cloud-arrow-up"
-                                    style="font-size: 2rem; color: var(--jira-blue); margin-bottom: 8px;"></i>
-                                <div style="font-weight: 500; color: #161B22; margin-bottom: 4px;">Drop files here to
-                                    upload</div>
-                                <div style="font-size: 13px; color: #626F86;">Or click to select files (max 10MB per
-                                    file)</div>
-                                <input type="file" id="quickCreateAttachmentInput" multiple style="display: none;"
-                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip">
-                            </div>
-                            <div id="quickCreateAttachmentList" style="margin-top: 12px;"></div>
-                        </div>
-
-                        <!-- Create Another Checkbox -->
-                        <div class="mt-4 pt-3 border-top">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="create_another"
-                                    id="createAnotherCheck">
-                                <label class="form-check-label" for="createAnotherCheck">
-                                    Create another
-                                </label>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer border-top bg-light">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-lg" onclick="submitQuickCreate()"
-                        id="quickCreateBtn">
-                        <i class="bi bi-plus-lg me-1"></i> Create
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Create Modal Styles -->
-    <style>
-        /* Modal Content */
-        .quick-create-modal-jira .modal-content {
-            border-radius: 8px;
-            border: 1px solid #DFE1E6;
-            box-shadow: 0 10px 40px rgba(9, 30, 66, 0.25);
-        }
-
-        .quick-create-modal-jira .modal-header {
-            background-color: #FFFFFF;
-            padding: 20px;
-            border-bottom: 1px solid #DFE1E6;
-        }
-
-        .quick-create-modal-jira .modal-body {
-            padding: 20px;
-            background-color: #FAFBFC;
-        }
-
-        .quick-create-modal-jira .modal-footer {
-            padding: 16px 20px;
-            border-top: 1px solid #DFE1E6;
-        }
-
-        /* Form Controls */
-        .jira-input {
-            border: 1px solid #DFE1E6;
-            border-radius: 3px;
-            padding: 8px 12px;
-            font-size: 14px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .jira-input:focus {
-            border-color: var(--jira-blue);
-            box-shadow: 0 0 0 2px rgba(139, 25, 86, 0.1);
-            outline: none;
-        }
-
-        .jira-textarea {
-            border: 1px solid #DFE1E6;
-            border-radius: 3px;
-            padding: 12px;
-            font-size: 14px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            resize: vertical;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .jira-textarea:focus {
-            border-color: var(--jira-blue);
-            box-shadow: 0 0 0 2px rgba(139, 25, 86, 0.1);
-            outline: none;
-        }
-
-        /* Rich Text Editor Toolbar */
-        .jira-editor-toolbar {
-            border: 1px solid #DFE1E6;
-            border-bottom: none;
-            border-radius: 3px 3px 0 0;
-            background-color: #F7F8FA;
-            padding: 8px;
-            display: flex;
-            gap: 4px;
-            align-items: center;
-        }
-
-        .editor-buttons {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .editor-btn {
-            background: none;
-            border: none;
-            color: #626F86;
-            cursor: pointer;
-            padding: 6px 8px;
-            border-radius: 3px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: background-color 0.15s, color 0.15s;
-        }
-
-        .editor-btn:hover {
-            background-color: #DEEBFF;
-            color: var(--jira-blue);
-        }
-
-        .editor-btn:active {
-            background-color: #B3D4FF;
-        }
-
-        .dropdown-arrow {
-            font-size: 10px;
-            margin-left: 2px;
-        }
-
-        .editor-divider {
-            width: 1px;
-            height: 20px;
-            background-color: #DFE1E6;
-            margin: 0 4px;
-        }
-
-        /* Assignee */
-        .assignee-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .assignee-link {
-            color: var(--jira-blue);
-            text-decoration: none;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .assignee-link:hover {
-            color: var(--jira-blue-dark);
-            text-decoration: underline;
-        }
-
-        /* Form Labels */
-        .form-label {
-            font-size: 14px;
-            color: #161B22;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        /* Character Counters */
-        #summaryChar,
-        #descChar {
-            color: #626F86;
-            font-weight: 500;
-        }
-
-        /* Error Messages */
-        .invalid-feedback {
-            color: #AE2A19;
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .invalid-feedback.d-block {
-            display: block !important;
-        }
-
-        /* Responsive */
-        @media (max-width: 576px) {
-            .quick-create-modal-jira .modal-dialog {
-                max-width: 100% !important;
-                margin: 8px;
-            }
-
-            .quick-create-modal-jira .modal-body {
-                max-height: calc(100vh - 200px) !important;
-            }
-
-            .editor-buttons {
-                flex-wrap: wrap;
-            }
-
-            .editor-divider {
-                display: none;
-            }
-        }
-
-        /* Button Styles */
-        .modal-footer .btn {
-            padding: 8px 20px;
-            border-radius: 3px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .modal-footer .btn-light {
-            background-color: #FAFBFC;
-            border-color: #DFE1E6;
-            color: #161B22;
-        }
-
-        .modal-footer .btn-light:hover {
-            background-color: #FFFFFF;
-            border-color: #B6C2CF;
-        }
-
-        .modal-footer .btn-primary {
-            background-color: var(--jira-blue);
-            border-color: var(--jira-blue);
-            color: white;
-        }
-
-        .modal-footer .btn-primary:hover {
-            background-color: var(--jira-blue-dark);
-            border-color: var(--jira-blue-dark);
-        }
-    </style>
 
     <!-- Modal Backdrop Overlay -->
     <div id="modalBackdrop"></div>
-
-    <!-- Embedded projects data for quick create modal -->
-    <script type="application/json" id="quickCreateProjectsData">
-    []
-    </script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -1597,7 +1183,7 @@
     <!-- Test Script 4 -->
     <script>
         console.log('[NAVBAR-LOG] About to setup navbar');
-        
+
         // API URLs - Use PHP-generated URLs to handle any deployment path
         // MOVED TO GLOBAL SCOPE (outside try-catch) so submitQuickCreate can access them
         const API_QUICK_CREATE_URL = '<?= url('/projects/quick-create-list') ?>';
@@ -1605,14 +1191,19 @@
         const API_ISSUE_CREATE_TEMPLATE = '<?= url('/projects/{projectKey}/issues') ?>';
         const APP_BASE_PATH = '<?= url('') ?>';
         const ISSUE_VIEW_TEMPLATE = '<?= url('/issue/{issueKey}') ?>';
-        
+
         console.log('📱 Global API URLs initialized:', { APP_BASE_PATH, ISSUE_VIEW_TEMPLATE });
-        
+
         // CSRF Token - moved to global scope for submitQuickCreate access
         const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
         const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
         console.log('🔐 CSRF Token initialized:', csrfToken ? 'present' : 'missing');
-        
+
+        // ✅ CRITICAL: Global projectsMap for quick create form submission
+        // This must be global so submitQuickCreate() can access it as a fallback
+        window.projectsMap = {};
+        console.log('📦 projectsMap initialized as window.projectsMap');
+
         try {
             console.log('[NAVBAR] Setting up navbar click handlers');
             // Close navbar when clicking navigation links
@@ -1768,13 +1359,34 @@
                         const assigneeSelect = document.getElementById('quickCreateAssignee');
                         if (!assigneeSelect) return;
 
+                        console.log('[ASSIGN-ME] Looking for current user option...');
+                        console.log('[ASSIGN-ME] All assignee options:');
+                        for (let i = 0; i < assigneeSelect.options.length; i++) {
+                            const opt = assigneeSelect.options[i];
+                            console.log(`  [${i}] value="${opt.value}" text="${opt.text}" data-is-current="${opt.dataset.isCurrent}"`);
+                        }
+
                         const currentUserOption = assigneeSelect.querySelector('option[data-is-current="true"]');
                         if (currentUserOption) {
                             assigneeSelect.value = currentUserOption.value;
-                            $('#quickCreateAssignee').trigger('change');
-                            console.log('✅ Assigned to current user:', currentUserOption.textContent);
+
+                            // Trigger change event with vanilla JavaScript
+                            const changeEvent = new Event('change', { bubbles: true });
+                            assigneeSelect.dispatchEvent(changeEvent);
+
+                            console.log('[ASSIGN-ME] ✅ Assigned to current user:', currentUserOption.textContent);
                         } else {
-                            console.warn('⚠️ Current user option not found');
+                            console.warn('[ASSIGN-ME] ⚠️ Current user option not found in dropdown');
+                            console.warn('[ASSIGN-ME] Check if current user is active and in the assignees API response');
+
+                            // Fallback: Try to find option with "(me)" in text
+                            const meOption = Array.from(assigneeSelect.options).find(opt => opt.textContent.includes('(me)'));
+                            if (meOption) {
+                                console.log('[ASSIGN-ME] ✅ Found option with (me) text:', meOption.textContent);
+                                assigneeSelect.value = meOption.value;
+                                const changeEvent = new Event('change', { bubbles: true });
+                                assigneeSelect.dispatchEvent(changeEvent);
+                            }
                         }
                     });
                 }
@@ -1882,12 +1494,13 @@
                     // Re-initialize reporter field on modal open
                     initializeReporterField();
 
-                    // Initialize Select2 if not already done
-                    if (!$('#quickCreateProject').hasClass('select2-hidden-accessible')) {
+                    // Initialize Select2 if not already done (using vanilla JS instead of jQuery)
+                    const projectSelectElement = document.getElementById('quickCreateProject');
+                    if (projectSelectElement && !projectSelectElement.classList.contains('select2-hidden-accessible')) {
                         console.log('Initializing Select2...');
                         initializeSelect2();
                     } else {
-                        console.log('Select2 already initialized');
+                        console.log('Select2 already initialized or element not found');
                     }
 
                     const projectSelect = document.getElementById('quickCreateProject');
@@ -2010,7 +1623,7 @@
                                 console.log(`   [${idx + 1}] Added project: ${displayText}`);
 
                                 // Add to projectsMap for issue type lookup
-                                projectsMap[project.id] = {
+                                window.projectsMap[project.id] = {
                                     id: project.id,
                                     key: project.key,
                                     name: project.name,
@@ -2024,25 +1637,41 @@
                             projectSelect.innerHTML = '<option value="">No projects available</option>';
                         }
 
-                        console.log('✅ projectsMap now contains', Object.keys(projectsMap).length, 'projects');
+                        console.log('✅ window.projectsMap now contains', Object.keys(window.projectsMap).length, 'projects');
 
                         // Populate assignees select
                         assigneeSelect.innerHTML = '<option value="">Automatic</option>';
 
                         if (assignees.length > 0) {
                             const currentUserId = parseInt('<?= e($user['id'] ?? '0') ?>') || 0;
+                            console.log('[ASSIGNEES] Current user ID:', currentUserId);
+                            let foundCurrentUser = false;
+
                             assignees.forEach(user => {
                                 const option = document.createElement('option');
                                 option.value = user.id;
                                 // Compare as numbers for accuracy
                                 const isCurrentUser = parseInt(user.id) === currentUserId;
-                                option.dataset.isCurrent = isCurrentUser ? 'true' : 'false';
+
+                                // Only set attribute when true (cleaner and matches querySelector)
+                                if (isCurrentUser) {
+                                    option.dataset.isCurrent = 'true';
+                                    foundCurrentUser = true;
+                                    console.log('[ASSIGNEES] ✅ Found current user:', user.name, '(ID:', user.id, ')');
+                                }
+
                                 option.textContent = user.name + (isCurrentUser ? ' (me)' : '');
                                 assigneeSelect.appendChild(option);
                             });
-                            console.log('Added', assignees.length, 'assignees to dropdown');
+
+                            console.log('[ASSIGNEES] Added', assignees.length, 'assignees to dropdown');
+                            if (!foundCurrentUser) {
+                                console.warn('[ASSIGNEES] ⚠️ Current user not found in active assignees list (ID:', currentUserId, ')');
+                                console.warn('[ASSIGNEES] ℹ️  This is OK - current user might not be marked as active, or is admin');
+                                console.warn('[ASSIGNEES] ℹ️  The "Assign to me" link will use fallback (me) matching');
+                            }
                         } else {
-                            console.warn('No assignees returned from API');
+                            console.warn('[ASSIGNEES] No assignees returned from API');
                         }
 
                         // Projects dropdown is now populated with plain HTML options
@@ -2059,20 +1688,26 @@
                         // Reset the selection to empty
                         console.log('🔄 Resetting project selection to empty');
                         projectSelect.value = '';
-                        $('#quickCreateProject').val('').trigger('change');
+
+                        // Trigger change event with vanilla JavaScript
+                        const changeEvent = new Event('change', { bubbles: true });
+                        projectSelect.dispatchEvent(changeEvent);
 
                         console.log('✅ Projects and assignees loaded and Select2 re-initialized');
                         console.log('📊 Final state:');
-                        console.log('   - Projects in dropdown:', $('#quickCreateProject option').length - 1);
-                        console.log('   - Assignees in dropdown:', $('#quickCreateAssignee option').length - 1);
-                        console.log('   - Projects in map:', Object.keys(projectsMap).length);
+                        console.log('   - Projects in dropdown:', projectSelect.options.length - 1);
+                        console.log('   - Assignees in dropdown:', assigneeSelect.options.length - 1);
+                        console.log('   - Projects in window.projectsMap:', Object.keys(window.projectsMap).length);
 
                     } catch (error) {
                         console.error('❌ Failed to load projects/assignees:', error);
                         console.error('   Error message:', error.message);
                         console.error('   Error stack:', error.stack);
                         projectSelect.innerHTML = '<option value="">Error: ' + (error.message || 'Unknown error') + '</option>';
-                        $('#quickCreateProject').trigger('change');
+
+                        // Trigger change event with vanilla JavaScript
+                        const changeEvent = new Event('change', { bubbles: true });
+                        projectSelect.dispatchEvent(changeEvent);
                     } finally {
                         projectsLoading = false;
                         console.log('✅ Loading complete, projectsLoading =', projectsLoading);
@@ -2080,8 +1715,7 @@
                 });
             }
 
-            // Store project details fetched from API (populated when modal opens)
-            let projectsMap = {};
+
 
             // Flag to track if change handler is initialized
             let projectChangeHandlerInitialized = false;
@@ -2109,8 +1743,11 @@
                     console.log('   Selected text:', this.options[this.selectedIndex].text);
 
                     if (!projectId) {
+                        // ✅ CRITICAL FIX: Don't clear assignees - keep full team roster available
+                        // This preserves the ability to use "Assign to me" even without a project selected
                         issueTypeSelect.innerHTML = '<option value="">Select a project first...</option>';
-                        assigneeSelect.innerHTML = '<option value="">Automatic</option>';
+                        // ✅ REMOVED: assigneeSelect.innerHTML = '<option value="">Automatic</option>';
+                        // Now keep existing assignees instead of clearing them
                         statusSelect.innerHTML = '<option value="">Default</option>';
                         sprintSelect.innerHTML = '<option value="">None (Backlog)</option>';
                         labelsSelect.innerHTML = '<option value="">No labels</option>';
@@ -2119,7 +1756,7 @@
 
                     // First try projectsMap
                     let issueTypes = [];
-                    const project = projectsMap[projectId];
+                    const project = window.projectsMap[projectId];
 
                     console.log('Project from map:', project);
                     console.log('Issue types from map:', project ? project.issue_types : 'no project');
@@ -2383,443 +2020,22 @@
 
             console.log('[BOTTOM] Reached bottom of App JS script');
 
-            // Deferred initialization of quick create modal to avoid conflicts with page-specific forms
-            console.log('[READY-STATE] Script bottom: document.readyState =', document.readyState);
-
-            if (document.readyState === 'loading') {
-                console.log('[DOM-LOADING] DOM still loading, attaching DOMContentLoaded listener');
-                document.addEventListener('DOMContentLoaded', function () {
-                    console.log('[DOM-READY] DOMContentLoaded fired, calling attachQuickCreateModalListeners in 100ms');
-                    setTimeout(attachQuickCreateModalListeners, 100);
-                });
-            } else {
-                console.log('[DOM-READY] DOM already loaded, calling attachQuickCreateModalListeners in 100ms');
-                setTimeout(attachQuickCreateModalListeners, 100);
-            }
-
-            // Quick Create function moved to global scope below (outside try-catch)
+            // Quick Create Modal initialization removed (feature disabled)
         } catch (error) {
             console.error('❌ FATAL ERROR in App JS main script block:', error);
             console.error('Stack:', error.stack);
         }
     </script>
 
-    <!-- Global submitQuickCreate function (outside try-catch for onclick access) -->
-    <script>
-        // Make submitQuickCreate globally accessible for onclick handler
-        window.submitQuickCreate = async function submitQuickCreate() {
-            console.log('[SUBMIT] submitQuickCreate() called');
-            const form = document.getElementById('quickCreateForm');
-            const summaryField = document.getElementById('quickCreateSummary');
 
-            // Validate summary
-            if (!summaryField.value.trim()) {
-                console.log('[SUBMIT] Summary is empty');
-                document.getElementById('summaryError').textContent = 'Summary is required';
-                summaryField.classList.add('is-invalid');
-                return;
-            }
 
-            // Clear previous error
-            document.getElementById('summaryError').textContent = '';
-            summaryField.classList.remove('is-invalid');
 
-            // Check required fields
-            const projectSelect = document.getElementById('quickCreateProject');
-            const issueTypeSelect = document.getElementById('quickCreateIssueType');
-            
-            console.log('[SUBMIT] Project value:', projectSelect.value);
-            console.log('[SUBMIT] Issue Type value:', issueTypeSelect.value);
-            console.log('[SUBMIT] Summary value:', summaryField.value);
 
-            if (!projectSelect.value) {
-                console.log('[SUBMIT] Project not selected');
-                projectSelect.classList.add('is-invalid');
-                alert('Please select a project');
-                return;
-            }
+    <!-- jQuery (Required for some plugins) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-            if (!issueTypeSelect.value) {
-                console.log('[SUBMIT] Issue type not selected');
-                issueTypeSelect.classList.add('is-invalid');
-                alert('Please select an issue type');
-                return;
-            }
-
-            if (!form.reportValidity()) {
-                console.log('[SUBMIT] Form validation failed');
-                return;
-            }
-            
-            console.log('[SUBMIT] All validations passed, proceeding with submission');
-
-            const formData = new FormData(form);
-            const btn = document.getElementById('quickCreateBtn');
-            const originalText = btn.innerHTML;
-            const createAnother = form.querySelector('[name="create_another"]').checked;
-
-            try {
-                 console.log('[SUBMIT] Starting API request...');
-                 btn.disabled = true;
-                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
-
-                 // Build data object - exclude create_another checkbox from API data
-                 const data = Object.fromEntries(
-                     Array.from(formData.entries()).filter(([key]) => key !== 'create_another')
-                 );
-                 console.log('[SUBMIT] Creating issue with data:', data);
-
-                // Get project key from selected project
-                const projectSelect = document.getElementById('quickCreateProject');
-                const projectKey = projectSelect.options[projectSelect.selectedIndex].dataset.projectKey;
-
-                // Create issue using web endpoint (uses session auth)
-                const webUrl = APP_BASE_PATH + '/projects/' + projectKey + '/issues';
-
-                const response = await fetch(webUrl, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: JSON.stringify(data),
-                });
-
-                console.log('Create response status:', response.status);
-                console.log('Create response content-type:', response.headers.get('content-type'));
-
-                const responseText = await response.text();
-                console.log('Raw response text:', responseText);
-
-                if (!response.ok) {
-                    console.error('Error response body:', responseText);
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        throw new Error(errorData.error || `HTTP ${response.status}`);
-                    } catch (e) {
-                        throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 200)}`);
-                    }
-                }
-
-                const result = JSON.parse(responseText);
-                console.log('Issue created:', result);
-
-                // Get issue key from response - could be at result.issue_key or result.issue.issue_key
-                const issueKey = result.issue_key || (result.issue && result.issue.issue_key);
-
-                if (issueKey) {
-                    if (createAnother) {
-                        // Reset form for creating another issue
-                        form.reset();
-                        document.getElementById('summaryChar').textContent = '0';
-                        document.getElementById('descChar').textContent = '0';
-                        document.getElementById('quickCreateSummary').focus();
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-
-                        // Show success message
-                        const successMsg = document.createElement('div');
-                        successMsg.className = 'alert alert-success alert-dismissible fade show mt-2';
-                        successMsg.innerHTML = `Issue <strong>${issueKey}</strong> created successfully!<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-                        form.parentElement.insertBefore(successMsg, form);
-
-                        // Auto-dismiss after 3 seconds
-                        setTimeout(() => {
-                            successMsg.remove();
-                        }, 3000);
-                    } else {
-                        // Redirect to the new issue (preserves current host/IP)
-                        // Use deployment-aware URL template
-                        const issueUrl = ISSUE_VIEW_TEMPLATE.replace('{issueKey}', issueKey);
-                        console.log('Redirecting to:', issueUrl);
-                        window.location.href = issueUrl;
-                    }
-                } else if (result.error) {
-                    throw new Error(result.error);
-                } else {
-                    console.error('Unexpected response structure:', result);
-                    throw new Error('Issue created but no key returned');
-                }
-            } catch (error) {
-                console.error('Error creating issue:', error);
-                alert('Error creating issue: ' + error.message);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        };
-    </script>
-
-    <!-- Quill Rich Text Editor JS -->
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
-
-    <!-- Quill Editor Initialization -->
-    <script>
-        let quillEditor = null;
-        let descriptionAttachments = new Map(); // Store attached files for description
-
-        function initializeQuillEditor() {
-            try {
-                if (quillEditor) {
-                    console.log('ℹ️ Quill editor already initialized');
-                    return;
-                }
-
-                const editorDiv = document.getElementById('quickCreateDescriptionEditor');
-                if (!editorDiv) {
-                    console.log('ℹ️ Quill editor container not found (may not be on this page)');
-                    return;
-                }
-
-                // Initialize Quill with custom toolbar including attachment button
-                quillEditor = new Quill('#quickCreateDescriptionEditor', {
-                    theme: 'snow',
-                    modules: {
-                        toolbar: {
-                            container: [
-                                [{ 'header': [1, 2, false] }],
-                                ['bold', 'italic', 'underline', 'strike'],
-                                ['blockquote', 'code-block'],
-                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                ['link', 'image'],
-                                ['attach-file'], // Custom attachment button
-                                ['clean']
-                            ],
-                            handlers: {
-                                'attach-file': function() {
-                                    document.getElementById('descriptionAttachmentInput').click();
-                                }
-                            }
-                        }
-                    },
-                    placeholder: 'Type description here...',
-                    bounds: '#quickCreateDescriptionEditor'
-                });
-
-                // Add custom styling to the attach button
-                const attachBtn = document.querySelector('.ql-toolbar .ql-attach-file');
-                if (attachBtn) {
-                    attachBtn.innerHTML = '<i class="bi bi-paperclip" style="font-size: 16px;"></i>';
-                    attachBtn.setAttribute('title', 'Attach files');
-                }
-
-                // Sync Quill content to hidden textarea
-                quillEditor.on('text-change', function () {
-                    const content = quillEditor.root.innerHTML;
-                    document.getElementById('quickCreateDescription').value = content;
-                    
-                    // Update character count (approximate)
-                    const textLength = quillEditor.getText().length - 1; // -1 for trailing newline
-                    document.getElementById('descChar').textContent = Math.max(0, textLength);
-                });
-
-                // Setup attachment file input listener
-                setupDescriptionAttachmentHandlers();
-
-                console.log('✅ Quill editor initialized successfully with attachment support');
-            } catch (error) {
-                console.error('❌ Error initializing Quill:', error);
-            }
-        }
-
-        function setupDescriptionAttachmentHandlers() {
-            const fileInput = document.getElementById('descriptionAttachmentInput');
-            
-            // Handle file selection
-            fileInput.addEventListener('change', function() {
-                const files = Array.from(this.files);
-                files.forEach(file => {
-                    addDescriptionAttachment(file);
-                });
-                this.value = ''; // Reset input
-            });
-
-            // Handle drag and drop on description editor
-            const editorDiv = document.getElementById('quickCreateDescriptionEditor');
-            const editorArea = editorDiv.closest('.mb-4');
-            
-            if (editorArea) {
-                editorArea.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    editorDiv.style.backgroundColor = '#F0DCE5';
-                });
-                
-                editorArea.addEventListener('dragleave', () => {
-                    editorDiv.style.backgroundColor = 'white';
-                });
-                
-                editorArea.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    editorDiv.style.backgroundColor = 'white';
-                    const files = Array.from(e.dataTransfer.files);
-                    files.forEach(file => {
-                        addDescriptionAttachment(file);
-                    });
-                });
-            }
-        }
-
-        function addDescriptionAttachment(file) {
-            // Validate file size (10MB max)
-            const maxSize = 10 * 1024 * 1024;
-            if (file.size > maxSize) {
-                alert(`File "${file.name}" is too large. Maximum size is 10MB.`);
-                return;
-            }
-
-            // Validate file type
-            const allowedTypes = ['application/pdf', 'application/msword', 
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'text/plain',
-                'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-                'application/zip',
-                'video/mp4', 'video/webm', 'video/quicktime'];
-            
-            if (!allowedTypes.includes(file.type)) {
-                alert(`File type not allowed: ${file.type}`);
-                return;
-            }
-
-            // Generate unique ID for this file
-            const fileId = 'desc-attach-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            
-            // Store file
-            descriptionAttachments.set(fileId, file);
-
-            // Show container if hidden
-            const container = document.getElementById('descriptionAttachmentsContainer');
-            container.style.display = 'block';
-
-            // Create file item element
-            const fileList = document.getElementById('descriptionAttachmentsList');
-            const fileItem = createDescriptionFileItem(fileId, file);
-            fileList.appendChild(fileItem);
-        }
-
-        function createDescriptionFileItem(fileId, file) {
-            const div = document.createElement('div');
-            div.id = fileId;
-            div.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 10px;
-                background: white;
-                border: 1px solid #DFE1E6;
-                border-radius: 4px;
-                transition: all 0.2s ease;
-            `;
-
-            // File icon based on type
-            const icon = getFileIcon(file.name);
-            const fileSize = formatFileSize(file.size);
-
-            div.innerHTML = `
-                <div style="font-size: 20px; color: #8B1956; min-width: 24px; text-align: center;">
-                    ${icon}
-                </div>
-                <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 500; font-size: 13px; color: #161B22; word-break: break-word; white-space: normal;">
-                        ${escapeHtml(file.name)}
-                    </div>
-                    <div style="font-size: 12px; color: #626F86; margin-top: 2px;">
-                        ${fileSize}
-                    </div>
-                </div>
-                <button type="button" class="btn btn-sm btn-ghost-danger" style="
-                    border: none;
-                    background: none;
-                    color: #ae2a19;
-                    cursor: pointer;
-                    padding: 4px 8px;
-                    font-size: 18px;
-                    line-height: 1;
-                    transition: color 0.2s;
-                " title="Remove file" onclick="removeDescriptionAttachment('${fileId}')">
-                    ×
-                </button>
-            `;
-
-            // Hover effect
-            div.addEventListener('mouseenter', () => {
-                div.style.backgroundColor = '#DEEBFF';
-                div.style.borderColor = '#8B1956';
-            });
-            div.addEventListener('mouseleave', () => {
-                div.style.backgroundColor = 'white';
-                div.style.borderColor = '#DFE1E6';
-            });
-
-            return div;
-        }
-
-        function removeDescriptionAttachment(fileId) {
-            descriptionAttachments.delete(fileId);
-            const fileItem = document.getElementById(fileId);
-            if (fileItem) {
-                fileItem.remove();
-            }
-            
-            // Hide container if empty
-            if (descriptionAttachments.size === 0) {
-                document.getElementById('descriptionAttachmentsContainer').style.display = 'none';
-            }
-        }
-
-        function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const icons = {
-                'pdf': '📄',
-                'doc': '📝', 'docx': '📝',
-                'xls': '📊', 'xlsx': '📊',
-                'ppt': '📽️', 'pptx': '📽️',
-                'txt': '📄',
-                'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'webp': '🖼️',
-                'zip': '📦',
-                'mp4': '🎬', 'webm': '🎬', 'mov': '🎬'
-            };
-            return icons[ext] || '📎';
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        // Initialize Quill when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeQuillEditor);
-        } else {
-            initializeQuillEditor();
-        }
-
-        // Re-initialize when modal opens
-        document.addEventListener('show.bs.modal', function (e) {
-            if (e.target.id === 'quickCreateModal' && quillEditor) {
-                console.log('📝 Modal opened, Quill editor ready');
-            }
-        });
-    </script>
+    <!-- Bootstrap Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
@@ -2829,7 +2045,21 @@
 
     <script src="<?= asset('js/app.js') ?>"></script>
 
+    <!-- Time Tracking Widget -->
+    <script src="<?= url('/assets/js/floating-timer.js') ?>"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            FloatingTimer.init({ syncInterval: 5000, debug: false });
+        });
+    </script>
+
     <?= \App\Core\View::yield('scripts') ?>
+
+    <!-- Create Issue Modal Component -->
+    <?php include_once __DIR__ . '/../components/create-issue-modal.php'; ?>
+
+    <!-- Create Issue Modal JavaScript -->
+    <script src="<?= url('/assets/js/create-issue-modal.js') ?>"></script>
 </body>
 
 </html>

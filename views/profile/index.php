@@ -61,6 +61,11 @@
                         <span>Security</span>
                         <i class="bi bi-chevron-right nav-chevron"></i>
                     </a>
+                    <a href="<?= url('/profile/settings') ?>" class="profile-nav-item" data-section="settings">
+                        <i class="bi bi-gear"></i>
+                        <span>Settings</span>
+                        <i class="bi bi-chevron-right nav-chevron"></i>
+                    </a>
                     <a href="<?= url('/profile/tokens') ?>" class="profile-nav-item" data-section="tokens">
                         <i class="bi bi-key"></i>
                         <span>API Tokens</span>
@@ -333,6 +338,10 @@
     flex-direction: column;
     min-height: calc(100vh - 80px);
     background-color: var(--profile-bg-secondary);
+    padding: 0 !important;
+    margin: 0;
+    width: 100% !important;
+    box-sizing: border-box;
 }
 
 /* Breadcrumb Section */
@@ -344,6 +353,8 @@
     display: flex;
     align-items: center;
     box-shadow: var(--profile-shadow-sm);
+    width: 100%;
+    margin: 0;
 }
 
 .profile-breadcrumb {
@@ -398,6 +409,8 @@ a.breadcrumb-link:active,
     border-bottom: 1px solid var(--profile-border-color);
     padding: 24px 32px;
     box-shadow: var(--profile-shadow-sm);
+    width: 100%;
+    margin: 0;
 }
 
 .profile-header-left {
@@ -424,12 +437,12 @@ a.breadcrumb-link:active,
 /* Content Container */
 .profile-content-container {
     display: flex;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 32px 48px;
+    padding: 32px;
     gap: 32px;
     flex: 1;
     width: 100%;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 /* Sidebar */

@@ -1,0 +1,58 @@
+================================================================================
+QUICK TEST: PROJECT MEMBERS ROLE DROPDOWN
+================================================================================
+
+WHAT WAS FIXED:
+  Role dropdown on /projects/{key}/members now shows ALL roles instead of just
+  "Product Owner"
+
+HOW TO TEST (2 minutes):
+
+1. NAVIGATE TO MEMBERS PAGE
+   URL: http://localhost:8081/jira_clone_system/public/projects/CWAYS/members
+   
+2. CLICK "ADD MEMBER" BUTTON
+   - Modal dialog should open
+   
+3. SELECT USER FROM DROPDOWN
+   - Pick any user (e.g., "Ajit S" or "Tohidealaam Nadaf")
+   
+4. OPEN ROLE DROPDOWN
+   - Click the "Select a role..." dropdown
+   
+5. VERIFY ALL ROLES SHOW:
+   ✓ Administrator
+   ✓ Developer
+   ✓ Product Manager
+   ✓ QA Tester
+   ✓ Viewer
+   ✓ Product Owner
+   ✓ (Any other custom roles)
+   
+   BEFORE FIX: Only "Product Owner" showed
+   AFTER FIX: All roles show
+   
+6. SELECT A ROLE AND ADD MEMBER
+   - Click any role
+   - Click "Add Member" button
+   - Should succeed
+   
+7. TEST CHANGE ROLE
+   - Find the member you just added
+   - Click three-dots (...) menu
+   - Click "Change Role"
+   - Modal opens
+   - Click "New Role" dropdown
+   - Verify all roles appear
+   
+8. VERIFY NO ERRORS
+   - Press F12 to open DevTools
+   - Check Console tab
+   - Should see no red error messages
+
+TEST COMPLETE ✓
+
+If all roles appear in dropdowns and no errors show: SUCCESS ✓
+
+See MEMBERS_ROLE_DROPDOWN_ANALYSIS.md for full technical details
+================================================================================

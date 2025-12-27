@@ -1,4 +1,4 @@
-<?php \App\Core\View::extends('layouts.app'); ?>
+<?php \App\Core\View:: extends('layouts.app'); ?>
 
 <?php \App\Core\View::section('content'); ?>
 
@@ -21,10 +21,16 @@
             <p class="board-subtitle">Manage and organize your work across projects</p>
         </div>
         <div class="board-header-right">
-            <?php if (can('create-projects')): ?>
-            <a href="<?= url('/projects/create') ?>" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Create Project
+            <a href="<?= url('/time-tracking') ?>" class="btn btn-secondary" title="View time tracking dashboard">
+                <i class="bi bi-hourglass-split"></i> Time Tracking
             </a>
+            <a href="<?= url('/time-tracking/budgets') ?>" class="btn btn-secondary" title="View budget dashboard">
+                <i class="bi bi-wallet2"></i> Budgets
+            </a>
+            <?php if (can('create-projects')): ?>
+                <a href="<?= url('/projects/create') ?>" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Create Project
+                </a>
             <?php endif; ?>
         </div>
     </div>
@@ -36,10 +42,8 @@
                 <label for="search-input" class="filter-label">Search</label>
                 <div class="search-input-wrapper">
                     <i class="bi bi-search"></i>
-                    <input type="text" id="search-input" name="search" 
-                           value="<?= e($filters['search'] ?? '') ?>" 
-                           placeholder="Find projects..."
-                           class="filter-input">
+                    <input type="text" id="search-input" name="search" value="<?= e($filters['search'] ?? '') ?>"
+                        placeholder="Find projects..." class="filter-input">
                 </div>
             </div>
 
@@ -48,9 +52,9 @@
                 <select id="category-select" name="category" class="filter-select">
                     <option value="">All Categories</option>
                     <?php foreach ($categories ?? [] as $category): ?>
-                    <option value="<?= e($category['id']) ?>" <?= ($filters['category'] ?? '') == $category['id'] ? 'selected' : '' ?>>
-                        <?= e($category['name']) ?>
-                    </option>
+                        <option value="<?= e($category['id']) ?>" <?= ($filters['category'] ?? '') == $category['id'] ? 'selected' : '' ?>>
+                            <?= e($category['name']) ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -60,7 +64,8 @@
                 <select id="status-select" name="status" class="filter-select">
                     <option value="">All Statuses</option>
                     <option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active</option>
-                    <option value="archived" <?= ($filters['status'] ?? '') === 'archived' ? 'selected' : '' ?>>Archived</option>
+                    <option value="archived" <?= ($filters['status'] ?? '') === 'archived' ? 'selected' : '' ?>>Archived
+                    </option>
                 </select>
             </div>
 
@@ -72,157 +77,156 @@
 
     <!-- Projects Grid -->
     <?php if (empty($projects['items'] ?? [])): ?>
-    <div class="empty-state-container">
-        <i class="empty-state-icon bi bi-inbox"></i>
-        <h3 class="empty-state-title">No projects found</h3>
-        <p class="empty-state-description">
+        <div class="empty-state-container">
+            <i class="empty-state-icon bi bi-inbox"></i>
+            <h3 class="empty-state-title">No projects found</h3>
+            <p class="empty-state-description">
+                <?php if (can('create-projects')): ?>
+                    Create your first project to get started
+                <?php else: ?>
+                    No projects are available
+                <?php endif; ?>
+            </p>
             <?php if (can('create-projects')): ?>
-            Create your first project to get started
-            <?php else: ?>
-            No projects are available
+                <a href="<?= url('/projects/create') ?>" class="btn btn-primary empty-state-btn">
+                    <i class="bi bi-plus-lg"></i> Create First Project
+                </a>
             <?php endif; ?>
-        </p>
-        <?php if (can('create-projects')): ?>
-        <a href="<?= url('/projects/create') ?>" class="btn btn-primary empty-state-btn">
-            <i class="bi bi-plus-lg"></i> Create First Project
-        </a>
-        <?php endif; ?>
-    </div>
+        </div>
     <?php else: ?>
-    <div class="projects-grid">
-        <?php foreach ($projects['items'] as $project): ?>
-        <div class="project-card">
-            
-            <!-- Project Header -->
-            <div class="project-card-header">
-                <div class="project-header-left">
-                    <!-- Project Avatar -->
-                    <div class="project-avatar">
-                        <?php if ($project['avatar'] ?? null): ?>
-                        <img src="<?= e($project['avatar']) ?>" 
-                             alt="<?= e($project['name']) ?>"
-                             class="avatar-image">
-                        <?php else: ?>
-                        <div class="avatar-initials">
-                            <?= strtoupper(substr($project['key'], 0, 2)) ?>
+        <div class="projects-grid">
+            <?php foreach ($projects['items'] as $project): ?>
+                <div class="project-card">
+
+                    <!-- Project Header -->
+                    <div class="project-card-header">
+                        <div class="project-header-left">
+                            <!-- Project Avatar -->
+                            <div class="project-avatar">
+                                <?php if ($project['avatar'] ?? null): ?>
+                                    <img src="<?= e(url($project['avatar'])) ?>" alt="<?= e($project['name']) ?>"
+                                        class="avatar-image">
+                                <?php else: ?>
+                                    <div class="avatar-initials">
+                                        <?= strtoupper(substr($project['key'], 0, 2)) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Project Info -->
+                            <div class="project-info">
+                                <h3 class="project-name">
+                                    <a href="<?= url("/projects/{$project['key']}") ?>" class="project-link">
+                                        <?= e($project['name']) ?>
+                                    </a>
+                                </h3>
+                                <div class="project-badges">
+                                    <span class="badge badge-primary"><?= e($project['key']) ?></span>
+                                    <?php if ($project['is_archived'] ?? false): ?>
+                                        <span class="badge badge-warning">Archived</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </div>
-                        <?php endif; ?>
+
+                        <!-- Three-dot Menu -->
+                        <div class="project-menu">
+                            <button class="project-menu-btn" onclick="toggleProjectMenu(event)" title="More actions">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <div class="project-dropdown-menu">
+                                <a href="<?= url("/projects/{$project['key']}") ?>" class="menu-item">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="<?= url("/projects/{$project['key']}/board") ?>" class="menu-item">
+                                    <i class="bi bi-kanban"></i> Board
+                                </a>
+                                <?php if (can('edit-project', $project['id'])): ?>
+                                    <div class="menu-divider"></div>
+                                    <a href="<?= url("/projects/{$project['key']}/settings") ?>" class="menu-item">
+                                        <i class="bi bi-gear"></i> Settings
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Project Info -->
-                    <div class="project-info">
-                        <h3 class="project-name">
-                            <a href="<?= url("/projects/{$project['key']}") ?>" class="project-link">
-                                <?= e($project['name']) ?>
-                            </a>
-                        </h3>
-                        <div class="project-badges">
-                            <span class="badge badge-primary"><?= e($project['key']) ?></span>
-                            <?php if ($project['is_archived'] ?? false): ?>
-                            <span class="badge badge-warning">Archived</span>
+                    <!-- Project Description -->
+                    <?php if ($project['description'] ?? null): ?>
+                        <div class="project-description">
+                            <p><?= e(substr($project['description'], 0, 100)) ?><?= strlen($project['description']) > 100 ? '...' : '' ?>
+                            </p>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Project Stats -->
+                    <div class="project-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <i class="bi bi-list-task"></i> Issues
+                            </span>
+                            <span class="stat-value"><?= e($project['issue_count'] ?? 0) ?></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <i class="bi bi-people"></i> Members
+                            </span>
+                            <span class="stat-value"><?= e($project['member_count'] ?? 0) ?></span>
+                        </div>
+                    </div>
+
+                    <!-- Project Footer -->
+                    <div class="project-footer">
+                        <div class="project-lead">
+                            <span class="lead-label">Lead:</span>
+                            <?php if ($project['lead'] ?? null): ?>
+                                <img src="<?= e($project['lead']['avatar'] ?? '') ?>"
+                                    alt="<?= e($project['lead']['display_name'] ?? 'Lead') ?>" class="lead-avatar"
+                                    title="<?= e($project['lead']['display_name'] ?? 'Lead') ?>">
+                            <?php else: ?>
+                                <span class="lead-placeholder">Unassigned</span>
                             <?php endif; ?>
                         </div>
+                        <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="btn btn-outline-primary">
+                            <i class="bi bi-plus"></i> New Issue
+                        </a>
                     </div>
                 </div>
-
-                <!-- Three-dot Menu -->
-                <div class="project-menu">
-                    <button class="project-menu-btn" onclick="toggleProjectMenu(event)" title="More actions">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <div class="project-dropdown-menu">
-                        <a href="<?= url("/projects/{$project['key']}") ?>" class="menu-item">
-                            <i class="bi bi-eye"></i> View
-                        </a>
-                        <a href="<?= url("/projects/{$project['key']}/board") ?>" class="menu-item">
-                            <i class="bi bi-kanban"></i> Board
-                        </a>
-                        <?php if (can('edit-project', $project['id'])): ?>
-                        <div class="menu-divider"></div>
-                        <a href="<?= url("/projects/{$project['key']}/settings") ?>" class="menu-item">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Project Description -->
-            <?php if ($project['description'] ?? null): ?>
-            <div class="project-description">
-                <p><?= e(substr($project['description'], 0, 100)) ?><?= strlen($project['description']) > 100 ? '...' : '' ?></p>
-            </div>
-            <?php endif; ?>
-
-            <!-- Project Stats -->
-            <div class="project-stats">
-                <div class="stat-item">
-                    <span class="stat-label">
-                        <i class="bi bi-list-task"></i> Issues
-                    </span>
-                    <span class="stat-value"><?= e($project['issue_count'] ?? 0) ?></span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">
-                        <i class="bi bi-people"></i> Members
-                    </span>
-                    <span class="stat-value"><?= e($project['member_count'] ?? 0) ?></span>
-                </div>
-            </div>
-
-            <!-- Project Footer -->
-            <div class="project-footer">
-                <div class="project-lead">
-                    <span class="lead-label">Lead:</span>
-                    <?php if ($project['lead'] ?? null): ?>
-                    <img src="<?= e($project['lead']['avatar'] ?? '') ?>" 
-                         alt="<?= e($project['lead']['display_name'] ?? 'Lead') ?>"
-                         class="lead-avatar"
-                         title="<?= e($project['lead']['display_name'] ?? 'Lead') ?>">
-                    <?php else: ?>
-                    <span class="lead-placeholder">Unassigned</span>
-                    <?php endif; ?>
-                </div>
-                <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="btn btn-outline-primary">
-                    <i class="bi bi-plus"></i> New Issue
-                </a>
-            </div>
+            <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
-    </div>
 
-    <!-- Pagination -->
-    <?php if (isset($projects['last_page']) && $projects['last_page'] > 1): ?>
-    <nav class="pagination-wrapper">
-        <ul class="pagination">
-            <!-- Previous Button -->
-            <li>
-                <a href="<?= $projects['current_page'] <= 1 ? '#' : url('/projects?' . http_build_query(array_merge($filters ?? [], ['page' => $projects['current_page'] - 1]))) ?>" 
-                   class="pagination-link <?= $projects['current_page'] <= 1 ? 'disabled' : '' ?>">
-                    <i class="bi bi-chevron-left"></i> Previous
-                </a>
-            </li>
+        <!-- Pagination -->
+        <?php if (isset($projects['last_page']) && $projects['last_page'] > 1): ?>
+            <nav class="pagination-wrapper">
+                <ul class="pagination">
+                    <!-- Previous Button -->
+                    <li>
+                        <a href="<?= $projects['current_page'] <= 1 ? '#' : url('/projects?' . http_build_query(array_merge($filters ?? [], ['page' => $projects['current_page'] - 1]))) ?>"
+                            class="pagination-link <?= $projects['current_page'] <= 1 ? 'disabled' : '' ?>">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
 
-            <!-- Page Numbers -->
-            <?php for ($i = 1; $i <= $projects['last_page']; $i++): ?>
-            <li>
-                <a href="<?= url('/projects?' . http_build_query(array_merge($filters ?? [], ['page' => $i]))) ?>" 
-                   class="pagination-link <?= $projects['current_page'] == $i ? 'active' : '' ?>">
-                    <?= $i ?>
-                </a>
-            </li>
-            <?php endfor; ?>
+                    <!-- Page Numbers -->
+                    <?php for ($i = 1; $i <= $projects['last_page']; $i++): ?>
+                        <li>
+                            <a href="<?= url('/projects?' . http_build_query(array_merge($filters ?? [], ['page' => $i]))) ?>"
+                                class="pagination-link <?= $projects['current_page'] == $i ? 'active' : '' ?>">
+                                <?= $i ?>
+                            </a>
+                        </li>
+                    <?php endfor; ?>
 
-            <!-- Next Button -->
-            <li>
-                <a href="<?= $projects['current_page'] >= $projects['last_page'] ? '#' : url('/projects?' . http_build_query(array_merge($filters ?? [], ['page' => $projects['current_page'] + 1]))) ?>" 
-                   class="pagination-link <?= $projects['current_page'] >= $projects['last_page'] ? 'disabled' : '' ?>">
-                    Next <i class="bi bi-chevron-right"></i>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    <?php endif; ?>
+                    <!-- Next Button -->
+                    <li>
+                        <a href="<?= $projects['current_page'] >= $projects['last_page'] ? '#' : url('/projects?' . http_build_query(array_merge($filters ?? [], ['page' => $projects['current_page'] + 1]))) ?>"
+                            class="pagination-link <?= $projects['current_page'] >= $projects['last_page'] ? 'disabled' : '' ?>">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 
@@ -267,6 +271,9 @@
 
     .board-header-right {
         flex-shrink: 0;
+        display: flex;
+        gap: 8px;
+        align-items: center;
     }
 
     .board-title {
@@ -950,15 +957,15 @@
         const btn = event.currentTarget;
         const menu = btn.nextElementSibling;
         const allMenus = document.querySelectorAll('.project-dropdown-menu');
-        
+
         allMenus.forEach(m => {
             if (m !== menu) m.classList.remove('show');
         });
-        
+
         menu.classList.toggle('show');
     }
 
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function () {
         document.querySelectorAll('.project-dropdown-menu').forEach(m => m.classList.remove('show'));
     });
 </script>

@@ -156,7 +156,7 @@
                     <span class="badge" style="background-color: <?= e($issue['priority_color']) ?>">
                         <?= e($issue['priority_name']) ?>
                     </span>
-                    <span class="badge" style="background-color: <?= e($issue['status_color']) ?>">
+                    <span class="badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                         <?= e($issue['status_name']) ?>
                     </span>
                     <span class="badge bg-light text-dark"><?= $issue['story_points'] ?? '-' ?> pts</span>
@@ -198,10 +198,10 @@
                         <?= e($issue['issue_key']) ?>
                     </a>
                     <span class="flex-grow-1"><?= e($issue['summary']) ?></span>
-                    <span class="badge" style="background-color: <?= e($issue['priority_color']) ?>">
+                    <span class="badge" style="background-color: <?= e($issue['priority_color']) ?>; color: white !important;">
                         <?= e($issue['priority_name']) ?>
                     </span>
-                    <span class="badge" style="background-color: <?= e($issue['status_color']) ?>">
+                    <span class="badge" style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
                         <?= e($issue['status_name']) ?>
                     </span>
                     <span class="badge bg-light text-dark"><?= $issue['story_points'] ?? '-' ?> pts</span>

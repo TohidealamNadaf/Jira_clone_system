@@ -17,16 +17,16 @@ class NotificationController extends Controller
         if (!$user) {
             return $this->redirect('/login');
         }
-        
+
         $page = (int) $request->query('page', 1);
         $perPage = 25;
-        
+
         $notifications = NotificationService::getAll($user['id'], $page, $perPage);
         $totalCount = NotificationService::getCount($user['id']);
         $unreadCount = NotificationService::getUnreadCount($user['id']);
-        
+
         $totalPages = ceil($totalCount / $perPage);
-        
+
         return $this->view('notifications.index', [
             'notifications' => $notifications,
             'unreadCount' => $unreadCount,
@@ -36,7 +36,7 @@ class NotificationController extends Controller
             'perPage' => $perPage,
         ]);
     }
-    
+
     /**
      * GET /api/v1/notifications - Get notifications (API)
      * Returns unread notifications with pagination
@@ -48,20 +48,21 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
-        $limit = (int) $request->query('limit', 20);
-        $limit = min($limit, 100); // Max 100 per request for performance
-        
-        $notifications = NotificationService::getUnread($user['id'], $limit);
+
+        $limit = (int) $request->query('limit', 10);
+        $limit = min($limit, 100);
+
+        // Return both read and unread for the dropdown/recent list
+        $notifications = NotificationService::getAll($user['id'], 1, $limit);
         $unreadCount = NotificationService::getUnreadCount($user['id']);
-        
+
         $this->json([
             'data' => $notifications,
             'count' => count($notifications),
             'unread_count' => $unreadCount,
         ]);
     }
-    
+
     /**
      * PATCH /api/v1/notifications/{id}/read - Mark single notification as read
      */
@@ -72,14 +73,14 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         $notificationId = (int) $request->param('id');
-        
+
         if (!$notificationId) {
             $this->json(['error' => 'Invalid notification ID'], 400);
             return;
         }
-        
+
         if (NotificationService::markAsRead($notificationId, $user['id'])) {
             $this->json([
                 'status' => 'success',
@@ -89,7 +90,7 @@ class NotificationController extends Controller
             $this->json(['error' => 'Notification not found'], 404);
         }
     }
-    
+
     /**
      * PATCH /api/v1/notifications/read-all - Mark all notifications as read
      */
@@ -100,15 +101,15 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         NotificationService::markAllAsRead($user['id']);
-        
+
         $this->json([
             'status' => 'success',
             'unread_count' => 0,
         ]);
     }
-    
+
     /**
      * DELETE /api/v1/notifications/{id} - Delete notification
      */
@@ -119,21 +120,21 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         $notificationId = (int) $request->param('id');
-        
+
         if (!$notificationId) {
             $this->json(['error' => 'Invalid notification ID'], 400);
             return;
         }
-        
+
         if (NotificationService::delete($notificationId, $user['id'])) {
             $this->json(['status' => 'success']);
         } else {
             $this->json(['error' => 'Notification not found'], 404);
         }
     }
-    
+
     /**
      * GET /api/v1/notifications/preferences - Get user notification preferences
      */
@@ -144,15 +145,15 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         $preferences = NotificationService::getPreferences($user['id']);
-        
+
         $this->json([
             'data' => $preferences,
             'count' => count($preferences),
         ]);
     }
-    
+
     /**
      * POST/PUT /api/v1/notifications/preferences - Update notification preferences
      * Supports both single and bulk preference updates
@@ -177,30 +178,36 @@ class NotificationController extends Controller
                 $this->json(['error' => 'Unauthorized'], 401);
                 return;
             }
-            
+
             // CRITICAL SECURITY: Use authenticated user ID only
             // Never accept user_id from request input
             $userId = $user['id'];
-            
+
             // Valid event types (whitelist)
             $validTypes = [
-                'issue_created', 'issue_assigned', 'issue_commented',
-                'issue_status_changed', 'issue_mentioned', 'issue_watched',
-                'project_created', 'project_member_added', 'comment_reply'
+                'issue_created',
+                'issue_assigned',
+                'issue_commented',
+                'issue_status_changed',
+                'issue_mentioned',
+                'issue_watched',
+                'project_created',
+                'project_member_added',
+                'comment_reply'
             ];
-            
+
             // Valid channels
             $validChannels = ['in_app', 'email', 'push'];
-            
+
             // Check if bulk preferences object was sent
             $preferences = $request->input('preferences');
-            
+
             if ($preferences && is_array($preferences)) {
                 // Bulk update mode (from form submission)
                 $updateCount = 0;
                 $invalidCount = 0;
                 $invalidEntries = [];
-                
+
                 foreach ($preferences as $eventType => $channels) {
                     // CRITICAL #2 FIX: Validate event type is in whitelist
                     if (!in_array($eventType, $validTypes)) {
@@ -210,7 +217,7 @@ class NotificationController extends Controller
                             'error' => 'Invalid event type',
                             'valid_types' => $validTypes
                         ];
-                        
+
                         // Log CRITICAL security violation
                         error_log(sprintf(
                             '[SECURITY] CRITICAL #2: Invalid event_type in preference update: event_type=%s, user_id=%d, ip=%s, user_agent=%s',
@@ -221,7 +228,7 @@ class NotificationController extends Controller
                         ), 3, storage_path('logs/security.log'));
                         continue;
                     }
-                    
+
                     // CRITICAL #2 FIX: Validate channels is an array
                     if (!is_array($channels)) {
                         $invalidCount++;
@@ -229,7 +236,7 @@ class NotificationController extends Controller
                             'event_type' => $eventType,
                             'error' => 'Channels must be an object/array'
                         ];
-                        
+
                         error_log(sprintf(
                             '[SECURITY] CRITICAL #2: Invalid channels type for event_type=%s, user_id=%d, received_type=%s',
                             $eventType,
@@ -238,18 +245,18 @@ class NotificationController extends Controller
                         ), 3, storage_path('logs/security.log'));
                         continue;
                     }
-                    
+
                     // CRITICAL #2 FIX: Validate each channel key and value
                     $hasInvalidChannels = false;
                     foreach ($channels as $channel => $value) {
                         if (!in_array($channel, $validChannels)) {
                             $hasInvalidChannels = true;
                             $invalidCount++;
-                            
+
                             if (!isset($invalidEntries[$eventType])) {
                                 $invalidEntries[$eventType] = [];
                             }
-                            
+
                             error_log(sprintf(
                                 '[SECURITY] CRITICAL #2: Invalid channel key for event_type=%s, channel=%s, user_id=%d',
                                 $eventType,
@@ -258,21 +265,21 @@ class NotificationController extends Controller
                             ), 3, storage_path('logs/security.log'));
                         }
                     }
-                    
+
                     if ($hasInvalidChannels) {
                         continue; // Skip this event type if it has invalid channels
                     }
-                    
+
                     // CRITICAL #2 FIX: Safely extract channel preferences with STRICT type checking
                     // Only accept boolean true (=== true), treat everything else as false
                     $inApp = isset($channels['in_app']) && $channels['in_app'] === true;
                     $email = isset($channels['email']) && $channels['email'] === true;
                     $push = isset($channels['push']) && $channels['push'] === true;
-                    
+
                     // Update preference for AUTHENTICATED USER ONLY
                     NotificationService::updatePreference($userId, $eventType, $inApp, $email, $push);
                     $updateCount++;
-                    
+
                     // Log successful preference updates
                     error_log(sprintf(
                         '[NOTIFICATION] Preference updated: user_id=%d, event_type=%s, in_app=%d, email=%d, push=%d',
@@ -283,7 +290,7 @@ class NotificationController extends Controller
                         (int) $push
                     ), 3, storage_path('logs/notifications.log'));
                 }
-                
+
                 // CRITICAL #2 FIX: Log validation summary with user context
                 if ($invalidCount > 0) {
                     error_log(sprintf(
@@ -294,25 +301,25 @@ class NotificationController extends Controller
                         $_SERVER['REMOTE_ADDR'] ?? 'unknown'
                     ), 3, storage_path('logs/notifications.log'));
                 }
-                
+
                 // CRITICAL #2 FIX: Return comprehensive response with error details
                 $responseStatus = $invalidCount > 0 ? 'partial_success' : 'success';
-                $responseMessage = $invalidCount > 0 ? 
+                $responseMessage = $invalidCount > 0 ?
                     "Updated {$updateCount} preference(s). {$invalidCount} were invalid." :
                     'Preferences updated successfully';
-                
+
                 $response = [
                     'status' => $responseStatus,
                     'message' => $responseMessage,
                     'updated_count' => $updateCount,
                     'invalid_count' => $invalidCount
                 ];
-                
+
                 // Include error details if there were validation failures
                 if ($invalidCount > 0 && count($invalidEntries) > 0) {
                     $response['errors'] = $invalidEntries;
                 }
-                
+
                 $this->json($response);
             } else {
                 // Single preference update mode
@@ -320,12 +327,12 @@ class NotificationController extends Controller
                 $inApp = (bool) $request->input('in_app', true);
                 $email = (bool) $request->input('email', true);
                 $push = (bool) $request->input('push', false);
-                
+
                 if (!$eventType) {
                     $this->json(['error' => 'Missing event_type parameter'], 400);
                     return;
                 }
-                
+
                 // CRITICAL #2 FIX: Validate event type against whitelist
                 if (!in_array($eventType, $validTypes)) {
                     error_log(sprintf(
@@ -334,17 +341,17 @@ class NotificationController extends Controller
                         $userId,
                         $_SERVER['REMOTE_ADDR'] ?? 'unknown'
                     ), 3, storage_path('logs/security.log'));
-                    
+
                     $this->json([
                         'error' => 'Invalid event_type',
                         'valid_types' => $validTypes
                     ], 400);
                     return;
                 }
-                
+
                 // Update preference for AUTHENTICATED USER ONLY
                 NotificationService::updatePreference($userId, $eventType, $inApp, $email, $push);
-                
+
                 error_log(sprintf(
                     '[NOTIFICATION] Single preference updated: user_id=%d, event_type=%s, in_app=%d, email=%d, push=%d',
                     $userId,
@@ -353,7 +360,7 @@ class NotificationController extends Controller
                     (int) $email,
                     (int) $push
                 ), 3, storage_path('logs/notifications.log'));
-                
+
                 $this->json(['status' => 'success', 'message' => 'Preference updated']);
             }
         } catch (\Exception $e) {
@@ -364,7 +371,7 @@ class NotificationController extends Controller
                 $e->getFile(),
                 $e->getLine()
             ), 3, storage_path('logs/notifications.log'));
-            
+
             // For debugging, include the actual error message in response
             $this->json([
                 'error' => 'Failed to update preferences',
@@ -372,7 +379,7 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * GET /api/v1/notifications/stats - Get notification statistics
      */
@@ -383,9 +390,9 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         $stats = NotificationService::getStats($user['id']);
-        
+
         $this->json([
             'data' => $stats,
         ]);
@@ -406,10 +413,10 @@ class NotificationController extends Controller
         try {
             // Get config
             $config = require(__DIR__ . '/../../config/config.php');
-            
+
             // Create email service
             $emailService = new \App\Services\EmailService($config);
-            
+
             // Validate config first
             $validation = $emailService->validateConfig();
             if (!$validation['success']) {
@@ -443,8 +450,11 @@ class NotificationController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
-            error_log('[EMAIL TEST ERROR] ' . $e->getMessage() . ' - ' . $e->getTraceAsString(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                '[EMAIL TEST ERROR] ' . $e->getMessage() . ' - ' . $e->getTraceAsString(),
+                3,
+                storage_path('logs/notifications.log')
+            );
 
             $this->json([
                 'status' => 'error',
@@ -475,7 +485,7 @@ class NotificationController extends Controller
 
             $config = require(__DIR__ . '/../../config/config.php');
             $emailService = new \App\Services\EmailService($config);
-            
+
             $validation = $emailService->validateConfig();
 
             $this->json([
@@ -562,8 +572,11 @@ class NotificationController extends Controller
                         $failed++;
                     }
                 } catch (\Exception $e) {
-                    error_log('[EMAIL SEND ERROR] ' . $e->getMessage(), 3,
-                        storage_path('logs/notifications.log'));
+                    error_log(
+                        '[EMAIL SEND ERROR] ' . $e->getMessage(),
+                        3,
+                        storage_path('logs/notifications.log')
+                    );
                     $failed++;
                 }
             }
@@ -576,8 +589,11 @@ class NotificationController extends Controller
                 'total' => count($pendingDeliveries),
             ]);
         } catch (\Exception $e) {
-            error_log('[EMAIL BATCH ERROR] ' . $e->getMessage(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                '[EMAIL BATCH ERROR] ' . $e->getMessage(),
+                3,
+                storage_path('logs/notifications.log')
+            );
 
             $this->json([
                 'status' => 'error',
@@ -586,7 +602,7 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * POST /api/v1/notifications/devices - Register device for push notifications
      */
@@ -597,15 +613,15 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         $token = $request->input('token');
         $platform = $request->input('platform'); // ios, android, web
-        
+
         if (!$token || !in_array($platform, ['ios', 'android', 'web'])) {
             $this->json(['error' => 'Missing or invalid token/platform'], 400);
             return;
         }
-        
+
         try {
             if (\App\Services\PushService::registerDevice($user['id'], $token, $platform)) {
                 error_log(sprintf(
@@ -613,7 +629,7 @@ class NotificationController extends Controller
                     $user['id'],
                     $platform
                 ), 3, storage_path('logs/notifications.log'));
-                
+
                 $this->json([
                     'status' => 'success',
                     'message' => 'Device registered for push notifications'
@@ -622,12 +638,15 @@ class NotificationController extends Controller
                 $this->json(['error' => 'Failed to register device'], 500);
             }
         } catch (\Exception $e) {
-            error_log('[PUSH ERROR] Registration failed: ' . $e->getMessage(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                '[PUSH ERROR] Registration failed: ' . $e->getMessage(),
+                3,
+                storage_path('logs/notifications.log')
+            );
             $this->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     /**
      * DELETE /api/v1/notifications/devices/{token} - Deregister device from push
      */
@@ -638,31 +657,34 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         $token = $request->param('token');
         if (!$token) {
             $this->json(['error' => 'Missing token'], 400);
             return;
         }
-        
+
         try {
             if (\App\Services\PushService::deactivateDevice($user['id'], $token)) {
                 error_log(sprintf(
                     '[PUSH] Device deregistered: user=%d',
                     $user['id']
                 ), 3, storage_path('logs/notifications.log'));
-                
+
                 $this->json(['status' => 'success', 'message' => 'Device deregistered']);
             } else {
                 $this->json(['error' => 'Device not found'], 404);
             }
         } catch (\Exception $e) {
-            error_log('[PUSH ERROR] Deregistration failed: ' . $e->getMessage(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                '[PUSH ERROR] Deregistration failed: ' . $e->getMessage(),
+                3,
+                storage_path('logs/notifications.log')
+            );
             $this->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     /**
      * GET /api/v1/notifications/devices - Get user's registered devices
      */
@@ -673,7 +695,7 @@ class NotificationController extends Controller
             $this->json(['error' => 'Unauthorized'], 401);
             return;
         }
-        
+
         try {
             $devices = \App\Services\PushService::getUserDevices($user['id']);
             $this->json([
@@ -681,8 +703,11 @@ class NotificationController extends Controller
                 'count' => count($devices)
             ]);
         } catch (\Exception $e) {
-            error_log('[PUSH ERROR] Get devices failed: ' . $e->getMessage(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                '[PUSH ERROR] Get devices failed: ' . $e->getMessage(),
+                3,
+                storage_path('logs/notifications.log')
+            );
             $this->json(['error' => $e->getMessage()], 500);
         }
     }

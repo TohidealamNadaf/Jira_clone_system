@@ -546,9 +546,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Populate Fields
 
-                // 1. Event Type - Default to 'issue' if not clear
-                const typeSelect = document.getElementById('eventType');
-                if (typeSelect) typeSelect.value = 'issue'; // We don't have separate issue type selector here
+                // 1. Event Type / Issue Type
+                const typeSelect = document.getElementById('issueType');
+                if (typeSelect && data.issueTypeId) {
+                    typeSelect.value = data.issueTypeId;
+                } else if (typeSelect && data.issueType) {
+                    // Try matching by text if ID missing
+                    for (let i = 0; i < typeSelect.options.length; i++) {
+                        if (typeSelect.options[i].text.toLowerCase() === data.issueType.toLowerCase()) {
+                            typeSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
 
                 // 2. Project - select by ID
                 const projectSelect = document.getElementById('eventProject');
@@ -569,7 +579,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // 4. Description
                 const descInput = document.getElementById('eventDesc');
-                if (descInput) descInput.value = data.description || '';
+                if (descInput) {
+                    descInput.value = data.description || '';
+                    // If TinyMCE is already initialized (re-opening), set content
+                    if (typeof tinymce !== 'undefined' && tinymce.get('eventDesc')) {
+                        tinymce.get('eventDesc').setContent(data.description || '');
+                    }
+                }
 
                 // 5. Dates
                 const startInput = document.getElementById('eventStartDate');
@@ -615,6 +631,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 console.log('📅 [EDIT] Modal displayed successfully');
 
+                // Init TinyMCE after modal is visible
+                setTimeout(() => {
+                    initTinyMCE('#eventDesc');
+                }, 100);
+
             } catch (err) {
                 console.error('❌ [EDIT] Error in setTimeout block:', err);
                 alert('Error opening edit form: ' + err.message);
@@ -632,21 +653,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Gather Data
         const summary = document.getElementById('eventTitle').value;
-        const description = document.getElementById('eventDesc').value;
         const projectId = document.getElementById('eventProject').value;
         const priorityId = document.getElementById('eventPriority').value;
+        const issueTypeId = document.getElementById('issueType').value;
         const startDate = document.getElementById('eventStartDate').value;
         const endDate = document.getElementById('eventEndDate').value;
 
-        // Payload
+        // Sync TinyMCE header
+        if (typeof tinymce !== 'undefined' && tinymce.get('eventDesc')) {
+            tinymce.triggerSave();
+        }
+        const description = document.getElementById('eventDesc').value;
         const payload = {
             summary: summary,
             description: description,
             project_id: projectId,
             priority_id: priorityId,
+            issue_type_id: issueTypeId,
             start_date: startDate ? startDate.split('T')[0] : null,
             due_date: endDate ? endDate.split('T')[0] : null
-            // Note: API expects Y-m-d for date fields usually
         };
 
         let url = `${window.JiraConfig.apiBase}/calendar/events`; // Default create
@@ -1108,6 +1133,17 @@ document.addEventListener('DOMContentLoaded', function () {
                             typeFilter.appendChild(opt);
                         });
                     }
+
+                    const createModalType = document.getElementById('issueType');
+                    if (createModalType) {
+                        createModalType.innerHTML = '';
+                        data.data.forEach(type => {
+                            const opt = document.createElement('option');
+                            opt.value = type.id;
+                            opt.textContent = type.name;
+                            createModalType.appendChild(opt);
+                        });
+                    }
                 }
             })
             .catch(err => console.error('Failed to load issue types:', err));
@@ -1168,6 +1204,11 @@ document.addEventListener('DOMContentLoaded', function () {
             createEventModal.classList.add('open');
             createEventModal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
+
+            // Initialize TinyMCE
+            setTimeout(() => {
+                initTinyMCE('#eventDesc');
+            }, 100);
             document.body.style.position = 'fixed';
             document.body.style.width = '100%';
             document.body.style.top = `-${window.scrollY}px`;
@@ -1214,6 +1255,11 @@ document.addEventListener('DOMContentLoaded', function () {
             createEventModal.style.display = 'none';
             createEventModal.classList.remove('open');
             createEventModal.setAttribute('aria-hidden', 'true');
+
+            // Remove TinyMCE
+            if (typeof tinymce !== 'undefined') {
+                tinymce.remove('#eventDesc');
+            }
 
             const scrollY = document.body.style.top;
             document.body.style.overflow = 'auto';

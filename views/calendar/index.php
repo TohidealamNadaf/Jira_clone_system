@@ -362,13 +362,9 @@
                         <h3>Event Details</h3>
                         <div class="form-row">
                             <div class="form-group half">
-                                <label>Event Type</label>
-                                <select id="eventType" class="jira-select">
-                                    <option value="issue">Issue Due Date</option>
-                                    <option value="sprint">Sprint Start/End</option>
-                                    <option value="milestone">Milestone</option>
-                                    <option value="reminder">Reminder</option>
-                                    <option value="meeting">Meeting</option>
+                                <label>Issue Type</label>
+                                <select id="issueType" class="jira-select">
+                                    <option value="">Select type...</option>
                                 </select>
                             </div>
                             <div class="form-group half">

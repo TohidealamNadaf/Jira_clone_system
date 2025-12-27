@@ -6943,3 +6943,12 @@ img:not([src]) {
         transform: translateY(0);
     }
 }
+
+/* Issue Description Scroll Fix */
+.description-content {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}

@@ -629,6 +629,58 @@
                     });
                 }
             }, { passive: false });
+
+            // Global Delegated Handler for Dropdown Items (Links & Forms)
+            // Fixes mobile touch issues where clicks don't register
+            const handleMobileDropdownClick = (e) => {
+                if (window.innerWidth >= 992) return; // Only needed on mobile
+
+                const item = e.target.closest('.dropdown-item');
+                if (!item) return;
+
+                // Handle Links
+                if (item.tagName === 'A') {
+                    const href = item.getAttribute('href');
+                    if (href && href !== '#' && !href.startsWith('javascript')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = href;
+                    }
+                }
+                // Handle Buttons (e.g., Logout Form)
+                else if (item.tagName === 'BUTTON' && item.type === 'submit') {
+                    const form = item.closest('form');
+                    if (form) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        form.submit();
+                    }
+                }
+            };
+
+            // Listen on the document for robustness
+            document.addEventListener('click', handleMobileDropdownClick);
+
+            // Add touchstart listener for links to bypass ghost click issues
+            document.addEventListener('touchend', (e) => {
+                if (window.innerWidth >= 992) return;
+
+                // Only act if it's a link or button inside a dropdown
+                const item = e.target.closest('.dropdown-item');
+                if (!item) return;
+
+                // Allow a small delay for click to fire, if not, force it?
+                // Actually, forcing location change on touchend is the most robust fix for dead links
+                // WE MUST PREVENT DEFAULT to avoid double-firing or ghost clicks later
+
+                if (item.tagName === 'A') {
+                    const href = item.getAttribute('href');
+                    if (href && href !== '#' && !href.startsWith('javascript')) {
+                        e.preventDefault(); // Stop click from firing later
+                        window.location.href = href;
+                    }
+                }
+            }, { passive: false });
         }
     };
 

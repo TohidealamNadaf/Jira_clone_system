@@ -778,7 +778,8 @@
         .nav-dropdown.active .dropdown-panel,
         .navbar-action-dropdown.active .dropdown-panel {
             display: flex;
-            pointer-events: auto;
+            pointer-events: auto !important;
+            /* Force interactivity */
             opacity: 1;
             visibility: visible;
         }
@@ -1165,6 +1166,9 @@
                 position: static;
                 /* Stack naturally in mobile */
                 width: 100%;
+                pointer-events: auto !important; /* Always interactive */
+                opacity: 1 !important;
+                visibility: visible !important;
                 box-shadow: none;
                 border: 1px solid #DFE1E6;
                 margin-top: 8px;

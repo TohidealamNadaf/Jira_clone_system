@@ -744,7 +744,7 @@
         /* Dropdown Panel */
         .dropdown-panel {
             position: absolute;
-            top: calc(100% - 8px);
+            top: 100%;
             left: 0;
             background: #FFFFFF;
             border: 1px solid #DFE1E6;
@@ -762,8 +762,21 @@
             visibility: hidden;
         }
 
-        .nav-dropdown:hover .dropdown-panel,
-        .navbar-action-dropdown:hover .dropdown-panel {
+        /* Desktop Hover Behavior */
+        @media (min-width: 992px) {
+
+            .nav-dropdown:hover .dropdown-panel,
+            .navbar-action-dropdown:hover .dropdown-panel {
+                display: flex;
+                pointer-events: auto;
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        /* Active State (JS Toggled) - Works on All Devices */
+        .nav-dropdown.active .dropdown-panel,
+        .navbar-action-dropdown.active .dropdown-panel {
             display: flex;
             pointer-events: auto;
             opacity: 1;
@@ -1021,6 +1034,8 @@
             right: 0 !important;
             left: auto !important;
             min-width: 260px;
+            /* margin-top: 0; Default for desktop */
+            /* Increased safe zone for mobile touches */
         }
 
         .user-header {
@@ -1101,6 +1116,72 @@
 
             .brand-text {
                 display: none;
+            }
+
+            /* Mobile Menu Logic */
+            .navbar-menu {
+                display: none;
+                /* Hidden by default on mobile */
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #FFFFFF;
+                border-bottom: 1px solid #DFE1E6;
+                padding: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+
+            .navbar-menu.show {
+                display: flex;
+                /* Shown when toggled */
+            }
+
+            .nav-dropdown {
+                width: 100%;
+            }
+
+            .nav-dropdown-btn {
+                width: 100%;
+                justify-content: space-between;
+                padding: 12px;
+            }
+
+            /* Mobile Margin for User Panel */
+            .user-panel {
+                margin-top: 25px;
+                position: absolute !important;
+                /* Ensure it floats */
+                width: auto;
+                /* Prevent full width takeover */
+                min-width: 260px;
+                right: 0;
+            }
+
+            /* Only make nav menu dropdowns static/stacked */
+            .navbar-menu .dropdown-panel {
+                position: static;
+                /* Stack naturally in mobile */
+                width: 100%;
+                box-shadow: none;
+                border: 1px solid #DFE1E6;
+                margin-top: 8px;
+                display: none;
+            }
+
+            .nav-dropdown:hover .dropdown-panel {
+                display: none;
+                /* Disable hover on mobile, rely on click/JS if needed, or CSS */
+            }
+
+            /* Simple mobile dropdown behavior: Show panel when parent is clicked/active
+               For now, we might just letting them display always or specific logic. 
+               Let's just ensure the main menu opens first. */
+            .nav-dropdown-btn:focus+.dropdown-panel,
+            .nav-dropdown-btn:active+.dropdown-panel {
+                display: block;
             }
         }
     </style>
@@ -2043,7 +2124,7 @@
     <!-- Real-Time Notifications (Server-Sent Events) -->
     <script src="<?= asset('js/realtime-notifications.js') ?>"></script>
 
-    <script src="<?= asset('js/app.js') ?>"></script>
+    <script src="<?= asset('js/app.js') ?>?v=<?= time() ?>"></script>
 
     <!-- Time Tracking Widget -->
     <script src="<?= url('/assets/js/floating-timer.js') ?>"></script>

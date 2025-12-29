@@ -2,7 +2,7 @@
  * Jira Clone - Main JavaScript
  */
 
-(function() {
+(function () {
     'use strict';
 
     // ==========================================
@@ -226,7 +226,7 @@
 
             this.input.addEventListener('input', this.handleInput.bind(this));
             this.input.addEventListener('focus', this.handleFocus.bind(this));
-            
+
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-container')) {
                     this.hideResults();
@@ -424,7 +424,7 @@
 
             try {
                 const project = await api.get(`/projects/${projectId}`);
-                
+
                 // Update components dropdown
                 const componentSelect = document.querySelector('[name="component_id"]');
                 if (componentSelect && project.components) {
@@ -517,7 +517,7 @@
         init() {
             document.querySelectorAll('[data-autosave]').forEach(form => {
                 const key = form.dataset.autosave;
-                
+
                 // Restore draft
                 const draft = localStorage.getItem(key);
                 if (draft) {
@@ -546,6 +546,93 @@
     };
 
     // ==========================================
+    // Mobile Menu Toggle
+    // ==========================================
+    const mobileMenu = {
+        init() {
+            const toggleBtn = document.getElementById('mobileMenuToggle');
+            const menu = document.querySelector('.navbar-menu');
+
+            if (toggleBtn && menu) {
+                const toggleMenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    menu.classList.toggle('show');
+                };
+
+                toggleBtn.addEventListener('click', toggleMenu);
+                toggleBtn.addEventListener('touchstart', toggleMenu, { passive: false });
+
+                const closeMenu = (e) => {
+                    if (!menu.contains(e.target) && !toggleBtn.contains(e.target)) {
+                        menu.classList.remove('show');
+                    }
+                };
+
+                document.addEventListener('click', closeMenu);
+                document.addEventListener('touchstart', closeMenu, { passive: false });
+            }
+        }
+    };
+
+    // ==========================================
+    // Dropdown Management (Mobile Touch Fix)
+    // ==========================================
+    const dropdownManager = {
+        init() {
+            // Select all dropdown triggers
+            const triggers = document.querySelectorAll('.nav-dropdown-btn, .navbar-action-btn:not(#mobileMenuToggle):not(.create-btn)');
+
+            triggers.forEach(btn => {
+                const handleToggle = (e) => {
+                    // Only apply JS toggle on mobile/touch where hover doesn't work well
+                    // or if hover is disabled via CSS media query
+                    if (window.innerWidth < 992) {
+                        const parent = btn.closest('.nav-dropdown') || btn.closest('.navbar-action-dropdown');
+                        if (parent) {
+                            // If we are opening this one, close others first
+                            if (!parent.classList.contains('active')) {
+                                document.querySelectorAll('.nav-dropdown.active, .navbar-action-dropdown.active').forEach(el => {
+                                    if (el !== parent) el.classList.remove('active');
+                                });
+                            }
+
+                            parent.classList.toggle('active');
+                            e.preventDefault(); // Prevent instant click-through
+                            e.stopPropagation();
+                        }
+                    }
+                };
+
+                btn.addEventListener('click', handleToggle);
+                // We add touchstart to capture tap before "hover" ghosts happen
+                btn.addEventListener('touchstart', (e) => {
+                    if (window.innerWidth < 992) {
+                        handleToggle(e);
+                    }
+                }, { passive: false });
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.nav-dropdown') && !e.target.closest('.navbar-action-dropdown')) {
+                    document.querySelectorAll('.nav-dropdown.active, .navbar-action-dropdown.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                }
+            });
+
+            document.addEventListener('touchstart', (e) => {
+                if (!e.target.closest('.nav-dropdown') && !e.target.closest('.navbar-action-dropdown')) {
+                    document.querySelectorAll('.nav-dropdown.active, .navbar-action-dropdown.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                }
+            }, { passive: false });
+        }
+    };
+
+    // ==========================================
     // Initialize Everything
     // ==========================================
     document.addEventListener('DOMContentLoaded', () => {
@@ -556,6 +643,8 @@
         issueForm.init();
         confirmDelete.init();
         autoSave.init();
+        mobileMenu.init();
+        dropdownManager.init();
 
         // Expose toast globally for external use
         window.toast = toast;

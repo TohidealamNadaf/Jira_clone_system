@@ -24,11 +24,11 @@ function config(string $key, mixed $default = null): mixed
 function app(?string $abstract = null): mixed
 {
     $instance = Application::getInstance();
-    
+
     if ($abstract === null) {
         return $instance;
     }
-    
+
     return $instance->resolve($abstract);
 }
 
@@ -71,21 +71,21 @@ function url(string $path = ''): string
 {
     // Build base URL dynamically from current request
     // This fixes the issue where hardcoded URLs break when accessing from different IPs
-    
+
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    
+
     // Get the request URI to determine the base path
     $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-    
+
     // Determine the base path by checking if we're in the public subdirectory
     // Common patterns:
     // - /jira_clone_system/public/login -> base: /jira_clone_system/public
     // - /login -> base: /
     // - /index.php -> base: /
-    
+
     $basePath = '';
-    
+
     // Check if the request contains subdirectory paths
     if (preg_match('#^(/[^/]+/[^/]+)(/|$)#', $requestUri, $matches)) {
         // We have a path like /jira_clone_system/public or similar
@@ -102,10 +102,10 @@ function url(string $path = ''): string
             }
         }
     }
-    
+
     $baseUrl = "{$scheme}://{$host}{$basePath}";
     $baseUrl = rtrim($baseUrl, '/');
-    
+
     return $baseUrl . '/' . ltrim($path, '/');
 }
 
@@ -117,7 +117,7 @@ function url(string $path = ''): string
 function basePath(): string
 {
     $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-    
+
     // Determine the base path from the request
     if (preg_match('#^(/[^/]+/[^/]+)(/|$)#', $requestUri, $matches)) {
         return $matches[1]; // /jira_clone_system/public
@@ -131,7 +131,7 @@ function basePath(): string
             return $basePath;
         }
     }
-    
+
     return '/'; // Default root path
 }
 
@@ -153,22 +153,29 @@ function avatar(?string $avatarPath, string $defaultName = 'U'): string
         // Return default avatar with initials
         return '';
     }
-    
-    // If avatar is already a full URL, use it as-is
+
+    // If it contains /uploads/, treat it as a local file and ensure dynamic URL generation
+    // This fixes stale session data containing 'localhost' when accessed via LAN
+    if (str_contains($avatarPath, '/uploads/')) {
+        $relativePath = substr($avatarPath, strpos($avatarPath, '/uploads/'));
+        return url($relativePath);
+    }
+
+    // If avatar is already a full URL (external), use it as-is
     if (filter_var($avatarPath, FILTER_VALIDATE_URL)) {
         return $avatarPath;
     }
-    
-    // If it's a relative path starting with /uploads/, convert to proper URL
+
+    // If it's a relative path starting with /uploads/ (redundant but safe)
     if (str_starts_with($avatarPath, '/uploads/')) {
         return url($avatarPath);
     }
-    
+
     // If it's just a filename, assume it's in uploads/avatars/
     if (!str_contains($avatarPath, '/')) {
         return url("/uploads/avatars/$avatarPath");
     }
-    
+
     // Otherwise, treat as relative path
     return url($avatarPath);
 }
@@ -184,7 +191,7 @@ function avatarInitials(string $name, string $email = ''): string
         $emailParts = explode('@', $email);
         return strtoupper(substr($emailParts[0] ?? 'U', 0, 1));
     }
-    
+
     $nameParts = explode(' ', $name);
     if (count($nameParts) >= 2) {
         // Take first letter of first and last name
@@ -330,7 +337,7 @@ function can(string $permission, ?int $projectId = null): bool
     if (!$user) {
         return false;
     }
-    
+
     return app('auth')->can($permission, $projectId);
 }
 
@@ -367,7 +374,7 @@ function format_date(?string $date, string $format = 'M j, Y'): string
     if (!$date) {
         return '';
     }
-    
+
     try {
         $dt = new DateTime($date, new DateTimeZone('UTC'));
         $dt->setTimezone(new DateTimeZone(config('app.timezone', 'UTC')));
@@ -393,12 +400,12 @@ function time_ago(?string $datetime): string
     if (!$datetime) {
         return '';
     }
-    
+
     try {
         $time = new DateTime($datetime, new DateTimeZone('UTC'));
         $now = new DateTime('now', new DateTimeZone('UTC'));
         $diff = $now->getTimestamp() - $time->getTimestamp();
-        
+
         if ($diff < 60) {
             return 'just now';
         } elseif ($diff < 3600) {
@@ -437,7 +444,7 @@ function uuid(): string
     $data = random_bytes(16);
     $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
     $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-    
+
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
@@ -449,7 +456,7 @@ function dd(mixed ...$vars): never
     if (!headers_sent()) {
         header('Content-Type: text/html; charset=utf-8');
     }
-    
+
     echo '<pre style="background:#1e1e1e;color:#dcdcdc;padding:15px;margin:10px;border-radius:5px;font-family:monospace;font-size:13px;overflow:auto;">';
     foreach ($vars as $var) {
         var_dump($var);
@@ -478,7 +485,7 @@ function dump(mixed ...$vars): void
 function abort(int $code, string $message = ''): never
 {
     http_response_code($code);
-    
+
     $titles = [
         400 => 'Bad Request',
         401 => 'Unauthorized',
@@ -491,9 +498,9 @@ function abort(int $code, string $message = ''): never
         500 => 'Internal Server Error',
         503 => 'Service Unavailable',
     ];
-    
+
     $title = $titles[$code] ?? 'Error';
-    
+
     // Check if this is an API request
     if (wants_json() || is_api_request()) {
         header('Content-Type: application/json; charset=utf-8');
@@ -516,7 +523,7 @@ function abort(int $code, string $message = ''): never
             }
         }
     }
-    
+
     exit;
 }
 
@@ -533,7 +540,7 @@ function client_ip(): string
         'HTTP_FORWARDED',
         'REMOTE_ADDR',
     ];
-    
+
     foreach ($headers as $header) {
         if (!empty($_SERVER[$header])) {
             $ips = explode(',', $_SERVER[$header]);
@@ -543,7 +550,7 @@ function client_ip(): string
             }
         }
     }
-    
+
     return '0.0.0.0';
 }
 
@@ -553,11 +560,11 @@ function client_ip(): string
 function format_bytes(int $bytes, int $precision = 2): string
 {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    
+
     for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
         $bytes /= 1024;
     }
-    
+
     return round($bytes, $precision) . ' ' . $units[$i];
 }
 
@@ -572,7 +579,7 @@ function slugify(string $text): string
     $text = trim($text, '-');
     $text = preg_replace('~-+~', '-', $text);
     $text = strtolower($text);
-    
+
     return $text ?: 'n-a';
 }
 
@@ -584,7 +591,7 @@ function truncate(string $text, int $length = 100, string $suffix = '...'): stri
     if (mb_strlen($text) <= $length) {
         return $text;
     }
-    
+
     return mb_substr($text, 0, $length - mb_strlen($suffix)) . $suffix;
 }
 
@@ -595,24 +602,24 @@ function markdown(string $text): string
 {
     // Basic markdown parsing - for production, use a proper library
     $text = e($text);
-    
+
     // Bold
     $text = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $text);
     $text = preg_replace('/__(.+?)__/s', '<strong>$1</strong>', $text);
-    
+
     // Italic
     $text = preg_replace('/\*(.+?)\*/s', '<em>$1</em>', $text);
     $text = preg_replace('/_(.+?)_/s', '<em>$1</em>', $text);
-    
+
     // Code
     $text = preg_replace('/`(.+?)`/', '<code>$1</code>', $text);
-    
+
     // Links
     $text = preg_replace('/\[(.+?)\]\((.+?)\)/', '<a href="$2" target="_blank" rel="noopener">$1</a>', $text);
-    
+
     // Line breaks
     $text = nl2br($text);
-    
+
     return $text;
 }
 
@@ -625,18 +632,18 @@ function json(mixed $data, int $status = 200): never
     while (ob_get_level() > 0) {
         ob_end_clean();
     }
-    
+
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8', true);
     header('Cache-Control: no-cache, no-store, must-revalidate', true);
     header('Pragma: no-cache', true);
     header('Expires: 0', true);
-    
+
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     if (!headers_sent()) {
         header('Content-Length: ' . strlen($json), true);
     }
-    
+
     echo $json;
     exit;
 }
@@ -646,8 +653,8 @@ function json(mixed $data, int $status = 200): never
  */
 function is_ajax(): bool
 {
-    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+        strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 }
 
 /**
@@ -674,12 +681,12 @@ function is_api_request(): bool
 function request_method(): string
 {
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-    
+
     // Support method override
     if ($method === 'POST' && isset($_POST['_method'])) {
         $method = strtoupper($_POST['_method']);
     }
-    
+
     return $method;
 }
 
@@ -710,14 +717,14 @@ function sanitize_issue_for_json(?array $issue): ?array
     }
 
     $sanitized = $issue;
-    
+
     // Remove email fields from user-related data
     unset($sanitized['reporter_email']);
     unset($sanitized['assignee_email']);
-    
+
     // Sanitize comments
     if (!empty($sanitized['comments']) && is_array($sanitized['comments'])) {
-        $sanitized['comments'] = array_map(function($comment) {
+        $sanitized['comments'] = array_map(function ($comment) {
             $commentSanitized = $comment;
             if (!empty($commentSanitized['user']) && is_array($commentSanitized['user'])) {
                 unset($commentSanitized['user']['email']);
@@ -726,7 +733,7 @@ function sanitize_issue_for_json(?array $issue): ?array
             return $commentSanitized;
         }, $sanitized['comments']);
     }
-    
+
     return $sanitized;
 }
 

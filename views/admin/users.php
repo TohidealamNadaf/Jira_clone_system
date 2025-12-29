@@ -125,8 +125,8 @@
                                     </td>
                                     <td>
                                         <div class="au-user-cell">
-                                            <?php if ($u['avatar'] ?? null): ?>
-                                                <img src="<?= e($u['avatar']) ?>" class="au-avatar"
+                                            <?php if (($avatarUrl = avatar($u['avatar'] ?? null))): ?>
+                                                <img src="<?= e($avatarUrl) ?>" class="au-avatar"
                                                     alt="<?= e($u['display_name'] ?? $u['first_name']) ?>">
                                             <?php else: ?>
                                                 <div class="au-avatar au-avatar-initials" title="Avatar">
@@ -615,6 +615,7 @@
             opacity: 0;
             transform: translateY(-4px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -1232,8 +1233,8 @@
 <script>
     // ===== DROPDOWN MENU INITIALIZATION (Pure Vanilla JS) =====
     console.log('[ADMIN-USERS] Initializing dropdown menus...');
-    
-    document.addEventListener('DOMContentLoaded', function() {
+
+    document.addEventListener('DOMContentLoaded', function () {
         // Find all dropdown buttons
         const dropdownButtons = document.querySelectorAll('.au-dropdown [data-bs-toggle="dropdown"]');
         console.log('[ADMIN-USERS] Found ' + dropdownButtons.length + ' dropdown buttons');
@@ -1241,7 +1242,7 @@
         dropdownButtons.forEach((button) => {
             // Find the menu - it's the next sibling ul
             const menu = button.nextElementSibling;
-            
+
             if (!menu || !menu.classList.contains('au-dropdown-menu')) {
                 console.warn('[ADMIN-USERS] Menu not found for button:', button);
                 return;
@@ -1249,12 +1250,12 @@
 
             // Remove Bootstrap's data attribute to prevent conflicts
             button.removeAttribute('data-bs-toggle');
-            
-            button.addEventListener('click', function(e) {
+
+            button.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('[ADMIN-USERS] Button clicked, toggling menu');
-                
+
                 // Close all other menus
                 document.querySelectorAll('.au-dropdown-menu.show').forEach((otherMenu) => {
                     if (otherMenu !== menu) {
@@ -1264,7 +1265,7 @@
                         if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
                     }
                 });
-                
+
                 // Toggle this menu
                 const isOpen = menu.classList.toggle('show');
                 button.setAttribute('aria-expanded', isOpen);
@@ -1273,7 +1274,7 @@
 
             // Close when clicking menu items
             menu.querySelectorAll('a, button').forEach((item) => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function () {
                     setTimeout(() => {
                         menu.classList.remove('show');
                         button.setAttribute('aria-expanded', 'false');

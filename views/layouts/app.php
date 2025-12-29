@@ -563,14 +563,14 @@
                 <div class="navbar-action-dropdown">
                     <button class="navbar-action-btn user-btn" id="userMenu" title="User menu"
                         data-user-name="<?= e($user['display_name'] ?? ($user['first_name'] . ' ' . $user['last_name']) ?? 'User') ?>"
-                        data-user-avatar="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>">
-                        <img src="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
+                        data-user-avatar="<?= e(avatar($user['avatar'] ?? null) ?: 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>">
+                        <img src="<?= e(avatar($user['avatar'] ?? null) ?: 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
                             alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>" class="user-avatar">
                         <i class="bi bi-chevron-down d-none d-md-inline"></i>
                     </button>
                     <div class="dropdown-panel user-panel">
                         <div class="panel-header user-header">
-                            <img src="<?= e(!empty($user['avatar']) ? $user['avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
+                            <img src="<?= e(avatar($user['avatar'] ?? null) ?: 'https://ui-avatars.com/api/?name=' . urlencode($user['display_name'] ?? $user['first_name'] ?? 'User')) ?>"
                                 alt="<?= e($user['display_name'] ?? $user['first_name'] ?? 'User') ?>"
                                 class="user-avatar-large">
                             <div>

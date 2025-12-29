@@ -39,7 +39,8 @@
                 <a class="nav-link text-white" href="<?= url('/search?assignee=currentUser()') ?>">
                     <i class="bi bi-person-check me-2"></i> Assigned to Me
                     <?php if (($stats['assigned_count'] ?? 0) > 0): ?>
-                        <span class="badge bg-primary ms-auto" style="color: white !important;"><?= e($stats['assigned_count']) ?></span>
+                        <span class="badge bg-primary ms-auto"
+                            style="color: white !important;"><?= e($stats['assigned_count']) ?></span>
                     <?php endif; ?>
                 </a>
             </li>
@@ -99,8 +100,8 @@
 
     <div class="sidebar-footer mt-auto p-3 border-top border-secondary">
         <div class="d-flex align-items-center">
-            <?php if ($user['avatar'] ?? null): ?>
-                <img src="<?= e($user['avatar']) ?>" class="rounded-circle me-2" width="36" height="36" alt="">
+            <?php if (!empty($user['avatar']) && ($avatarUrl = avatar($user['avatar']))): ?>
+                <img src="<?= e($avatarUrl) ?>" class="rounded-circle me-2" width="36" height="36" alt="">
             <?php else: ?>
                 <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2"
                     style="width: 36px; height: 36px;">

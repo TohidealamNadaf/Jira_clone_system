@@ -145,58 +145,58 @@ class UserController extends Controller
             }
 
             $file = $request->file('avatar');
-            
+
             // Validate file
             $allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
             $maxSize = 2 * 1024 * 1024; // 2MB
-            
+
             if (!in_array($file['type'], $allowedMimes)) {
                 throw new \InvalidArgumentException('Only JPEG, PNG, and GIF images are allowed.');
             }
-            
+
             if ($file['size'] > $maxSize) {
                 throw new \InvalidArgumentException('File size must not exceed 2MB.');
             }
-            
+
             // Create unique filename
             $filename = 'avatar_' . $this->userId() . '_' . time() . '.png';
             $uploadDir = BASE_PATH . '/public/uploads/avatars/';
-            
+
             // Create directory if it doesn't exist
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
             }
-            
+
             $filepath = $uploadDir . $filename;
-            
+
             // Move the cropped image (already processed by frontend)
             if (!move_uploaded_file($file['tmp_name'], $filepath)) {
                 throw new \Exception('Failed to upload file.');
             }
-            
+
             // Ensure proper permissions
             chmod($filepath, 0644);
-            
-            // Update user avatar with full URL
-            $avatarUrl = url('/uploads/avatars/' . $filename);
+
+            // Update user avatar with relative URL (fixes localhost/LAN access issues)
+            $avatarUrl = '/uploads/avatars/' . $filename;
             Database::update('users', [
                 'avatar' => $avatarUrl,
                 'updated_at' => date('Y-m-d H:i:s'),
             ], 'id = ?', [$this->userId()]);
-            
+
             // Verify the update worked
             $updatedUser = Database::selectOne('SELECT * FROM users WHERE id = ?', [$this->userId()]);
-            
+
             if (!$updatedUser || !$updatedUser['avatar']) {
                 throw new \Exception('Avatar was not saved to database. Value: ' . ($updatedUser['avatar'] ?? 'NULL'));
             }
-            
+
             // Refresh user data in session
             Session::set('_user', $updatedUser);
-            
+
             // Always return JSON for AJAX request
             $this->json([
-                'success' => true, 
+                'success' => true,
                 'avatar_url' => $avatarUrl,
                 'db_avatar' => $updatedUser['avatar'],
                 'message' => 'Avatar updated successfully.'
@@ -381,10 +381,10 @@ class UserController extends Controller
     {
         $user = $this->user();
         $userId = $this->userId();
-        
+
         // Get user's notification preferences
         $preferencesList = NotificationService::getPreferences($userId);
-        
+
         // Convert list to associative array keyed by event type
         $preferences = [];
         foreach ($preferencesList as $pref) {
@@ -394,7 +394,7 @@ class UserController extends Controller
                 'push' => (bool) $pref['push'],
             ];
         }
-        
+
         return $this->view('profile.notifications', [
             'user' => $user,
             'preferences' => $preferences,
@@ -409,7 +409,7 @@ class UserController extends Controller
     public function security(Request $request): string
     {
         $user = $this->user();
-        
+
         // Get recent login activity from audit logs
         $loginActivity = Database::select(
             "SELECT * FROM audit_logs 
@@ -418,7 +418,7 @@ class UserController extends Controller
              LIMIT 10",
             [$this->userId()]
         );
-        
+
         return $this->view('profile.security', [
             'user' => $user,
             'loginActivity' => $loginActivity,
@@ -516,7 +516,7 @@ class UserController extends Controller
             'language' => $validated['language'] ?? 'en',
             'timezone' => $validated['timezone'] ?? 'UTC',
             'date_format' => $validated['date_format'] ?? 'MM/DD/YYYY',
-            'items_per_page' => (int)($validated['items_per_page'] ?? 25),
+            'items_per_page' => (int) ($validated['items_per_page'] ?? 25),
             'auto_refresh' => $request->input('auto_refresh') ? 1 : 0,
             'compact_view' => $request->input('compact_view') ? 1 : 0,
             'show_profile' => $request->input('show_profile') ? 1 : 0,
@@ -529,7 +529,7 @@ class UserController extends Controller
 
         // Add time tracking rates if provided
         if (!empty($validated['annual_package'])) {
-            $settings['annual_package'] = (float)$validated['annual_package'];
+            $settings['annual_package'] = (float) $validated['annual_package'];
         }
         if (!empty($validated['rate_currency'])) {
             $settings['rate_currency'] = $validated['rate_currency'];

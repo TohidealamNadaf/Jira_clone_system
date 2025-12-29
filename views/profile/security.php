@@ -1,4 +1,4 @@
-<?php \App\Core\View::extends('layouts.app'); ?>
+<?php \App\Core\View:: extends('layouts.app'); ?>
 
 <?php \App\Core\View::section('content'); ?>
 
@@ -34,15 +34,16 @@
                 <!-- User Card -->
                 <div class="security-user-card">
                     <div class="user-avatar-wrapper">
-                        <?php if ($user['avatar'] ?? null): ?>
-                            <img src="<?= e($user['avatar']) ?>" class="user-avatar-image" alt="Avatar">
+                        <?php if (($avatarUrl = avatar($user['avatar'] ?? null))): ?>
+                            <img src="<?= e($avatarUrl) ?>" class="user-avatar-image" alt="Avatar">
                         <?php else: ?>
                             <div class="user-avatar-placeholder">
                                 <?= strtoupper(substr($user['first_name'] ?? 'U', 0, 1)) ?>
                             </div>
                         <?php endif; ?>
                     </div>
-                    <h3 class="user-display-name"><?= e($user['display_name'] ?? $user['first_name'] . ' ' . $user['last_name']) ?></h3>
+                    <h3 class="user-display-name">
+                        <?= e($user['display_name'] ?? $user['first_name'] . ' ' . $user['last_name']) ?></h3>
                     <p class="user-email-address"><?= e($user['email']) ?></p>
                 </div>
 
@@ -53,7 +54,8 @@
                         <span>Profile</span>
                         <i class="bi bi-chevron-right nav-chevron"></i>
                     </a>
-                    <a href="<?= url('/profile/notifications') ?>" class="security-nav-item" data-section="notifications">
+                    <a href="<?= url('/profile/notifications') ?>" class="security-nav-item"
+                        data-section="notifications">
                         <i class="bi bi-bell"></i>
                         <span>Notifications</span>
                         <i class="bi bi-chevron-right nav-chevron"></i>
@@ -87,7 +89,8 @@
                     </div>
                     <div class="security-header-text">
                         <h2 class="security-section-title">Change Password</h2>
-                        <p class="security-section-description">Update your password regularly to keep your account secure</p>
+                        <p class="security-section-description">Update your password regularly to keep your account
+                            secure</p>
                     </div>
                 </div>
                 <div class="security-card-divider"></div>
@@ -95,24 +98,21 @@
                     <form action="<?= url('/profile/password') ?>" method="POST" class="security-form">
                         <?= csrf_field() ?>
                         <input type="hidden" name="_method" value="PUT">
-                        
+
                         <!-- Current Password -->
                         <div class="security-form-group">
                             <label for="current_password" class="security-form-label">
                                 <span class="required-indicator">*</span> Current Password
                             </label>
                             <div class="security-input-wrapper">
-                                <input type="password" 
-                                       id="current_password" 
-                                       name="current_password" 
-                                       class="security-input" 
-                                       placeholder="Enter your current password"
-                                       required>
+                                <input type="password" id="current_password" name="current_password"
+                                    class="security-input" placeholder="Enter your current password" required>
                                 <button type="button" class="password-toggle-btn" title="Show/Hide" tabindex="-1">
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
-                            <p class="security-help-text">For security reasons, we need your current password to confirm this change</p>
+                            <p class="security-help-text">For security reasons, we need your current password to confirm
+                                this change</p>
                         </div>
 
                         <!-- New Password -->
@@ -121,13 +121,8 @@
                                 <span class="required-indicator">*</span> New Password
                             </label>
                             <div class="security-input-wrapper">
-                                <input type="password" 
-                                       id="new_password" 
-                                       name="new_password" 
-                                       class="security-input" 
-                                       placeholder="Enter a strong new password"
-                                       minlength="8"
-                                       required>
+                                <input type="password" id="new_password" name="new_password" class="security-input"
+                                    placeholder="Enter a strong new password" minlength="8" required>
                                 <button type="button" class="password-toggle-btn" title="Show/Hide" tabindex="-1">
                                     <i class="bi bi-eye"></i>
                                 </button>
@@ -136,9 +131,11 @@
                                 <div class="strength-bar">
                                     <div class="strength-fill"></div>
                                 </div>
-                                <span class="strength-text">Password strength: <strong id="strengthLabel">Weak</strong></span>
+                                <span class="strength-text">Password strength: <strong
+                                        id="strengthLabel">Weak</strong></span>
                             </div>
-                            <p class="security-help-text">Use at least 8 characters with a mix of uppercase, lowercase, numbers, and symbols</p>
+                            <p class="security-help-text">Use at least 8 characters with a mix of uppercase, lowercase,
+                                numbers, and symbols</p>
                         </div>
 
                         <!-- Confirm Password -->
@@ -147,12 +144,8 @@
                                 <span class="required-indicator">*</span> Confirm New Password
                             </label>
                             <div class="security-input-wrapper">
-                                <input type="password" 
-                                       id="new_password_confirmation" 
-                                       name="new_password_confirmation" 
-                                       class="security-input" 
-                                       placeholder="Re-enter your new password"
-                                       required>
+                                <input type="password" id="new_password_confirmation" name="new_password_confirmation"
+                                    class="security-input" placeholder="Re-enter your new password" required>
                                 <button type="button" class="password-toggle-btn" title="Show/Hide" tabindex="-1">
                                     <i class="bi bi-eye"></i>
                                 </button>
@@ -196,7 +189,7 @@
                             <h4 class="session-alert-title">Current Session</h4>
                             <p class="session-alert-text">You are currently logged in from this device</p>
                             <p class="session-last-login">
-                                <strong>Last login:</strong> 
+                                <strong>Last login:</strong>
                                 <?= $user['last_login_at'] ? format_datetime($user['last_login_at']) : 'Unknown' ?>
                             </p>
                         </div>
@@ -218,41 +211,42 @@
                 <div class="security-card-divider"></div>
                 <div class="security-card-body">
                     <?php if (empty($loginActivity)): ?>
-                    <!-- Empty State -->
-                    <div class="empty-state-container">
-                        <div class="empty-state-icon">
-                            <i class="bi bi-inbox"></i>
-                        </div>
-                        <h4 class="empty-state-title">No Recent Activity</h4>
-                        <p class="empty-state-description">No recent login activity recorded. Your login history will appear here.</p>
-                    </div>
-                    <?php else: ?>
-                    <!-- Activity Table -->
-                    <div class="security-activity-table">
-                        <div class="activity-header">
-                            <div class="activity-col-action">Action</div>
-                            <div class="activity-col-ip">IP Address</div>
-                            <div class="activity-col-date">Date & Time</div>
-                        </div>
-                        <div class="activity-rows">
-                            <?php foreach ($loginActivity as $activity): ?>
-                            <div class="activity-row">
-                                <div class="activity-col-action">
-                                    <div class="activity-badge">
-                                        <i class="bi bi-box-arrow-in-right"></i>
-                                        <span><?= e(ucwords(str_replace('_', ' ', $activity['action']))) ?></span>
-                                    </div>
-                                </div>
-                                <div class="activity-col-ip">
-                                    <code class="ip-address"><?= e($activity['ip_address'] ?? 'Unknown') ?></code>
-                                </div>
-                                <div class="activity-col-date">
-                                    <time class="activity-time"><?= format_datetime($activity['created_at']) ?></time>
-                                </div>
+                        <!-- Empty State -->
+                        <div class="empty-state-container">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-inbox"></i>
                             </div>
-                            <?php endforeach; ?>
+                            <h4 class="empty-state-title">No Recent Activity</h4>
+                            <p class="empty-state-description">No recent login activity recorded. Your login history will
+                                appear here.</p>
                         </div>
-                    </div>
+                    <?php else: ?>
+                        <!-- Activity Table -->
+                        <div class="security-activity-table">
+                            <div class="activity-header">
+                                <div class="activity-col-action">Action</div>
+                                <div class="activity-col-ip">IP Address</div>
+                                <div class="activity-col-date">Date & Time</div>
+                            </div>
+                            <div class="activity-rows">
+                                <?php foreach ($loginActivity as $activity): ?>
+                                    <div class="activity-row">
+                                        <div class="activity-col-action">
+                                            <div class="activity-badge">
+                                                <i class="bi bi-box-arrow-in-right"></i>
+                                                <span><?= e(ucwords(str_replace('_', ' ', $activity['action']))) ?></span>
+                                            </div>
+                                        </div>
+                                        <div class="activity-col-ip">
+                                            <code class="ip-address"><?= e($activity['ip_address'] ?? 'Unknown') ?></code>
+                                        </div>
+                                        <div class="activity-col-date">
+                                            <time class="activity-time"><?= format_datetime($activity['created_at']) ?></time>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -274,7 +268,9 @@
                 <div class="security-card-divider"></div>
                 <div class="security-card-body">
                     <div class="feature-disabled-container">
-                        <p class="feature-disabled-text">Two-factor authentication will be available soon. This feature adds an extra layer of security to your account by requiring a second form of verification.</p>
+                        <p class="feature-disabled-text">Two-factor authentication will be available soon. This feature
+                            adds an extra layer of security to your account by requiring a second form of verification.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -1037,16 +1033,16 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Password Toggle Functionality
         const toggleButtons = document.querySelectorAll('.password-toggle-btn');
-        
+
         toggleButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
+            button.addEventListener('click', function (e) {
                 e.preventDefault();
                 const input = this.parentElement.querySelector('input');
                 const icon = this.querySelector('i');
-                
+
                 if (input.type === 'password') {
                     input.type = 'text';
                     icon.classList.remove('bi-eye');
@@ -1063,9 +1059,9 @@
         const newPasswordInput = document.getElementById('new_password');
         const strengthFill = document.querySelector('.strength-fill');
         const strengthLabel = document.getElementById('strengthLabel');
-        
+
         if (newPasswordInput) {
-            newPasswordInput.addEventListener('input', function() {
+            newPasswordInput.addEventListener('input', function () {
                 const strength = calculatePasswordStrength(this.value);
                 updateStrengthIndicator(strength, strengthFill, strengthLabel);
             });
@@ -1074,14 +1070,14 @@
         // Password Match Indicator
         const confirmPasswordInput = document.getElementById('new_password_confirmation');
         const passwordMatchIndicator = document.getElementById('passwordMatch');
-        
+
         if (confirmPasswordInput && newPasswordInput) {
-            confirmPasswordInput.addEventListener('input', function() {
+            confirmPasswordInput.addEventListener('input', function () {
                 const match = this.value === newPasswordInput.value && this.value.length > 0;
                 passwordMatchIndicator.style.display = match ? 'block' : 'none';
             });
-            
-            newPasswordInput.addEventListener('input', function() {
+
+            newPasswordInput.addEventListener('input', function () {
                 if (confirmPasswordInput.value.length > 0) {
                     const match = this.value === confirmPasswordInput.value;
                     passwordMatchIndicator.style.display = match ? 'block' : 'none';
@@ -1092,14 +1088,14 @@
         // Calculate password strength
         function calculatePasswordStrength(password) {
             let strength = 0;
-            
+
             if (password.length >= 8) strength++;
             if (password.length >= 12) strength++;
             if (/[a-z]/.test(password)) strength++;
             if (/[A-Z]/.test(password)) strength++;
             if (/[0-9]/.test(password)) strength++;
             if (/[^a-zA-Z0-9]/.test(password)) strength++;
-            
+
             return strength;
         }
 
@@ -1108,7 +1104,7 @@
             const width = (strength / 6) * 100;
             let color = '#FF5630';
             let labelText = 'Weak';
-            
+
             if (strength >= 5) {
                 color = '#36B37E';
                 labelText = 'Strong';
@@ -1116,7 +1112,7 @@
                 color = '#e77817';
                 labelText = 'Fair';
             }
-            
+
             fill.style.width = width + '%';
             fill.style.backgroundColor = color;
             label.textContent = labelText;

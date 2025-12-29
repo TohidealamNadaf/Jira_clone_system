@@ -89,8 +89,8 @@
             <div class="dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#"
                     data-bs-toggle="dropdown">
-                    <?php if ($user['avatar'] ?? null): ?>
-                        <img src="<?= e($user['avatar']) ?>" class="rounded-circle me-2" width="32" height="32" alt="">
+                    <?php if (!empty($user['avatar']) && ($avatarUrl = avatar($user['avatar']))): ?>
+                        <img src="<?= e($avatarUrl) ?>" class="rounded-circle me-2" width="32" height="32" alt="">
                     <?php else: ?>
                         <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2"
                             style="width: 32px; height: 32px;">

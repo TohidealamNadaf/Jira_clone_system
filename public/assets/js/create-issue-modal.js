@@ -349,104 +349,159 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            if (!projectKey) {
-                alert('⚠️ Unable to determine project key');
-                console.error('❌ No project key found in selected option');
-                return;
-            }
-
-            const submitBtn = document.getElementById('createIssueBtn');
+            const submitBtn = document.getElementById('global-modal-createIssueBtn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
             }
 
             const basePath = getBasePath();
-            // ✅ Use correct endpoint: POST /issues/store (not /projects/{key}/issues)
-            const endpoint = basePath + '/issues/store';
-
-            console.log('📤 [CREATE-ISSUE-MODAL] Submitting issue to:', endpoint);
-
-            // Create FormData object to handle files + validation data
-            const formData = new FormData();
-            formData.append('project_id', parseInt(projectId));
-            formData.append('issue_type_id', parseInt(issueTypeId));
-            formData.append('summary', summary.trim());
-            formData.append('description', description);
-
-            if (assigneeId) formData.append('assignee_id', parseInt(assigneeId));
-            if (priorityId) formData.append('priority_id', parseInt(priorityId));
-            if (startDate) formData.append('start_date', startDate);
-            if (endDate) formData.append('end_date', endDate);
-
-            // Append input files
-            if (selectedFiles.size > 0) {
-                console.log(`📎 Appending ${selectedFiles.size} files...`);
-                selectedFiles.forEach(file => {
-                    formData.append('attachments[]', file);
-                });
-            }
-
-            // CSRF Token
             const csrfToken = getCsrfToken();
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-Token': csrfToken
-                    // Content-Type must be undefined for FormData
-                },
-                body: formData,
-                credentials: 'include'
-            });
+            if (isEditMode) {
+                // ---------------------------------------------------------
+                // EDIT MODE (PUT /api/v1/issues/{key})
+                // ---------------------------------------------------------
+                const endpoint = getApiUrl(`/api/v1/issues/${currentIssueKey}`);
+                console.log('✏️ Checkpoint: Updating issue via API:', endpoint);
 
-            console.log('📡 [CREATE-ISSUE-MODAL] Response status:', response.status);
+                const payload = {
+                    summary: summary.trim(),
+                    description: description,
+                    issue_type_id: parseInt(issueTypeId),
+                    project_id: parseInt(projectId), // Shouldn't really change but required for validation sometimes
+                    assignee_id: assigneeId ? parseInt(assigneeId) : null,
+                    priority_id: priorityId ? parseInt(priorityId) : null,
+                    start_date: startDate || null,
+                    end_date: endDate || null
+                };
 
-            // Check content type before parsing JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const errorText = await response.text();
-                console.error('❌ [CREATE-ISSUE-MODAL] Non-JSON response:', errorText.substring(0, 500));
-                alert('❌ Server error. Please check console and try again.');
-                return;
-            }
+                // Update Issue Details
+                const response = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-            const result = await response.json();
-            console.log('📊 [CREATE-ISSUE-MODAL] API Response:', result);
+                const result = await response.json();
 
-            if (response.ok && result.success) {
-                console.log('✅ [CREATE-ISSUE-MODAL] Issue created successfully:', result);
-                alert(`✅ Issue ${result.issue_key} created successfully!`);
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to update issue');
+                }
 
-                // Close modal
+                console.log('✅ Issue updated successfully');
+
+                // Handle Attachments (Upload separately)
+                if (selectedFiles.size > 0) {
+                    console.log(`📎 Uploading ${selectedFiles.size} new attachments...`);
+                    const attachEndpoint = getApiUrl(`/api/v1/issues/${currentIssueKey}/attachments`);
+
+                    for (const file of selectedFiles) {
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        await fetch(attachEndpoint, {
+                            method: 'POST',
+                            headers: { 'X-CSRF-Token': csrfToken },
+                            body: formData
+                        });
+                    }
+                }
+
+                alert('✅ Issue updated successfully!');
                 modal.hide();
+                window.location.reload();
 
-                // Reset form
-                form.reset();
-                selectedFiles.clear(); // Clear files
-                updateFilePreview();
-
-                // Reload page after delay
-                setTimeout(() => {
-                    window.location.href = basePath + '/projects/' + projectKey + '/board';
-                }, 1000);
             } else {
-                // Handle error response
-                const errorMessage = result.error || result.message || 'Failed to create issue';
-                console.error('❌ [CREATE-ISSUE-MODAL] API Error:', errorMessage);
-                console.error('❌ [CREATE-ISSUE-MODAL] Full response:', result);
-                alert('❌ ' + errorMessage);
+                // ---------------------------------------------------------
+                // CREATE MODE (POST /issues/store)
+                // ---------------------------------------------------------
+                // ✅ Use correct endpoint: POST /issues/store (not /projects/{key}/issues)
+                const endpoint = basePath + '/issues/store';
+
+                console.log('📤 [CREATE-ISSUE-MODAL] Submitting issue to:', endpoint);
+
+                // Create FormData object to handle files + validation data
+                const formData = new FormData();
+                formData.append('project_id', parseInt(projectId));
+                formData.append('issue_type_id', parseInt(issueTypeId));
+                formData.append('summary', summary.trim());
+                formData.append('description', description);
+
+                if (assigneeId) formData.append('assignee_id', parseInt(assigneeId));
+                if (priorityId) formData.append('priority_id', parseInt(priorityId));
+                if (startDate) formData.append('start_date', startDate);
+                if (endDate) formData.append('end_date', endDate);
+
+                // Append input files
+                if (selectedFiles.size > 0) {
+                    console.log(`📎 Appending ${selectedFiles.size} files...`);
+                    selectedFiles.forEach(file => {
+                        formData.append('attachments[]', file);
+                    });
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                        // Content-Type must be undefined for FormData
+                    },
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                console.log('📡 [CREATE-ISSUE-MODAL] Response status:', response.status);
+
+                // Check content type before parsing JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const errorText = await response.text();
+                    console.error('❌ [CREATE-ISSUE-MODAL] Non-JSON response:', errorText.substring(0, 500));
+                    alert('❌ Server error. Please check console and try again.');
+                    return;
+                }
+
+                const result = await response.json();
+                console.log('📊 [CREATE-ISSUE-MODAL] API Response:', result);
+
+                if (response.ok && result.success) {
+                    console.log('✅ [CREATE-ISSUE-MODAL] Issue created successfully:', result);
+                    alert(`✅ Issue ${result.issue_key} created successfully!`);
+
+                    // Close modal
+                    modal.hide();
+
+                    // Reset form
+                    form.reset();
+                    selectedFiles.clear(); // Clear files
+                    updateFilePreview();
+
+                    // Reload page after delay
+                    setTimeout(() => {
+                        window.location.href = basePath + '/projects/' + projectKey + '/board';
+                    }, 1000);
+                } else {
+                    // Handle error response
+                    const errorMessage = result.error || result.message || 'Failed to create issue';
+                    console.error('❌ [CREATE-ISSUE-MODAL] API Error:', errorMessage);
+                    console.error('❌ [CREATE-ISSUE-MODAL] Full response:', result);
+                    alert('❌ ' + errorMessage);
+                }
             }
 
         } catch (error) {
             console.error('❌ [CREATE-ISSUE-MODAL] Error submitting form:', error);
             console.error('❌ [CREATE-ISSUE-MODAL] Stack trace:', error.stack);
-            alert('❌ Network error. Please check console and try again.');
+            alert('❌ ' + (error.message || 'Network error. Please check console.'));
         } finally {
             const submitBtn = document.getElementById('global-modal-createIssueBtn');
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Create';
+                submitBtn.innerHTML = isEditMode ? 'Update Issue' : 'Create';
             }
         }
     }
@@ -651,11 +706,35 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Expose globally for potential future use
+        // State variables
+        let isEditMode = false;
+        let currentIssueKey = null;
+        let currentIssueId = null;
+
         window.CreateIssueModal = {
             modal: modal,
             open: function () {
                 console.log('🔘 Opening modal programmatically');
+                resetModal(); // Ensure clean state
                 modal?.show();
+            },
+            openEdit: async function (issueKey) {
+                console.log('✏️ Opening modal in EDIT mode for:', issueKey);
+                resetModal();
+                isEditMode = true;
+                currentIssueKey = issueKey;
+
+                // Show modal immediately with loading state if desired, or wait for data
+                const modalTitle = document.getElementById('createIssueModalLabel');
+                const submitBtn = document.getElementById('global-modal-createIssueBtn');
+
+                if (modalTitle) modalTitle.textContent = `Edit Issue: ${issueKey}`;
+                if (submitBtn) submitBtn.textContent = 'Update Issue';
+
+                modal?.show();
+
+                // Fetch and populate data
+                await loadIssueData(issueKey);
             },
             close: function () {
                 console.log('❌ Closing modal programmatically');
@@ -665,6 +744,102 @@ document.addEventListener('DOMContentLoaded', function () {
             submit: submitCreateIssueForm,
             getBasePath: getBasePath
         };
+
+        /**
+         * Reset modal state
+         */
+        function resetModal() {
+            isEditMode = false;
+            currentIssueKey = null;
+            currentIssueId = null;
+
+            const form = document.getElementById('global-modal-createIssueForm');
+            if (form) form.reset();
+
+            const modalTitle = document.getElementById('createIssueModalLabel');
+            const submitBtn = document.getElementById('global-modal-createIssueBtn');
+
+            if (modalTitle) modalTitle.textContent = 'Create Issue';
+            if (submitBtn) submitBtn.textContent = 'Create';
+
+            selectedFiles.clear();
+            updateFilePreview();
+
+            // Clear TinyMCE
+            if (typeof tinymce !== 'undefined' && tinymce.get('global-modal-issueDescription')) {
+                tinymce.get('global-modal-issueDescription').setContent('');
+            }
+        }
+
+        /**
+         * Load Issue Data for Editing
+         */
+        async function loadIssueData(issueKey) {
+            const apiUrl = getApiUrl(`/api/v1/issues/${issueKey}`);
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('Failed to fetch issue details');
+
+                const data = await response.json();
+                const issue = data.issue;
+                currentIssueId = issue.id;
+
+                console.log('📥 Loaded issue data:', issue);
+
+                // Populate Fields
+
+                // 1. Project (Wait for dropdown to load first if empty)
+                const projectSelect = document.getElementById('global-modal-issueProject');
+                if (projectSelect.options.length <= 1) {
+                    await loadCreateIssueModalData();
+                }
+                projectSelect.value = issue.project_id;
+                projectSelect.dispatchEvent(new Event('change')); // Trigger listener to load issue types
+
+                // 2. Issue Type (Wait for issue types to load)
+                // We need to wait a bit for the project change event to fetch issue types
+                // Or we can manually trigger the fetch
+                await loadIssueTypesForProject();
+
+                // Small delay to ensure DOM update or promise resolution if loadIssueTypesForProject doesn't await DOM
+                setTimeout(() => {
+                    const typeSelect = document.getElementById('global-modal-issueType');
+                    if (typeSelect) typeSelect.value = issue.issue_type_id;
+                }, 500);
+
+                // 3. Summary
+                document.getElementById('global-modal-issueSummary').value = issue.summary;
+
+                // 4. Description (TinyMCE)
+                if (typeof tinymce !== 'undefined' && tinymce.get('global-modal-issueDescription')) {
+                    tinymce.get('global-modal-issueDescription').setContent(issue.description || '');
+                } else {
+                    document.getElementById('global-modal-issueDescription').value = issue.description || '';
+                }
+
+                // 5. Assignee (Wait for users to load)
+                // Checks if users are loaded, if not wait/reload
+                const assigneeSelect = document.getElementById('global-modal-issueAssignee');
+                if (assigneeSelect.options.length <= 1) {
+                    // Assume loadCreateIssueModalData called fetchUsers
+                }
+                assigneeSelect.value = issue.assignee_id || '';
+
+                // 6. Priority
+                const prioritySelect = document.getElementById('global-modal-issuePriority');
+                prioritySelect.value = issue.priority_id || '';
+
+                // 7. Dates
+                document.getElementById('global-modal-issueStartDate').value = issue.start_date || '';
+                document.getElementById('global-modal-issueEndDate').value = issue.end_date || '';
+
+            } catch (error) {
+                console.error('❌ Error loading issue data:', error);
+                alert('Failed to load issue details. Please try again.');
+                modal.hide();
+            }
+        }
+
 
         console.log('✅ [CREATE-ISSUE-MODAL] Create Issue Modal fully initialized');
         console.log('📍 [CREATE-ISSUE-MODAL] Base path:', getBasePath());

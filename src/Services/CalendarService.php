@@ -55,7 +55,7 @@ class CalendarService
     private function getEvents(string $start, string $end, array $filters = []): array
     {
         $sql = "
-            SELECT
+            SELECT DISTINCT
                 i.id,
                 i.issue_key as 'key',
                 i.summary as title,
@@ -73,6 +73,7 @@ class CalendarService
                 proj.name as project_name,
                 proj.key as project_key,
                 it.name as issue_type,
+                i.issue_type_id,
                 i.assignee_id,
                 assignee.display_name as assignee_name,
                 assignee.email as assignee_email,
@@ -130,14 +131,17 @@ class CalendarService
     private function formatEvent(array $issue): array
     {
         // Determine start/end to use
+        // Determine start/end to use
         // User Request: Always use Due Date for the badge position if available.
         // This prevents the event from spanning multiple days on the calendar.
         if (!empty($issue['due_date'])) {
             $start = $issue['due_date'];
+            // Force single day for calendar view to avoid spanning "duplication" look
             $end = $issue['due_date'];
         } else {
             $start = $issue['start_date'];
-            $end = $issue['end_date'] ?? $issue['start_date'];
+            // Force single day
+            $end = $issue['start_date'];
         }
 
         // Color mapping based on priority

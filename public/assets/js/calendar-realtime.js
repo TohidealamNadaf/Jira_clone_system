@@ -4,6 +4,12 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+    if (window.JiraCalendarInitialized) {
+        console.warn('⚠️ [CALENDAR] Calendar script already initialized. Skipping.');
+        return;
+    }
+    window.JiraCalendarInitialized = true;
+
     console.log('📅 [CALENDAR] DOMContentLoaded event fired');
 
     const calendarEl = document.getElementById('mainCalendar');
@@ -150,6 +156,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     function initCalendar() {
+        if (calendar) {
+            console.warn('⚠️ [CALENDAR] Destroying existing calendar instance');
+            calendar.destroy();
+            calendar = null;
+        }
+
+        const uniqueRenderSet = new Set();
+
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             headerToolbar: false,
@@ -158,15 +172,27 @@ document.addEventListener('DOMContentLoaded', function () {
             droppable: true,
             selectable: true,
             dayMaxEvents: true,
-            eventMaxStack: 3,
+            // eventMaxStack: 3, // REMOVED to avoid stacking issues
             themeSystem: 'standard',
-            dropAccept: '.unscheduled-issue', // Only accept drops from our unscheduled issues
+            dropAccept: '.unscheduled-issue',
 
             events: function (info, successCallback, failureCallback) {
                 fetchEvents(info)
                     .then(events => {
-                        updateSummaryStats(events);
-                        successCallback(events);
+                        // AGGRESSIVE CLIENT-SIDE DEDUPLICATION
+                        const uniqueEvents = [];
+                        const seenKeys = new Set();
+                        events.forEach(e => {
+                            const key = e.extendedProps?.key || e.id;
+                            if (!seenKeys.has(key)) {
+                                seenKeys.add(key);
+                                uniqueEvents.push(e);
+                            }
+                        });
+
+                        console.log(`📅 [CALENDAR] Client-side Dedup: ${events.length} -> ${uniqueEvents.length}`);
+                        updateSummaryStats(uniqueEvents);
+                        successCallback(uniqueEvents);
                     })
                     .catch(error => failureCallback(error));
             },
@@ -177,9 +203,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const title = arg.event.title;
                 const displayTitle = title.includes(': ') ? title.split(': ')[1] : title;
 
+                // Debug duplicate rendering
+                // console.log(`📅 [RENDER] Rendering event ${key}`);
+
                 return {
                     html: `
-                        <div class="fc-event-content" data-priority="${priority}">
+                        <div class="fc-event-content" data-priority="${priority}" data-issue-key="${key}">
                             <strong>${key}</strong> 
                             ${displayTitle}
                         </div>

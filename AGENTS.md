@@ -3742,3 +3742,19 @@ The calendar system has NO BUGS and NO MISSING COMPONENTS:
 
 ## Phase 2: Future Development (Reserved)
 
+## Attachment Preview Implementation (December 27, 2025) ✅ COMPLETE
+
+**Status**: ✅ COMPLETE - Production Ready
+**Feature**: Inline file preview for attachments within the issue view modal.
+
+**Key Capabilities**:
+- **Inline Preview**: Supports images, PDFs, audio, video, and text/code directly in browser.
+- **Office Documents**: Integrates Google Docs Viewer for requesting previews of Office files (formatted docs, spreadsheets, slides).
+- **Graceful Fallback**: Detects localhost environment for Google Docs Viewer and provides clear user feedback/fallback to download.
+
+**Technical Implementation**:
+- **UI Logic**: "Swap Modal" strategy to prevent backdrop stacking issues (hides attachments list, shows preview).
+- **Frontend**: `views/issues/show.php` includes preview logic, modal structure, and `.attachment-action-btn` styling.
+- **Backend**: `AttachmentController::download` updated to handle `?preview=1` for inline `Content-Disposition`.
+- **UI Refinement**: Consistent button styling (`.attachment-action-btn`) and optimized modal dimensions (800px width).
+

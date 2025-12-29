@@ -46,7 +46,8 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                     </div>
                     <div class="issue-actions-group">
                         <?php if (can('issues.edit', $issue['project_id'])): ?>
-                            <a href="<?= url("/issue/{$issue['issue_key']}/edit") ?>" class="btn btn-sm btn-outline">
+                            <a href="#" onclick="CreateIssueModal.openEdit('<?= $issue['issue_key'] ?>'); return false;"
+                                class="btn btn-sm btn-outline">
                                 <i class="bi bi-pencil"></i> Edit
                             </a>
                         <?php endif; ?>

@@ -671,5 +671,5 @@
 </script>
 
 <!-- FullCalendar -->
-<script src="<?= asset('js/calendar-realtime.js') ?>"></script>
+<script src="<?= asset('js/calendar-realtime.js') ?>?v=<?= time() ?>"></script>
 <?php \App\Core\View::endSection(); ?>

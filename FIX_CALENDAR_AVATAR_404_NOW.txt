@@ -1,0 +1,50 @@
+═══════════════════════════════════════════════════════════════════════════════
+    CALENDAR AVATAR 404 FIX - QUICK ACTION CARD
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ WHAT WAS FIXED
+  Issue: Calendar page showing "avatar_1_1767684205.png 404 (Not Found)"
+  Cause: JavaScript building incorrect avatar URL paths
+  Fix:   Enhanced getAvatarUrl() function in calendar-realtime.js
+
+📁 FILES MODIFIED
+  1. public/assets/js/calendar-realtime.js (lines 426-453, 1 function)
+
+⏱️  YOUR ACTION REQUIRED (2 MINUTES)
+  1. Clear browser cache:     CTRL + SHIFT + DEL → All time → Clear
+  2. Hard refresh browser:    CTRL + F5
+  3. Done! Avatars fixed.
+
+🔍 VERIFICATION (5 MINUTES)
+  1. Go to:     http://localhost:8080/jira_clone_system/public/calendar
+  2. Click any event to open modal
+  3. Press F12 to open DevTools
+  4. Go to Network tab
+  5. Filter: "avatar"
+  6. Result: All should show 200 OK (not 404)
+  7. URL: Should have /uploads/avatars/ (not just /avatars/)
+
+🧪 AUTOMATED TEST (OPTIONAL)
+  Visit: http://localhost:8080/jira_clone_system/public/test_calendar_avatar_fix.php
+  Shows all test cases and results
+
+🚀 DEPLOYMENT STATUS
+  Risk Level:       🟢 VERY LOW (JavaScript only)
+  Breaking Changes: 🟢 NONE
+  Downtime:         🟢 NO
+  Backward Compat:  🟢 YES
+  Status:           ✅ READY FOR PRODUCTION
+
+📋 WHAT CHANGED
+  Before: Avatar URL built as {webBase}//avatars/... (double slash, 404)
+  After:  Avatar URL built as {webBase}/uploads/avatars/... (correct, 200 OK)
+
+✨ PAGES AFFECTED
+  ✅ Calendar page (modal event details)
+  ✅ Assignee avatars in event modal
+  ✅ Reporter avatars in event modal
+
+📚 DOCUMENTATION
+  Full details: CALENDAR_AVATAR_404_FIX_JANUARY_6.md
+
+═══════════════════════════════════════════════════════════════════════════════

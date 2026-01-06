@@ -155,6 +155,10 @@ class CalendarService
 
         $color = $colors[$issue['priority_name']] ?? '#777777';
 
+        // Process avatar paths through avatar() helper to fix 404 errors
+        $assigneeAvatar = !empty($issue['assignee_avatar']) ? avatar($issue['assignee_avatar']) : null;
+        $reporterAvatar = !empty($issue['reporter_avatar']) ? avatar($issue['reporter_avatar']) : null;
+
         return [
             'id' => $issue['id'],
             'title' => $issue['key'] . ': ' . $issue['title'],
@@ -178,11 +182,11 @@ class CalendarService
                 'assigneeId' => $issue['assignee_id'],
                 'assigneeName' => $issue['assignee_name'],
                 'assigneeEmail' => $issue['assignee_email'],
-                'assigneeAvatar' => $issue['assignee_avatar'],
+                'assigneeAvatar' => $assigneeAvatar,
                 'reporterId' => $issue['reporter_id'],
                 'reporterName' => $issue['reporter_name'],
                 'reporterEmail' => $issue['reporter_email'],
-                'reporterAvatar' => $issue['reporter_avatar'],
+                'reporterAvatar' => $reporterAvatar,
                 'created' => $issue['created_at'],
                 'updated' => $issue['updated_at'],
                 'storyPoints' => $issue['story_points']
@@ -323,9 +327,16 @@ class CalendarService
 
         $issues = Database::select($sql);
 
-        // No labels column, skip parsing
-
-        return $issues;
+        // Process avatar paths through avatar() helper to fix 404 errors
+        return array_map(function(array $issue): array {
+            if (!empty($issue['assignee_avatar'])) {
+                $issue['assignee_avatar'] = avatar($issue['assignee_avatar']);
+            }
+            if (!empty($issue['reporter_avatar'])) {
+                $issue['reporter_avatar'] = avatar($issue['reporter_avatar']);
+            }
+            return $issue;
+        }, $issues);
     }
 
     /**

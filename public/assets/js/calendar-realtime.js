@@ -423,18 +423,54 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('detailDescription').innerHTML = props.description || 'No description';
         document.getElementById('detailStoryPoints').textContent = props.storyPoints || '—';
 
-        // Helper to get avatar URL
+        // Helper to get avatar URL - Uses same logic as avatar() PHP helper
         const getAvatarUrl = (path) => {
             if (!path) return '';
-            if (path.startsWith('http')) return path;
-            return `${window.JiraConfig.webBase}/${path}`;
+            
+            // If already a full URL, return as-is
+            if (path.startsWith('http://') || path.startsWith('https://')) {
+                return path;
+            }
+            
+            // FIX: Handle incorrectly stored /public/avatars/ paths
+            if (path.includes('/public/avatars/')) {
+                path = path.replace('/public/avatars/', '/uploads/avatars/');
+            }
+            
+            // FIX: Handle /avatars/ paths (missing /uploads prefix)
+            if (path.startsWith('/avatars/')) {
+                path = '/uploads' + path;
+            }
+            
+            // Ensure path starts with /
+            if (!path.startsWith('/')) {
+                path = '/' + path;
+            }
+            
+            // Build URL using the proper URL building logic
+            // window.JiraConfig.webBase includes /jira_clone_system/public/ 
+            let baseUrl = window.JiraConfig.webBase;
+            
+            // Remove trailing slash
+            if (baseUrl.endsWith('/')) {
+                baseUrl = baseUrl.slice(0, -1);
+            }
+            
+            // Return full URL
+            return baseUrl + path;
         };
 
         // Assignee
         const assigneeAvatar = document.getElementById('assigneeAvatar');
         const assigneeName = document.getElementById('assigneeName');
         if (props.assigneeName) {
-            assigneeAvatar.src = getAvatarUrl(props.assigneeAvatar);
+            const assigneeUrl = getAvatarUrl(props.assigneeAvatar);
+            console.log('📅 [AVATAR] Assignee:', {
+                raw: props.assigneeAvatar,
+                resolved: assigneeUrl,
+                webBase: window.JiraConfig.webBase
+            });
+            assigneeAvatar.src = assigneeUrl;
             assigneeAvatar.alt = props.assigneeName;
             assigneeName.textContent = props.assigneeName;
             assigneeAvatar.style.display = props.assigneeAvatar ? 'inline-block' : 'none';
@@ -449,7 +485,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const reporterAvatar = document.getElementById('reporterAvatar');
         const reporterName = document.getElementById('reporterName');
         if (props.reporterName) {
-            reporterAvatar.src = getAvatarUrl(props.reporterAvatar);
+            const reporterUrl = getAvatarUrl(props.reporterAvatar);
+            console.log('📅 [AVATAR] Reporter:', {
+                raw: props.reporterAvatar,
+                resolved: reporterUrl,
+                webBase: window.JiraConfig.webBase
+            });
+            reporterAvatar.src = reporterUrl;
             reporterAvatar.alt = props.reporterName;
             reporterName.textContent = props.reporterName;
             reporterAvatar.style.display = props.reporterAvatar ? 'inline-block' : 'none';

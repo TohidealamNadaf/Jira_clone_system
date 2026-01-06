@@ -20,8 +20,10 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
 
+
     <!-- TinyMCE (Community Edition via CDNJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom CSS -->
     <link href="<?= asset('css/app.css') ?>" rel="stylesheet">
@@ -1166,7 +1168,8 @@
                 position: static;
                 /* Stack naturally in mobile */
                 width: 100%;
-                pointer-events: auto !important; /* Always interactive */
+                pointer-events: auto !important;
+                /* Always interactive */
                 opacity: 1 !important;
                 visibility: visible !important;
                 box-shadow: none;

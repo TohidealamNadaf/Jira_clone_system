@@ -1,25 +1,22 @@
 <?php \App\Core\View:: extends('layouts.app'); ?>
 <?php \App\Core\View::section('content'); ?>
 
-<div class="members-page-wrapper">
+<div class="page-wrapper">
+    <!-- 1. Breadcrumb Navigation -->
+    <div class="breadcrumb">
+        <a href="<?= url('/projects') ?>" class="breadcrumb-link">
+            <i class="bi bi-folder"></i> Projects
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="<?= url("/projects/{$project['key']}") ?>" class="breadcrumb-link">
+            <?= e($project['name']) ?>
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Team Members</span>
+    </div>
 
-    <!-- Breadcrumb Navigation -->
-    <nav class="breadcrumb-section">
-        <div class="breadcrumb-container">
-            <a href="<?= url('/projects') ?>" class="breadcrumb-link">
-                <i class="bi bi-diagram-3"></i>Projects
-            </a>
-            <span class="breadcrumb-separator">/</span>
-            <a href="<?= url("/projects/{$project['key']}") ?>" class="breadcrumb-link">
-                <?= e($project['name']) ?>
-            </a>
-            <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-current">Members</span>
-        </div>
-    </nav>
-
-    <!-- Page Header -->
-    <div class="page-header-section">
+    <!-- 2. Page Header -->
+    <div class="page-header">
         <div class="header-left">
             <div class="header-avatar">
                 <?php
@@ -36,248 +33,1239 @@
                     </div>
                 <?php endif; ?>
             </div>
-
             <div class="header-info">
-                <h1 class="header-title">Project Members</h1>
-                <p class="header-meta">
-                    <span class="meta-item"><?= e($project['key']) ?></span>
-                    <span class="meta-separator">•</span>
-                    <span class="meta-item">
-                        <?= count($members ?? []) ?> member<?= count($members ?? []) !== 1 ? 's' : '' ?>
-                    </span>
-                </p>
-                <p class="header-description">Manage team access and assign roles within this project</p>
+                <h1 class="page-title">Team Members</h1>
+                <p class="page-subtitle">Manage access and roles for <?= e($project['name']) ?></p>
             </div>
         </div>
-
         <div class="header-actions">
             <?php if (can('manage-members', $project['id'])): ?>
-                <button class="action-button" data-bs-toggle="modal" data-bs-target="#addMemberModal">
-                    <i class="bi bi-person-plus"></i>Add Member
+                <button class="action-button primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                    <i class="bi bi-person-plus-fill"></i> Add Member
                 </button>
             <?php endif; ?>
-
-            <a href="<?= url("/projects/{$project['key']}") ?>" class="action-button">
-                <i class="bi bi-arrow-left"></i>Back to Project
-            </a>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="page-content-section">
+    <!-- 3. Main Content Area -->
+    <div class="page-content">
+        <!-- LEFT COLUMN -->
+        <div class="content-left">
 
-        <div class="content-main">
-            <div class="members-card">
-                <div class="card-header">
-                    <h2 class="card-title">Team Members</h2>
-                    <span class="card-count"><?= count($members ?? []) ?></span>
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value"><?= count($members) ?></div>
+                    <div class="stat-label">Total Members</div>
+                    <i class="bi bi-people stat-icon"></i>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-value">
+                        <?= count(array_filter($members, fn($m) => ($m['role'] ?? '') === 'developer')) ?>
+                    </div>
+                    <div class="stat-label">Developers</div>
+                    <i class="bi bi-code-slash stat-icon"></i>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">
+                        <?= count(array_filter($members, fn($m) => ($m['role'] ?? '') === 'qa')) ?>
+                    </div>
+                    <div class="stat-label">QA Testers</div>
+                    <i class="bi bi-bug stat-icon"></i>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">
+                        <?= count(array_filter($members, fn($m) => ($m['role'] ?? '') === 'project_lead')) ?>
+                    </div>
+                    <div class="stat-label">Leads</div>
+                    <i class="bi bi-star stat-icon"></i>
+                </div>
+            </div>
 
-                <div class="card-body">
-                    <?php if (empty($members)): ?>
-                        <div class="empty-state">
-                            <div class="empty-icon">👥</div>
-                            <h3 class="empty-title">No members found</h3>
-                            <?php if (can('manage-members', $project['id'])): ?>
-                                <button class="btn-empty-cta" data-bs-toggle="modal" data-bs-target="#addMemberModal">
-                                    <i class="bi bi-person-plus"></i>Add Member
-                                </button>
-                            <?php endif; ?>
-                        </div>
-                    <?php else: ?>
-                        <div class="members-list">
-                            <?php foreach ($members as $member): ?>
-                                <div class="member-row">
+            <!-- Controls Bar -->
+            <div class="controls-bar">
+                <div class="search-filter-group">
+                    <div class="search-wrapper">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" id="memberSearch" placeholder="Search members..." class="search-input">
+                    </div>
+                    <div class="filter-wrapper">
+                        <i class="bi bi-funnel filter-icon"></i>
+                        <select id="roleFilter" class="filter-select">
+                            <option value="">All Roles</option>
+                            <option value="administrator">Administrator</option>
+                            <option value="project_lead">Project Lead</option>
+                            <option value="developer">Developer</option>
+                            <option value="qa">QA</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="view-toggle-group">
+                    <button class="view-btn active" id="btnGridView" title="Grid View">
+                        <i class="bi bi-grid-fill"></i>
+                    </button>
+                    <button class="view-btn" id="btnListView" title="List View">
+                        <i class="bi bi-list-ul"></i>
+                    </button>
+                </div>
+            </div>
 
-                                    <!-- Left -->
-                                    <div class="member-cell-left">
-                                        <div class="member-avatar-wrapper">
-                                            <?php
-                                            $avatarUrl = avatar($member['avatar'] ?? null, $member['display_name'] ?? 'User');
-                                            if ($avatarUrl): ?>
-                                                <img src="<?= e($avatarUrl) ?>" class="member-avatar"
-                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                <div class="member-avatar-fallback" style="display:none;">
-                                                    <?= avatarInitials($member['display_name'], $member['email']) ?>
+            <!-- Members Content -->
+            <div class="members-container">
+                <?php if (empty($members)): ?>
+                    <div class="empty-state">
+                        <i class="bi bi-people empty-icon"></i>
+                        <h3>No Members Found</h3>
+                        <p>This project has no members yet.</p>
+                    </div>
+                <?php else: ?>
+
+                    <!-- GRID VIEW -->
+                    <div id="gridView" class="members-grid">
+                        <?php foreach ($members as $member): ?>
+                            <div class="member-card member-item"
+                                data-member-name="<?= strtolower(e($member['display_name'])) ?>"
+                                data-member-email="<?= strtolower(e($member['email'])) ?>"
+                                data-member-role="<?= e($member['role']) ?>">
+
+                                <div class="card-options">
+                                    <?php if (can('manage-members', $project['id'])): ?>
+                                        <div class="dropdown">
+                                            <button class="btn-icon" id="dropdownBtn<?= $member['user_id'] ?>"
+                                                data-bs-toggle="dropdown" aria-expanded="false" type="button">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <!-- <ul class="dropdown-menu" aria-labelledby="dropdownBtn<?= $member['user_id'] ?>"> -->
+                                            <ul class="dropdown-menu dropdown-menu-end"
+                                                aria-labelledby="dropdownBtn<?= $member['user_id'] ?>">
+
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#changeRoleModal"
+                                                        data-member-id="<?= e($member['user_id']) ?>"
+                                                        data-member-name="<?= e($member['display_name']) ?>"
+                                                        data-member-role="<?= e($member['role']) ?>"
+                                                        onclick="setupChangeRole(this); return false;">
+                                                        Change Role
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#removeMemberModal"
+                                                        data-member-id="<?= e($member['user_id']) ?>"
+                                                        data-member-name="<?= e($member['display_name']) ?>"
+                                                        onclick="setupRemoveMember(this); return false;">
+                                                        Remove
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="member-avatar-large">
+                                    <?php if ($url = avatar($member['avatar'] ?? null, $member['display_name'] ?? 'U')): ?>
+                                        <img src="<?= e($url) ?>" alt="Avatar">
+                                    <?php else: ?>
+                                        <div class="avatar-fallback">
+                                            <?= avatarInitials($member['display_name'], $member['email']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="member-info">
+                                    <h3 class="member-name">
+                                        <?= e($member['display_name']) ?>
+                                        <?php if ($member['user_id'] === $project['lead_id']): ?>
+                                            <i class="bi bi-star-fill text-warning ms-1" title="Project Lead"></i>
+                                        <?php endif; ?>
+                                    </h3>
+                                    <p class="member-email"><?= e($member['email']) ?></p>
+
+                                    <?php
+                                    $role = $member['role'] ?? 'viewer';
+                                    $roleClass = match ($role) {
+                                        'administrator' => 'role-admin',
+                                        'project_lead' => 'role-lead',
+                                        'developer' => 'role-dev',
+                                        'qa' => 'role-qa',
+                                        default => 'role-viewer'
+                                    };
+                                    ?>
+                                    <span class="role-badge <?= $roleClass ?>">
+                                        <?= ucwords(str_replace('_', ' ', $role)) ?>
+                                    </span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- LIST VIEW -->
+                    <div id="listView" class="members-list" style="display: none;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="name">Member <i
+                                            class="bi bi-arrow-down-up sort-icon"></i></th>
+                                    <th class="sortable" data-sort="role">Role <i class="bi bi-arrow-down-up sort-icon"></i>
+                                    </th>
+                                    <th>Stats</th>
+                                    <th>Joined</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($members as $member): ?>
+                                    <tr class="member-item" data-member-name="<?= strtolower(e($member['display_name'])) ?>"
+                                        data-member-email="<?= strtolower(e($member['email'])) ?>"
+                                        data-member-role="<?= e($member['role']) ?>">
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="member-avatar-small">
+                                                    <?php if ($url = avatar($member['avatar'] ?? null, $member['display_name'] ?? 'U')): ?>
+                                                        <img src="<?= e($url) ?>" alt="Avatar">
+                                                    <?php else: ?>
+                                                        <div class="avatar-fallback">
+                                                            <?= avatarInitials($member['display_name'], $member['email']) ?>
+                                                        </div>
+                                                    <?php endif; ?>
                                                 </div>
-                                            <?php else: ?>
-                                                <div class="member-avatar-fallback">
-                                                    <?= avatarInitials($member['display_name'], $member['email']) ?>
+                                                <div>
+                                                    <div class="fw-bold text-dark"><?= e($member['display_name']) ?></div>
+                                                    <div class="small text-muted"><?= e($member['email']) ?></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="role-badge <?= match ($member['role'] ?? '') {
+                                                'administrator' => 'role-admin',
+                                                'project_lead' => 'role-lead',
+                                                'developer' => 'role-dev',
+                                                'qa' => 'role-qa',
+                                                default => 'role-viewer'
+                                            } ?>">
+                                                <?= ucwords(str_replace('_', ' ', $member['role'] ?? 'Viewer')) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= (int) ($member['assigned_issues_count'] ?? 0) ?> Issues</td>
+                                        <td><?= isset($member['created_at']) ? date('M d, Y', strtotime($member['created_at'])) : '—' ?>
+                                        </td>
+                                        <td class="text-end">
+                                            <?php if (can('manage-members', $project['id'])): ?>
+                                                <div class="dropdown">
+                                                    <button class="btn-icon" id="dropdownBtnList<?= $member['user_id'] ?>"
+                                                        data-bs-toggle="dropdown" aria-expanded="false" type="button"><i
+                                                            class="bi bi-three-dots"></i></button>
+                                                    <ul class="dropdown-menu"
+                                                        aria-labelledby="dropdownBtnList<?= $member['user_id'] ?>">
+                                                        <li>
+                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#changeRoleModal"
+                                                                data-member-id="<?= e($member['user_id']) ?>"
+                                                                data-member-name="<?= e($member['display_name']) ?>"
+                                                                data-member-role="<?= e($member['role']) ?>"
+                                                                onclick="setupChangeRole(this); return false;">Change Role</a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#removeMemberModal"
+                                                                data-member-id="<?= e($member['user_id']) ?>"
+                                                                data-member-name="<?= e($member['display_name']) ?>"
+                                                                onclick="setupRemoveMember(this); return false;">Remove</a>
+                                                        </li>
+                                                    </ul>
                                                 </div>
                                             <?php endif; ?>
-                                        </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
 
-                                        <div class="member-info">
-                                            <div class="member-name">
-                                                <?= e($member['display_name']) ?>
-                                                <?php if ($member['user_id'] === $project['lead_id']): ?>
-                                                    <span class="lead-badge">Lead</span>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="member-email"><?= e($member['email']) ?></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Role -->
-                                    <div class="member-cell-center">
-                                        <?php
-                                        $role = $member['role'] ?? 'viewer';
-                                        ?>
-                                        <span class="role-badge"><?= ucwords(str_replace('_', ' ', $role)) ?></span>
-                                    </div>
-
-                                    <!-- Right -->
-                                    <div class="member-cell-right">
-                                        <div class="member-meta">
-                                            <div class="meta-item">
-                                                <span class="meta-label">Joined</span>
-                                                <?php
-                                                $dateSource = $member['joined_at'] ?? $member['created_at'] ?? null;
-                                                ?>
-                                                <span class="meta-value">
-                                                    <?= $dateSource ? date('M j, Y', strtotime($dateSource)) : '—' ?>
-                                                </span>
-                                            </div>
-
-                                            <div class="meta-item">
-                                                <span class="meta-label">Issues</span>
-                                                <a href="<?= url("/projects/{$project['key']}/issues?assignee={$member['user_id']}") ?>"
-                                                    class="meta-link">
-                                                    <?= (int) ($member['assigned_issues_count'] ?? 0) ?>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <?php if (can('manage-members', $project['id'])): ?>
-                                            <div class="member-actions dropdown">
-                                                <button class="action-menu-btn"
-                                                    id="memberMenu<?= e($member['user_id']) ?>-<?= e($project['id']) ?>"
-                                                    data-bs-toggle="dropdown">
-                                                    <i class="bi bi-three-dots-vertical"></i>
-                                                </button>
-
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <a class="dropdown-item" data-bs-toggle="modal"
-                                                            data-bs-target="#changeRoleModal"
-                                                            data-member-id="<?= e($member['user_id']) ?>"
-                                                            data-member-name="<?= e($member['display_name']) ?>"
-                                                            data-member-role="<?= e($member['role']) ?>">
-                                                            <i class="bi bi-person-check"></i>Change Role
-                                                        </a>
-                                                    </li>
-
-                                                    <?php if ($member['user_id'] !== $project['lead_id']): ?>
-                                                        <li>
-                                                            <hr class="dropdown-divider">
-                                                        </li>
-                                                        <li>
-                                                            <form method="POST"
-                                                                action="<?= url("/projects/{$project['key']}/members/{$member['user_id']}") ?>"
-                                                                onsubmit="return confirm('Remove member?')">
-                                                                <?= csrf_field() ?>
-                                                                <input type="hidden" name="_method" value="DELETE">
-                                                                <button class="dropdown-item text-danger">
-                                                                    <i class="bi bi-person-dash"></i>Remove
-                                                                </button>
-                                                            </form>
-                                                        </li>
-                                                    <?php endif; ?>
-                                                </ul>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
 
+        <!-- RIGHT COLUMN (SIDEBAR) -->
+        <div class="content-right">
+            <!-- Project Details Card -->
+            <div class="sidebar-card">
+                <div class="card-header">
+                    <h3 class="card-title">Project Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="detail-item">
+                        <span class="detail-label">Key</span>
+                        <span class="detail-value badge-key"><?= e($project['key']) ?></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Team Size</span>
+                        <span class="detail-value"><?= count($members) ?> Members</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Lead</span>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <?php
+                            $lead = null;
+                            foreach ($members as $m) {
+                                if ($m['user_id'] === $project['lead_id']) {
+                                    $lead = $m;
+                                    break;
+                                }
+                            }
+                            ?>
+                            <?php if ($lead): ?>
+                                <div class="member-avatar-small" style="width: 24px; height: 24px; font-size: 10px;">
+                                    <?= avatarInitials($lead['display_name'], $lead['email']) ?>
+                                </div>
+                                <span class="detail-value"><?= e($lead['display_name']) ?></span>
+                            <?php else: ?>
+                                <span class="text-muted">Unassigned</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="sidebar-card">
+                <div class="card-header">
+                    <h3 class="card-title">Quick Links</h3>
+                </div>
+                <div class="card-body p-0">
+                    <a href="<?= url("/projects/{$project['key']}/settings") ?>" class="sidebar-link">
+                        <span>Project Settings</span>
+                        <i class="bi bi-gear"></i>
+                    </a>
+                    <a href="<?= url("/projects/{$project['key']}/board") ?>" class="sidebar-link">
+                        <span>Kanban Board</span>
+                        <i class="bi bi-kanban"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+<!-- Modals (Add, Change Role, Remove) - Preserved & Restyled -->
 <!-- Add Member Modal -->
-<div class="modal fade" id="addMemberModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <form class="modal-content" method="POST" action="<?= url("/projects/{$project['key']}/members") ?>">
-            <?= csrf_field() ?>
+<div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add Member</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">Invite New Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <select class="form-input" name="user_id" required>
-                    <option value="">Select user</option>
-                    <?php foreach ($availableUsers ?? [] as $user): ?>
-                        <option value="<?= e($user['id']) ?>">
-                            <?= e($user['display_name']) ?> (<?= e($user['email']) ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-
-                <select class="form-input mt-2" name="role" required>
-                    <option value="developer">Developer</option>
-                    <option value="viewer">Viewer</option>
-                    <option value="project_manager">Project Manager</option>
-                    <option value="qa_tester">QA Tester</option>
-                </select>
+                <form action="<?= url("/projects/{$project['key']}/members") ?>" method="POST" id="addMemberForm">
+                    <?= csrf_token() ?>
+                    <div class="mb-4">
+                        <label class="form-label">Select User</label>
+                        <select name="user_id" class="form-select" required>
+                            <option value="">Choose user...</option>
+                            <?php foreach ($availableUsers as $user): ?>
+                                <option value="<?= e($user['id']) ?>"><?= e($user['display_name'] ?? $user['email']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select" required>
+                            <option value="developer">Developer</option>
+                            <option value="qa">QA Tester</option>
+                            <option value="viewer">Viewer</option>
+                            <option value="project_lead">Project Lead</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Member</button>
+                    </div>
+                </form>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary-modal" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-primary-modal">Add</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <!-- Change Role Modal -->
-<div class="modal fade" id="changeRoleModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <form id="changeRoleForm" class="modal-content" method="POST">
-            <?= csrf_field() ?>
-            <input type="hidden" name="_method" value="PUT">
-
+<div class="modal fade" id="changeRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Change Role</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">Update Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
             <div class="modal-body">
-                <p><strong id="memberName"></strong></p>
-                <select class="form-input" name="role" id="newRole">
-                    <option value="developer">Developer</option>
-                    <option value="viewer">Viewer</option>
-                    <option value="project_manager">Project Manager</option>
-                    <option value="qa_tester">QA Tester</option>
-                </select>
+                <form method="POST" id="changeRoleForm">
+                    <?= csrf_token() ?>
+                    <input type="hidden" name="_method" value="PUT">
+                    <p class="mb-4">Updating role for <strong id="roleMemberName"></strong></p>
+                    <div class="mb-4">
+                        <label class="form-label">New Role</label>
+                        <select id="newRole" name="role" class="form-select" required>
+                            <option value="developer">Developer</option>
+                            <option value="qa">QA Tester</option>
+                            <option value="viewer">Viewer</option>
+                            <option value="project_lead">Project Lead</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
             </div>
-
-            <div class="modal-footer">
-                <button class="btn-secondary-modal" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-primary-modal">Update</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<?php \App\Core\View::endSection(); ?>
+<!-- Remove Member Modal -->
+<div class="modal fade" id="removeMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove <strong id="removeMemberName"></strong>? This cannot be undone.</p>
+                <form method="POST" id="removeMemberForm">
+                    <?= csrf_token() ?>
+                    <input type="hidden" name="_method" value="DELETE">
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Remove Member</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-<?php \App\Core\View::section('scripts'); ?>
+<style>
+    /* ============================================
+   ENTERPRISE JIRA DESIGN SYSTEM
+   ============================================ */
+
+    :root {
+        --jira-blue: #8B1956;
+        /* Plum Primary */
+        --jira-blue-dark: #6F123F;
+        /* Dark Plum Hover */
+        --jira-dark: #172B4D;
+        /* Text Main */
+        --jira-gray: #6B778C;
+        /* Text Muted */
+        --jira-light: #F4F5F7;
+        /* Background Page */
+        --jira-white: #FFFFFF;
+        /* Background Card */
+        --jira-border: #DFE1E6;
+        /* Borders */
+        --jira-hover: #FAFBFC;
+        /* Hover bg */
+        --shadow-sm: 0 1px 2px rgba(9, 30, 66, 0.05);
+        --shadow-md: 0 4px 8px rgba(9, 30, 66, 0.08);
+    }
+
+    body {
+        background-color: var(--jira-light);
+        color: var(--jira-dark);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* 1. Breadcrumb */
+    .breadcrumb {
+        background: var(--jira-white);
+        padding: 10px 20px;
+        /* Reduced from 16px 32px */
+        border-bottom: 1px solid var(--jira-border);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        /* Reduced from 14px */
+        margin: 0;
+    }
+
+    .breadcrumb-link {
+        color: var(--jira-gray);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--jira-blue);
+    }
+
+    .breadcrumb-separator {
+        color: var(--jira-gray);
+        opacity: 0.6;
+    }
+
+    .breadcrumb-current {
+        font-weight: 500;
+        color: var(--jira-dark);
+    }
+
+    /* 2. Header */
+    .page-header {
+        background: var(--jira-white);
+        padding: 24px;
+        /* Reduced from 32px */
+        border-bottom: 1px solid var(--jira-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .header-left {
+        display: flex;
+        gap: 16px;
+        /* Reduced from 24px */
+        align-items: center;
+    }
+
+    .header-avatar {
+        width: 48px;
+        height: 48px;
+        /* Reduced from 64px */
+        border-radius: 6px;
+        /* Reduced radius */
+        overflow: hidden;
+        background: var(--jira-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        /* Reduced font */
+        font-weight: bold;
+    }
+
+    .header-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .page-title {
+        margin: 0 0 4px;
+        font-size: 20px;
+        /* Reduced from 24px */
+        font-weight: 600;
+        color: var(--jira-dark);
+    }
+
+    .page-subtitle {
+        margin: 0;
+        color: var(--jira-gray);
+        font-size: 13px;
+        /* Reduced from 14px */
+    }
+
+    .action-button {
+        background: var(--jira-white);
+        border: 1px solid var(--jira-border);
+        color: var(--jira-dark);
+        padding: 6px 12px;
+        /* Reduced padding */
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        /* Reduced font */
+    }
+
+    .action-button:hover {
+        background: var(--jira-hover);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .action-button.primary {
+        background: var(--jira-blue);
+        color: white;
+        border-color: var(--jira-blue);
+    }
+
+    .action-button.primary:hover {
+        background: var(--jira-blue-dark);
+        border-color: var(--jira-blue-dark);
+    }
+
+    /* 3. Main Content */
+    .page-content {
+        display: flex;
+        padding: 24px;
+        /* Reduced from 32px */
+        gap: 24px;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .content-left {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .content-right {
+        width: 260px;
+        /* Slightly reduced width */
+        flex-shrink: 0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        /* Reduced min-width */
+        gap: 12px;
+        /* Reduced gap */
+        margin-bottom: 24px;
+        /* Reduced margin */
+    }
+
+    .stat-card {
+        background: var(--jira-white);
+        border: 1px solid var(--jira-border);
+        border-radius: 6px;
+        padding: 16px;
+        /* Reduced from 20px */
+        position: relative;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+        border-color: #B3D4FF;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        /* Reduced from 24px */
+        font-weight: 700;
+        color: var(--jira-dark);
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        /* Reduced from 13px */
+        font-weight: 600;
+        color: var(--jira-gray);
+        text-transform: uppercase;
+    }
+
+    .stat-icon {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        font-size: 20px;
+        /* Reduced size */
+        color: var(--jira-border);
+    }
+
+    /* Controls */
+    .controls-bar {
+        background: var(--jira-white);
+        border: 1px solid var(--jira-border);
+        border-radius: 6px;
+        padding: 12px;
+        /* Reduced from 16px */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        /* Reduced margin */
+        gap: 12px;
+    }
+
+    .search-filter-group {
+        display: flex;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .search-wrapper,
+    .filter-wrapper {
+        position: relative;
+    }
+
+    .search-wrapper {
+        flex: 1;
+        max-width: 280px;
+    }
+
+    .search-input,
+    .filter-select {
+        width: 100%;
+        padding: 6px 10px 6px 32px;
+        /* Reduced padding */
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        background: var(--jira-hover);
+        color: var(--jira-dark);
+        font-size: 13px;
+        /* Reduced font */
+        transition: all 0.2s;
+    }
+
+    .search-input:focus,
+    .filter-select:focus {
+        background: white;
+        border-color: var(--jira-blue);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(139, 25, 86, 0.1);
+    }
+
+    .search-icon,
+    .filter-icon {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--jira-gray);
+        pointer-events: none;
+        font-size: 12px;
+    }
+
+    .view-btn {
+        background: none;
+        border: 1px solid var(--jira-border);
+        padding: 6px;
+        border-radius: 4px;
+        color: var(--jira-gray);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        /* Reduced size */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .view-btn.active {
+        background: var(--jira-blue);
+        border-color: var(--jira-blue);
+        color: white;
+    }
+
+    /* Members Grid */
+    .members-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        /* Reduced min-width */
+        gap: 16px;
+        /* Reduced gap */
+    }
+
+    .member-card {
+        background: var(--jira-white);
+        border: 1px solid var(--jira-border);
+        border-radius: 6px;
+        padding: 16px;
+        /* Reduced from 24px */
+        text-align: center;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .member-card:hover {
+        /* removed transform to fix z-index stacking context for dropdowns */
+        box-shadow: var(--shadow-md);
+        border-color: var(--jira-blue);
+        z-index: 2;
+        /* Bring to front on hover */
+    }
+
+    .member-avatar-large {
+        width: 56px;
+        height: 56px;
+        /* Reduced from 80px */
+        border-radius: 50%;
+        margin: 0 auto 12px;
+        background: var(--jira-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--jira-gray);
+    }
+
+    .member-avatar-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .member-name {
+        font-size: 14px;
+        /* Reduced from 16px */
+        font-weight: 600;
+        color: var(--jira-dark);
+        margin: 0 0 4px;
+    }
+
+    .member-email {
+        font-size: 12px;
+        /* Reduced from 13px */
+        color: var(--jira-gray);
+        margin-bottom: 10px;
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        background: var(--jira-hover);
+        color: var(--jira-dark);
+    }
+
+    /* Role Colors */
+    .role-admin {
+        background: #EAE6FF;
+        color: #403294;
+    }
+
+    .role-lead {
+        background: #FFF0B3;
+        color: #172B4D;
+    }
+
+    .role-dev {
+        background: #DEEBFF;
+        color: #0747A6;
+    }
+
+    .role-qa {
+        background: #E3FCEF;
+        color: #006644;
+    }
+
+    .card-options {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 100;
+        /* Standard z-index */
+    }
+
+    .btn-icon {
+        background: none;
+        border: none;
+        color: var(--jira-gray);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 6px;
+        border-radius: 4px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        /* Standard size */
+        min-width: 32px;
+    }
+
+    .btn-icon:hover {
+        background: var(--jira-hover);
+        color: var(--jira-blue);
+    }
+
+    /* Removed custom .dropdown and .dropdown-menu overrides to let Bootstrap handle it */
+
+    /* List View */
+    .members-list {
+        background: var(--jira-white);
+        border: 1px solid var(--jira-border);
+        border-radius: 6px;
+        /* overflow: hidden; REMOVED to allow dropdowns to show */
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .modern-table th {
+        background: var(--jira-hover);
+        padding: 10px 16px;
+        /* Reduced padding */
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--jira-gray);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--jira-border);
+        cursor: pointer;
+    }
+
+    .modern-table td {
+        padding: 10px 16px;
+        /* Reduced padding */
+        border-bottom: 1px solid var(--jira-border);
+        color: var(--jira-dark);
+        font-size: 13px;
+        /* Reduced font */
+    }
+
+    .member-avatar-small {
+        width: 28px;
+        height: 28px;
+        /* Reduced from 32px */
+        border-radius: 50%;
+        background: var(--jira-light);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        color: var(--jira-gray);
+    }
+
+    .member-avatar-small img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Sidebar */
+    .sidebar-card {
+        background: var(--jira-white);
+        border: 1px solid var(--jira-border);
+        border-radius: 6px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--jira-border);
+    }
+
+    .card-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin: 0;
+        color: var(--jira-dark);
+    }
+
+    .card-body {
+        padding: 16px;
+    }
+
+    .detail-item {
+        margin-bottom: 12px;
+    }
+
+    .detail-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .detail-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--jira-gray);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--jira-dark);
+    }
+
+    .badge-key {
+        background: var(--jira-hover);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+    }
+
+    .sidebar-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        text-decoration: none;
+        color: var(--jira-dark);
+        border-bottom: 1px solid var(--jira-border);
+        transition: background 0.2s;
+        font-size: 13px;
+    }
+
+    .sidebar-link:hover {
+        background: var(--jira-hover);
+        color: var(--jira-blue);
+    }
+
+    .sidebar-link:last-child {
+        border-bottom: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .page-content {
+            flex-direction: column;
+        }
+
+        .content-right {
+            width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .controls-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
+    /* Modals */
+    .modal-content {
+        border: none;
+        border-radius: 8px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--jira-border);
+        padding: 20px;
+    }
+
+    .modal-title {
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .form-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--jira-gray);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .form-select,
+    .form-control {
+        border-radius: 4px;
+        border: 1px solid var(--jira-border);
+        padding: 10px;
+    }
+</style>
+
 <script>
-    document.getElementById('changeRoleModal')?.addEventListener('show.bs.modal', function (event) {
-        const btn = event.relatedTarget;
-        if (!btn) return;
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. View Toggles
+        const gridViewBtn = document.getElementById('btnGridView');
+        const listViewBtn = document.getElementById('btnListView');
+        const gridView = document.getElementById('gridView');
+        const listView = document.getElementById('listView');
 
-        const id = btn.dataset.memberId;
-        if (!id) return;
+        function setView(view) {
+            if (view === 'grid') {
+                gridView.style.display = 'grid';
+                listView.style.display = 'none';
+                gridViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+            } else {
+                gridView.style.display = 'none';
+                listView.style.display = 'block';
+                gridViewBtn.classList.remove('active');
+                listViewBtn.classList.add('active');
+            }
+            localStorage.setItem('membersViewMode', view);
+        }
 
-        document.getElementById('memberName').textContent = btn.dataset.memberName || '';
-        document.getElementById('newRole').value = btn.dataset.memberRole || 'viewer';
-        document.getElementById('changeRoleForm').action =
-            '<?= url("/projects/{$project['key']}/members/") ?>' + id;
+        gridViewBtn.addEventListener('click', () => setView('grid'));
+        listViewBtn.addEventListener('click', () => setView('list'));
+
+        // Load preference
+        const savedView = localStorage.getItem('membersViewMode') || 'grid';
+        setView(savedView);
+
+        // 2. Search & Filter
+        const searchInput = document.getElementById('memberSearch');
+        const roleFilter = document.getElementById('roleFilter');
+        const memberItems = document.querySelectorAll('.member-item');
+
+        function filterMembers() {
+            const term = searchInput.value.toLowerCase().trim();
+            const role = roleFilter.value;
+
+            memberItems.forEach(item => {
+                const name = item.dataset.memberName;
+                const email = item.dataset.memberEmail;
+                const itemRole = item.dataset.memberRole;
+
+                const matchesSearch = name.includes(term) || email.includes(term);
+                const matchesRole = !role || itemRole === role;
+
+                if (matchesSearch && matchesRole) {
+                    // If it's a table row, removing display:none is enough (it reverts to table-row)
+                    // For div, it reverts to block/grid item
+                    if (item.tagName === 'TR') item.style.display = '';
+                    else item.style.display = 'block'; // Grid handles layout really
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterMembers);
+        roleFilter.addEventListener('change', filterMembers);
+
+        // 3. Sorting (List View)
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', () => {
+                const sortType = header.dataset.sort;
+                const tbody = document.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const isAsc = !header.classList.contains('asc');
+
+                // Reset icons/classes
+                document.querySelectorAll('.sortable').forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                    h.querySelector('.sort-icon').className = 'bi bi-arrow-down-up sort-icon';
+                });
+
+                header.classList.add(isAsc ? 'asc' : 'desc');
+                header.querySelector('.sort-icon').className = isAsc ? 'bi bi-arrow-up-short sort-icon' : 'bi bi-arrow-down-short sort-icon';
+
+                rows.sort((a, b) => {
+                    let valA, valB;
+                    if (sortType === 'name') {
+                        valA = a.dataset.memberName;
+                        valB = b.dataset.memberName;
+                    } else if (sortType === 'role') {
+                        valA = a.dataset.memberRole;
+                        valB = b.dataset.memberRole;
+                    } else if (sortType === 'joined') {
+                        valA = parseInt(a.dataset.joined);
+                        valB = parseInt(b.dataset.joined);
+                    }
+
+                    if (valA < valB) return isAsc ? -1 : 1;
+                    if (valA > valB) return isAsc ? 1 : -1;
+                    return 0;
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
     });
+
+    // Modal Helpers
+    function setupChangeRole(el) {
+        document.getElementById('roleMemberName').textContent = el.dataset.memberName;
+        document.getElementById('newRole').value = el.dataset.memberRole;
+        // Dynamically set action
+        const baseAction = document.getElementById('addMemberForm').action;
+        document.getElementById('changeRoleForm').action = baseAction + '/' + el.dataset.memberId;
+    }
+
+    function setupRemoveMember(el) {
+        document.getElementById('removeMemberName').textContent = el.dataset.memberName;
+        const baseAction = document.getElementById('addMemberForm').action;
+        document.getElementById('removeMemberForm').action = baseAction + '/' + el.dataset.memberId;
+    }
 </script>
+
+<style>
+    /* 
+   FIX: Use :has() and :focus-within to elevate z-index when dropdown is active.
+   This solves the Grid Stacking Context issue where later cards cover earlier dropdowns.
+*/
+    .member-card:focus-within,
+    .member-card:hover,
+    .member-card:has(.dropdown-menu.show) {
+        z-index: 100 !important;
+        border-color: var(--jira-blue) !important;
+    }
+
+    /* Ensure list view rows also behave */
+    .member-item:hover,
+    .member-item:focus-within,
+    .member-item:has(.dropdown-menu.show) {
+        z-index: 100;
+        position: relative;
+    }
+
+    /* Ensure dropdown menu isn't clipped and has proper positioning */
+    .dropdown-menu {
+        border: 1px solid var(--jira-border);
+        box-shadow: var(--shadow-md);
+        z-index: 1000 !important;
+        margin-top: 4px;
+
+        /* FIX: Transparent dropdown on mobile */
+        background-color: var(--jira-white) !important;
+        opacity: 1 !important;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    /* Mobile-specific hardening */
+    @media (max-width: 768px) {
+        .dropdown-menu {
+            background-color: #ffffff !important;
+            border: 1px solid var(--jira-border);
+            box-shadow: 0 8px 24px rgba(9, 30, 66, 0.15);
+            z-index: 2000 !important;
+        }
+    }
+
+    /* Prevent background bleeding on mobile browsers */
+    .member-card,
+    .members-grid,
+    .members-list {
+        isolation: isolate;
+    }
+
+    /* Force dropdown to be fully opaque and readable */
+    .dropdown-menu .dropdown-item {
+        background-color: transparent;
+    }
+
+    .dropdown-menu .dropdown-item:hover {
+        background-color: var(--jira-hover);
+    }
+</style>
+
+
 <?php \App\Core\View::endSection(); ?>

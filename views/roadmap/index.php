@@ -1,1182 +1,1182 @@
 <?php
 /**
- * Global Roadmap View - Enterprise Jira-style Roadmap
- * Displays epics and versions with timeline visualization
+ * Global Roadmap View - Enterprise Edition
+ * Adheres to strict Jira Clone Design System
  */
 
 declare(strict_types=1);
 
-\App\Core\View::extends('layouts.app');
+\App\Core\View:: extends('layouts.app');
 \App\Core\View::section('content');
+
+// Helper to calculate days between dates
+$dateDiff = function ($start, $end) {
+    $d1 = new DateTime($start);
+    $d2 = new DateTime($end);
+    return $d2->diff($d1)->days;
+};
+
+// Timeline Logic
+$timelineStart = new DateTime($roadmapData['timeline']['start_date'] ?? 'now');
+$timelineEnd = new DateTime($roadmapData['timeline']['end_date'] ?? '+3 months');
+$timelineEnd->modify('+1 month');
+
+$totalDays = $timelineStart->diff($timelineEnd)->days + 1;
+$dayWidth = 20; // Standardized pixel width
+$totalWidth = $totalDays * $dayWidth;
+
+// Generate Month Headers
+$months = [];
+$period = new DatePeriod($timelineStart, new DateInterval('P1M'), $timelineEnd);
+foreach ($period as $dt) {
+    $months[] = [
+        'name' => $dt->format('M Y'),
+        'days' => (int) $dt->format('t'),
+        'width' => (int) $dt->format('t') * $dayWidth
+    ];
+}
 ?>
 
-<div class="roadmap-page-wrapper">
-    <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb-section">
+<div class="page-wrapper">
+    <!-- 1. Breadcrumb Navigation -->
+    <div class="breadcrumb-container">
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb-list">
+            <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
                     <a href="<?= url('/') ?>" class="breadcrumb-link">
                         <i class="bi bi-house-door"></i> Home
                     </a>
                 </li>
-                <li class="breadcrumb-separator">/</li>
-                <li class="breadcrumb-current">Product Roadmap</li>
+                <li class="breadcrumb-item active" aria-current="page">Roadmap</li>
             </ol>
         </nav>
     </div>
 
-    <!-- Page Header -->
+    <!-- 2. Page Header Section -->
     <div class="page-header">
         <div class="header-left">
-            <h1 class="page-title">Product Roadmap</h1>
-            <p class="page-subtitle">Long-term planning with epics and releases across projects</p>
+            <div class="header-info">
+                <h1 class="page-title">Roadmap</h1>
+                <p class="page-meta">
+                    <?php if ($selectedProject): ?>
+                        <span class="badge-key"><?= e($selectedProject['key']) ?></span>
+                        <span class="meta-text"><?= e($selectedProject['name']) ?></span>
+                    <?php else: ?>
+                        <span class="meta-text">Select a project to view timeline</span>
+                    <?php endif; ?>
+                </p>
+                <p class="page-description">
+                    Visualize epics, features, and milestones over time. Track progress and dependencies across your
+                    project.
+                </p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="header-actions">
+                <?php if ($selectedProject): ?>
+                    <a href="<?= url("/projects/{$selectedProject['key']}/roadmap") ?>" class="action-button">
+                        <i class="bi bi-box-arrow-up-right"></i> Project View
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
-    <!-- Quick Actions Bar -->
+    <!-- 3. Quick Actions Bar -->
     <div class="quick-actions-bar">
-        <div class="actions-container">
-            <div class="action-group">
-                <label class="action-label" for="projectSelector">Select Project:</label>
-                <select id="projectSelector" class="action-select">
-                    <option value="">Choose a project...</option>
+        <div class="action-group-left">
+            <!-- Project Selector -->
+            <form action="<?= url('/roadmap') ?>" method="GET" class="project-selector-form d-inline-block">
+                <select name="project_id" class="form-select form-select-sm" onchange="this.form.submit()"
+                    style="width: 200px;">
+                    <option value="">Select Project</option>
+                    <?php foreach ($projects as $p): ?>
+                        <option value="<?= $p['id'] ?>" <?= ($selectedProject['id'] ?? null) == $p['id'] ? 'selected' : '' ?>>
+                            <?= e($p['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </form>
+
+            <?php if ($selectedProject): ?>
+                <button class="btn btn-primary btn-sm ms-2" onclick="showCreateItemModal()">
+                    <i class="bi bi-plus-lg"></i> Create Item
+                </button>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($selectedProject): ?>
+            <div class="action-group-right">
+                <div class="search-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" id="roadmapSearch" placeholder="Search items..."
+                        class="form-control form-control-sm search-input">
+                </div>
+                <select id="statusFilter" class="form-select form-select-sm ms-2" style="width: 140px;">
+                    <option value="">All Statuses</option>
+                    <option value="planned">Planned</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
                 </select>
             </div>
-            <div class="action-group" id="projectLinkGroup" style="display: none;">
-                <a id="projectRoadmapLink" href="#" class="action-select" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid #DFE1E6; border-radius: 6px; color: #161B22; font-size: 14px; cursor: pointer; transition: all 0.2s;">
-                    <i class="bi bi-arrow-right"></i> View Project Roadmap
-                </a>
-            </div>
-        </div>
+        <?php endif; ?>
     </div>
 
-    <!-- Main Content -->
+    <!-- 4. Main Content Area -->
     <div class="page-content">
-        <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="loading-card">
-            <div class="loading-spinner">
-                <i class="bi bi-hourglass-split"></i>
+        <?php if (!$selectedProject): ?>
+            <div class="empty-state-card">
+                <div class="empty-content">
+                    <div class="empty-icon">📊</div>
+                    <h3>No Project Selected</h3>
+                    <p>Please select a project from the quick actions bar above to load the roadmap.</p>
+                </div>
             </div>
-            <p class="loading-text">Loading roadmap data...</p>
+        <?php else: ?>
+
+            <div class="content-full">
+                <!-- Legend (Inline for this view) -->
+                <div class="legend-bar">
+                    <span class="legend-label">Legend:</span>
+                    <span class="legend-item"><span class="dot epic"></span> Epic</span>
+                    <span class="legend-item"><span class="dot feature"></span> Feature</span>
+                    <span class="legend-item"><span class="dot milestone"></span> Milestone</span>
+                </div>
+
+                <!-- Gantt Chart Card -->
+                <div class="gantt-card">
+                    <div class="gantt-container">
+                        <!-- Sidebar -->
+                        <div class="gantt-sidebar">
+                            <div class="sidebar-header">
+                                <div class="col-name">Item</div>
+                                <div class="col-status">Status</div>
+                            </div>
+                            <div class="sidebar-content">
+                                <?php foreach (($roadmapData['items'] ?? []) as $item): ?>
+                                    <div class="sidebar-row" data-id="<?= $item['id'] ?>">
+                                        <div class="col-name">
+                                            <span class="item-type type-<?= $item['type'] ?>"></span>
+                                            <span class="text-truncate"
+                                                title="<?= e($item['title']) ?>"><?= e($item['title']) ?></span>
+                                        </div>
+                                        <div class="col-status">
+                                            <span
+                                                class="badge bg-<?= $item['status'] ?>"><?= str_replace('_', ' ', $item['status']) ?></span>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                                <?php if (empty($roadmapData['items'])): ?>
+                                    <div class="p-3 text-muted text-center small">No items found</div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div class="gantt-timeline-wrapper">
+                            <div class="gantt-timeline" style="width: <?= $totalWidth ?>px">
+                                <div class="timeline-header">
+                                    <?php foreach ($months as $month): ?>
+                                        <div class="month-block" style="width: <?= $month['width'] ?>px">
+                                            <?= $month['name'] ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="timeline-body">
+                                    <div class="grid-lines">
+                                        <?php
+                                        $currentLeft = 0;
+                                        foreach ($months as $month):
+                                            $currentLeft += $month['width'];
+                                            ?>
+                                            <div class="grid-line" style="left: <?= $currentLeft ?>px"></div>
+                                        <?php endforeach; ?>
+
+                                        <?php
+                                        $todayDiff = (new DateTime())->diff($timelineStart)->days;
+                                        $todayLeft = ($todayDiff * $dayWidth);
+                                        if ($todayLeft >= 0 && $todayLeft <= $totalWidth):
+                                            ?>
+                                            <div class="today-line" style="left: <?= $todayLeft ?>px" title="Today"></div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <?php foreach (($roadmapData['items'] ?? []) as $item):
+                                        $start = new DateTime($item['start_date']);
+                                        $end = new DateTime($item['end_date']);
+                                        if ($end < $timelineStart || $start > $timelineEnd)
+                                            continue;
+
+                                        $visualStartRaw = $start->getTimestamp() - $timelineStart->getTimestamp();
+                                        $visualStartDays = floor($visualStartRaw / (60 * 60 * 24));
+                                        $left = max(0, $visualStartDays * $dayWidth);
+                                        $durationDays = $end->diff($start)->days + 1;
+                                        $width = $durationDays * $dayWidth;
+                                        ?>
+                                        <div class="timeline-row">
+                                            <div class="gantt-bar type-<?= $item['type'] ?>"
+                                                style="left: <?= $left ?>px; width: <?= $width ?>px;" data-bs-toggle="tooltip"
+                                                title="<?= e($item['title']) ?> (<?= $item['progress_percentage'] ?>%)">
+                                                <div class="bar-progress" style="width: <?= $item['progress_percentage'] ?>%">
+                                                </div>
+                                                <div class="bar-label"><?= e($item['title']) ?></div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Modal for Creating Roadmap Item -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h2>Add Roadmap Item</h2>
+            <button class="modal-close" type="button" onclick="closeCreateModal()">&times;</button>
         </div>
+        <div class="modal-body">
+            <div class="modal-error" id="modalError"></div>
+            <div id="createItemForm">
+                <input type="hidden" id="csrf_token" value="<?= csrf_token() ?>">
+                <input type="hidden" id="project_id" value="<?= intval($selectedProject['id'] ?? 0) ?>">
+                <input type="hidden" id="project_key" value="<?= e($selectedProject['key'] ?? '') ?>">
 
-        <!-- Empty State -->
-        <div id="emptyState" class="empty-state-card">
-            <div class="empty-state-icon">📋</div>
-            <h3 class="empty-state-title">Select a Project</h3>
-            <p class="empty-state-text">Choose a project from the dropdown above to view the roadmap with epics and releases.</p>
+                <!-- Title -->
+                <div class="form-group">
+                    <label for="item_title">
+                        Title <span class="required">*</span>
+                    </label>
+                    <input type="text" id="item_title" placeholder="Enter roadmap item title" maxlength="200">
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="item_description">Description</label>
+                    <textarea id="item_description" placeholder="Optional description or notes"></textarea>
+                </div>
+
+                <!-- Type and Status -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item_type">
+                            Type <span class="required">*</span>
+                        </label>
+                        <select id="item_type">
+                            <option value="">Select Type</option>
+                            <option value="epic">Epic</option>
+                            <option value="feature">Feature</option>
+                            <option value="milestone">Milestone</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="item_status">
+                            Status <span class="required">*</span>
+                        </label>
+                        <select id="item_status">
+                            <option value="">Select Status</option>
+                            <option value="planned">Planned</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="on_track">On Track</option>
+                            <option value="at_risk">At Risk</option>
+                            <option value="delayed">Delayed</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item_start_date">
+                            Start Date <span class="required">*</span>
+                        </label>
+                        <input type="date" id="item_start_date">
+                    </div>
+                    <div class="form-group">
+                        <label for="item_end_date">
+                            End Date <span class="required">*</span>
+                        </label>
+                        <input type="date" id="item_end_date">
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="form-group">
+                    <label for="item_progress">
+                        Progress (%) <span class="required">*</span>
+                    </label>
+                    <input type="number" id="item_progress" min="0" max="100" value="0">
+                    <div class="form-help">Enter a value between 0 and 100</div>
+                </div>
+            </div>
         </div>
-
-        <!-- Roadmap Container -->
-        <div id="roadmapContainer" style="display: none;">
-            <!-- Stats Grid -->
-            <div class="stats-grid" id="statsContainer"></div>
-
-            <!-- Timeline Card -->
-            <div class="timeline-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="bi bi-calendar3"></i> Timeline View
-                    </h3>
-                </div>
-                <div class="card-body" id="timelineContainer"></div>
-            </div>
-
-            <!-- Epics Section -->
-            <div class="section-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="bi bi-lightning-fill"></i> Epics
-                        <span class="section-badge" id="epicCount">0</span>
-                    </h3>
-                </div>
-                <div class="card-body" id="epicsContainer"></div>
-            </div>
-
-            <!-- Versions Section -->
-            <div class="section-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="bi bi-tag-fill"></i> Versions / Releases
-                        <span class="section-badge" id="versionCount">0</span>
-                    </h3>
-                </div>
-                <div class="card-body" id="versionsContainer"></div>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" type="button" onclick="closeCreateModal()">Cancel</button>
+            <button class="btn-submit" type="button" onclick="submitCreateItem(event)">Create Item</button>
         </div>
     </div>
 </div>
 
 <style>
     /* ============================================
-       CSS VARIABLES & ROOT
-       ============================================ */
+   PAGE TITLE - ENTERPRISE DESIGN
+   ============================================ */
+
     :root {
-        --jira-blue: #8B1956;
-        --jira-blue-dark: #6F123F;
-        --jira-dark: #161B22;
-        --jira-gray: #626F86;
-        --jira-light: #F7F8FA;
-        --jira-border: #DFE1E6;
-        --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        --jira-blue: #8B1956 !important;
+        --jira-blue-dark: #6F123F !important;
+        --jira-dark: #161B22 !important;
+        --jira-gray: #626F86 !important;
+        --jira-light: #F7F8FA !important;
+        --jira-border: #DFE1E6 !important;
+
+        /* Gantt Specific */
+        --gantt-header-height: 40px;
+        --gantt-row-height: 36px;
+        --gantt-bg: #ffffff;
+        --gantt-border: #dfe1e6;
+        --gantt-hover: #f4f5f7;
     }
 
     /* ============================================
-       LAYOUT & PAGE STRUCTURE
+       MODAL STYLES (MATCHING PROJECT ROADMAP)
        ============================================ */
-    .roadmap-page-wrapper {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        background-color: var(--jira-light);
-    }
-
-    /* Breadcrumb Section */
-    .breadcrumb-section {
-        background-color: #FFFFFF;
-        border-bottom: 1px solid var(--jira-border);
-        padding: 12px 32px;
-        position: sticky;
+    .modal-overlay {
+        display: none !important;
+        position: fixed;
         top: 0;
-        z-index: 10;
-    }
-
-    .breadcrumb-list {
-        display: flex;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 5000;
         align-items: center;
-        gap: 8px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
+        justify-content: center;
     }
 
-    .breadcrumb-item a {
-        color: var(--jira-blue);
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: color var(--transition-base);
+    .modal-overlay.active {
+        display: flex !important;
     }
 
-    .breadcrumb-item a:hover {
-        color: var(--jira-blue-dark);
-        text-decoration: underline;
-    }
-
-    .breadcrumb-item a i {
-        font-size: 14px;
-    }
-
-    .breadcrumb-separator {
-        color: var(--jira-gray);
-        font-size: 12px;
-    }
-
-    .breadcrumb-current {
-        color: var(--jira-dark);
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    /* Page Header */
-    .page-header {
-        background-color: #FFFFFF;
-        border-bottom: 1px solid var(--jira-border);
-        padding: 32px;
-    }
-
-    .header-left {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .page-title {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--jira-dark);
-        margin: 0;
-        letter-spacing: -0.2px;
-    }
-
-    .page-subtitle {
-        font-size: 15px;
-        color: var(--jira-gray);
-        margin: 0;
-        line-height: 1.5;
-        max-width: 600px;
-    }
-
-    /* Quick Actions Bar */
-    .quick-actions-bar {
-        background-color: #FFFFFF;
-        border-bottom: 1px solid var(--jira-border);
-        padding: 20px 32px;
-    }
-
-    .actions-container {
-        display: flex;
-        align-items: flex-end;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .action-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 280px;
-    }
-
-    .action-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--jira-gray);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .action-select {
-        padding: 10px 12px;
-        border: 1px solid var(--jira-border);
+    .modal-dialog {
+        background: white;
         border-radius: 6px;
-        font-size: 14px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        pointer-events: auto;
+        margin-top: 25px !important;
+    }
+
+    .modal-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--jira-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
         color: var(--jira-dark);
-        background-color: #FFFFFF;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 20px;
         cursor: pointer;
-        transition: all var(--transition-base);
+        color: var(--jira-gray);
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+        color: var(--jira-dark);
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-footer {
+        padding: 12px 16px;
+        border-top: 1px solid var(--jira-border);
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--jira-dark);
+        margin-bottom: 4px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        font-size: 13px;
+        color: var(--jira-dark);
+        background: white;
         font-family: inherit;
+        transition: all 0.2s;
+        box-sizing: border-box;
     }
 
-    .action-select:hover {
-        border-color: var(--jira-gray);
-        background-color: var(--jira-light);
-    }
-
-    .action-select:focus {
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
         outline: none;
         border-color: var(--jira-blue);
         box-shadow: 0 0 0 3px rgba(139, 25, 86, 0.1);
     }
 
-    /* Main Content */
-    .page-content {
-        flex: 1;
-        padding: 32px;
-        display: flex;
-        flex-direction: column;
-        gap: 32px;
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
     }
 
-    /* Loading State */
-    .loading-card {
-        background-color: #FFFFFF;
-        border: 1px solid var(--jira-border);
-        border-radius: 8px;
-        padding: 60px 40px;
-        text-align: center;
-        box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13);
-    }
-
-    .loading-spinner {
-        font-size: 48px;
-        margin-bottom: 16px;
-        animation: spin 2s linear infinite;
-    }
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-        font-size: 15px;
-        color: var(--jira-gray);
-        margin: 0;
-    }
-
-    /* Empty State */
-    .empty-state-card {
-        background-color: #FFFFFF;
-        border: 2px dashed var(--jira-border);
-        border-radius: 8px;
-        padding: 60px 40px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .empty-state-icon {
-        font-size: 64px;
-        opacity: 0.3;
-    }
-
-    .empty-state-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--jira-dark);
-        margin: 0;
-        letter-spacing: -0.2px;
-    }
-
-    .empty-state-text {
-        font-size: 14px;
-        color: var(--jira-gray);
-        margin: 0;
-        max-width: 400px;
-        line-height: 1.6;
-    }
-
-    /* Stats Grid */
-    .stats-grid {
+    .form-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
     }
 
-    .stats-card {
-        background-color: #FFFFFF;
-        border: 1px solid var(--jira-border);
-        border-radius: 8px;
-        padding: 24px;
-        text-align: center;
-        transition: all var(--transition-base);
-        box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13);
+    .form-row .form-group {
+        margin-bottom: 0;
     }
 
-    .stats-card:hover {
-        border-color: var(--jira-gray);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    .form-group .required {
+        color: #EF4444;
     }
 
-    .stats-card-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--jira-gray);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
-    }
-
-    .stats-card-value {
-        font-size: 36px;
-        font-weight: 700;
-        color: var(--jira-blue);
-        margin: 0;
-        letter-spacing: -0.3px;
-    }
-
-    /* Card Components */
-    .timeline-card,
-    .section-card {
-        background-color: #FFFFFF;
-        border: 1px solid var(--jira-border);
-        border-radius: 8px;
-        box-shadow: 0 1px 1px rgba(9, 30, 66, 0.13);
-        overflow: hidden;
-    }
-
-    .card-header {
-        border-bottom: 1px solid var(--jira-border);
-        padding: 20px 24px;
-        background-color: #FAFBFC;
-    }
-
-    .card-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--jira-dark);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        letter-spacing: -0.2px;
-    }
-
-    .card-title i {
-        font-size: 18px;
-        opacity: 0.8;
-    }
-
-    .section-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background-color: var(--jira-blue);
-        color: #FFFFFF;
-        border-radius: 12px;
-        padding: 4px 12px;
-        font-size: 12px;
-        font-weight: 700;
-        margin-left: auto;
-    }
-
-    .card-body {
-        padding: 24px;
-    }
-
-    /* ============================================
-       TIMELINE VISUALIZATION
-       ============================================ */
-    .timeline-row {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .timeline-label {
-        min-width: 160px;
-        flex-shrink: 0;
-    }
-
-    .timeline-item-key {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--jira-dark);
-        background-color: var(--jira-light);
-        padding: 4px 8px;
+    .modal-footer button {
+        padding: 8px 14px;
+        border: none;
         border-radius: 4px;
-        font-family: monospace;
-        display: inline-block;
-    }
-
-    .timeline-track {
-        flex: 1;
-        height: 40px;
-        background-color: var(--jira-light);
-        border-radius: 6px;
-        position: relative;
-        border: 1px solid var(--jira-border);
-        overflow: hidden;
-    }
-
-    .timeline-bar {
-        position: absolute;
-        top: 0;
-        height: 100%;
-        background: linear-gradient(90deg, var(--jira-blue), var(--jira-blue-dark));
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #FFFFFF;
         font-size: 12px;
         font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        padding: 0 8px;
-        transition: all var(--transition-base);
-        min-height: 2px;
-    }
-
-    .timeline-track:hover .timeline-bar {
-        box-shadow: 0 4px 12px rgba(139, 25, 86, 0.3);
-    }
-
-    /* ============================================
-       ROADMAP ITEMS
-       ============================================ */
-    .roadmap-item {
-        padding: 20px 24px;
-        border-left: 4px solid var(--jira-blue);
-        background-color: #FFFFFF;
-        margin-bottom: 16px;
-        border-radius: 6px;
-        border: 1px solid var(--jira-border);
-        border-left-width: 4px;
         cursor: pointer;
-        transition: all var(--transition-base);
+        transition: all 0.2s;
     }
 
-    .roadmap-item:hover {
+    .btn-submit {
+        background: var(--jira-blue);
+        color: white;
+    }
+
+    .btn-submit:hover {
+        background: var(--jira-blue-dark);
+    }
+
+    .btn-cancel {
+        background: white;
+        color: var(--jira-dark);
+        border: 1px solid var(--jira-border);
+    }
+
+    .btn-cancel:hover {
+        background: var(--jira-light);
+    }
+
+    .modal-error {
+        display: none;
+        background: #FEE2E2;
+        border: 1px solid #FECACA;
+        color: #7F1D1D;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+        font-size: 12px;
+    }
+
+    .modal-error.show {
+        display: block;
+    }
+
+    .form-help {
+        font-size: 11px;
+        color: var(--jira-gray);
+        margin-top: 2px;
+    }
+
+    body {
         background-color: var(--jira-light);
-        border-color: var(--jira-gray);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
-    .roadmap-item-header {
+    .page-wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* 1. Breadcrumb */
+    .breadcrumb-container {
+        background: #FFFFFF;
+        border-bottom: 1px solid var(--jira-border);
+        padding: 8px 24px;
+    }
+
+    .breadcrumb-link {
+        color: var(--jira-gray);
+        text-decoration: none;
+        font-size: 12px;
+        transition: color 0.1s;
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--jira-blue);
+        text-decoration: underline;
+    }
+
+    .breadcrumb-item.active {
+        font-weight: 500;
+        color: var(--jira-dark);
+        font-size: 12px;
+    }
+
+    /* 2. Page Header */
+    .page-header {
+        background: #FFFFFF;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--jira-border);
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 16px;
-        margin-bottom: 16px;
     }
 
-    .roadmap-item-content {
+    .header-left {
+        display: flex;
+        gap: 24px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--jira-dark);
+        margin: 0 0 4px 0;
+        line-height: 1.2;
+    }
+
+    .page-meta {
+        font-size: 12px;
+        color: var(--jira-gray);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .badge-key {
+        background: #DFE1E6;
+        color: #42526E;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+    }
+
+    .page-description {
+        font-size: 13px;
+        color: var(--jira-gray);
+        margin: 0;
+        max-width: 600px;
+        line-height: 1.4;
+    }
+
+    .action-button {
+        background: #FFFFFF;
+        border: 1px solid var(--jira-border);
+        color: var(--jira-dark);
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .action-button:hover {
+        background: var(--jira-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 3. Quick Actions */
+    .quick-actions-bar {
+        background: #FFFFFF;
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--jira-border);
+    }
+
+    .action-group-left,
+    .action-group-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-primary {
+        background-color: var(--jira-blue);
+        border-color: var(--jira-blue);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--jira-blue-dark);
+        border-color: var(--jira-blue-dark);
+    }
+
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--jira-gray);
+        font-size: 12px;
+    }
+
+    .search-input {
+        padding-left: 30px;
+        width: 200px;
+    }
+
+    /* 4. Main Content */
+    .page-content {
+        padding: 24px;
+        background: var(--jira-light);
         flex: 1;
     }
 
-    .roadmap-item-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--jira-dark);
-        margin: 0 0 6px 0;
-        letter-spacing: -0.2px;
+    .empty-state-card {
+        background: #FFFFFF;
+        border: 1px solid var(--jira-border);
+        border-radius: 8px;
+        padding: 64px;
+        text-align: center;
     }
 
-    .roadmap-item-key {
+    .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    /* Gantt Card Container */
+    .gantt-card {
+        background: #FFFFFF;
+        border: 1px solid var(--jira-border);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .gantt-container {
+        display: flex;
+        min-height: 500px;
+        /* Force height */
+        max-height: calc(100vh - 400px);
+        /* Responsive height limit */
+    }
+
+    .legend-bar {
+        margin-bottom: 16px;
         font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
         color: var(--jira-gray);
-        font-family: monospace;
-        background-color: var(--jira-light);
-        padding: 2px 6px;
-        border-radius: 3px;
-        display: inline-block;
     }
 
-    .status-badge {
-        display: inline-flex;
+    .legend-label {
+        font-weight: 600;
+    }
+
+    /* Gantt Sidebar & Timeline Re-used Styles (Standardized) */
+    .gantt-sidebar {
+        width: 280px;
+        /* Fixed sidebar width from spec */
+        border-right: 1px solid var(--gantt-border);
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        z-index: 2;
+    }
+
+    /* Jira-Style Table Layout */
+    .sidebar-header {
+        height: var(--gantt-header-height);
+        display: flex;
         align-items: center;
-        padding: 6px 12px;
-        border-radius: 4px;
+        border-bottom: 2px solid #dfe1e6;
+        background: #f4f5f7;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
         font-size: 11px;
         font-weight: 700;
+        color: #6b778c;
+        /* Jira header gray */
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        white-space: nowrap;
     }
 
-    .status-active {
-        background-color: #D4EDDA;
-        color: #155724;
-        border: 1px solid #C3E6CB;
-    }
-
-    .status-released {
-        background-color: #CCE5FF;
-        color: #004085;
-        border: 1px solid #B8DAFF;
-    }
-
-    .status-archived {
-        background-color: #E2E3E5;
-        color: #383D41;
-        border: 1px solid #D6D8DB;
-    }
-
-    .status-in-progress {
-        background-color: #FFF3CD;
-        color: #856404;
-        border: 1px solid #FFEEBA;
-    }
-
-    /* Progress Bar */
-    .roadmap-progress-bar {
-        height: 28px;
-        background-color: var(--jira-light);
-        border-radius: 6px;
-        overflow: hidden;
-        margin: 16px 0;
-        border: 1px solid var(--jira-border);
-    }
-
-    .roadmap-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--jira-blue), var(--jira-blue-dark));
-        border-radius: 5px;
+    .sidebar-row {
+        height: var(--gantt-row-height);
         display: flex;
         align-items: center;
-        justify-content: center;
-        color: #FFFFFF;
-        font-size: 12px;
-        font-weight: 700;
-        transition: width var(--transition-base);
-        min-width: 30px;
-    }
-
-    /* Dates */
-    .roadmap-dates {
-        font-size: 12px;
-        color: var(--jira-gray);
-        margin: 12px 0;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .roadmap-dates i {
-        font-size: 13px;
-    }
-
-    /* Metadata */
-    .roadmap-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        font-size: 13px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid var(--jira-border);
-    }
-
-    .roadmap-meta-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--jira-gray);
-    }
-
-    .roadmap-meta-item i {
+        border-bottom: 1px solid #dfe1e6;
+        background-color: #ffffff;
         font-size: 14px;
-        color: var(--jira-blue);
+        /* Standard row text size */
+        color: #172b4d;
+        cursor: pointer;
+        transition: background-color 0.1s ease;
     }
 
-    .roadmap-meta-item strong {
-        color: var(--jira-dark);
+    .sidebar-row:hover {
+        background-color: #ebecf0;
+        /* Jira hover gray */
     }
 
-    /* ============================================
-       RESPONSIVE DESIGN
-       ============================================ */
+    /* Column Specifics */
+    .col-name {
+        flex: 1;
+        /* Takes remaining space */
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        border-right: 1px solid #dfe1e6;
+        font-weight: 500;
+    }
 
+    .col-status {
+        width: 120px;
+        /* Fixed status width */
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        /* Left align badges in Jira */
+        flex-shrink: 0;
+    }
+
+    /* Timeline */
+    .gantt-timeline-wrapper {
+        flex: 1;
+        overflow: auto;
+        position: relative;
+        background: #fff;
+    }
+
+    .gantt-timeline {
+        position: relative;
+        min-width: 100%;
+    }
+
+    .timeline-header {
+        height: var(--gantt-header-height);
+        display: flex;
+        border-bottom: 1px solid var(--gantt-border);
+        background: #f4f5f7;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .month-block {
+        border-right: 1px solid #dfe1e6;
+        display: flex;
+        align-items: center;
+        padding-left: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5e6c84;
+    }
+
+    .timeline-body {
+        position: relative;
+        min-height: 100%;
+    }
+
+    .grid-lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .grid-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: #f4f5f7;
+        border-right: 1px dashed #dfe1e6;
+    }
+
+    .today-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #ff5630;
+        z-index: 5;
+    }
+
+    .timeline-row {
+        height: var(--gantt-row-height);
+        border-bottom: 1px solid #f4f5f7;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .timeline-row:hover {
+        background: rgba(9, 30, 66, 0.02);
+    }
+
+    .gantt-bar {
+        position: absolute;
+        height: 16px;
+        border-radius: 2px;
+        display: flex;
+        align-items: center;
+        padding: 0 6px;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .gantt-bar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        z-index: 20;
+    }
+
+    .gantt-bar.type-epic {
+        background: #8777d9;
+    }
+
+    .gantt-bar.type-feature {
+        background: #4bade8;
+    }
+
+    .gantt-bar.type-milestone {
+        background: #fdbd3e;
+        color: #172b4d;
+        width: 20px !important;
+        border-radius: 50%;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .gantt-bar.type-milestone .bar-label,
+    .bar-progress {
+        display: none;
+    }
+
+    .bar-progress {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 4px 0 0 4px;
+    }
+
+    .bar-label {
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Dots */
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        display: inline-block;
+        margin-right: 4px;
+    }
+
+    .dot.epic {
+        background: #8777d9;
+    }
+
+    .dot.feature {
+        background: #4bade8;
+    }
+
+    .dot.milestone {
+        background: #fdbd3e;
+        border-radius: 50%;
+    }
+
+    /* Responsive Constants */
     @media (max-width: 1024px) {
         .page-header {
-            padding: 24px;
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
         }
 
-        .quick-actions-bar {
-            padding: 16px 24px;
+        .header-left {
+            flex-direction: column;
+            gap: 12px;
         }
 
         .page-content {
-            padding: 24px;
-            gap: 24px;
+            padding: 20px;
         }
 
-        .action-group {
-            min-width: 240px;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .roadmap-meta {
-            flex-direction: column;
-            gap: 12px;
+        .gantt-sidebar {
+            width: 200px;
         }
     }
 
     @media (max-width: 768px) {
-        .breadcrumb-section {
-            padding: 10px 16px;
+        .breadcrumb-container {
+            padding: 12px 16px;
         }
 
         .page-header {
-            padding: 20px 16px;
-        }
-
-        .quick-actions-bar {
             padding: 16px;
-        }
-
-        .page-content {
-            padding: 16px;
-            gap: 16px;
         }
 
         .page-title {
             font-size: 24px;
         }
 
-        .page-subtitle {
-            font-size: 13px;
-        }
-
-        .action-group {
-            min-width: 100%;
-        }
-
-        .action-select {
-            width: 100%;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .card-body {
-            padding: 16px;
-        }
-
-        .card-header {
-            padding: 16px;
-        }
-
-        .card-title {
-            font-size: 14px;
-        }
-
-        .timeline-row {
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .timeline-label {
-            min-width: auto;
-            width: 100%;
-        }
-
-        .timeline-track {
-            width: 100%;
-        }
-
-        .roadmap-item {
-            padding: 16px;
-        }
-
-        .roadmap-item-header {
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .status-badge {
-            align-self: flex-start;
-        }
-
-        .roadmap-meta {
-            gap: 8px;
-        }
-
-        .breadcrumb-list {
-            gap: 4px;
-        }
-
-        .breadcrumb-item a,
-        .breadcrumb-current {
-            font-size: 12px;
-        }
-
-        .breadcrumb-item a i {
-            display: none;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .breadcrumb-section {
-            padding: 8px 12px;
-        }
-
-        .page-header {
-            padding: 16px 12px;
-        }
-
         .quick-actions-bar {
-            padding: 12px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .action-group-right {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+
+        #statusFilter {
+            width: 100%;
+            margin: 0 !important;
         }
 
         .page-content {
-            padding: 12px;
-            gap: 12px;
-        }
-
-        .page-title {
-            font-size: 20px;
-        }
-
-        .page-subtitle {
-            font-size: 12px;
-        }
-
-        .loading-card,
-        .empty-state-card {
-            padding: 40px 20px;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-        }
-
-        .empty-state-title {
-            font-size: 16px;
-        }
-
-        .empty-state-text {
-            font-size: 12px;
-        }
-
-        .stats-card {
             padding: 16px;
         }
 
-        .stats-card-value {
-            font-size: 28px;
+        .gantt-sidebar {
+            width: 140px;
         }
 
-        .stats-card-label {
-            font-size: 11px;
-        }
-
-        .roadmap-item-title {
-            font-size: 13px;
-        }
-
-        .roadmap-dates {
-            font-size: 11px;
-        }
-
-        .roadmap-meta-item {
-            font-size: 12px;
-        }
-
-        .timeline-item-key {
-            font-size: 11px;
+        .col-status {
+            display: none;
         }
     }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const projectSelector = document.getElementById('projectSelector');
-    const roadmapContainer = document.getElementById('roadmapContainer');
-    const emptyState = document.getElementById('emptyState');
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    
-    let currentProject = null;
-    
-    // Initialize
-    loadingIndicator.style.display = 'none';
-    emptyState.style.display = 'block';
-    
-    // Get project from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectFromUrl = urlParams.get('project');
-    
-    // Load projects for selector
-    loadProjects(projectFromUrl);
-    
-    // Project selector change handler
-    projectSelector.addEventListener('change', function() {
-        currentProject = this.value;
-        if (currentProject) {
-            // Show link to project-specific roadmap
-            document.getElementById('projectLinkGroup').style.display = 'block';
-            document.getElementById('projectRoadmapLink').href = `<?= url('/projects/') ?>${currentProject}/roadmap`;
-            
-            loadRoadmap();
-        } else {
-            roadmapContainer.style.display = 'none';
-            emptyState.style.display = 'block';
-            loadingIndicator.style.display = 'none';
-            document.getElementById('projectLinkGroup').style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function () {
+        // Sync scrolling
+        const sidebar = document.querySelector('.sidebar-content');
+        const timeline = document.querySelector('.gantt-timeline-wrapper');
+        if (sidebar && timeline) {
+            sidebar.style.overflowY = 'auto';
+            timeline.style.overflowY = 'auto';
+            sidebar.style.scrollbarWidth = 'none';
+
+            let isSyncingSidebar = false;
+            let isSyncingTimeline = false;
+
+            sidebar.addEventListener('scroll', function () {
+                if (!isSyncingSidebar) {
+                    isSyncingTimeline = true;
+                    timeline.scrollTop = this.scrollTop;
+                }
+                isSyncingSidebar = false;
+            });
+
+            timeline.addEventListener('scroll', function () {
+                if (!isSyncingTimeline) {
+                    isSyncingSidebar = true;
+                    sidebar.scrollTop = this.scrollTop;
+                }
+                isSyncingTimeline = false;
+            });
+        }
+
+        // Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+    // Custom Modal Functions matching Project Roadmap
+    function showCreateItemModal() {
+        const modal = document.getElementById('createModal');
+        const errorDiv = document.getElementById('modalError');
+
+        if (!modal) return;
+
+        // Clear error & reset form
+        errorDiv.classList.remove('show');
+        errorDiv.textContent = '';
+
+        // Reset inputs
+        const inputs = ['item_title', 'item_description', 'item_type', 'item_status'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+
+        const progressEl = document.getElementById('item_progress');
+        if (progressEl) progressEl.value = '0';
+
+        // Default dates to today
+        const today = new Date().toISOString().split('T')[0];
+        const startEl = document.getElementById('item_start_date');
+        const endEl = document.getElementById('item_end_date');
+
+        if (startEl) startEl.value = today;
+        if (endEl) endEl.value = today;
+
+        modal.classList.add('active');
+    }
+
+    function closeCreateModal() {
+        const modal = document.getElementById('createModal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    function submitCreateItem(event) {
+        const errorDiv = document.getElementById('modalError');
+        const submitBtn = event ? event.target : document.querySelector('.btn-submit');
+        const csrfToken = document.getElementById('csrf_token').value;
+        const projectId = document.getElementById('project_id').value;
+
+        if (!projectId || projectId === '0') {
+            errorDiv.textContent = 'Please select a project first.';
+            errorDiv.classList.add('show');
+            return;
+        }
+
+        const title = document.getElementById('item_title').value.trim();
+        const description = document.getElementById('item_description').value.trim();
+        const type = document.getElementById('item_type').value;
+        const status = document.getElementById('item_status').value;
+        const startDate = document.getElementById('item_start_date').value;
+        const endDate = document.getElementById('item_end_date').value;
+        const progress = parseInt(document.getElementById('item_progress').value);
+
+        // Validation
+        if (!title || !type || !status || !startDate || !endDate) {
+            errorDiv.textContent = 'Please fill in all required fields.';
+            errorDiv.classList.add('show');
+            return;
+        }
+
+        if (new Date(startDate) > new Date(endDate)) {
+            errorDiv.textContent = 'Start date must be before end date.';
+            errorDiv.classList.add('show');
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+        }
+
+        // Use PHP generated URL for the current project context
+        fetch('<?= url("/projects/" . ($selectedProject['key'] ?? '') . "/roadmap") ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': csrfToken
+            },
+            body: JSON.stringify({
+                project_id: projectId,
+                title, description, type, status, start_date: startDate, end_date: endDate, progress
+            })
+        })
+            .then(response => {
+                if (response.ok || response.status === 201) return response.json().catch(() => ({ success: true }));
+                return response.text().then(text => Promise.reject(text));
+            })
+            .then(data => {
+                closeCreateModal();
+                window.location.reload();
+            })
+            .catch(err => {
+                console.error(err);
+                errorDiv.textContent = 'Error creating item: ' + (typeof err === 'string' ? err : err.message || 'Unknown error');
+                errorDiv.classList.add('show');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Item';
+                }
+            });
+    }
+
+    // Modal Overlay Click Listener
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalOverlay = document.getElementById('createModal');
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', function (e) {
+                if (e.target === modalOverlay) closeCreateModal();
+            });
         }
     });
-    
-    // Load projects
-    function loadProjects(autoSelectProject = null) {
-        fetch('<?= url('/api/v1/roadmap/projects') ?>', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && Array.isArray(data.data)) {
-                data.data.forEach(project => {
-                    const option = document.createElement('option');
-                    option.value = project.key;
-                    option.textContent = `${project.name} (${project.key})`;
-                    projectSelector.appendChild(option);
-                });
-                
-                // Auto-select project from URL if provided
-                if (autoSelectProject) {
-                    projectSelector.value = autoSelectProject;
-                    currentProject = autoSelectProject;
-                    // Automatically load the roadmap
-                    loadRoadmap();
-                }
-            }
-        })
-        .catch(error => console.error('Error loading projects:', error));
-    }
-    
-    // Load roadmap data
-    function loadRoadmap() {
-        emptyState.style.display = 'none';
-        loadingIndicator.style.display = 'block';
-        roadmapContainer.style.display = 'none';
-        
-        fetch(`<?= url('/api/v1/roadmap/project') ?>?project=${currentProject}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            loadingIndicator.style.display = 'none';
-            
-            if (data.success) {
-                renderRoadmap(data.data);
-                roadmapContainer.style.display = 'block';
-            } else {
-                emptyState.innerHTML = `
-                    <div class="empty-state-icon">⚠️</div>
-                    <h3 class="empty-state-title">Unable to Load Roadmap</h3>
-                    <p class="empty-state-text">There was an error loading the roadmap. Please try selecting another project.</p>
-                `;
-                emptyState.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            console.error('Error loading roadmap:', error);
-            loadingIndicator.style.display = 'none';
-            emptyState.innerHTML = `
-                <div class="empty-state-icon">❌</div>
-                <h3 class="empty-state-title">Error Loading Roadmap</h3>
-                <p class="empty-state-text">An unexpected error occurred. Please check the console and try again.</p>
-            `;
-            emptyState.style.display = 'block';
-        });
-    }
-    
-    // Render roadmap
-    function renderRoadmap(data) {
-        const epics = data.epics || [];
-        const versions = data.versions || [];
-        const stats = data.stats || {};
-        
-        // Render stats
-        renderStats(stats);
-        
-        // Render timeline
-        renderTimeline(epics, versions);
-        
-        // Render epics
-        renderEpics(epics);
-        
-        // Render versions
-        renderVersions(versions);
-    }
-    
-    // Render stats cards
-    function renderStats(stats) {
-        const statsContainer = document.getElementById('statsContainer');
-        statsContainer.innerHTML = '';
-        
-        const statCards = [
-            { label: 'Total Issues', value: stats.total_issues || 0 },
-            { label: 'Completed', value: stats.completed_issues || 0 },
-            { label: 'In Progress', value: stats.in_progress_issues || 0 },
-            { label: 'Not Started', value: stats.not_started_issues || 0 }
-        ];
-        
-        statCards.forEach(stat => {
-            const card = document.createElement('div');
-            card.className = 'stats-card';
-            card.innerHTML = `
-                <div class="stats-card-label">${htmlEscape(stat.label)}</div>
-                <div class="stats-card-value">${stat.value}</div>
-            `;
-            statsContainer.appendChild(card);
-        });
-    }
-    
-    // Render timeline
-    function renderTimeline(epics, versions) {
-        const container = document.getElementById('timelineContainer');
-        container.innerHTML = '';
-        
-        const allItems = [
-            ...epics.map(e => ({
-                type: 'epic',
-                key: e.key,
-                title: e.summary,
-                start: e.start_date,
-                end: e.end_date || e.start_date
-            })),
-            ...versions.map(v => ({
-                type: 'version',
-                key: v.name,
-                title: v.name,
-                start: v.start_date,
-                end: v.release_date || v.start_date
-            }))
-        ];
-        
-        if (allItems.length === 0) {
-            container.innerHTML = '<p class="text-muted" style="margin: 0; padding: 20px; text-align: center;">No items to display in timeline</p>';
-            return;
-        }
-        
-        // Calculate date range
-        const dates = allItems
-            .filter(i => i.start && i.end)
-            .flatMap(i => [new Date(i.start), new Date(i.end)])
-            .sort((a, b) => a - b);
-        
-        if (dates.length === 0) {
-            container.innerHTML = '<p class="text-muted" style="margin: 0; padding: 20px; text-align: center;">No dates available for timeline</p>';
-            return;
-        }
-        
-        const minDate = dates[0];
-        const maxDate = dates[dates.length - 1];
-        const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
-        
-        // Render items
-        allItems.forEach(item => {
-            if (!item.start || !item.end) return;
-            
-            const itemStart = new Date(item.start);
-            const itemEnd = new Date(item.end);
-            
-            const startOffset = ((itemStart - minDate) / (1000 * 60 * 60 * 24)) / totalDays * 100;
-            const width = ((itemEnd - itemStart) / (1000 * 60 * 60 * 24)) / totalDays * 100;
-            
-            const row = document.createElement('div');
-            row.className = 'timeline-row';
-            row.innerHTML = `
-                <div class="timeline-label">
-                    <span class="timeline-item-key">${htmlEscape(item.key)}</span>
-                </div>
-                <div class="timeline-track">
-                    <div class="timeline-bar" style="margin-left: ${startOffset}%; width: ${Math.max(width, 1)}%;">
-                        ${width > 15 ? htmlEscape(item.title) : ''}
-                    </div>
-                </div>
-            `;
-            container.appendChild(row);
-        });
-    }
-    
-    // Render epics
-    function renderEpics(epics) {
-        const container = document.getElementById('epicsContainer');
-        const countBadge = document.getElementById('epicCount');
-        
-        container.innerHTML = '';
-        countBadge.textContent = epics.length;
-        
-        if (epics.length === 0) {
-            container.innerHTML = '<p style="margin: 0; text-align: center; color: #626F86; padding: 20px;">No epics found for this project</p>';
-            return;
-        }
-        
-        epics.forEach(epic => {
-            const progress = epic.progress || 0;
-            const startDate = epic.start_date ? new Date(epic.start_date).toLocaleDateString() : 'Not set';
-            const endDate = epic.end_date ? new Date(epic.end_date).toLocaleDateString() : 'Not set';
-            
-            const item = document.createElement('div');
-            item.className = 'roadmap-item';
-            item.innerHTML = `
-                <div class="roadmap-item-header">
-                    <div class="roadmap-item-content">
-                        <h4 class="roadmap-item-title">${htmlEscape(epic.summary)}</h4>
-                        <span class="roadmap-item-key">${htmlEscape(epic.key)}</span>
-                    </div>
-                    <span class="status-badge status-${epic.status_name ? epic.status_name.toLowerCase().replace(/\s+/g, '-') : 'active'}">
-                        ${htmlEscape(epic.status_name || 'Active')}
-                    </span>
-                </div>
-                
-                <div class="roadmap-progress-bar">
-                    <div class="roadmap-progress-fill" style="width: ${progress}%;">
-                        ${progress}%
-                    </div>
-                </div>
-                
-                <div class="roadmap-dates">
-                    <i class="bi bi-calendar-event"></i> ${startDate} — ${endDate}
-                </div>
-                
-                <div class="roadmap-meta">
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-list-check"></i>
-                        <span><strong>${epic.issue_count || 0}</strong> issues</span>
-                    </div>
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span><strong>${epic.completed_count || 0}</strong> completed</span>
-                    </div>
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-exclamation-circle"></i>
-                        <span>Priority: <strong>${htmlEscape(epic.priority || 'Medium')}</strong></span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(item);
-        });
-    }
-    
-    // Render versions
-    function renderVersions(versions) {
-        const container = document.getElementById('versionsContainer');
-        const countBadge = document.getElementById('versionCount');
-        
-        container.innerHTML = '';
-        countBadge.textContent = versions.length;
-        
-        if (versions.length === 0) {
-            container.innerHTML = '<p style="margin: 0; text-align: center; color: #626F86; padding: 20px;">No versions found for this project</p>';
-            return;
-        }
-        
-        versions.forEach(version => {
-            const progress = version.progress || 0;
-            const startDate = version.start_date ? new Date(version.start_date).toLocaleDateString() : 'Not set';
-            const releaseDate = version.release_date ? new Date(version.release_date).toLocaleDateString() : 'Not set';
-            
-            const item = document.createElement('div');
-            item.className = 'roadmap-item';
-            item.innerHTML = `
-                <div class="roadmap-item-header">
-                    <div class="roadmap-item-content">
-                        <h4 class="roadmap-item-title">${htmlEscape(version.name)}</h4>
-                    </div>
-                    <span class="status-badge status-${version.status ? version.status.toLowerCase().replace(/\s+/g, '-') : 'active'}">
-                        ${htmlEscape(version.status || 'Active')}
-                    </span>
-                </div>
-                
-                <div class="roadmap-progress-bar">
-                    <div class="roadmap-progress-fill" style="width: ${progress}%;">
-                        ${progress}%
-                    </div>
-                </div>
-                
-                <div class="roadmap-dates">
-                    <i class="bi bi-calendar-event"></i> ${startDate} — ${releaseDate}
-                </div>
-                
-                <div class="roadmap-meta">
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-list-check"></i>
-                        <span><strong>${version.issue_count || 0}</strong> issues</span>
-                    </div>
-                    <div class="roadmap-meta-item">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span><strong>${version.completed_count || 0}</strong> completed</span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(item);
-        });
-    }
-    
-    // Helper function
-    function htmlEscape(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-});
 </script>
 
 <?php \App\Core\View::endSection(); ?>

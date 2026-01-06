@@ -1,0 +1,159 @@
+═══════════════════════════════════════════════════════════════════════════════
+    DEBUG CALENDAR AVATAR 404 - TROUBLESHOOTING GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+🔍 QUICK DEBUG (2 MINUTES)
+═══════════════════════════════════════════════════════════════════════════════
+
+Step 1: Open Calendar Page
+  URL: http://localhost:8080/jira_clone_system/public/calendar
+
+Step 2: Open DevTools
+  Key: F12 (or right-click → Inspect)
+  Click: "Console" tab
+
+Step 3: Click on a Calendar Event
+  This will open modal and trigger avatar loading
+
+Step 4: Check Console Output
+  Look for logs like:
+  
+  📅 [AVATAR] Assignee: {
+    raw: "/avatars/avatar_1_1767684205.png",
+    resolved: "http://localhost:8080/jira_clone_system/public/uploads/avatars/...",
+    webBase: "http://localhost:8080/jira_clone_system/public/"
+  }
+
+Step 5: Analyze Console Output
+  ✅ GOOD signs:
+    • raw path: /avatars/avatar_... OR /uploads/avatars/avatar_...
+    • resolved path: http://localhost:8080/jira_clone_system/public/uploads/avatars/...
+    • webBase: http://localhost:8080/jira_clone_system/public/
+  
+  ❌ BAD signs:
+    • resolved path: http://localhost:8080/uploads/avatars/... (MISSING /jira_clone_system/public/)
+    • webBase: http://localhost:8080/ (INCOMPLETE)
+    • webBase: / (TOO SHORT)
+
+Step 6: Check Network Tab
+  Click: "Network" tab in DevTools
+  Filter: Type "avatar" in search box
+  Result: Should show PNG/image requests
+  
+  ✅ GOOD: Status 200 OK
+  ❌ BAD: Status 404 Not Found
+
+Step 7: Compare URLs
+  Copy URL from Network tab
+  Expected: http://localhost:8080/jira_clone_system/public/uploads/avatars/avatar_...
+  
+  If URL is: http://localhost:8080/uploads/avatars/...
+  Problem: Missing /jira_clone_system/public/ in path
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🐛 COMMON PROBLEMS & FIXES
+═══════════════════════════════════════════════════════════════════════════════
+
+Problem 1: webBase is missing application path
+  Console shows:   webBase: "http://localhost:8080/"
+  Expected:        webBase: "http://localhost:8080/jira_clone_system/public/"
+  
+  Cause: url() helper function not returning full path
+  Solution: Check config/config.php and verify SCRIPT_NAME in $_SERVER
+  
+Problem 2: Avatar path not being fixed
+  Console shows:   raw: "/avatars/avatar_..." (not /uploads/avatars/)
+  Cause: Database has incorrect paths
+  Fix: Run avatar correction script
+  
+Problem 3: Avatar file doesn't exist
+  Network shows: 404 for /uploads/avatars/avatar_...
+  Cause: Avatar file was never uploaded
+  Fix: Re-upload avatars or use default avatars
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💊 SOLUTIONS TO TRY
+═══════════════════════════════════════════════════════════════════════════════
+
+Solution 1: Clear Cache (90% success rate)
+  Steps:
+    1. CTRL + SHIFT + DEL
+    2. Select: "All time"
+    3. Check: "Cached images and files"
+    4. Click: "Clear data"
+    5. CTRL + F5 (hard refresh)
+
+Solution 2: Check url() Helper
+  File: src/Helpers/functions.php
+  Lines: 70-95
+  
+  Test: Check if url() function is detecting app path correctly
+  Debug: Add echo to verify:
+    <?php echo url('/'); ?>
+  Should output: http://localhost:8080/jira_clone_system/public/
+
+Solution 3: Verify Avatar File Exists
+  File path: public/uploads/avatars/avatar_1_1767684205.png
+  
+  Check:
+    1. Open file manager
+    2. Navigate to public/uploads/avatars/
+    3. Look for avatar_1_1767684205.png
+    4. If missing: Avatar needs to be re-uploaded
+
+Solution 4: Check JavaScript Fix Applied
+  File: public/assets/js/calendar-realtime.js
+  Lines: 426-461
+  
+  Verify:
+    • getAvatarUrl function includes /uploads/ fix
+    • Function handles /avatars/ paths
+    • Function logs to console (emoji logs)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 VERIFICATION CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+After applying fixes, verify:
+
+[  ] Browser cache cleared (CTRL + SHIFT + DEL)
+[  ] Hard refresh done (CTRL + F5)
+[  ] Calendar page loads without errors (F12 → Console)
+[  ] Click event to open modal
+[  ] Console shows emoji logs (📅 [AVATAR])
+[  ] webBase includes full app path in console
+[  ] Network tab shows avatar requests (F12 → Network)
+[  ] Avatar requests show 200 OK (not 404)
+[  ] Avatar image displays in modal
+[  ] No red errors in console
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 IF STILL NOT WORKING
+═══════════════════════════════════════════════════════════════════════════════
+
+Provide this information:
+
+1. Console output (screenshot or text):
+   What does the 📅 [AVATAR] log show?
+
+2. Network tab (screenshot):
+   What's the actual URL being requested?
+   What's the status (200, 404, etc)?
+
+3. File system:
+   Does public/uploads/avatars/avatar_*.png exist?
+
+4. url() helper test:
+   <?php echo url('/'); ?>
+   What does it output?
+
+5. Configuration:
+   Is $_SERVER['SCRIPT_NAME'] correct?
+   Verify in: http://localhost:8080/jira_clone_system/public/test.php
+   (Create test file with: <?php var_dump($_SERVER['SCRIPT_NAME']); ?>)
+
+═══════════════════════════════════════════════════════════════════════════════

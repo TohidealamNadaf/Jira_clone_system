@@ -170,15 +170,13 @@ class RoadmapService
             'end_date' => $data['end_date'],
             'status' => $data['status'] ?? 'planned',
             'priority' => $data['priority'] ?? 'medium',
-            'progress_percentage' => isset($data['progress']) ? (int)$data['progress'] : 0,
+            'progress_percentage' => isset($data['progress']) ? (int) $data['progress'] : 0,
             'owner_id' => $data['owner_id'] ?? null,
             'color' => $data['color'] ?? '#8b1956',
             'created_by' => $userId,
         ];
 
-        Database::insert('roadmap_items', $insertData);
-
-        $itemId = (int) Database::lastInsertId();
+        $itemId = Database::insert('roadmap_items', $insertData);
 
         // Link sprints if provided
         if (!empty($data['sprint_ids'])) {

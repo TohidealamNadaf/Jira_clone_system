@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Script Test</title>
+</head>
+<body>
+    <h1>Test if scripts execute</h1>
+    
+    <script>
+        console.log('BEFORE first script');
+    </script>
+    
+    <script>
+        console.log('START second script');
+        console.log('This should always execute');
+        try {
+            console.log('Inside try block');
+        } catch (e) {
+            console.error('Error:', e);
+        }
+    </script>
+    
+    <p>If you see all three logs, scripts work.</p>
+</body>
+</html>

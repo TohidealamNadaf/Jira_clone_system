@@ -1,0 +1,411 @@
+[2025-12-27 05:52:02] IssueController::store called.
+[2025-12-27 05:52:02] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Presentation.pptx
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Presentation.pptx
+                )
+
+            [type] => Array
+                (
+                    [0] => application/vnd.openxmlformats-officedocument.presentationml.presentation
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\Users\tohid\AppData\Local\Temp\phpD884.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 70742
+                )
+
+        )
+
+)
+
+[2025-12-27 05:52:02] POST: Array
+(
+    [project_id] => 4
+    [issue_type_id] => 2
+    [summary] => Checking issue
+    [description] => <p>adding issue checking.</p>
+<p># Design Prompt Master Template - Enterprise Jira-Like Design System</p>
+<p>**Purpose**: Use this prompt template to design new pages consistent with the board, navbar, and issue pages &nbsp;<br>**Status**: Reference Document | **Version**: 1.0</p>
+<p>---</p>
+<p>## Copy-Paste Design Prompt Template</p>
+<p>Use this prompt with AI design tools or as a specification document for new pages:</p>
+<p>```<br>DESIGN BRIEF: [PAGE_NAME] Page</p>
+<p>DESIGN SYSTEM: Enterprise Jira-Like UI (Reference: Board Page, Issue Detail Page, Navbar)</p>
+<p>OBJECTIVE: Design a [PAGE_NAME] page that maintains enterprise-grade consistency with existing Jira-like application design.</p>
+<p>DESIGN CONSTRAINTS:<br>✓ Match existing color palette, typography, and spacing from board/issue pages<br>✓ Maintain professional enterprise aesthetic<br>✓ Ensure responsive design (mobile, tablet, desktop)<br>✓ Preserve all functionality (no feature loss)<br>✓ Follow accessibility standards (WCAG AA)</p>
+<p>COLOR PALETTE:<br>- Primary Blue: #0052CC (actions, hover states, links)<br>- Dark Blue: #003DA5 (hover darker variant)<br>- Light Blue: #DEEBFF (hover background, light variant)<br>- Black/Dark Text: #161B22 (primary text, headings)<br>- Gray Text: #626F86 (secondary text, labels)<br>- Light Gray: #F7F8FA (backgrounds, secondary elements)<br>- Borders: #DFE1E6 (dividers, card borders)<br>- White: #FFFFFF (main background)<br>- Red: #ED3C32 (danger, destructive actions)<br>- Green: #216E4E (success states)<br>- Orange: #974F0C (warnings)<br>- Teal: #216E4E (info, additional info)</p>
+<p>TYPOGRAPHY:<br>- Font Family: System fonts (default browser stack)<br>- Page Title: 28px, font-weight 700, color #161B22, letter-spacing -0.3px<br>- Section Header: 20px, font-weight 600, color #161B22<br>- Subsection: 15px, font-weight 600, color #161B22<br>- Body Text: 14px, font-weight 400, color #161B22<br>- Small Text: 12px, font-weight 400, color #626F86<br>- Label: 13px, font-weight 600, color #626F86<br>- Button Text: 14px, font-weight 500<br>- Line Height: 1.43 for body text, 1.5 for headings</p>
+<p>SPACING SCALE (multiples of 4px):<br>4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 48px</p>
+<p>LAYOUT STRUCTURE:<br>1. BREADCRUMB NAVIGATION (12px top)<br>&nbsp; &nbsp;- Items: Home &gt; Section &gt; Current Page<br>&nbsp; &nbsp;- Icons on left of first item<br>&nbsp; &nbsp;- Gray separators between items<br>&nbsp; &nbsp;- Hover effect on links<br>&nbsp; &nbsp;- Current page: bold, not a link</p>
+<p>2. PAGE HEADER (24px padding, white background)<br>&nbsp; &nbsp;- Left: Title + Subtitle<br>&nbsp; &nbsp;- Right: Action buttons<br>&nbsp; &nbsp;- Bottom border: 1px #DFE1E6<br>&nbsp; &nbsp;- Box shadow: 0 1px 1px rgba(9,30,66,0.13)<br>&nbsp; &nbsp;- Flexbox with space-between</p>
+<p>3. MAIN CONTENT AREA<br>&nbsp; &nbsp;- Background: #F7F8FA<br>&nbsp; &nbsp;- Padding: 24px 32px (desktop), 16px 20px (mobile)<br>&nbsp; &nbsp;- Flexible layout (grid or flex)<br>&nbsp; &nbsp;- Responsive columns</p>
+<p>COMPONENT PATTERNS:</p>
+<p>A. CARDS<br>&nbsp; &nbsp;- Background: #FFFFFF<br>&nbsp; &nbsp;- Border: 1px solid #DFE1E6<br>&nbsp; &nbsp;- Border Radius: 6px or 8px<br>&nbsp; &nbsp;- Padding: 16px, 20px, or 24px (context-dependent)<br>&nbsp; &nbsp;- Box Shadow: 0 1px 3px rgba(9,30,66,0.13), 0 0 1px rgba(9,30,66,0.13)<br>&nbsp; &nbsp;- Hover: translateY(-3px), shadow-lg<br>&nbsp; &nbsp;- Transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1)</p>
+<p>B. BUTTONS<br>&nbsp; &nbsp;- Primary: #0052CC background, white text<br>&nbsp; &nbsp;- Primary Hover: #003DA5 background<br>&nbsp; &nbsp;- Secondary: white background, #DFE1E6 border, #161B22 text<br>&nbsp; &nbsp;- Secondary Hover: #F7F8FA background<br>&nbsp; &nbsp;- Danger: #ED3C32 background, white text<br>&nbsp; &nbsp;- Padding: 8px 16px (small), 10px 20px (medium), 12px 24px (large)<br>&nbsp; &nbsp;- Border Radius: 4px or 6px<br>&nbsp; &nbsp;- Font: 14px, font-weight 500<br>&nbsp; &nbsp;- Transition: 0.2s ease</p>
+<p>C. BADGES &amp; LABELS<br>&nbsp; &nbsp;- Background: colored (type-specific)<br>&nbsp; &nbsp;- Color: white text<br>&nbsp; &nbsp;- Padding: 4px 8px (inline), 6px 12px (standalone)<br>&nbsp; &nbsp;- Border Radius: 4px or rounded pill (12px)<br>&nbsp; &nbsp;- Font: 11px, font-weight 700, uppercase<br>&nbsp; &nbsp;- Letter Spacing: 0.3-0.5px</p>
+<p>D. INPUT FIELDS<br>&nbsp; &nbsp;- Background: #FFFFFF<br>&nbsp; &nbsp;- Border: 1px solid #DFE1E6<br>&nbsp; &nbsp;- Border Radius: 6px<br>&nbsp; &nbsp;- Padding: 8px 12px (small), 12px 16px (large)<br>&nbsp; &nbsp;- Focus: blue border (#0052CC) + shadow (0 0 0 2px rgba(0,82,204,0.1))<br>&nbsp; &nbsp;- Font: 14px, color #161B22<br>&nbsp; &nbsp;- Transition: 0.2s ease</p>
+<p>E. DROPDOWNS &amp; PANELS<br>&nbsp; &nbsp;- Background: #FFFFFF<br>&nbsp; &nbsp;- Border: 1px solid #DFE1E6<br>&nbsp; &nbsp;- Border Radius: 6px<br>&nbsp; &nbsp;- Box Shadow: 0 4px 12px rgba(9,30,66,0.15)<br>&nbsp; &nbsp;- Margin Top: 8px<br>&nbsp; &nbsp;- Min Width: 280px or context-dependent<br>&nbsp; &nbsp;- Overflow: hidden, flex column</p>
+<p>F. TABLE STYLING<br>&nbsp; &nbsp;- Header Background: #F7F8FA<br>&nbsp; &nbsp;- Header Font: 12px, font-weight 600, #626F86, uppercase<br>&nbsp; &nbsp;- Row Background: #FFFFFF<br>&nbsp; &nbsp;- Row Border: 1px solid #DFE1E6<br>&nbsp; &nbsp;- Cell Padding: 12px 16px<br>&nbsp; &nbsp;- Row Hover: #F7F8FA background<br>&nbsp; &nbsp;- Alternating Rows: optional light gray<br>&nbsp; &nbsp;- Transition: 0.2s ease</p>
+<p>G. LISTS<br>&nbsp; &nbsp;- Item Padding: 12px 16px (compact), 16px 20px (spacious)<br>&nbsp; &nbsp;- Item Border: 1px solid #DFE1E6<br>&nbsp; &nbsp;- Hover: #F7F8FA background<br>&nbsp; &nbsp;- Icon + Text: gap 12px, icon flex-shrink 0<br>&nbsp; &nbsp;- Divider: 1px #DFE1E6</p>
+<p>H. EMPTY STATES<br>&nbsp; &nbsp;- Icon: 56-72px emoji or SVG, opacity 0.5<br>&nbsp; &nbsp;- Text: 14px, font-weight 500, color #626F86<br>&nbsp; &nbsp;- Centered: text-align center, flex column, justify center<br>&nbsp; &nbsp;- Padding: 60px 20px (generous vertical)</p>
+<p>RESPONSIVE DESIGN:</p>
+<p>Desktop (1400px+):<br>- Sidebar: 300-350px width (if needed)<br>- Main: flex 1<br>- Padding: 24px 32px<br>- Columns: 3-4 grid columns</p>
+<p>Laptop (1024px - 1399px):<br>- Padding: 20px 24px<br>- Columns: 2-3 grid columns<br>- Adjusted sizing</p>
+<p>Tablet (768px - 1023px):<br>- Padding: 16px 20px<br>- Columns: 2 grid columns<br>- Stacked sidebar if present<br>- Smaller gap between items</p>
+<p>Mobile (&lt; 768px):<br>- Padding: 16px 16px or 12px<br>- Columns: 1 (full width)<br>- Touch-friendly: min height 44px buttons<br>- Larger gaps: 16px or 20px<br>- No sidebar (stack vertically)</p>
+<p>ANIMATIONS &amp; TRANSITIONS:<br>- Base Duration: 0.2s<br>- Timing Function: cubic-bezier(0.4, 0, 0.2, 1) or ease<br>- Hover Effects:<br>&nbsp; - Cards: lift + shadow (translateY -3px)<br>&nbsp; - Buttons: background + color shift (no transform for navbar)<br>&nbsp; - Links: color shift + underline<br>&nbsp; - Icons: scale or color change<br>- Loading States: opacity fade, spinner animation</p>
+<p>HOVER EFFECTS PATTERN:<br>1. Color Shift (primary element + text)<br>2. Background Change (light variant)<br>3. Shadow Enhancement (card elevate)<br>4. Lift Animation (translateY -2px to -3px for cards)<br>5. Timing: 0.2s transition</p>
+<p>ICONS:<br>- Library: Bootstrap Icons (bi-*)<br>- Size: 16px (inline), 20px (buttons), 24px (headers), 56px+ (empty states)<br>- Color: Inherit from text color or specific palette<br>- Alignment: center vertically with text, gap 6-12px</p>
+<p>ACCESSIBILITY:<br>✓ Semantic HTML: nav, main, section, article, button, a, form<br>✓ Color Contrast: WCAG AA (4.5:1 for text, 3:1 for graphics)<br>✓ Focus States: Visible outline or highlight<br>✓ ARIA: role, aria-label, aria-expanded, aria-hidden<br>✓ Keyboard Nav: Tab order logical, Enter activates buttons<br>✓ Screen Reader: Meaningful text, icon descriptions<br>✓ Touch: Min 44px height for interactive elements</p>
+<p>BEST PRACTICES:<br>1. Use CSS Variables for colors: var(--jira-blue)<br>2. No hardcoded colors in components<br>3. Flexbox for alignment (gap instead of margin)<br>4. CSS Grid for complex layouts<br>5. Mobile-first: Default styles for mobile, @media for larger screens<br>6. No unnecessary DOM nesting<br>7. Reuse component classes<br>8. Consistent spacing (multiples of 4)<br>9. Smooth transitions (0.2s)<br>10. Performance: CSS &gt; JavaScript for animations</p>
+<p>SECTION PATTERNS:</p>
+<p>Pattern A: Title + Subtitle + Content<br>├─ .page-header<br>│ &nbsp;├─ .header-left<br>│ &nbsp;│ &nbsp;├─ h1.page-title<br>│ &nbsp;│ &nbsp;└─ p.page-subtitle<br>│ &nbsp;└─ .header-right<br>│ &nbsp; &nbsp; └─ button.btn (actions)<br>└─ .content-area<br>&nbsp; &nbsp;└─ [Grid/Flex content]</p>
+<p>Pattern B: Sidebar + Main Content<br>├─ .main-container (flex)<br>│ &nbsp;├─ .sidebar (300px)<br>│ &nbsp;│ &nbsp;└─ [Navigation/Filters]<br>│ &nbsp;└─ .main-content (flex: 1)<br>│ &nbsp; &nbsp; └─ [Primary content]</p>
+<p>Pattern C: Tabs + Content<br>├─ .tabs-container<br>│ &nbsp;├─ .tab-nav<br>│ &nbsp;│ &nbsp;├─ .tab-item.active<br>│ &nbsp;│ &nbsp;├─ .tab-item<br>│ &nbsp;│ &nbsp;└─ .tab-item<br>│ &nbsp;└─ .tab-content<br>│ &nbsp; &nbsp; └─ [Tab-specific content]</p>
+<p>Pattern D: Grid of Cards<br>├─ .cards-grid (grid: repeat(auto-fit, minmax(240px, 1fr)))<br>│ &nbsp;├─ .card<br>│ &nbsp;│ &nbsp;├─ .card-header<br>│ &nbsp;│ &nbsp;├─ .card-body<br>│ &nbsp;│ &nbsp;└─ .card-footer<br>│ &nbsp;├─ .card<br>│ &nbsp;└─ .card</p>
+<p>EXAMPLE PAGE STRUCTURE:<br>```html<br>&lt;div class="page-wrapper"&gt;<br>&nbsp; &lt;!-- Breadcrumb --&gt;<br>&nbsp; &lt;div class="breadcrumb-nav"&gt;<br>&nbsp; &nbsp; &lt;a href="/home"&gt;Home&lt;/a&gt; / &lt;span&gt;Current Page&lt;/span&gt;<br>&nbsp; &lt;/div&gt;<br>&nbsp;&nbsp;<br>&nbsp; &lt;!-- Header --&gt;<br>&nbsp; &lt;div class="page-header"&gt;<br>&nbsp; &nbsp; &lt;div class="header-left"&gt;<br>&nbsp; &nbsp; &nbsp; &lt;h1&gt;Page Title&lt;/h1&gt;<br>&nbsp; &nbsp; &nbsp; &lt;p&gt;Subtitle or description&lt;/p&gt;<br>&nbsp; &nbsp; &lt;/div&gt;<br>&nbsp; &nbsp; &lt;div class="header-right"&gt;<br>&nbsp; &nbsp; &nbsp; &lt;button class="btn btn-secondary"&gt;Filter&lt;/button&gt;<br>&nbsp; &nbsp; &nbsp; &lt;button class="btn btn-primary"&gt;Action&lt;/button&gt;<br>&nbsp; &nbsp; &lt;/div&gt;<br>&nbsp; &lt;/div&gt;<br>&nbsp;&nbsp;<br>&nbsp; &lt;!-- Content --&gt;<br>&nbsp; &lt;div class="content-area"&gt;<br>&nbsp; &nbsp; &lt;!-- Grid/Cards/Tables/etc --&gt;<br>&nbsp; &lt;/div&gt;<br>&lt;/div&gt;<br>```</p>
+<p>EXAMPLE CSS STRUCTURE:<br>```css<br>:root {<br>&nbsp; --jira-blue: #0052CC;<br>&nbsp; --text-primary: #161B22;<br>&nbsp; --text-secondary: #626F86;<br>&nbsp; --bg-primary: #FFFFFF;<br>&nbsp; --bg-secondary: #F7F8FA;<br>&nbsp; --border-color: #DFE1E6;<br>&nbsp; --shadow-sm: 0 1px 1px rgba(9, 30, 66, 0.13);<br>&nbsp; --shadow-md: 0 1px 3px rgba(9, 30, 66, 0.13);<br>&nbsp; --shadow-lg: 0 4px 12px rgba(9, 30, 66, 0.15);<br>&nbsp; --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);<br>}</p>
+<p>.page-header {<br>&nbsp; display: flex;<br>&nbsp; justify-content: space-between;<br>&nbsp; align-items: center;<br>&nbsp; padding: 24px 32px;<br>&nbsp; background: var(--bg-primary);<br>&nbsp; border-bottom: 1px solid var(--border-color);<br>&nbsp; box-shadow: var(--shadow-sm);<br>}</p>
+<p>.card {<br>&nbsp; background: var(--bg-primary);<br>&nbsp; border: 1px solid var(--border-color);<br>&nbsp; border-radius: 6px;<br>&nbsp; padding: 20px;<br>&nbsp; box-shadow: var(--shadow-sm);<br>&nbsp; transition: all var(--transition);<br>}</p>
+<p>.card:hover {<br>&nbsp; box-shadow: var(--shadow-lg);<br>&nbsp; transform: translateY(-3px);<br>}</p>
+<p>.btn-primary {<br>&nbsp; background: var(--jira-blue);<br>&nbsp; color: white;<br>&nbsp; padding: 10px 20px;<br>&nbsp; border-radius: 4px;<br>&nbsp; transition: background var(--transition);<br>}</p>
+<p>.btn-primary:hover {<br>&nbsp; background: #003DA5;<br>}<br>```</p>
+<p>REFERENCES:<br>- Board Page: views/projects/board.php<br>- Issue Detail: views/issues/show.php<br>- Navbar: views/layouts/app.php<br>- Design System: JIRA_DESIGN_SYSTEM_COMPLETE.md<br>- Quick Reference: DESIGN_SYSTEM_QUICK_REFERENCE.md</p>
+<p>DELIVERABLE CHECKLIST:<br>✓ Page header with breadcrumb<br>✓ Professional typography hierarchy<br>✓ Consistent color palette<br>✓ Proper spacing (4px multiples)<br>✓ Hover effects on interactive elements<br>✓ Responsive design (3+ breakpoints)<br>✓ Accessibility compliant<br>✓ No console errors<br>✓ Mobile touch-friendly<br>✓ CSS variables used for colors<br>```</p>
+<p>---</p>
+<p>## How to Use This Prompt</p>
+<p>### For New Pages:</p>
+<p>1. **Copy the prompt above** into your AI design tool or keep as reference<br>2. **Fill in placeholders**:<br>&nbsp; &nbsp;- `[PAGE_NAME]` = "Projects List" or "Users Dashboard"<br>&nbsp; &nbsp;- `[SPECIFIC_COMPONENTS]` = cards, tables, forms, etc.</p>
+<p>3. **Add page-specific details**:<br>&nbsp; &nbsp;```<br>&nbsp; &nbsp;ADDITIONAL REQUIREMENTS FOR [PAGE_NAME]:<br>&nbsp; &nbsp;- Custom color for [element]: [color]<br>&nbsp; &nbsp;- Special spacing for [section]: [value]<br>&nbsp; &nbsp;- Mobile breakpoint change: [value]<br>&nbsp; &nbsp;- Custom component: [description]<br>&nbsp; &nbsp;```</p>
+<p>4. **Reference existing pages**:<br>&nbsp; &nbsp;- Need cards? &rarr; Look at board.php<br>&nbsp; &nbsp;- Need tables? &rarr; Look at issues/index.php &nbsp;<br>&nbsp; &nbsp;- Need forms? &rarr; Look at profile settings or create page<br>&nbsp; &nbsp;- Need dropdowns? &rarr; Look at navbar.php</p>
+<p>### Example: Designing Projects List Page</p>
+<p>Copy prompt and customize:<br>```<br>DESIGN BRIEF: Projects List Page</p>
+<p>[Copy template above]</p>
+<p>ADDITIONAL REQUIREMENTS FOR PROJECTS LIST:<br>- Table layout with columns: Key, Name, Lead, Issues, Updated<br>- Column widths responsive:<br>&nbsp; - Desktop: 80px, auto, 200px, 80px, 150px<br>&nbsp; - Mobile: Key, Name, Status (hide others)<br>- Hover row highlight: #F7F8FA background<br>- Action column: Edit, Archive, Delete buttons<br>- Pagination: 25 items per page<br>- Search: Top of page with filters<br>```</p>
+<p>---</p>
+<p>## Quick Copy Design Tokens</p>
+<p>Use these exact values for consistency:</p>
+<p>```css<br>/* Colors */<br>--jira-blue: #0052CC;<br>--jira-blue-dark: #003DA5;<br>--jira-blue-light: #DEEBFF;<br>--text-primary: #161B22;<br>--text-secondary: #626F86;<br>--bg-primary: #FFFFFF;<br>--bg-secondary: #F7F8FA;<br>--border-color: #DFE1E6;<br>--red: #ED3C32;<br>--green: #216E4E;<br>--orange: #974F0C;<br>--teal: #216E4E;</p>
+<p>/* Spacing */<br>--space-4: 4px;<br>--space-8: 8px;<br>--space-12: 12px;<br>--space-16: 16px;<br>--space-20: 20px;<br>--space-24: 24px;<br>--space-32: 32px;</p>
+<p>/* Typography */<br>--font-size-sm: 12px;<br>--font-size-base: 14px;<br>--font-size-lg: 15px;<br>--font-size-xl: 20px;<br>--font-size-2xl: 28px;<br>--font-weight-normal: 400;<br>--font-weight-medium: 500;<br>--font-weight-semibold: 600;<br>--font-weight-bold: 700;</p>
+<p>/* Shadows */<br>--shadow-sm: 0 1px 1px rgba(9, 30, 66, 0.13);<br>--shadow-md: 0 1px 3px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);<br>--shadow-lg: 0 4px 12px rgba(9, 30, 66, 0.15);<br>--shadow-xl: 0 8px 16px rgba(9, 30, 66, 0.15);</p>
+<p>/* Transitions */<br>--transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);</p>
+<p>/* Border Radius */<br>--radius-sm: 4px;<br>--radius-md: 6px;<br>--radius-lg: 8px;<br>```</p>
+<p>---</p>
+<p>## Design System References</p>
+<p>| Component | Reference File | Key Features |<br>|-----------|--------------|--------------|<br>| Navbar | views/layouts/app.php | Dropdowns, search, notifications |<br>| Board | views/projects/board.php | Kanban cards, columns, drag-drop |<br>| Issue Detail | views/issues/show.php | Tabs, comments, timeline, modals |<br>| Projects List | views/projects/index.php | Table, pagination, filters |<br>| Issues List | views/issues/index.php | Table, badges, multi-select |</p>
+<p>---</p>
+<p>## Common Page Patterns</p>
+<p>### Pattern 1: List Page (Projects, Issues, Users)<br>```<br>[Breadcrumb]<br>[Header: Title + Create Button]<br>[Search/Filter Bar]<br>[Table or Cards Grid]<br>[Pagination]<br>```</p>
+<p>### Pattern 2: Detail Page (Issue, Project, User)<br>```<br>[Breadcrumb]<br>[Header: Title + Actions Menu]<br>[Tabs or Sidebar Navigation]<br>[Main Content Area]<br>[Related/Activity Sidebar]<br>```</p>
+<p>### Pattern 3: Form Page (Create, Edit)<br>```<br>[Breadcrumb]<br>[Header: Title + Back Button]<br>[Form Fields with Labels]<br>[Help Text under each field]<br>[Submit/Cancel Buttons]<br>[Success/Error Messages]<br>```</p>
+<p>### Pattern 4: Dashboard/Overview<br>```<br>[Breadcrumb]<br>[Header: Title + Refresh Button]<br>[Metrics Cards (Grid)]<br>[Charts/Graphs]<br>[Activity Feed or Table]<br>```</p>
+<p>---</p>
+<p>## Color Usage Guide</p>
+<p>```<br>Primary Actions &rarr; #0052CC (Create, Submit, Primary)<br>Hover States &rarr; #003DA5 or #DEEBFF<br>Text &amp; Headings &rarr; #161B22<br>Secondary Text &rarr; #626F86<br>Backgrounds &rarr; #FFFFFF or #F7F8FA<br>Borders &rarr; #DFE1E6<br>Danger/Delete &rarr; #ED3C32<br>Success &rarr; #216E4E<br>Warning &rarr; #974F0C<br>Info/Secondary &rarr; #216E4E<br>```</p>
+<p>---</p>
+<p>## File Locations for Reference</p>
+<p>**Core System Files**:<br>- Design System: `JIRA_DESIGN_SYSTEM_COMPLETE.md`<br>- Quick Reference: `DESIGN_SYSTEM_QUICK_REFERENCE.md`<br>- Navbar Design: `NAVBAR_REDESIGN_ENTERPRISE_COMPLETE.md`</p>
+<p>**Example Pages**:<br>- Board: `views/projects/board.php`<br>- Issue: `views/issues/show.php`<br>- Navbar: `views/layouts/app.php`</p>
+<p>**Guidelines**:<br>- Code Style: `AGENTS.md` (lines 31-65)<br>- URL Routing: `AGENTS.md` (lines 60-64)</p>
+<p>---</p>
+<p>## Quick Start</p>
+<p>**To design a new page**:</p>
+<p>1. Copy the prompt template above<br>2. Fill in `[PAGE_NAME]` and details<br>3. Reference board.php or issue detail for component examples<br>4. Use color tokens and spacing scale exactly as specified<br>5. Test responsive design at 3 breakpoints<br>6. Verify accessibility (focus states, WCAG AA contrast)<br>7. No console errors when viewing</p>
+<p>**Result**: A professional, consistent page that matches your entire application design.</p>
+<p>---</p>
+<p>**This template maintains enterprise-grade design consistency across all pages in your Jira clone system.**</p>
+    [priority_id] => 4
+    [start_date] => 2025-12-27
+    [end_date] => 2026-01-27
+)
+
+[2025-12-27 05:52:02] Processing file: Presentation.pptx
+[2025-12-27 05:52:02] uploadFile returned null.
+[2025-12-27 05:59:37] IssueController::store called.
+[2025-12-27 05:59:37] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Presentation.pptx
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Presentation.pptx
+                )
+
+            [type] => Array
+                (
+                    [0] => application/vnd.openxmlformats-officedocument.presentationml.presentation
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\Users\tohid\AppData\Local\Temp\phpC9CE.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 70742
+                )
+
+        )
+
+)
+
+[2025-12-27 05:59:37] POST: Array
+(
+    [project_id] => 3
+    [issue_type_id] => 4
+    [summary] => Checking Board Page
+    [description] => <p>sdfa</p>
+<p>Create a captivating intro for a YouTube cooking channel called "Dilchasp Spicy Kitchen" that showcases a diverse array of recipes with the following attributes:<br>1. The intro should be visually appealing and well-balanced, with an authentic style.<br>2. Utilize satisfying background music with a blend of traditional and contemporary elements, incorporating instruments such as sitar, tabla, piano, or acoustic guitar to create a welcoming ambiance.<br>3. Display a variety of cuisines by featuring renowned dishes and ingredients from Indian, Italian, Chinese, Mexican, and other global cuisines.<br>4. Use elements like traditional cookware, vibrant fabrics, and patterns reminiscent of the respective cuisines.<br>5. The text "Dilchasp Spicy Kitchen" should appear with unique animation and style, using fonts that reflect the fusion of multiple culinary cultures&mdash;possibly combining traditional and modern typography.<br>6. Avoid using any human or anime human characters.<br>7. The animation should feel organic and offer a preview of the culinary diversity present in the channel.</p>
+<p>Visual sequence plan:<br>- Begin with a montage of renowned dishes (e.g., pasta, biryani, dumplings, tacos) being revealed one by one on the screen.<br>- Incorporate elements like global herbs and sauces, transitioning between them to depict the diversity.<br>- Overlay with cookware and fabrics that symbolize different cultures, enhancing the visual appeal.<br>- Conclude with the channel name "Dilchasp Spicy Kitchen" emerging elegantly, blending traditional calligraphy with a modern twist.</p>
+<p>Please suggest any specific color schemes or animations you have in mind.</p>
+    [assignee_id] => 1
+    [priority_id] => 4
+    [start_date] => 2025-12-27
+    [end_date] => 2026-02-01
+)
+
+[2025-12-27 05:59:37] Processing file: Presentation.pptx
+[2025-12-27 05:59:37] [C20251231Sat, 27 Dec 2025 05:59:37 +00002025SaturdaySaturdayUTCSat, 27 Dec 2025 05:59:37 +0000] uploadFile failed. Invalid type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+[2025-12-27 05:59:37] uploadFile returned null.
+[2025-12-27 06:01:49] IssueController::store called.
+[2025-12-27 06:01:49] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Presentation.pptx
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Presentation.pptx
+                )
+
+            [type] => Array
+                (
+                    [0] => application/vnd.openxmlformats-officedocument.presentationml.presentation
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\Users\tohid\AppData\Local\Temp\phpCE88.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 70742
+                )
+
+        )
+
+)
+
+[2025-12-27 06:01:49] POST: Array
+(
+    [project_id] => 6
+    [issue_type_id] => 4
+    [summary] => Testing an issue
+    [description] => <p data-start="431" data-end="599">You must update the ENTIRE design system to use the following NEW COLOR THEME without altering <strong data-start="526" data-end="598">any design, layout, spacing, structure, typography, or functionality</strong>.</p>
+<h3 data-start="601" data-end="671">🎨 <strong data-start="608" data-end="669">NEW THEME COLORS (REPLACE ALL OLD BLUE COLORS EVERYWHERE)</strong></h3>
+<ul data-start="672" data-end="785">
+<li data-start="672" data-end="703">
+<p data-start="674" data-end="703"><strong data-start="674" data-end="691">Primary Main:</strong> <code data-start="692" data-end="701">#8B1956</code></p>
+</li>
+<li data-start="704" data-end="743">
+<p data-start="706" data-end="743"><strong data-start="706" data-end="731">Primary Hover / Dark:</strong> <code data-start="732" data-end="741">#6F123F</code></p>
+</li>
+<li data-start="744" data-end="785">
+<p data-start="746" data-end="785"><strong data-start="746" data-end="773">Primary Light / Accent:</strong> <code data-start="774" data-end="783">#E77817</code></p>
+</li>
+</ul>
+<p data-start="787" data-end="854">These colors <strong data-start="800" data-end="840">must replace all existing blue tones</strong>, including:</p>
+<ul data-start="855" data-end="1002">
+<li data-start="855" data-end="868">
+<p data-start="857" data-end="868"><code data-start="857" data-end="866">#0052CC</code></p>
+</li>
+<li data-start="869" data-end="882">
+<p data-start="871" data-end="882"><code data-start="871" data-end="880">#003DA5</code></p>
+</li>
+<li data-start="883" data-end="896">
+<p data-start="885" data-end="896"><code data-start="885" data-end="894">#DEEBFF</code></p>
+</li>
+<li data-start="897" data-end="1002">
+<p data-start="899" data-end="1002">Any blue used for buttons, links, focus rings, badges, tabs, hovers, highlights, borders, accents, etc.</p>
+</li>
+</ul>
+<h3 data-start="1004" data-end="1031">❗ STRICT REQUIREMENTS</h3>
+<p data-start="1032" data-end="1048">Do NOT change:</p>
+<ul data-start="1049" data-end="1269">
+<li data-start="1049" data-end="1059">
+<p data-start="1051" data-end="1059">Layout</p>
+</li>
+<li data-start="1060" data-end="1083">
+<p data-start="1062" data-end="1083">Component structure</p>
+</li>
+<li data-start="1084" data-end="1099">
+<p data-start="1086" data-end="1099">HTML markup</p>
+</li>
+<li data-start="1100" data-end="1117">
+<p data-start="1102" data-end="1117">Functionality</p>
+</li>
+<li data-start="1118" data-end="1132">
+<p data-start="1120" data-end="1132">Typography</p>
+</li>
+<li data-start="1133" data-end="1144">
+<p data-start="1135" data-end="1144">Spacing</p>
+</li>
+<li data-start="1145" data-end="1156">
+<p data-start="1147" data-end="1156">Shadows</p>
+</li>
+<li data-start="1157" data-end="1171">
+<p data-start="1159" data-end="1171">Animations</p>
+</li>
+<li data-start="1172" data-end="1189">
+<p data-start="1174" data-end="1189">Border-radius</p>
+</li>
+<li data-start="1190" data-end="1209">
+<p data-start="1192" data-end="1209">Component sizes</p>
+</li>
+<li data-start="1210" data-end="1228">
+<p data-start="1212" data-end="1228">Responsiveness</p>
+</li>
+<li data-start="1229" data-end="1252">
+<p data-start="1231" data-end="1252">Accessibility rules</p>
+</li>
+<li data-start="1253" data-end="1269">
+<p data-start="1255" data-end="1269">Interactions</p>
+</li>
+</ul>
+<p data-start="1271" data-end="1309">ONLY replace the color theme globally.</p>
+<h3 data-start="1311" data-end="1339">WHAT SHOULD BE UPDATED</h3>
+<ol data-start="1340" data-end="1723">
+<li data-start="1340" data-end="1362">
+<p data-start="1343" data-end="1362">All CSS variables</p>
+</li>
+<li data-start="1363" data-end="1392">
+<p data-start="1366" data-end="1392">All styles in components</p>
+</li>
+<li data-start="1393" data-end="1440">
+<p data-start="1396" data-end="1440">Buttons (primary, active, hover, disabled)</p>
+</li>
+<li data-start="1441" data-end="1469">
+<p data-start="1444" data-end="1469">Links (default + hover)</p>
+</li>
+<li data-start="1470" data-end="1487">
+<p data-start="1473" data-end="1487">Focus states</p>
+</li>
+<li data-start="1488" data-end="1505">
+<p data-start="1491" data-end="1505">Card accents</p>
+</li>
+<li data-start="1506" data-end="1525">
+<p data-start="1509" data-end="1525">Tab indicators</p>
+</li>
+<li data-start="1526" data-end="1546">
+<p data-start="1529" data-end="1546">Badges / labels</p>
+</li>
+<li data-start="1547" data-end="1571">
+<p data-start="1550" data-end="1571">Dropdown highlights</p>
+</li>
+<li data-start="1572" data-end="1594">
+<p data-start="1576" data-end="1594">Table row hovers</p>
+</li>
+<li data-start="1595" data-end="1632">
+<p data-start="1599" data-end="1632">Icons that inherit action color</p>
+</li>
+<li data-start="1633" data-end="1667">
+<p data-start="1637" data-end="1667">Any inline styles using blue</p>
+</li>
+<li data-start="1668" data-end="1723">
+<p data-start="1672" data-end="1723">Any utility classes containing old blue hex codes</p>
+</li>
+</ol>
+<h3 data-start="1725" data-end="1760">WHAT MUST <strong data-start="1739" data-end="1746">NOT</strong> BE MODIFIED</h3>
+<ul data-start="1761" data-end="1908">
+<li data-start="1761" data-end="1783">
+<p data-start="1763" data-end="1783">Component behavior</p>
+</li>
+<li data-start="1784" data-end="1802">
+<p data-start="1786" data-end="1802">HTML structure</p>
+</li>
+<li data-start="1803" data-end="1820">
+<p data-start="1805" data-end="1820">Design layout</p>
+</li>
+<li data-start="1821" data-end="1844">
+<p data-start="1823" data-end="1844">Spacing (4px scale)</p>
+</li>
+<li data-start="1845" data-end="1856">
+<p data-start="1847" data-end="1856">Shadows</p>
+</li>
+<li data-start="1857" data-end="1871">
+<p data-start="1859" data-end="1871">Font sizes</p>
+</li>
+<li data-start="1872" data-end="1887">
+<p data-start="1874" data-end="1887">Breakpoints</p>
+</li>
+<li data-start="1888" data-end="1908">
+<p data-start="1890" data-end="1908">Javascript logic</p>
+</li>
+</ul>
+<h3 data-start="1910" data-end="1947">UPDATED ROOT VARIABLES (REQUIRED)</h3>
+<p data-start="1948" data-end="1993">Replace your existing root colors with these:</p>
+<div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary">
+<div class="sticky top-9">
+<div class="absolute end-0 bottom-0 flex h-9 items-center pe-2">
+<div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs">&nbsp;</div>
+</div>
+</div>
+<div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-css"><span class="hljs-selector-pseudo">:root</span> {
+  <span class="hljs-attr">--primary-main</span>: <span class="hljs-number">#8B1956</span>;
+  <span class="hljs-attr">--primary-hover</span>: <span class="hljs-number">#6F123F</span>;
+  <span class="hljs-attr">--primary-light</span>: <span class="hljs-number">#E77817</span>;
+}
+</code></div>
+</div>
+<h3 data-start="2100" data-end="2110">GOAL</h3>
+<p data-start="2111" data-end="2357">Perform a <strong data-start="2121" data-end="2160">full-system color theme replacement</strong> so that the entire application &mdash; all pages, components, UI states, and reusable elements &mdash; consistently use the new plum + warm orange theme, without altering the original Jira-like design system.</p>
+<p data-start="2359" data-end="2416">ONLY the color theme changes.<br data-start="2388" data-end="2391">NOTHING else must change.</p>
+    [priority_id] => 3
+    [start_date] => 2025-12-27
+    [end_date] => 2026-01-27
+)
+
+[2025-12-27 06:01:49] Processing file: Presentation.pptx
+[2025-12-27 06:01:49] File uploaded successfully. Path: uploads/attachments/2025/12/f3466e2167b24a9eccfabce3454a2fe2.pptx
+[2025-12-27 06:01:49] Database insert success.

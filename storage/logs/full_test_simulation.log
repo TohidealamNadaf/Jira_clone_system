@@ -1,0 +1,47 @@
+[2025-12-06 07:38:48] === STARTING FULL TEST SIMULATION ===
+[2025-12-06 07:38:48] Testing project creation → issue creation → reload
+[2025-12-06 07:38:48] 
+--- STEP 1: Creating Project ---
+[2025-12-06 07:38:49] ✓ Project created: SIM0748 (ID: 14)
+[2025-12-06 07:38:49] 
+--- STEP 2: Verifying Project Persistence ---
+[2025-12-06 07:38:49] 
+❌ TEST FAILED: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'key FROM projects WHERE id = ?' at line 1
+[2025-12-06 07:38:49]    #0 C:\xampp\htdocs\jira_clone_system\src\Core\Database.php(68): PDO->prepare('SELECT id, key ...')
+   #1 C:\xampp\htdocs\jira_clone_system\src\Core\Database.php(95): App\Core\Database::query('SELECT id, key ...', Array)
+   #2 C:\xampp\htdocs\jira_clone_system\simulate_full_test.php(50): App\Core\Database::selectOne('SELECT id, key ...', Array)
+   #3 {main}
+[2025-12-06 07:39:03] === STARTING FULL TEST SIMULATION ===
+[2025-12-06 07:39:03] Testing project creation → issue creation → reload
+[2025-12-06 07:39:03] 
+--- STEP 1: Creating Project ---
+[2025-12-06 07:39:03] ✓ Project created: SIM0703 (ID: 15)
+[2025-12-06 07:39:03] 
+--- STEP 2: Verifying Project Persistence ---
+[2025-12-06 07:39:04] ✓ Project verified in database: SIM0703
+[2025-12-06 07:39:04] 
+--- STEP 3: Creating Issue ---
+[2025-12-06 07:39:04] ✓ Issue created: SIM0703-1 (ID: 115)
+[2025-12-06 07:39:04] 
+--- STEP 4: Verifying Issue Persistence ---
+[2025-12-06 07:39:04] ✓ Issue verified in database: SIM0703-1
+[2025-12-06 07:39:04] 
+--- STEP 5: Testing Issue Fetch (Simulating Show Page) ---
+[2025-12-06 07:39:04] ✓ Issue fetched successfully with all data
+[2025-12-06 07:39:04]    Project Key: SIM0703
+[2025-12-06 07:39:04]    Issue Summary: Test Issue
+[2025-12-06 07:39:04] 
+--- STEP 6: Verifying Project Still Exists ---
+[2025-12-06 07:39:04] ✓ Project still exists: SIM0703
+[2025-12-06 07:39:04] 
+--- STEP 7: Adding Comment ---
+[2025-12-06 07:39:04] ✓ Comment created (ID: 32)
+[2025-12-06 07:39:04] 
+--- STEP 8: Final Verification ---
+[2025-12-06 07:39:04] ✅ ALL TESTS PASSED!
+[2025-12-06 07:39:04]    Project: SIM0703 (Simulation Test 2025-12-06 07:39:03)
+[2025-12-06 07:39:04]    Issue: SIM0703-1
+[2025-12-06 07:39:04]    Comment: Test comment
+[2025-12-06 07:39:04] 
+=== TEST SIMULATION COMPLETE ===
+

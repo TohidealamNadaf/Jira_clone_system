@@ -1,0 +1,754 @@
+<?php
+/**
+ * Issue Controller
+ */
+
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Request;
+use App\Core\Session;
+use App\Services\IssueService;
+use App\Services\ProjectService;
+use App\Services\NotificationService;
+use App\Core\Database;
+
+class IssueController extends Controller
+{
+    private IssueService $issueService;
+    private ProjectService $projectService;
+
+    public function __construct()
+    {
+        $this->issueService = new IssueService();
+        $this->projectService = new ProjectService();
+    }
+
+    public function index(Request $request): string
+    {
+        // Get project key from route parameter
+        $projectKey = $request->param('key');
+        $project = null;
+
+        if ($projectKey) {
+            $project = $this->projectService->getProjectByKey($projectKey);
+            if (!$project) {
+                abort(404, 'Project not found');
+            }
+            // Filter by this project
+        }
+
+        $filters = [
+            'project_id' => $project['id'] ?? $request->input('project_id'),
+            'issue_type_id' => $request->input('issue_type_id'),
+            'status_id' => $request->input('status_id'),
+            'priority_id' => $request->input('priority_id'),
+            'assignee_id' => $request->input('assignee_id'),
+            'reporter_id' => $request->input('reporter_id'),
+            'sprint_id' => $request->input('sprint_id'),
+            'epic_id' => $request->input('epic_id'),
+            'search' => $request->input('search'),
+            'labels' => $request->input('labels') ? explode(',', $request->input('labels')) : null,
+        ];
+
+        $orderBy = $request->input('order_by', 'created_at');
+        $order = $request->input('order', 'DESC');
+        $page = (int) ($request->input('page') ?? 1);
+        $perPage = (int) ($request->input('per_page') ?? 25);
+
+        $issues = $this->issueService->getIssues(
+            array_filter($filters, fn($v) => $v !== null && $v !== ''),
+            $orderBy,
+            $order,
+            $page,
+            $perPage
+        );
+
+        // Get issue types, statuses, and priorities for filters
+        $issueTypes = $this->issueService->getIssueTypes();
+        $statuses = $this->issueService->getStatuses();
+        $priorities = $this->issueService->getPriorities();
+
+        // Get project members if project is selected
+        $projectMembers = [];
+        if ($project) {
+            $projectMembers = $this->projectService->getProjectMembers($project['id']);
+        }
+
+        if ($request->wantsJson()) {
+            // Sanitize issues to remove PII before returning JSON
+            $issues['data'] = sanitize_issues_for_json($issues['data']);
+            $this->json($issues);
+        }
+
+        return $this->view('issues.index', [
+            'issues' => $issues,
+            'filters' => $filters,
+            'project' => $project,
+            'issueTypes' => $issueTypes,
+            'statuses' => $statuses,
+            'priorities' => $priorities,
+            'projectMembers' => $projectMembers,
+        ]);
+    }
+
+
+
+    public function show(Request $request): string
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $transitions = $this->issueService->getAvailableTransitions($issue['id']);
+        $links = $this->issueService->getIssueLinks($issue['id']);
+        $history = $this->issueService->getIssueHistory($issue['id']);
+
+        $isWatching = $this->issueService->isWatching($issue['id'], $this->userId());
+        $hasVoted = $this->issueService->hasVoted($issue['id'], $this->userId());
+
+        if ($request->wantsJson()) {
+            $this->json([
+                'issue' => sanitize_issue_for_json($issue),
+                'transitions' => $transitions,
+                'links' => $links,
+                'history' => $history,
+                'is_watching' => $isWatching,
+                'has_voted' => $hasVoted,
+            ]);
+        }
+
+        return $this->view('issues.show', [
+            'issue' => $issue,
+            'transitions' => $transitions,
+            'links' => $links,
+            'history' => $history,
+            'isWatching' => $isWatching,
+            'hasVoted' => $hasVoted,
+        ]);
+    }
+
+    public function edit(Request $request): string
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.edit', $issue['project_id']);
+
+        $project = $this->issueService->getProjectWithDetails($issue['project_id']);
+
+        return $this->view('issues.edit', [
+            'issue' => $issue,
+            'project' => $project,
+            'issueTypes' => $this->issueService->getIssueTypes(),
+            'priorities' => $this->issueService->getPriorities(),
+            'projectMembers' => $this->projectService->getProjectMembers($issue['project_id']),
+            'labels' => $project['labels'] ?? [],
+        ]);
+    }
+
+    public function update(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.edit', $issue['project_id']);
+
+        $data = $request->validate([
+            'summary' => 'nullable|max:500',
+            'description' => 'nullable|max:2000000',
+            'issue_type_id' => 'nullable|integer',
+            'priority_id' => 'nullable|integer',
+            'assignee_id' => 'nullable|integer',
+            'epic_id' => 'nullable|integer',
+            'story_points' => 'nullable|numeric|min:0|max:999',
+            'original_estimate' => 'nullable|integer|min:0',
+            'remaining_estimate' => 'nullable|integer|min:0',
+            'due_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'environment' => 'nullable|max:10000',
+            'labels' => 'nullable|array',
+            'components' => 'nullable|array',
+            'fix_versions' => 'nullable|array',
+        ]);
+
+        // Convert empty strings to null for optional foreign key fields
+        foreach (['assignee_id', 'epic_id'] as $field) {
+            if (isset($data[$field]) && ($data[$field] === '' || $data[$field] === 0)) {
+                $data[$field] = null;
+            }
+        }
+
+        try {
+            $updated = $this->issueService->updateIssue($issue['id'], $data, $this->userId());
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'issue' => $updated]);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$updated['issue_key']}"),
+                'success',
+                'Issue updated successfully.'
+            );
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            Session::flash('error', $e->getMessage());
+            $this->redirect(url("/issue/{$issueKey}/edit"));
+        }
+    }
+
+    public function destroy(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.delete', $issue['project_id']);
+
+        try {
+            $this->issueService->deleteIssue($issue['id'], $this->userId());
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirectWith(
+                url("/projects/{$issue['project_key']}"),
+                'success',
+                'Issue deleted successfully.'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 500);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                'Failed to delete issue.'
+            );
+        }
+    }
+
+    public function transition(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.transition', $issue['project_id']);
+
+        $data = $request->validate([
+            'status_id' => 'required|integer',
+        ]);
+
+        try {
+            $updated = $this->issueService->transitionIssue(
+                $issue['id'],
+                (int) $data['status_id'],
+                $this->userId()
+            );
+
+            // Dispatch notification for status change
+            $newStatus = $updated['status'] ?? 'Unknown';
+            NotificationService::dispatchStatusChanged(
+                $issue['id'],
+                $newStatus,
+                $this->userId()
+            );
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'issue' => $updated]);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'success',
+                'Issue transitioned successfully.'
+            );
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function assign(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.assign', $issue['project_id']);
+
+        $data = $request->validate([
+            'assignee_id' => 'nullable|integer',
+        ]);
+
+        try {
+            $previousAssigneeId = $issue['assignee_id'] ?? null;
+            $newAssigneeId = $data['assignee_id'] ? (int) $data['assignee_id'] : null;
+
+            $updated = $this->issueService->assignIssue(
+                $issue['id'],
+                $newAssigneeId,
+                $this->userId()
+            );
+
+            // Dispatch notification for issue assignment
+            if ($newAssigneeId) {
+                NotificationService::dispatchIssueAssigned(
+                    $issue['id'],
+                    $newAssigneeId,
+                    $previousAssigneeId
+                );
+            }
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'issue' => $updated]);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'success',
+                'Issue assigned successfully.'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function watch(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $action = $request->input('action', 'watch');
+
+        if ($action === 'unwatch') {
+            $this->issueService->unwatchIssue($issue['id'], $this->userId());
+            $message = 'You are no longer watching this issue.';
+        } else {
+            $this->issueService->watchIssue($issue['id'], $this->userId());
+            $message = 'You are now watching this issue.';
+        }
+
+        if ($request->wantsJson()) {
+            $this->json([
+                'success' => true,
+                'watching' => $action !== 'unwatch',
+            ]);
+        }
+
+        $this->redirectWith(url("/issue/{$issueKey}"), 'success', $message);
+    }
+
+    public function vote(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        if ($issue['reporter_id'] === $this->userId()) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => 'You cannot vote for your own issue'], 422);
+            }
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                'You cannot vote for your own issue.'
+            );
+        }
+
+        $action = $request->input('action', 'vote');
+
+        if ($action === 'unvote') {
+            $this->issueService->unvoteIssue($issue['id'], $this->userId());
+            $message = 'Your vote has been removed.';
+        } else {
+            $this->issueService->voteIssue($issue['id'], $this->userId());
+            $message = 'Your vote has been added.';
+        }
+
+        if ($request->wantsJson()) {
+            $this->json([
+                'success' => true,
+                'voted' => $action !== 'unvote',
+            ]);
+        }
+
+        $this->redirectWith(url("/issue/{$issueKey}"), 'success', $message);
+    }
+
+    public function link(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.link', $issue['project_id']);
+
+        $data = $request->validate([
+            'target_issue_key' => 'required|string',
+            'link_type_id' => 'required|integer',
+        ]);
+
+        $targetIssue = $this->issueService->getIssueByKey($data['target_issue_key']);
+        if (!$targetIssue) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => 'Target issue not found'], 404);
+            }
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                'Target issue not found.'
+            );
+        }
+
+        try {
+            $links = $this->issueService->linkIssues(
+                $issue['id'],
+                $targetIssue['id'],
+                (int) $data['link_type_id'],
+                $this->userId()
+            );
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'links' => $links]);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'success',
+                'Issues linked successfully.'
+            );
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function unlink(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $linkId = (int) $request->param('linkId');
+
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.link', $issue['project_id']);
+
+        try {
+            $this->issueService->unlinkIssues($linkId, $this->userId());
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'success',
+                'Link removed successfully.'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function logWork(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $this->authorize('issues.log_work', $issue['project_id']);
+
+        $data = $request->validate([
+            'time_spent' => 'required|integer|min:1',
+            'started_at' => 'required|date',
+            'description' => 'nullable|max:5000',
+        ]);
+
+        try {
+            $updated = $this->issueService->logWork(
+                $issue['id'],
+                $this->userId(),
+                (int) $data['time_spent'],
+                $data['started_at'],
+                $data['description'] ?? null
+            );
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'issue' => $updated]);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'success',
+                'Work logged successfully.'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            $this->redirectWith(
+                url("/issue/{$issueKey}"),
+                'error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function history(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $history = $this->issueService->getIssueHistory($issue['id']);
+        $this->json($history);
+    }
+
+    public function transitions(Request $request): void
+    {
+        $issueKey = $request->param('issueKey');
+        $issue = $this->issueService->getIssueByKey($issueKey);
+
+        if (!$issue) {
+            abort(404, 'Issue not found');
+        }
+
+        $transitions = $this->issueService->getAvailableTransitions($issue['id']);
+        $this->json($transitions);
+    }
+
+    /**
+     * Store a new issue (AJAX endpoint)
+     */
+    public function store(Request $request): void
+    {
+        $logFile = __DIR__ . '/../../public/debug_log.txt';
+        $log = function ($msg) use ($logFile) {
+            file_put_contents($logFile, date('[Y-m-d H:i:s] ') . $msg . "\n", FILE_APPEND);
+        };
+
+        $log("IssueController::store called.");
+        $log("FILES: " . print_r($_FILES, true));
+        $log("POST: " . print_r($_POST, true));
+
+        // Validate required fields
+        $data = $request->validate([
+            'project_id' => 'required|integer',
+            'issue_type_id' => 'required|integer',
+            'summary' => 'required|max:500',
+            'description' => 'nullable|max:2000000',
+            'priority_id' => 'nullable|integer',
+            'assignee_id' => 'nullable|integer',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+        ]);
+
+        try {
+            // Get current user ID from session (note: stored as '_user' with underscore)
+            $user = Session::user();
+            $userId = $user['id'] ?? 0;
+
+            if (!$userId) {
+                $this->json(['error' => 'User not authenticated'], 401);
+                return;
+            }
+
+            // Create issue using service
+            $issue = $this->issueService->createIssue($data, $userId);
+
+            // Handle attachments if present
+            if (isset($_FILES['attachments'])) {
+                error_log("DEBUG: Processing attachments...");
+                $files = [];
+                // Normalize $_FILES structure
+                if (is_array($_FILES['attachments']['name'])) {
+                    $count = count($_FILES['attachments']['name']);
+                    for ($i = 0; $i < $count; $i++) {
+                        if ($_FILES['attachments']['error'][$i] === UPLOAD_ERR_OK) {
+                            $files[] = [
+                                'name' => $_FILES['attachments']['name'][$i],
+                                'type' => $_FILES['attachments']['type'][$i],
+                                'tmp_name' => $_FILES['attachments']['tmp_name'][$i],
+                                'error' => $_FILES['attachments']['error'][$i],
+                                'size' => $_FILES['attachments']['size'][$i],
+                            ];
+                        }
+                    }
+                } else {
+                    // Single file handling (fallback)
+                    if ($_FILES['attachments']['error'] === UPLOAD_ERR_OK) {
+                        $files[] = $_FILES['attachments'];
+                    }
+                }
+
+                $uploadedCount = 0;
+                foreach ($files as $file) {
+                    $log("Processing file: " . $file['name']);
+                    $uploaded = $this->uploadFile($file, 'attachments');
+
+                    if ($uploaded) {
+                        $log("File uploaded successfully. Path: " . $uploaded['path']);
+                        try {
+                            Database::insert('issue_attachments', [
+                                'issue_id' => $issue['id'],
+                                'uploaded_by' => $userId,
+                                'filename' => $uploaded['filename'],
+                                'original_name' => $uploaded['original_name'],
+                                'mime_type' => $uploaded['mime_type'],
+                                'file_size' => $uploaded['size'],
+                                'file_path' => $uploaded['path'],
+                                'created_at' => date('Y-m-d H:i:s'),
+                            ]);
+                            $log("Database insert success.");
+                            $uploadedCount++;
+                        } catch (\Exception $e) {
+                            $log("Database insert FAILED: " . $e->getMessage());
+                        }
+                    } else {
+                        $log("uploadFile returned null.");
+                    }
+                }
+
+                if ($uploadedCount > 0) {
+                    // Record history for attachments
+                    Database::insert('issue_history', [
+                        'issue_id' => $issue['id'],
+                        'user_id' => $userId,
+                        'field' => 'attachment',
+                        'new_value' => "$uploadedCount files attached",
+                        'created_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            // Return success response
+            $this->json([
+                'success' => true,
+                'issue_id' => $issue['id'],
+                'issue_key' => $issue['issue_key'],
+                'message' => 'Issue created successfully',
+                'issue' => $issue
+            ]);
+
+        } catch (\InvalidArgumentException $e) {
+            // Validation error
+            $this->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 422);
+
+        } catch (\Exception $e) {
+            // General error
+            error_log("Issue creation failed: " . $e->getMessage());
+            $this->json([
+                'success' => false,
+                'error' => 'Failed to create issue. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get issue types for dropdown/select lists
+     * Used by quick create modal and issue creation forms
+     */
+    public function getIssueTypes(Request $request): void
+    {
+        try {
+            $sql = "SELECT id, name, description, icon, color, is_subtask, is_default, sort_order 
+                    FROM issue_types 
+                    ORDER BY sort_order ASC, name ASC";
+
+            $types = \App\Core\Database::select($sql);
+
+            // Return JSON response
+            $this->json($types);
+        } catch (\Exception $e) {
+            error_log("Failed to fetch issue types: " . $e->getMessage());
+            $this->json([
+                'error' => 'Failed to load issue types',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+}

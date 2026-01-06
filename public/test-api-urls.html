@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API URL Test</title>
+</head>
+<body>
+    <h1>Testing API URL Construction</h1>
+    <div id="results"></div>
+
+    <script>
+        // Simulate APP_BASE_PATH (like app.php sets it)
+        const APP_BASE_PATH = '/jira_clone_system/public';
+        
+        // Test URL construction
+        const basePath = typeof APP_BASE_PATH !== 'undefined' ? APP_BASE_PATH : '';
+        const issueTypesUrl = basePath + '/api/v1/issue-types';
+        const prioritiesUrl = basePath + '/api/v1/priorities';
+        
+        const results = document.getElementById('results');
+        results.innerHTML = `
+            <p><strong>APP_BASE_PATH:</strong> ${APP_BASE_PATH}</p>
+            <p><strong>Issue Types URL:</strong> ${issueTypesUrl}</p>
+            <p><strong>Priorities URL:</strong> ${prioritiesUrl}</p>
+            
+            <h2>Testing Fetch Calls</h2>
+            <div id="fetch-results"></div>
+        `;
+        
+        // Test fetching
+        async function testFetch() {
+            const fetchResults = document.getElementById('fetch-results');
+            
+            try {
+                const issueTypesResp = await fetch(issueTypesUrl);
+                const prioritiesResp = await fetch(prioritiesUrl);
+                
+                fetchResults.innerHTML = `
+                    <p>Issue Types Status: <strong>${issueTypesResp.status}</strong></p>
+                    <p>Priorities Status: <strong>${prioritiesResp.status}</strong></p>
+                    ${issueTypesResp.status === 200 ? '<p style="color: green;">✅ Issue Types API Working!</p>' : '<p style="color: red;">❌ Issue Types API Failed</p>'}
+                    ${prioritiesResp.status === 200 ? '<p style="color: green;">✅ Priorities API Working!</p>' : '<p style="color: red;">❌ Priorities API Failed</p>'}
+                `;
+            } catch (e) {
+                fetchResults.innerHTML = `<p style="color: red;">Error: ${e.message}</p>`;
+            }
+        }
+        
+        // Wait a moment then test
+        setTimeout(testFetch, 1000);
+    </script>
+</body>
+</html>

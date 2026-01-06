@@ -276,7 +276,7 @@
                                 <label class="form-label">Reporter</label>
                                 <?php
                                 $currentUser = \App\Core\Session::user();
-                                $userAvatar = $currentUser['avatar'] ?? null;
+                                $userAvatar = avatar($currentUser['avatar'] ?? null);
                                 $userName = $currentUser['display_name'] ?? $currentUser['name'] ?? 'Unknown';
                                 $userEmail = $currentUser['email'] ?? '';
                                 ?>

@@ -119,8 +119,8 @@
                                         </div>
                                         <div class="footer-right">
                                             <?php if ($issue['assignee_name']): ?>
-                                                <?php if (!empty($issue['assignee_avatar']) && is_file($_SERVER['DOCUMENT_ROOT'] . $issue['assignee_avatar'])): ?>
-                                                <img src="<?= e($issue['assignee_avatar']) ?>" 
+                                                <?php if (!empty($issue['assignee_avatar']) && is_file($_SERVER['DOCUMENT_ROOT'] . parse_url($issue['assignee_avatar'], PHP_URL_PATH))): ?>
+                                                <img src="<?= e(avatar($issue['assignee_avatar'])) ?>" 
                                                      alt="<?= e($issue['assignee_name']) ?>"
                                                      class="avatar-sm"
                                                      title="<?= e($issue['assignee_name']) ?>">

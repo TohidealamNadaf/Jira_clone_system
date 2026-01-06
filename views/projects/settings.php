@@ -22,7 +22,7 @@
         <div class="ps-header-left">
             <div class="ps-avatar-container">
                 <?php if ($project['avatar'] ?? null): ?>
-                    <img src="<?= e(url($project['avatar'])) ?>" alt="<?= e($project['name']) ?>" class="ps-avatar-img">
+                    <img src="<?= e(avatar($project['avatar'])) ?>" alt="<?= e($project['name']) ?>" class="ps-avatar-img">
                 <?php else: ?>
                     <div class="ps-avatar-placeholder">
                         <?= strtoupper(substr($project['key'], 0, 1)) ?>
@@ -109,7 +109,7 @@
                                 <div class="ps-avatar-editor">
                                     <div class="ps-avatar-box">
                                         <?php if ($project['avatar'] ?? null): ?>
-                                            <img src="<?= e(url($project['avatar'])) ?>" alt="Project avatar"
+                                            <img src="<?= e(avatar($project['avatar'])) ?>" alt="Project avatar"
                                                 class="ps-avatar-preview-img">
                                         <?php else: ?>
                                             <div class="ps-avatar-placeholder-large">

@@ -123,6 +123,7 @@ function asset(string $path): string
 /**
  * Generate avatar URL
  * Handles both relative and absolute avatar paths
+ * FIXED: Handles /public/avatars/ paths that should be /uploads/avatars/
  */
 function avatar(?string $avatarPath, string $defaultName = 'U'): string
 {
@@ -131,10 +132,18 @@ function avatar(?string $avatarPath, string $defaultName = 'U'): string
         return '';
     }
 
+    // FIX: Handle incorrectly stored /public/avatars/ paths
+    if (str_contains($avatarPath, '/public/avatars/')) {
+        // Replace /public/avatars/ with /uploads/avatars/
+        $avatarPath = str_replace('/public/avatars/', '/uploads/avatars/', $avatarPath);
+    }
+
     // If it contains /uploads/, treat it as a local file and ensure dynamic URL generation
     // This fixes stale session data containing 'localhost' when accessed via LAN
     if (str_contains($avatarPath, '/uploads/')) {
-        $relativePath = substr($avatarPath, strpos($avatarPath, '/uploads/'));
+        $pos = strpos($avatarPath, '/uploads/');
+        // Extract from /uploads/ onwards (include /uploads/)
+        $relativePath = substr($avatarPath, $pos);
         return url($relativePath);
     }
 

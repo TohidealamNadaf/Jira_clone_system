@@ -118,7 +118,7 @@ class SearchApiController extends Controller
                     'id' => $user['id'],
                     'title' => $user['display_name'] ?: "{$user['first_name']} {$user['last_name']}",
                     'subtitle' => $user['email'],
-                    'avatar' => $user['avatar'],
+                    'avatar' => avatar($user['avatar']),
                     'data' => $user,
                 ];
             }

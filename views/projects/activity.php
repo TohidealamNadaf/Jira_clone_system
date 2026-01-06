@@ -53,7 +53,7 @@
 
                         <!-- Avatar with Timeline Dot -->
                         <div style="flex-shrink: 0; position: relative;">
-                            <img src="<?= e(avatar($activity['user']['avatar'] ?? null) ?: '/images/default-avatar.png') ?>"
+                            <img src="<?= e(avatar($activity['user']['avatar'] ?? null) ?: url('/images/default-avatar.png')) ?>"
                                 style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: 0 0 0 2px var(--jira-blue);"
                                 alt="<?= e($activity['user']['display_name']) ?>"
                                 title="<?= e($activity['user']['display_name']) ?>">

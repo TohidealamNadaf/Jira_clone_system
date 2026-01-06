@@ -25,7 +25,7 @@
                 <?php if ($isEdit && isset($editUser)): ?>
                     <div class="header-avatar">
                         <?php if (!empty($editUser['avatar'])): ?>
-                            <img src="<?= url($editUser['avatar']) ?>" alt="<?= e($editUser['first_name']) ?>" class="avatar-image">
+                            <img src="<?= e(avatar($editUser['avatar'])) ?>" alt="<?= e($editUser['first_name']) ?>" class="avatar-image">
                         <?php else: ?>
                             <div class="avatar-initials">
                                 <?= strtoupper(substr($editUser['first_name'], 0, 1) . substr($editUser['last_name'] ?? '', 0, 1)) ?>

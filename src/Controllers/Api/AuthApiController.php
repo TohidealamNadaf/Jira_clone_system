@@ -98,7 +98,7 @@ class AuthApiController extends Controller
                 'first_name' => $user['first_name'],
                 'last_name' => $user['last_name'],
                 'display_name' => $user['display_name'],
-                'avatar' => $user['avatar'],
+                'avatar' => avatar($user['avatar']),
             ],
         ]);
     }

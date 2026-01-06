@@ -248,7 +248,7 @@
                         <span class="detail-label">Lead</span>
                         <span class="detail-value">
                             <?php if ($project['lead'] ?? null): ?>
-                                <img src="<?= e($project['lead']['avatar'] ?? '/images/default-avatar.png') ?>"
+                                <img src="<?= e(avatar($project['lead']['avatar'] ?? null, $project['lead']['display_name'] ?? 'Lead')) ?>"
                                     class="detail-avatar" alt="">
                                 <?= e($project['lead']['display_name']) ?>
                             <?php else: ?>

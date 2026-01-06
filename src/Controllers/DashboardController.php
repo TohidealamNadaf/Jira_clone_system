@@ -88,7 +88,7 @@ class DashboardController extends Controller
             [$userId, $userId, $userId]
         );
 
-        // Get user's projects
+        // Get user's projects (Member, Lead, or Creator)
         $projects = Database::select(
             "SELECT p.*, 
                     (SELECT COUNT(*) FROM issues WHERE project_id = p.id AND status_id IN 
@@ -96,12 +96,13 @@ class DashboardController extends Controller
                     (SELECT COUNT(*) FROM issues WHERE project_id = p.id AND status_id IN 
                         (SELECT id FROM statuses WHERE category = 'done')) as done_issues
              FROM projects p
-             WHERE p.id IN (
+             WHERE (p.id IN (
                  SELECT project_id FROM project_members WHERE user_id = ?
-             ) AND p.is_archived = 0
+             ) OR p.lead_id = ? OR p.created_by = ?)
+             AND p.is_archived = 0
              ORDER BY p.name ASC
              LIMIT 10",
-            [$userId]
+            [$userId, $userId, $userId]
         );
 
         // Get statistics
@@ -209,8 +210,8 @@ class DashboardController extends Controller
             $end = new \DateTime($sprint['end_date'] ?? 'now');
             $now = new \DateTime();
 
-            $daysTotal = max(1, (int)$start->diff($end)->format('%a'));
-            $daysElapsed = min($daysTotal, max(0, (int)$start->diff(min($now, $end))->format('%a')));
+            $daysTotal = max(1, (int) $start->diff($end)->format('%a'));
+            $daysElapsed = min($daysTotal, max(0, (int) $start->diff(min($now, $end))->format('%a')));
 
             $sprint['days_total'] = $daysTotal;
             $sprint['days_elapsed'] = $daysElapsed;

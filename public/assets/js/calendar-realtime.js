@@ -1489,6 +1489,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Layout Switcher Logic
+    const layoutOptions = document.querySelector('.layout-options');
+    if (layoutOptions) {
+        console.log('📅 [CALENDAR] Layout options found, attaching listener');
+        layoutOptions.addEventListener('click', (e) => {
+            const button = e.target.closest('.layout-btn');
+            if (!button) return;
+
+            const layout = button.dataset.layout;
+            console.log('📅 [CALENDAR] Switching layout to:', layout);
+
+            // Update UI buttons
+            layoutOptions.querySelectorAll('.layout-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Update Calendar Class
+            const calendarEl = document.getElementById('mainCalendar');
+            if (calendarEl) {
+                calendarEl.classList.remove('layout-standard', 'layout-compact', 'layout-detailed');
+                calendarEl.classList.add(`layout-${layout}`);
+                
+                // Force re-render to apply new CSS sizing if needed
+                if (calendar) calendar.render();
+            }
+        });
+    }
+
     if (prevBtn) {
         prevBtn.addEventListener('click', () => calendar.prev());
     }

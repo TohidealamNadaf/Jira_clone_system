@@ -165,14 +165,7 @@
                         <i class="bi bi-gear"></i>
                         Settings
                     </button>
-                    <button class="jira-btn jira-btn-ghost" id="debugDropBtn" onclick="debugCalendarDrop()">
-                        <i class="bi bi-bug"></i>
-                        Debug Drop
-                    </button>
-                    <button class="jira-btn jira-btn-ghost" id="testDragBtn" onclick="testDragData()">
-                        <i class="bi bi-cursor"></i>
-                        Test Drag
-                    </button>
+
                 </div>
             </div>
 
@@ -653,6 +646,44 @@
 
 <?php \App\Core\View::section('styles'); ?>
 <!-- Calendar styles are included in app.css -->
+<style>
+    /* Compact Layout */
+    .layout-compact .fc-daygrid-event {
+        margin-top: 0 !important;
+        margin-bottom: 1px !important;
+        padding: 0 !important;
+    }
+
+    .layout-compact .fc-event-main {
+        padding: 0 !important;
+    }
+
+    .layout-compact .fc-event-content {
+        padding: 1px 3px !important;
+        font-size: 0.7rem !important;
+        line-height: 1.0 !important;
+    }
+
+    .layout-compact .fc-event-content strong {
+        font-weight: 500 !important;
+    }
+
+    /* Detailed Layout */
+    .layout-detailed .fc-daygrid-event {
+        margin-bottom: 6px !important;
+    }
+
+    .layout-detailed .fc-event-content {
+        padding: 8px 10px !important;
+        font-size: 0.95rem !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Standard Layout (Default) */
+    .layout-standard .fc-event-content {
+        /* Default styles inherit from CSS */
+    }
+</style>
 <?php \App\Core\View::endSection(); ?>
 
 <?php \App\Core\View::section('scripts'); ?>

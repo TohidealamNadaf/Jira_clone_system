@@ -334,7 +334,7 @@
         }
     </style>
 
-    <?php \App\Core\View::yield('styles') ?>
+    <?= \App\Core\View::yield('styles') ?>
 </head>
 
 <body>

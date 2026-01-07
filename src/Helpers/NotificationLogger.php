@@ -19,11 +19,11 @@ class NotificationLogger
     public static function getRecentLogs(int $limit = 50): array
     {
         $logFile = storage_path('logs/notifications.log');
-        
+
         if (!file_exists($logFile)) {
             return [];
         }
-        
+
         try {
             $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             return array_slice($lines, -$limit);
@@ -32,7 +32,7 @@ class NotificationLogger
             return [];
         }
     }
-    
+
     /**
      * Get error statistics from log file
      * 
@@ -41,7 +41,7 @@ class NotificationLogger
     public static function getErrorStats(): array
     {
         $logFile = storage_path('logs/notifications.log');
-        
+
         if (!file_exists($logFile)) {
             return [
                 'total_errors' => 0,
@@ -51,30 +51,35 @@ class NotificationLogger
                 'retry_count' => 0,
             ];
         }
-        
+
         try {
-            $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            
+            $content = file_get_contents($logFile);
+
+            $errorCount = substr_count($content, '[NOTIFICATION ERROR]');
+            $successCount = substr_count($content, '[NOTIFICATION]');
+            $retryCount = substr_count($content, '[NOTIFICATION RETRY]');
+
+            // Get recent errors by splitting the log content
+            // We split at any [NOTIFICATION tag using a lookahead to keep the tag
+            $parts = preg_split('/(?=\[NOTIFICATION)/', $content, -1, PREG_SPLIT_NO_EMPTY);
             $errors = [];
-            $successes = 0;
-            $retries = 0;
-            
-            foreach ($lines as $line) {
-                if (strpos($line, '[NOTIFICATION ERROR]') !== false) {
-                    $errors[] = $line;
-                } elseif (strpos($line, '[NOTIFICATION]') !== false) {
-                    $successes++;
-                } elseif (strpos($line, '[NOTIFICATION RETRY]') !== false) {
-                    $retries++;
+            foreach ($parts as $part) {
+                if (strpos($part, '[NOTIFICATION ERROR]') === 0) {
+                    // Extract until the next tag or newline (to avoid multi-line if any)
+                    $errorSegment = preg_split('/\r?\n|(?=\[NOTIFICATION)/', $part, -1, PREG_SPLIT_NO_EMPTY);
+                    $errorMsg = trim($errorSegment[0]);
+                    if (!empty($errorMsg)) {
+                        $errors[] = $errorMsg;
+                    }
                 }
             }
-            
+
             return [
-                'total_errors' => count($errors),
+                'total_errors' => $errorCount,
                 'recent_errors' => array_slice($errors, -10),
                 'log_file_size' => filesize($logFile),
-                'success_count' => $successes,
-                'retry_count' => $retries,
+                'success_count' => $successCount,
+                'retry_count' => $retryCount,
             ];
         } catch (\Exception $e) {
             error_log("Failed to get error stats: " . $e->getMessage());
@@ -87,7 +92,7 @@ class NotificationLogger
             ];
         }
     }
-    
+
     /**
      * Archive old logs (run via cron daily)
      * Moves current log to archive directory and deletes old archives
@@ -99,21 +104,21 @@ class NotificationLogger
     {
         $logFile = storage_path('logs/notifications.log');
         $archiveDir = storage_path('logs/archive');
-        
+
         if (!is_dir($archiveDir)) {
             @mkdir($archiveDir, 0755, true);
         }
-        
+
         if (!file_exists($logFile)) {
             return 0;
         }
-        
+
         try {
             // Archive current log
             $timestamp = date('Y-m-d_His');
             $archivePath = "$archiveDir/notifications_$timestamp.log";
             rename($logFile, $archivePath);
-            
+
             // Clean up old archives
             $archived = 0;
             foreach (glob("$archiveDir/notifications_*.log") as $file) {
@@ -122,17 +127,20 @@ class NotificationLogger
                     $archived++;
                 }
             }
-            
-            error_log("Archived logs: moved to $archivePath, deleted $archived old archives", 3,
-                storage_path('logs/notifications.log'));
-            
+
+            error_log(
+                "Archived logs: moved to $archivePath, deleted $archived old archives",
+                3,
+                storage_path('logs/notifications.log')
+            );
+
             return $archived;
         } catch (\Exception $e) {
             error_log("Failed to archive logs: " . $e->getMessage());
             return 0;
         }
     }
-    
+
     /**
      * Get log file size in human-readable format
      * 
@@ -141,24 +149,24 @@ class NotificationLogger
     public static function getLogFileSizeFormatted(): string
     {
         $logFile = storage_path('logs/notifications.log');
-        
+
         if (!file_exists($logFile)) {
             return '0 KB';
         }
-        
+
         $size = filesize($logFile);
         $units = ['B', 'KB', 'MB', 'GB'];
         $size = $size / 1024;
         $unitIndex = 1;
-        
+
         while ($size >= 1024 && $unitIndex < count($units) - 1) {
             $size /= 1024;
             $unitIndex++;
         }
-        
+
         return round($size, 1) . ' ' . $units[$unitIndex];
     }
-    
+
     /**
      * Check if log file exists and is writable
      * 
@@ -167,14 +175,14 @@ class NotificationLogger
     public static function isLogOperational(): bool
     {
         $logDir = storage_path('logs');
-        
+
         if (!is_dir($logDir)) {
             return false;
         }
-        
+
         return is_writable($logDir);
     }
-    
+
     /**
      * Clear all logs (for testing or cleanup)
      * 
@@ -183,7 +191,7 @@ class NotificationLogger
     public static function clearLogs(): bool
     {
         $logFile = storage_path('logs/notifications.log');
-        
+
         try {
             if (file_exists($logFile)) {
                 unlink($logFile);

@@ -66,17 +66,29 @@ class RealtimeNotifications {
         });
 
         // Setup audio context on first user gesture
+        // Setup audio context on first user gesture
         const initAudio = () => {
             if (!this.audioContext) {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                console.log('🔊 [REALTIME] AudioContext initialized on user gesture');
             }
+
+            // Only consider it a success if we can actually resume
             if (this.audioContext.state === 'suspended') {
-                this.audioContext.resume().catch(e => console.log('ℹ️ [REALTIME] Audio resume pending gesture'));
+                this.audioContext.resume().then(() => {
+                    console.log('🔊 [REALTIME] AudioContext resumed successfully');
+                    this.hasUserGesture = true;
+                    // Only remove listeners if successful
+                    document.removeEventListener('click', initAudio);
+                    document.removeEventListener('keydown', initAudio);
+                }).catch(e => {
+                    console.log('ℹ️ [REALTIME] Audio resume failed, keeping listeners:', e);
+                });
+            } else if (this.audioContext.state === 'running') {
+                console.log('🔊 [REALTIME] AudioContext already running');
+                this.hasUserGesture = true;
+                document.removeEventListener('click', initAudio);
+                document.removeEventListener('keydown', initAudio);
             }
-            this.hasUserGesture = true;
-            document.removeEventListener('click', initAudio);
-            document.removeEventListener('keydown', initAudio);
         };
         document.addEventListener('click', initAudio);
         document.addEventListener('keydown', initAudio);
@@ -443,28 +455,22 @@ class RealtimeNotifications {
     playNotificationSound() {
         if (!this.notificationSound) return;
 
-        // If we don't have a gesture yet, don't even try (prevents console warnings)
-        if (!this.hasUserGesture) {
-            console.log('ℹ️ [REALTIME] Sound skipped (waiting for user gesture)');
+        // Check if context exists and is ready
+        if (!this.audioContext || !this.hasUserGesture) {
+            // Try to init if missing (rare case if initAudio failed silently)
+            // but don't force it without gesture
             return;
+        }
+
+        // Double check state
+        if (this.audioContext.state !== 'running') {
+            this.audioContext.resume().catch(() => { });
+            // If still not running, abort
+            if (this.audioContext.state !== 'running') return;
         }
 
         // Simple beep using Web Audio API
         try {
-            if (!this.audioContext) {
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-
-            // Try to resume if suspended
-            if (this.audioContext.state === 'suspended') {
-                this.audioContext.resume().catch(() => { });
-            }
-
-            // Check state again - if still suspended, browser is blocking us
-            if (this.audioContext.state !== 'running') {
-                return;
-            }
-
             const oscillator = this.audioContext.createOscillator();
             const gainNode = this.audioContext.createGain();
 
@@ -482,7 +488,8 @@ class RealtimeNotifications {
 
             console.log('🔊 [REALTIME] Notification sound played');
         } catch (error) {
-            // Silently fail for audio context issues to avoid spamming the user
+            // Silently fail for audio context issues
+            console.warn('⚠️ [REALTIME] Audio playback failed:', error);
         }
     }
 

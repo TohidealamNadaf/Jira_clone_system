@@ -183,6 +183,7 @@
                                 <img src="<?= e(avatar($project['lead']['avatar'] ?? null)) ?>"
                                     alt="<?= e($project['lead']['display_name'] ?? 'Lead') ?>" class="lead-avatar"
                                     title="<?= e($project['lead']['display_name'] ?? 'Lead') ?>">
+                                <span class="lead-name ms-2"><?= e($project['lead']['display_name']) ?></span>
                             <?php else: ?>
                                 <span class="lead-placeholder">Unassigned</span>
                             <?php endif; ?>
@@ -416,7 +417,7 @@
 
     /* Project Card */
     .project-card {
-        background: var(--bg-primary);
+        background: #FFFFFF;
         border: 1px solid var(--border-color);
         border-radius: 6px;
         overflow: hidden;
@@ -440,6 +441,8 @@
         justify-content: space-between;
         align-items: flex-start;
         gap: 8px;
+        background: #FFFFFF;
+        border-radius: 6px 6px 0 0;
     }
 
     .project-header-left {

@@ -7,15 +7,15 @@
         <div class="header-left">
             <div class="dashboard-avatar-container">
                 <?php if (($avatarUrl = avatar($currentUser['avatar'] ?? null))): ?>
-                    <img src="<?= e($avatarUrl) ?>" alt="<?= e($currentUser['first_name'] ?? 'User') ?>"
+                    <img src="<?= e($avatarUrl) ?>" alt="<?= e($currentUser['name'] ?? 'User') ?>"
                         class="dashboard-user-avatar">
                 <?php else: ?>
                     <div class="dashboard-user-avatar-placeholder">
-                        <?= strtoupper(substr($currentUser['first_name'] ?? 'U', 0, 1)) ?>
+                        <?= strtoupper(substr($currentUser['name'] ?? 'U', 0, 1)) ?>
                     </div>
                 <?php endif; ?>
                 <div class="dashboard-welcome">
-                    <h1 class="page-title">Welcome, <?= e($currentUser['first_name'] ?? 'User') ?></h1>
+                    <h1 class="page-title">Welcome, <?= e($currentUser['name'] ?? 'User') ?></h1>
                     <div class="header-meta">
                         <span class="meta-item"><i class="bi bi-person-check"></i> <?= $stats['assigned_count'] ?? 0 ?>
                             Assigned</span>
@@ -54,6 +54,11 @@
                     <div class="stat-value"><?= $stats['in_progress'] ?? 0 ?></div>
                     <div class="stat-label">In Progress</div>
                     <div class="stat-icon">▶️</div>
+                </a>
+                <a href="<?= url('/search?assignee=currentUser()&due=overdue') ?>" class="stat-card">
+                    <div class="stat-value" style="color: #DE350B;"><?= $stats['overdue'] ?? 0 ?></div>
+                    <div class="stat-label">Overdue</div>
+                    <div class="stat-icon">⚠️</div>
                 </a>
                 <a href="<?= url('/search?assignee=currentUser()&due=week') ?>" class="stat-card">
                     <div class="stat-value"><?= $stats['due_soon'] ?? 0 ?></div>

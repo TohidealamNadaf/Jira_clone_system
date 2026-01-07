@@ -245,6 +245,7 @@ $router->group(['prefix' => '/admin', 'middleware' => ['auth', 'admin', 'csrf']]
     $router->get('/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
     $router->post('/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
     $router->get('/users/{id}/edit', [AdminController::class, 'editUser'])->name('admin.users.edit');
+    $router->get('/users/{id}', [AdminController::class, 'showUser'])->name('admin.users.show');
     $router->put('/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     $router->post('/users/{id}/deactivate', [AdminController::class, 'deactivateUser'])->name('admin.users.deactivate');
     $router->post('/users/{id}/activate', [AdminController::class, 'activateUser'])->name('admin.users.activate');

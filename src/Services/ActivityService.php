@@ -31,13 +31,12 @@ class ActivityService
              FROM audit_logs al
              LEFT JOIN users u ON al.user_id = u.id
              LEFT JOIN issues i ON al.entity_type = 'issue' AND al.entity_id = i.id
-             WHERE al.entity_type IN ('issue', 'project') 
-             AND (al.user_id IS NOT NULL OR al.action IS NOT NULL)
-             AND EXISTS (
-                 SELECT 1 FROM issues WHERE id = al.entity_id AND project_id = ?
-                 UNION
-                 SELECT 1 FROM projects WHERE id = ? AND al.entity_type = 'project'
+             WHERE (
+                 (al.entity_type = 'issue' AND EXISTS (SELECT 1 FROM issues WHERE id = al.entity_id AND project_id = ?))
+                 OR
+                 (al.entity_type = 'project' AND al.entity_id = ?)
              )
+             AND (al.user_id IS NOT NULL OR al.action IS NOT NULL)
              ORDER BY al.created_at DESC
              LIMIT ?",
             [$projectId, $projectId, $limit]
@@ -112,7 +111,7 @@ class ActivityService
         $action = $activity['action'];
         $type = $activity['entity_type'];
         $issueKey = $activity['issue_key'];
-        
+
         $actionMap = [
             'issue_created' => 'created issue',
             'issue_updated' => 'updated issue',
@@ -128,11 +127,11 @@ class ActivityService
         ];
 
         $verb = $actionMap[$action] ?? str_replace('_', ' ', $action);
-        
+
         if ($issueKey) {
             return "$verb {$issueKey}";
         }
-        
+
         return $verb;
     }
 
@@ -142,7 +141,7 @@ class ActivityService
     private function formatIssueActivityDescription(array $activity): string
     {
         $action = $activity['action'];
-        
+
         $actionMap = [
             'issue_created' => 'created this issue',
             'issue_updated' => 'updated this issue',

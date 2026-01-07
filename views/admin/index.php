@@ -239,11 +239,12 @@
                     <h3 class="health-title">
                         <i class="bi bi-heart-pulse"></i>
                         System Health
+                        <span class="last-updated" id="system-health-updated">Last updated: Just now</span>
                     </h3>
                 </div>
                 <div class="health-grid">
                     <?php $db = $systemHealth['db']; ?>
-                    <div class="health-item" title="<?= e($db['message']) ?>">
+                    <div class="health-item" id="health-db" title="<?= e($db['message']) ?>">
                         <div class="health-icon health-<?= $db['status'] ?>">
                             <i class="bi bi-database"></i>
                         </div>
@@ -254,7 +255,7 @@
                     </div>
 
                     <?php $mail = $systemHealth['mail']; ?>
-                    <div class="health-item" title="<?= e($mail['message']) ?>">
+                    <div class="health-item" id="health-mail" title="<?= e($mail['message']) ?>">
                         <div class="health-icon health-<?= $mail['status'] ?>">
                             <i class="bi bi-envelope"></i>
                         </div>
@@ -265,7 +266,8 @@
                     </div>
 
                     <?php $disk = $systemHealth['disk']; ?>
-                    <div class="health-item" title="Used: <?= e($disk['used']) ?> / Total: <?= e($disk['total']) ?>">
+                    <div class="health-item" id="health-disk"
+                        title="Used: <?= e($disk['used']) ?> / Total: <?= e($disk['total']) ?>">
                         <div class="health-icon health-<?= $disk['status'] ?>">
                             <i class="bi bi-hdd"></i>
                         </div>
@@ -277,7 +279,7 @@
                     </div>
 
                     <?php $queue = $systemHealth['queue']; ?>
-                    <div class="health-item"
+                    <div class="health-item" id="health-queue"
                         title="Pending: <?= $queue['pending'] ?> | Failed: <?= $queue['failed'] ?>">
                         <div class="health-icon health-<?= $queue['status'] ?>">
                             <i class="bi bi-clock"></i>
@@ -296,13 +298,14 @@
                     <h3 class="health-title">
                         <i class="bi bi-bell"></i>
                         Notification System Health
+                        <span class="last-updated" id="notification-health-updated">Last updated: Just now</span>
                     </h3>
                 </div>
                 <?php
                 $errorStats = $notificationHealth['error_stats'];
                 $isOperational = $notificationHealth['is_operational'];
                 ?>
-                <div class="health-grid">
+                <div class="health-grid" id="notification-health-grid">
                     <div class="health-item">
                         <div class="health-icon <?= $isOperational ? 'health-success' : 'health-danger' ?>">
                             <i class="bi bi-check-circle"></i>
@@ -349,19 +352,21 @@
                         </div>
                     </div>
                 </div>
-                <?php if (!empty($errorStats['recent_errors'])): ?>
-                    <div class="errors-section">
-                        <h4 class="errors-title">Recent Errors:</h4>
-                        <div class="errors-list">
-                            <?php foreach (array_slice($errorStats['recent_errors'], -5) as $error): ?>
-                                <div class="error-item">
-                                    <i class="bi bi-x-circle"></i>
-                                    <span><?= e(substr($error, 0, 80)) ?>...</span>
-                                </div>
-                            <?php endforeach; ?>
+                <div id="recent-errors-container">
+                    <?php if (!empty($errorStats['recent_errors'])): ?>
+                        <div class="errors-section">
+                            <h4 class="errors-title">Recent Errors:</h4>
+                            <div class="errors-list">
+                                <?php foreach (array_slice($errorStats['recent_errors'], -5) as $error): ?>
+                                    <div class="error-item">
+                                        <i class="bi bi-x-circle"></i>
+                                        <span><?= e(substr($error, 0, 80)) ?>...</span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
-                    </div>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
@@ -384,6 +389,14 @@
         --shadow-md: 0 1px 3px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);
         --shadow-lg: 0 4px 12px rgba(9, 30, 66, 0.15);
         --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .last-updated {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: 400;
+        margin-left: auto;
+        opacity: 0.7;
     }
 
     .admin-dashboard-wrapper {
@@ -1109,5 +1122,114 @@
         }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function updateHealth() {
+            fetch(window.location.href, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const system = data.system_health;
+                    const notification = data.notification_health;
+                    const timestamp = new Date().toLocaleTimeString();
+
+                    // Update System Health
+                    updateHealthItem('health-db', system.db);
+                    updateHealthItem('health-mail', system.mail);
+                    updateHealthItem('health-disk', system.disk, true);
+                    updateHealthItem('health-queue', system.queue);
+                    document.getElementById('system-health-updated').textContent = 'Last updated: ' + timestamp;
+
+                    // Update Notification Health
+                    updateNotificationHealth(notification);
+                    document.getElementById('notification-health-updated').textContent = 'Last updated: ' + timestamp;
+                })
+                .catch(error => console.error('Error polling health stats:', error));
+        }
+
+        function updateHealthItem(id, data, isDisk = false) {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            const icon = el.querySelector('.health-icon');
+            const status = el.querySelector('.health-status');
+
+            // Update classes
+            icon.className = 'health-icon health-' + data.status;
+            status.className = 'health-status health-' + data.status;
+
+            // Update text
+            if (isDisk) {
+                status.textContent = data.percent + '% used';
+                el.title = 'Used: ' + data.used + ' / Total: ' + data.total;
+            } else {
+                status.textContent = data.label;
+                if (data.message) el.title = data.message;
+                if (id === 'health-queue') {
+                    el.title = 'Pending: ' + data.pending + ' | Failed: ' + data.failed;
+                }
+            }
+        }
+
+        function updateNotificationHealth(data) {
+            const grid = document.getElementById('notification-health-grid');
+            if (!grid) return;
+
+            const items = grid.querySelectorAll('.health-item');
+            const stats = data.error_stats;
+
+            // Status
+            const statusItem = items[0];
+            const statusIcon = statusItem.querySelector('.health-icon');
+            const statusText = statusItem.querySelector('.health-status');
+            statusIcon.className = 'health-icon ' + (data.is_operational ? 'health-success' : 'health-danger');
+            statusText.className = 'health-status ' + (data.is_operational ? 'health-success' : 'health-danger');
+            statusText.textContent = data.is_operational ? 'Operational' : 'Issues Detected';
+
+            // Errors
+            const errorItem = items[1];
+            const errorIcon = errorItem.querySelector('.health-icon');
+            const errorText = errorItem.querySelector('.health-status');
+            errorIcon.className = 'health-icon ' + (stats.total_errors > 0 ? 'health-danger' : 'health-success');
+            errorText.className = 'health-status ' + (stats.total_errors > 0 ? 'health-danger' : 'health-success');
+            errorText.textContent = stats.total_errors + ' errors';
+
+            // Retries
+            const retryText = items[2].querySelector('.health-status');
+            retryText.textContent = stats.retry_count + ' queued';
+
+            // Log Size
+            const logSizeText = items[3].querySelector('.health-status');
+            logSizeText.textContent = data.log_size;
+
+            // Recent Errors
+            const container = document.getElementById('recent-errors-container');
+            if (stats.recent_errors && stats.recent_errors.length > 0) {
+                let html = '<div class="errors-section"><h4 class="errors-title">Recent Errors:</h4><div class="errors-list">';
+                stats.recent_errors.slice(-5).forEach(err => {
+                    html += `<div class="error-item"><i class="bi bi-x-circle"></i><span>${escapeHtml(err.substring(0, 80))}...</span></div>`;
+                });
+                html += '</div></div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Poll every 30 seconds
+        setInterval(updateHealth, 30000);
+    });
+</script>
 
 <?php \App\Core\View::endSection(); ?>

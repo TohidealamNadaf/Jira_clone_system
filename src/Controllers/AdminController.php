@@ -60,6 +60,8 @@ class AdminController extends Controller
             $this->json([
                 'stats' => $stats,
                 'recent_activity' => $recentActivity,
+                'system_health' => $systemHealth,
+                'notification_health' => $notificationHealth,
             ]);
         }
 
@@ -239,6 +241,131 @@ class AdminController extends Controller
             Session::flash('error', 'Failed to create user: ' . $e->getMessage());
             $this->back();
         }
+    }
+
+    public function showUser(Request $request): string
+    {
+        $this->authorize('admin.manage-users');
+
+        $userId = (int) $request->param('id');
+
+        // Fetch user with roles
+        $user = Database::selectOne("
+            SELECT u.*
+            FROM users u
+            WHERE u.id = ?
+            LIMIT 1
+        ", [$userId]);
+
+        if (!$user) {
+            abort(404, 'User not found');
+        }
+
+        // Get all user roles
+        $userRoles = Database::select("
+            SELECT r.* FROM roles r
+            INNER JOIN user_roles ur ON r.id = ur.role_id
+            WHERE ur.user_id = ?
+            ORDER BY r.name
+        ", [$userId]);
+
+        // Get comprehensive user statistics
+        $stats = [
+            // Issues created by this user
+            'created_issues' => (int) Database::selectValue(
+                "SELECT COUNT(*) FROM issues WHERE reporter_id = ?",
+                [$userId]
+            ),
+            
+            // Issues assigned to this user
+            'assigned_issues' => (int) Database::selectValue(
+                "SELECT COUNT(*) FROM issues WHERE assignee_id = ? AND resolved_at IS NULL",
+                [$userId]
+            ),
+            
+            // Issues resolved/closed by this user (status = done)
+            'resolved_issues' => (int) Database::selectValue(
+                "SELECT COUNT(*) FROM issues i 
+                 JOIN statuses s ON i.status_id = s.id 
+                 WHERE i.assignee_id = ? AND s.category = 'done'",
+                [$userId]
+            ),
+            
+            // Comments made by this user
+            'comments_count' => (int) Database::selectValue(
+                "SELECT COUNT(*) FROM comments WHERE user_id = ? AND deleted_at IS NULL",
+                [$userId]
+            ),
+            
+            // Total assigned to count (all assigned issues regardless of status)
+            'assigned_to_count' => (int) Database::selectValue(
+                "SELECT COUNT(*) FROM issues WHERE assignee_id = ?",
+                [$userId]
+            ),
+            
+            // Projects user is member of
+            'projects_member_of' => (int) Database::selectValue(
+                "SELECT COUNT(DISTINCT project_id) FROM project_members WHERE user_id = ?",
+                [$userId]
+            ),
+            
+            // Time tracked (in hours if worklogs table exists)
+            'time_tracked_hours' => (float) Database::selectValue(
+                "SELECT COALESCE(SUM(time_spent), 0) / 3600 FROM issues WHERE assignee_id = ?",
+                [$userId]
+            ),
+        ];
+
+        // Get user activity summary
+        $activitySummary = Database::selectOne("
+            SELECT 
+                COUNT(*) as total_activities,
+                MAX(created_at) as last_activity
+            FROM audit_logs
+            WHERE user_id = ?
+        ", [$userId]);
+
+        // Get projects where user is a member
+        $userProjects = Database::select("
+            SELECT p.id, p.name, p.key, p.description
+            FROM projects p
+            INNER JOIN project_members pm ON p.id = pm.project_id
+            WHERE pm.user_id = ?
+            ORDER BY p.name
+            LIMIT 5
+        ", [$userId]);
+
+        // Get recent issues created or assigned to user
+        $recentIssues = Database::select("
+            SELECT i.id, i.issue_key, i.summary, i.status_id, s.name as status_name, 
+                    i.priority_id, ip.name as priority_name, i.created_at
+            FROM issues i
+            LEFT JOIN statuses s ON i.status_id = s.id
+            LEFT JOIN issue_priorities ip ON i.priority_id = ip.id
+            WHERE i.reporter_id = ? OR i.assignee_id = ?
+            ORDER BY i.created_at DESC
+            LIMIT 5
+        ", [$userId, $userId]);
+
+        // Get user's recent activity log
+        $recentActivity = Database::select("
+            SELECT a.*, u.display_name as actor_name
+            FROM audit_logs a
+            LEFT JOIN users u ON a.user_id = u.id
+            WHERE a.user_id = ?
+            ORDER BY a.created_at DESC
+            LIMIT 10
+        ", [$userId]);
+
+        return $this->view('admin.user-detail', [
+            'user' => $user,
+            'userRoles' => $userRoles,
+            'stats' => $stats,
+            'activitySummary' => $activitySummary,
+            'userProjects' => $userProjects ?? [],
+            'recentIssues' => $recentIssues ?? [],
+            'recentActivity' => $recentActivity ?? [],
+        ]);
     }
 
     public function editUser(Request $request): string

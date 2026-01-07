@@ -2129,7 +2129,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 
     <!-- Real-Time Notifications (Server-Sent Events) -->
-    <script src="<?= asset('js/realtime-notifications.js') ?>"></script>
+    <script src="<?= asset('js/realtime-notifications.js') ?>?v=<?= time() ?>"></script>
 
     <script src="<?= asset('js/app.js') ?>?v=<?= time() ?>"></script>
 
@@ -2147,7 +2147,7 @@
     <?php include_once __DIR__ . '/../components/create-issue-modal.php'; ?>
 
     <!-- Create Issue Modal JavaScript -->
-    <script src="<?= url('/assets/js/create-issue-modal.js') ?>"></script>
+    <script src="<?= url('/assets/js/create-issue-modal.js') ?>?v=<?= time() ?>"></script>
 </body>
 
 </html>

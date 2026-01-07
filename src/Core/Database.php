@@ -234,7 +234,7 @@ class Database
     {
         $columns = array_keys($data);
         $quotedColumns = array_map(fn($col) => "`$col`", $columns);
-        
+
         // Use positional parameters (?) instead of named parameters (:col)
         // This avoids PDO parameter binding issues with ON DUPLICATE KEY UPDATE
         // when the same placeholder would appear in both VALUES and UPDATE clauses
@@ -263,6 +263,16 @@ class Database
 
         // Convert $data to ordered array for positional parameters
         $params = array_values($data);
+
+        if (count($params) !== count($placeholders)) {
+            throw new \RuntimeException(sprintf(
+                'Invalid parameter number in insertOrUpdate: Expected %d, got %d. Columns: %s',
+                count($placeholders),
+                count($params),
+                implode(', ', $columns)
+            ));
+        }
+
         $stmt = self::query($sql, $params);
         return $stmt->rowCount() > 0;
     }

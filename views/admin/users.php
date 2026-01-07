@@ -2,1386 +2,915 @@
 
 <?php \App\Core\View::section('content'); ?>
 
-<div class="au-wrapper">
+<div class="page-wrapper">
     <!-- Breadcrumb Navigation -->
-    <div class="au-breadcrumb">
-        <a href="<?= url('/admin') ?>" class="au-breadcrumb-link">
-            <i class="bi bi-gear"></i> Admin
+    <div class="breadcrumb">
+        <a href="<?= url('/admin') ?>" class="breadcrumb-link">
+            <i class="bi bi-shield-lock"></i> Administration
         </a>
-        <span class="au-breadcrumb-separator">/</span>
-        <span class="au-breadcrumb-current">User Management</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">User Management</span>
     </div>
 
     <!-- Page Header -->
-    <div class="au-header">
-        <div class="au-header-left">
-            <h1 class="au-title">User Management</h1>
-            <p class="au-subtitle">Manage team members, assign roles, and control access permissions</p>
+    <div class="page-header">
+        <div class="header-left">
+            <div class="header-icon-badge">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="header-info">
+                <h1 class="page-title">User Management</h1>
+                <p class="page-subtitle">Manage system access, roles, and user accounts.</p>
+            </div>
         </div>
-        <div class="au-header-right">
-            <a href="<?= url('/admin/users/create') ?>" class="au-btn au-btn-primary">
-                <i class="bi bi-plus-lg"></i> Create User
+        <div class="header-actions">
+            <!-- Export Dropdown -->
+            <div class="dropdown d-inline-block">
+                <button type="button" class="action-button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download"></i>
+                    <span>Export</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-1">
+                    <li><a class="dropdown-item py-2" href="<?= url('/admin/users/export?format=csv') ?>">
+                            <i class="bi bi-file-text me-2"></i>Export as CSV
+                        </a></li>
+                    <li><a class="dropdown-item py-2" href="<?= url('/admin/users/export?format=xlsx') ?>">
+                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Export as Excel
+                        </a></li>
+                </ul>
+            </div>
+
+            <a href="<?= url('/admin/users/create') ?>" class="action-button primary">
+                <i class="bi bi-plus-lg"></i>
+                <span>Create User</span>
             </a>
         </div>
     </div>
 
-    <!-- Filters Section -->
-    <div class="au-filters">
-        <form action="<?= url('/admin/users') ?>" method="GET" class="au-filters-form">
-            <!-- Search Input -->
-            <div class="au-filter-group">
-                <input type="text" name="search" class="au-filter-input"
-                    placeholder="Search by name, email, username..." value="<?= e($filters['search'] ?? '') ?>"
-                    aria-label="Search users">
-            </div>
-
-            <!-- Status Filter -->
-            <div class="au-filter-group">
-                <select name="status" class="au-filter-select" aria-label="Filter by status">
-                    <option value="">All Status</option>
-                    <option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active</option>
-                    <option value="inactive" <?= ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive
-                    </option>
-                    <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending
-                    </option>
-                </select>
-            </div>
-
-            <!-- Role Filter -->
-            <div class="au-filter-group">
-                <select name="role" class="au-filter-select" aria-label="Filter by role">
-                    <option value="">All Roles</option>
-                    <?php foreach ($roles ?? [] as $role): ?>
-                        <option value="<?= $role['id'] ?>" <?= ($filters['role'] ?? '') == $role['id'] ? 'selected' : '' ?>>
-                            <?= e($role['name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <!-- Filter Actions -->
-            <div class="au-filter-actions">
-                <button type="submit" class="au-btn au-btn-secondary">
-                    <i class="bi bi-search"></i> Filter
-                </button>
-                <a href="<?= url('/admin/users') ?>" class="au-btn au-btn-outline">
-                    <i class="bi bi-x-circle"></i> Clear
-                </a>
-            </div>
-
-            <!-- Export Dropdown -->
-            <div class="au-filter-export">
-                <div class="au-dropdown">
-                    <button type="button" class="au-btn au-btn-outline au-dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-label="Export options">
-                        <i class="bi bi-download"></i> Export
-                    </button>
-                    <ul class="au-dropdown-menu">
-                        <li><a class="au-dropdown-item" href="<?= url('/admin/users/export?format=csv') ?>">
-                                <i class="bi bi-file-text"></i> CSV
-                            </a></li>
-                        <li><a class="au-dropdown-item" href="<?= url('/admin/users/export?format=xlsx') ?>">
-                                <i class="bi bi-file-earmark-spreadsheet"></i> Excel
-                            </a></li>
-                    </ul>
+    <!-- Page Content -->
+    <div class="page-content">
+        <div class="content-left">
+            <!-- Users Table Card -->
+            <div class="enterprise-card">
+                <div class="card-header-bar">
+                    <h2 class="card-title">All Users</h2>
+                    <span class="badge-count"><?= $totalUsers ?? 0 ?> Total</span>
                 </div>
-            </div>
-        </form>
-    </div>
 
-    <!-- Content Area -->
-    <div class="au-content">
-        <!-- Users Table Card -->
-        <div class="au-table-card">
-            <!-- Card Header -->
-            <div class="au-table-header">
-                <span class="au-result-count"><?= $totalUsers ?? 0 ?> users found</span>
-            </div>
+                <!-- Bulk Actions Toolbar (Hidden by default) -->
+                <div id="bulkActions" class="bulk-actions-toolbar" style="display: none;">
+                    <span class="bulk-selected-count"><span id="selectedCount">0</span> users selected</span>
+                    <div class="bulk-actions-buttons">
+                        <button class="action-button small success" onclick="bulkActivate()">
+                            <i class="bi bi-play-circle-fill"></i> Activate
+                        </button>
+                        <button class="action-button small warning" onclick="bulkDeactivate()">
+                            <i class="bi bi-pause-circle-fill"></i> Deactivate
+                        </button>
+                        <button class="action-button small danger" onclick="bulkDelete()">
+                            <i class="bi bi-trash-fill"></i> Delete
+                        </button>
+                    </div>
+                </div>
 
-            <!-- Table -->
-            <div class="au-table-responsive">
-                <table class="au-table">
-                    <thead>
-                        <tr>
-                            <th class="au-col-checkbox">
-                                <input type="checkbox" class="au-checkbox" id="selectAll" aria-label="Select all users">
-                            </th>
-                            <th>User</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Last Login</th>
-                            <th>Created</th>
-                            <th class="au-col-actions">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($users)): ?>
-                            <?php foreach ($users as $u): ?>
-                                <tr class="au-table-row">
-                                    <td class="au-col-checkbox">
-                                        <input type="checkbox" class="au-checkbox au-user-checkbox" value="<?= $u['id'] ?>"
-                                            aria-label="Select <?= e($u['display_name'] ?? $u['first_name']) ?>">
+                <div class="table-container">
+                    <table class="enterprise-table">
+                        <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" class="custom-checkbox" id="selectAll">
+                                </th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                                <th width="80"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($users)): ?>
+                                <tr>
+                                    <td colspan="7" class="empty-state-row">
+                                        <div class="empty-state-content">
+                                            <i class="bi bi-people" style="font-size: 48px; color: #DFE1E6;"></i>
+                                            <p class="mt-3 text-muted">No users found matching your criteria</p>
+                                            <a href="<?= url('/admin/users/create') ?>" class="action-button small">
+                                                Create User
+                                            </a>
+                                        </div>
                                     </td>
-                                    <td>
-                                        <div class="au-user-cell">
-                                            <?php if (($avatarUrl = avatar($u['avatar'] ?? null))): ?>
-                                                <img src="<?= e($avatarUrl) ?>" class="au-avatar"
-                                                    alt="<?= e($u['display_name'] ?? $u['first_name']) ?>">
-                                            <?php else: ?>
-                                                <div class="au-avatar au-avatar-initials" title="Avatar">
-                                                    <?= strtoupper(substr($u['first_name'] ?? 'U', 0, 1)) . strtoupper(substr($u['last_name'] ?? '', 0, 1)) ?>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="au-user-info">
-                                                <div class="au-user-name">
-                                                    <?= e($u['display_name'] ?? $u['first_name'] . ' ' . $u['last_name']) ?>
-                                                    <?php if ($u['is_admin']): ?>
-                                                        <span class="au-badge au-badge-admin" title="System Administrator">
-                                                            <i class="bi bi-shield-check"></i> Admin
-                                                        </span>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($users as $u): ?>
+                                    <tr class="table-row-hover">
+                                        <td class="col-checkbox">
+                                            <input type="checkbox" class="custom-checkbox user-checkbox"
+                                                value="<?= $u['id'] ?>">
+                                        </td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar">
+                                                    <?php if (($avatarUrl = avatar($u['avatar'] ?? null))): ?>
+                                                        <img src="<?= e($avatarUrl) ?>" alt="<?= e($u['display_name']) ?>">
+                                                    <?php else: ?>
+                                                        <div class="avatar-initials">
+                                                            <?= strtoupper(substr($u['first_name'] ?? 'U', 0, 1) . substr($u['last_name'] ?? '', 0, 1)) ?>
+                                                        </div>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="au-user-username">@<?= e($u['username'] ?? '') ?></div>
+                                                <div class="user-info">
+                                                    <a href="<?= url('/admin/users/' . $u['id'] . '/edit') ?>"
+                                                        class="user-name-link">
+                                                        <?= e($u['display_name'] ?? $u['first_name'] . ' ' . $u['last_name']) ?>
+                                                    </a>
+                                                    <span class="user-username">@<?= e($u['username'] ?? '') ?></span>
+                                                </div>
+                                                <?php if ($u['is_admin']): ?>
+                                                    <span class="admin-badge" title="System Administrator">
+                                                        <i class="bi bi-shield-fill"></i>
+                                                    </span>
+                                                <?php endif; ?>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="au-email"><?= e($u['email']) ?></span>
-                                    </td>
-                                    <td>
-                                        <div class="au-role-badges">
-                                            <?php
-                                            $userRoles = $u['roles'] ?? '';
-                                            if (is_string($userRoles) && !empty($userRoles)):
-                                                foreach (explode(',', $userRoles) as $roleName): ?>
-                                                    <span class="au-badge au-badge-role"><?= e(trim($roleName)) ?></span>
-                                                <?php endforeach;
-                                            elseif (is_array($userRoles)):
-                                                foreach ($userRoles as $role): ?>
-                                                    <span class="au-badge au-badge-role"><?= e($role['name'] ?? $role) ?></span>
-                                                <?php endforeach;
-                                            else: ?>
-                                                <span class="au-badge au-badge-empty">No role</span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="au-status">
+                                        </td>
+                                        <td class="text-muted small"><?= e($u['email']) ?></td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <?php
+                                                $userRoles = $u['roles'] ?? '';
+                                                if (is_string($userRoles) && !empty($userRoles)):
+                                                    foreach (explode(',', $userRoles) as $roleName): ?>
+                                                        <span class="role-badge"><?= e(trim($roleName)) ?></span>
+                                                    <?php endforeach;
+                                                elseif (is_array($userRoles)):
+                                                    foreach ($userRoles as $role): ?>
+                                                        <span class="role-badge"><?= e($role['name'] ?? $role) ?></span>
+                                                    <?php endforeach;
+                                                else: ?>
+                                                    <span class="text-muted small italic">No role</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <td>
                                             <?php if (!empty($u['is_active'])): ?>
-                                                <span class="au-badge au-badge-active">
-                                                    <span class="au-status-dot"></span> Active
-                                                </span>
+                                                <span class="status-pill success">Active</span>
                                             <?php elseif (empty($u['email_verified_at'])): ?>
-                                                <span class="au-badge au-badge-pending">
-                                                    <span class="au-status-dot"></span> Pending
-                                                </span>
+                                                <span class="status-pill warning">Pending</span>
                                             <?php else: ?>
-                                                <span class="au-badge au-badge-inactive">
-                                                    <span class="au-status-dot"></span> Inactive
-                                                </span>
+                                                <span class="status-pill inactive">Inactive</span>
                                             <?php endif; ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="au-last-login">
+                                        </td>
+                                        <td class="text-muted small">
                                             <?php if ($u['last_login_at']): ?>
                                                 <span title="<?= format_datetime($u['last_login_at']) ?>">
                                                     <?= time_ago($u['last_login_at']) ?>
                                                 </span>
                                             <?php else: ?>
-                                                <span class="au-text-muted">Never</span>
+                                                Never
                                             <?php endif; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="au-created-date"><?= format_date($u['created_at']) ?></span>
-                                    </td>
-                                    <td class="au-col-actions">
-                                        <?php if ($u['is_admin']): ?>
-                                            <span class="au-badge au-badge-protected"
-                                                title="Administrator users cannot be modified">
-                                                <i class="bi bi-shield-lock"></i> Protected
-                                            </span>
-                                        <?php else: ?>
-                                            <div class="au-actions-menu au-dropdown">
-                                                <button class="au-btn-menu" data-bs-toggle="dropdown"
-                                                    aria-label="Actions for <?= e($u['display_name'] ?? $u['first_name']) ?>">
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="dropdown">
+                                                <button class="btn btn-link btn-sm text-secondary p-0" type="button"
+                                                    data-bs-toggle="dropdown">
                                                     <i class="bi bi-three-dots-vertical"></i>
                                                 </button>
-                                                <ul class="au-dropdown-menu au-dropdown-menu-end" role="menu">
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                                     <li>
-                                                        <a class="au-dropdown-item"
+                                                        <a class="dropdown-item"
                                                             href="<?= url('/admin/users/' . $u['id'] . '/edit') ?>">
-                                                            <i class="bi bi-pencil-square"></i> Edit
+                                                            <i class="bi bi-pencil me-2"></i>Edit
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a class="au-dropdown-item" href="<?= url('/admin/users/' . $u['id']) ?>">
-                                                            <i class="bi bi-eye"></i> View Details
+                                                        <a class="dropdown-item" href="<?= url('/admin/users/' . $u['id']) ?>">
+                                                            <i class="bi bi-eye me-2"></i>View Details
                                                         </a>
                                                     </li>
-                                                    <li>
-                                                        <hr class="au-dropdown-divider">
-                                                    </li>
-                                                    <?php if (!empty($u['is_active'])): ?>
+                                                    <?php if (!$u['is_admin']): ?>
                                                         <li>
-                                                            <form action="<?= url('/admin/users/' . $u['id'] . '/deactivate') ?>"
-                                                                method="POST" class="au-form-inline">
-                                                                <?= csrf_field() ?>
-                                                                <button type="submit" class="au-dropdown-item au-dropdown-item-warning">
-                                                                    <i class="bi bi-pause-circle"></i> Deactivate
-                                                                </button>
-                                                            </form>
+                                                            <hr class="dropdown-divider">
                                                         </li>
-                                                    <?php else: ?>
+                                                        <?php if (!empty($u['is_active'])): ?>
+                                                            <li>
+                                                                <form action="<?= url('/admin/users/' . $u['id'] . '/deactivate') ?>"
+                                                                    method="POST">
+                                                                    <?= csrf_field() ?>
+                                                                    <button type="submit" class="dropdown-item text-warning">
+                                                                        <i class="bi bi-pause-circle me-2"></i>Deactivate
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        <?php else: ?>
+                                                            <li>
+                                                                <form action="<?= url('/admin/users/' . $u['id'] . '/activate') ?>"
+                                                                    method="POST">
+                                                                    <?= csrf_field() ?>
+                                                                    <button type="submit" class="dropdown-item text-success">
+                                                                        <i class="bi bi-play-circle me-2"></i>Activate
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        <?php endif; ?>
                                                         <li>
-                                                            <form action="<?= url('/admin/users/' . $u['id'] . '/activate') ?>"
-                                                                method="POST" class="au-form-inline">
+                                                            <form action="<?= url('/admin/users/' . $u['id']) ?>" method="POST"
+                                                                onsubmit="return confirm('Delete this user? This action cannot be undone.');">
                                                                 <?= csrf_field() ?>
-                                                                <button type="submit" class="au-dropdown-item au-dropdown-item-success">
-                                                                    <i class="bi bi-play-circle"></i> Activate
+                                                                <input type="hidden" name="_method" value="DELETE">
+                                                                <button type="submit" class="dropdown-item text-danger">
+                                                                    <i class="bi bi-trash me-2"></i>Delete
                                                                 </button>
                                                             </form>
                                                         </li>
                                                     <?php endif; ?>
-                                                    <li>
-                                                        <form action="<?= url('/admin/users/' . $u['id']) ?>" method="POST"
-                                                            onsubmit="return confirm('Delete this user? This action cannot be undone.');"
-                                                            class="au-form-inline">
-                                                            <?= csrf_field() ?>
-                                                            <input type="hidden" name="_method" value="DELETE">
-                                                            <button type="submit" class="au-dropdown-item au-dropdown-item-danger">
-                                                                <i class="bi bi-trash"></i> Delete
-                                                            </button>
-                                                        </form>
-                                                    </li>
                                                 </ul>
                                             </div>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="8" class="au-empty-state-cell">
-                                    <div class="au-empty-state">
-                                        <div class="au-empty-icon">👥</div>
-                                        <p class="au-empty-title">No users found</p>
-                                        <p class="au-empty-hint">Create your first user to get started</p>
-                                        <a href="<?= url('/admin/users/create') ?>" class="au-btn au-btn-primary au-mt-3">
-                                            <i class="bi bi-plus-lg"></i> Create User
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
 
-            <!-- Pagination -->
-            <?php if (($totalPages ?? 1) > 1): ?>
-                <div class="au-table-footer">
-                    <nav aria-label="User pagination">
-                        <ul class="au-pagination">
+                <!-- Pagination -->
+                <?php if (($totalPages ?? 1) > 1): ?>
+                    <div class="card-footer-pagination">
+                        <span class="text-muted small">
+                            Showing page <?= $currentPage ?> of <?= $totalPages ?>
+                        </span>
+                        <div class="pagination-buttons">
+                            <?php if ($currentPage > 1): ?>
+                                <a href="?<?= http_build_query(array_merge($_GET, ['page' => $currentPage - 1])) ?>"
+                                    class="pagination-btn prev">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            <?php else: ?>
+                                <button class="pagination-btn prev disabled" disabled><i
+                                        class="bi bi-chevron-left"></i></button>
+                            <?php endif; ?>
+
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <li class="au-page-item <?= $i === ($currentPage ?? 1) ? 'active' : '' ?>">
-                                    <a class="au-page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>">
+                                <?php if ($i == 1 || $i == $totalPages || abs($i - $currentPage) <= 2): ?>
+                                    <a href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"
+                                        class="pagination-btn <?= $i === $currentPage ? 'active' : '' ?>">
                                         <?= $i ?>
                                     </a>
-                                </li>
+                                <?php elseif (abs($i - $currentPage) == 3): ?>
+                                    <span class="pagination-ellipsis">...</span>
+                                <?php endif; ?>
                             <?php endfor; ?>
-                        </ul>
-                    </nav>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
 
-    <!-- Bulk Actions Panel -->
-    <div class="au-bulk-actions d-none" id="bulkActions" role="region" aria-live="polite">
-        <div class="au-bulk-actions-content">
-            <span class="au-bulk-actions-text">
-                <strong id="selectedCount">0</strong> users selected
-            </span>
-            <div class="au-bulk-actions-buttons">
-                <button class="au-btn au-btn-sm au-btn-success" onclick="bulkActivate()"
-                    aria-label="Bulk activate selected users">
-                    <i class="bi bi-play-circle"></i> Activate
-                </button>
-                <button class="au-btn au-btn-sm au-btn-warning" onclick="bulkDeactivate()"
-                    aria-label="Bulk deactivate selected users">
-                    <i class="bi bi-pause-circle"></i> Deactivate
-                </button>
-                <button class="au-btn au-btn-sm au-btn-danger" onclick="bulkDelete()"
-                    aria-label="Bulk delete selected users">
-                    <i class="bi bi-trash"></i> Delete
-                </button>
+                            <?php if ($currentPage < $totalPages): ?>
+                                <a href="?<?= http_build_query(array_merge($_GET, ['page' => $currentPage + 1])) ?>"
+                                    class="pagination-btn next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            <?php else: ?>
+                                <button class="pagination-btn next disabled" disabled><i
+                                        class="bi bi-chevron-right"></i></button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="content-right">
+            <!-- Filter Card -->
+            <div class="sidebar-card">
+                <h3 class="sidebar-card-title">Filter Users</h3>
+                <form action="<?= url('/admin/users') ?>" method="GET">
+                    <div class="form-group mb-3">
+                        <label class="form-label small text-muted">Search</label>
+                        <div class="input-icon-wrapper">
+                            <i class="bi bi-search input-icon"></i>
+                            <input type="text" name="search" class="form-control-enterprise"
+                                placeholder="Name, email, username..." value="<?= e($filters['search'] ?? '') ?>">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label small text-muted">Status</label>
+                        <select name="status" class="form-select-enterprise">
+                            <option value="">All Statuses</option>
+                            <option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active
+                            </option>
+                            <option value="inactive" <?= ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>
+                                Inactive</option>
+                            <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>>
+                                Pending</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="form-label small text-muted">Role</label>
+                        <select name="role" class="form-select-enterprise">
+                            <option value="">All Roles</option>
+                            <?php foreach ($roles ?? [] as $role): ?>
+                                <option value="<?= $role['id'] ?>" <?= ($filters['role'] ?? '') == $role['id'] ? 'selected' : '' ?>>
+                                    <?= e($role['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="action-button primary w-100 justify-content-center">
+                            Apply Filters
+                        </button>
+                        <?php if (!empty($filters['search']) || !empty($filters['status']) || !empty($filters['role'])): ?>
+                            <a href="<?= url('/admin/users') ?>" class="action-button w-100 justify-content-center">
+                                Clear Filters
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Elements
+        const selectAll = document.getElementById('selectAll');
+        const bulkActions = document.getElementById('bulkActions');
+        const selectedCount = document.getElementById('selectedCount');
+        const table = document.querySelector('.enterprise-table');
+
+        // Update UI based on selection
+        function updateSelectionState() {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            const checkedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+            const count = checkedCheckboxes.length;
+
+            // Update count text
+            if (selectedCount) {
+                selectedCount.textContent = count;
+            }
+
+            // Show/Hide Toolbar
+            if (bulkActions) {
+                if (count > 0) {
+                    bulkActions.style.display = 'flex';
+                } else {
+                    bulkActions.style.display = 'none';
+                }
+            }
+
+            // Update Select All checkbox state
+            if (selectAll) {
+                if (count === 0) {
+                    selectAll.checked = false;
+                    selectAll.indeterminate = false;
+                } else if (count === checkboxes.length) {
+                    selectAll.checked = true;
+                    selectAll.indeterminate = false;
+                } else {
+                    selectAll.checked = false;
+                    selectAll.indeterminate = true;
+                }
+            }
+        }
+
+        // Handle Select All click
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                const isChecked = this.checked;
+                const checkboxes = document.querySelectorAll('.user-checkbox');
+                checkboxes.forEach(cb => cb.checked = isChecked);
+                updateSelectionState();
+            });
+        }
+
+        // Handle Individual Checkbox clicks via Delegation
+        if (table) {
+            table.addEventListener('change', function (e) {
+                if (e.target.classList.contains('user-checkbox')) {
+                    updateSelectionState();
+                }
+            });
+        }
+    });
+
+    function getSelectedIds() {
+        return Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+    }
+
+    function bulkAction(action, endpoint) {
+        const ids = getSelectedIds();
+        if (ids.length === 0) return;
+
+        if (!confirm(`Are you sure you want to ${action} ${ids.length} users?`)) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = endpoint;
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_csrf_token';
+        csrf.value = '<?= csrf_token() ?>';
+        form.appendChild(csrf);
+
+        const idsInput = document.createElement('input');
+        idsInput.type = 'hidden';
+        idsInput.name = 'ids';
+        idsInput.value = JSON.stringify(ids);
+        form.appendChild(idsInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function bulkActivate() { bulkAction('activate', '<?= url("/admin/users/bulk-activate") ?>'); }
+    function bulkDeactivate() { bulkAction('deactivate', '<?= url("/admin/users/bulk-deactivate") ?>'); }
+    function bulkDelete() {
+        if (!confirm('This will explicitly delete selected users. Continue?')) return;
+        bulkAction('delete', '<?= url("/admin/users/bulk-delete") ?>');
+    }
+</script>
+
 <style>
     /* ============================================
-   ADMIN USERS - ENTERPRISE JIRA-LIKE DESIGN
+   ADMIN COMPONENT STYLES (Shared & Users Specific)
    ============================================ */
 
     :root {
-        --au-primary: #8B1956;
-        --au-primary-dark: #6F123F;
-        --au-primary-light: rgba(139, 25, 86, 0.1);
-        --au-text-primary: #161B22;
-        --au-text-secondary: #626F86;
-        --au-bg-primary: #FFFFFF;
-        --au-bg-secondary: #F7F8FA;
-        --au-border: #DFE1E6;
-        --au-success: #216E4E;
-        --au-warning: #974F0C;
-        --au-danger: #ED3C32;
-        --au-shadow-sm: 0 1px 1px rgba(9, 30, 66, 0.13);
-        --au-shadow-md: 0 1px 3px rgba(9, 30, 66, 0.13), 0 0 1px rgba(9, 30, 66, 0.13);
-        --au-shadow-lg: 0 4px 12px rgba(9, 30, 66, 0.15);
-        --au-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        --jira-blue: #8B1956 !important;
+        --jira-blue-dark: #6F123F !important;
+        --jira-dark: #161B22 !important;
+        --jira-gray: #626F86 !important;
+        --jira-light: #F7F8FA !important;
+        --jira-border: #DFE1E6 !important;
+        --white: #FFFFFF;
+        --jira-green: #216E4E;
+        --jira-yellow: #FFAB00;
+        --jira-red: #DE350B;
     }
 
-    .au-wrapper {
-        background: var(--au-bg-secondary);
-        min-height: 100vh;
+    .page-wrapper {
+        background: var(--jira-light);
+        min-height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
     }
 
-    /* ===== BREADCRUMB ===== */
-    .au-breadcrumb {
-        padding: 8px 20px;
-        background: var(--au-bg-primary);
-        border-bottom: 1px solid var(--au-border);
+    /* Breadcrumb */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: var(--white);
+        border-bottom: 1px solid var(--jira-border);
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .breadcrumb-link {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 11px;
-        color: var(--au-text-secondary);
-    }
-
-    .au-breadcrumb-link {
-        color: var(--au-primary);
+        color: var(--jira-blue);
         text-decoration: none;
-        transition: color var(--au-transition);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .au-breadcrumb-link:hover {
-        color: var(--au-primary-dark);
-        text-decoration: underline;
-    }
-
-    .au-breadcrumb-separator {
-        color: var(--au-border);
-    }
-
-    .au-breadcrumb-current {
-        color: var(--au-text-primary);
         font-weight: 500;
     }
 
-    /* ===== PAGE HEADER ===== */
-    .au-header {
-        background: var(--au-bg-primary);
-        border-bottom: 1px solid var(--au-border);
-        box-shadow: var(--au-shadow-sm);
-        padding: 16px 20px;
+    .breadcrumb-link:hover {
+        color: var(--jira-blue-dark);
+        text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+        color: var(--jira-gray);
+    }
+
+    .breadcrumb-current {
+        color: var(--jira-dark);
+        font-weight: 600;
+    }
+
+    /* Page Header */
+    .page-header {
         display: flex;
         justify-content: space-between;
+        align-items: center;
+        padding: 20px 32px;
+        background: var(--white);
+        border-bottom: 1px solid var(--jira-border);
+    }
+
+    .header-left {
+        display: flex;
         align-items: center;
         gap: 16px;
     }
 
-    .au-header-left {
-        flex: 1;
+    .header-icon-badge {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, var(--jira-blue), var(--jira-blue-dark));
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(139, 25, 86, 0.2);
     }
 
-    .au-title {
+    .page-title {
         font-size: 22px;
         font-weight: 700;
-        color: var(--au-text-primary);
-        margin: 0 0 4px 0;
-        letter-spacing: -0.2px;
-    }
-
-    .au-subtitle {
-        font-size: 13px;
-        color: var(--au-text-secondary);
+        color: var(--jira-dark);
         margin: 0;
-        font-weight: 400;
     }
 
-    .au-header-right {
-        flex-shrink: 0;
-        min-height: 36px;
-        display: flex;
-        align-items: center;
-    }
-
-    /* ===== FILTERS ===== */
-    .au-filters {
-        background: var(--au-bg-primary);
-        border-bottom: 1px solid var(--au-border);
-        padding: 12px 20px;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .au-filters-form {
-        flex: 1;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-
-    .au-filter-group {
-        flex: 1;
-        min-width: 200px;
-    }
-
-    .au-filter-input,
-    .au-filter-select {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--au-border);
-        border-radius: 6px;
-        font-size: 14px;
-        color: var(--au-text-primary);
-        background: var(--au-bg-primary);
-        transition: all var(--au-transition);
-        font-family: inherit;
-    }
-
-    .au-filter-input::placeholder {
-        color: var(--au-text-secondary);
-    }
-
-    .au-filter-input:focus,
-    .au-filter-select:focus {
-        outline: none;
-        border-color: var(--au-primary);
-        box-shadow: 0 0 0 2px var(--au-primary-light);
-    }
-
-    .au-filter-actions {
-        display: flex;
-        gap: 8px;
-        flex-shrink: 0;
-    }
-
-    .au-filter-export {
-        flex-shrink: 0;
-        margin-left: auto;
-    }
-
-    /* ===== BUTTONS ===== */
-    .au-btn {
-        padding: 8px 14px;
-        border-radius: 6px;
+    .page-subtitle {
         font-size: 13px;
-        font-weight: 600;
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: all var(--au-transition);
+        color: var(--jira-gray);
+        margin: 4px 0 0 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .action-button {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 6px;
-        text-decoration: none;
-        white-space: nowrap;
-        color: white !important;
-        text-shadow: none;
-    }
-
-    .au-btn-primary {
-        background: var(--au-primary);
-        color: white !important;
-        border-color: var(--au-primary);
-    }
-
-    .au-btn-primary i {
-        color: white !important;
-        font-weight: 600;
-    }
-
-    .au-btn-primary:hover {
-        background: var(--au-primary-dark);
-        border-color: var(--au-primary-dark);
-        box-shadow: 0 2px 8px rgba(139, 25, 86, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .au-btn-secondary {
-        background: var(--au-bg-secondary);
-        color: var(--au-text-primary);
-        border: 1px solid var(--au-border);
-    }
-
-    .au-btn-secondary:hover {
-        background: var(--au-border);
-        border-color: var(--au-border);
-    }
-
-    .au-btn-outline {
-        background: transparent;
-        color: var(--au-text-primary);
-        border: 1px solid var(--au-border);
-    }
-
-    .au-btn-outline:hover {
-        background: var(--au-bg-secondary);
-        border-color: var(--au-border);
-    }
-
-    .au-btn-success {
-        background: var(--au-success);
-        color: white;
-        border-color: var(--au-success);
-    }
-
-    .au-btn-success:hover {
-        background: #1a5539;
-        border-color: #1a5539;
-    }
-
-    .au-btn-warning {
-        background: var(--au-warning);
-        color: white;
-        border-color: var(--au-warning);
-    }
-
-    .au-btn-warning:hover {
-        background: #7a3d09;
-        border-color: #7a3d09;
-    }
-
-    .au-btn-danger {
-        background: var(--au-danger);
-        color: white;
-        border-color: var(--au-danger);
-    }
-
-    .au-btn-danger:hover {
-        background: #c92a1f;
-        border-color: #c92a1f;
-    }
-
-    .au-btn-sm {
-        padding: 6px 12px;
-        font-size: 13px;
-    }
-
-    .au-mt-3 {
-        margin-top: 16px;
-    }
-
-    /* ===== DROPDOWN ===== */
-    .au-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-
-    .au-dropdown-toggle::after {
-        display: none;
-    }
-
-    .au-dropdown-menu {
-        display: none;
-        position: absolute;
-        top: calc(100% + 4px);
-        right: 0;
-        background: var(--au-bg-primary);
-        border: 1px solid var(--au-border);
-        border-radius: 6px;
-        box-shadow: var(--au-shadow-lg);
-        min-width: 180px;
-        list-style: none;
-        padding: 8px 0;
-        margin: 0;
-        z-index: 1050;
-        animation: au-dropdown-show 0.15s ease;
-    }
-
-    @keyframes au-dropdown-show {
-        from {
-            opacity: 0;
-            transform: translateY(-4px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .au-dropdown-menu-end {
-        right: 0;
-        left: auto;
-    }
-
-    .au-dropdown-menu.show {
-        display: block;
-    }
-
-    .au-dropdown:has([data-bs-toggle="dropdown"]:focus) .au-dropdown-menu,
-    .au-dropdown:hover .au-dropdown-menu {
-        display: block;
-    }
-
-    .au-dropdown-item {
-        display: flex;
-        align-items: center;
         gap: 8px;
-        padding: 10px 16px;
-        color: var(--au-text-primary);
+        padding: 8px 14px;
+        background: var(--white);
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        color: var(--jira-dark);
         text-decoration: none;
-        cursor: pointer;
-        transition: background var(--au-transition);
-        border: none;
-        background: none;
-        width: 100%;
-        text-align: left;
-        font-size: 14px;
-    }
-
-    .au-dropdown-item:hover {
-        background: var(--au-bg-secondary);
-    }
-
-    .au-dropdown-item-warning {
-        color: var(--au-warning);
-    }
-
-    .au-dropdown-item-success {
-        color: var(--au-success);
-    }
-
-    .au-dropdown-item-danger {
-        color: var(--au-danger);
-    }
-
-    .au-dropdown-divider {
-        margin: 4px 0;
-        border: none;
-        border-top: 1px solid var(--au-border);
-    }
-
-    /* ===== CONTENT ===== */
-    .au-content {
-        padding: 16px 20px;
-    }
-
-    /* ===== TABLE CARD ===== */
-    .au-table-card {
-        background: var(--au-bg-primary);
-        border: 1px solid var(--au-border);
-        border-radius: 8px;
-        box-shadow: var(--au-shadow-md);
-        overflow: hidden;
-    }
-
-    .au-table-header {
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--au-border);
-        background: var(--au-bg-secondary);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .au-result-count {
-        font-size: 14px;
-        color: var(--au-text-secondary);
-        font-weight: 500;
-    }
-
-    /* ===== TABLE ===== */
-    .au-table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .au-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
-
-    .au-table thead {
-        background: var(--au-bg-secondary);
-        border-bottom: 1px solid var(--au-border);
-    }
-
-    .au-table th {
-        padding: 10px 12px;
-        text-align: left;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 600;
-        color: var(--au-text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.2px;
-        user-select: none;
-    }
-
-    .au-table tbody tr {
-        border-bottom: 1px solid var(--au-border);
-        transition: background var(--au-transition);
-    }
-
-    .au-table tbody tr:hover {
-        background: var(--au-bg-secondary);
-    }
-
-    .au-table td {
-        padding: 12px;
-        vertical-align: middle;
-    }
-
-    .au-col-checkbox {
-        width: 44px;
-        padding: 12px 16px;
-        text-align: center;
-    }
-
-    .au-col-actions {
-        width: 160px;
-        text-align: center;
-    }
-
-    /* ===== CHECKBOXES ===== */
-    .au-checkbox {
-        width: 18px;
-        height: 18px;
+        transition: all 0.2s;
         cursor: pointer;
-        accent-color: var(--au-primary);
     }
 
-    /* ===== USER CELL ===== */
-    .au-user-cell {
+    .action-button:hover {
+        background: #F4F5F7;
+        transform: translateY(-1px);
+    }
+
+    .action-button.primary {
+        background: var(--jira-blue);
+        color: #FFFFFF !important;
+        border: none;
+    }
+
+    .action-button.primary:hover {
+        background: var(--jira-blue-dark);
+        color: #FFFFFF !important;
+    }
+
+    /* Page Content */
+    .page-content {
         display: flex;
-        align-items: center;
-        gap: 10px;
+        gap: 20px;
+        padding: 20px 32px;
+        flex: 1;
     }
 
-    .au-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        object-fit: cover;
-        flex-shrink: 0;
-    }
-
-    .au-avatar-initials {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, var(--au-primary), var(--au-primary-dark));
-        color: white;
-        font-weight: 600;
-        font-size: 12px;
-    }
-
-    .au-user-info {
+    .content-left {
         flex: 1;
         min-width: 0;
     }
 
-    .au-user-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--au-text-primary);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 2px;
-    }
-
-    .au-user-username {
-        font-size: 12px;
-        color: var(--au-text-secondary);
-    }
-
-    /* ===== BADGES ===== */
-    .au-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-        white-space: nowrap;
-        text-transform: uppercase;
-        letter-spacing: 0.2px;
-    }
-
-    .au-badge-admin {
-        background: rgba(139, 25, 86, 0.15);
-        color: var(--au-primary);
-    }
-
-    .au-badge-role {
-        background: rgba(139, 25, 86, 0.12);
-        color: var(--au-primary);
-        text-transform: none;
-        font-weight: 500;
-        font-size: 12px;
-    }
-
-    .au-badge-empty {
-        background: var(--au-bg-secondary);
-        color: var(--au-text-secondary);
-    }
-
-    .au-badge-active {
-        background: rgba(33, 110, 78, 0.15);
-        color: var(--au-success);
-    }
-
-    .au-badge-pending {
-        background: rgba(151, 79, 12, 0.15);
-        color: var(--au-warning);
-    }
-
-    .au-badge-inactive {
-        background: rgba(237, 60, 50, 0.15);
-        color: var(--au-danger);
-    }
-
-    .au-badge-protected {
-        background: rgba(120, 120, 130, 0.15);
-        color: #505060;
-    }
-
-    .au-status-dot {
-        display: inline-block;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: currentColor;
-        margin-right: 2px;
-    }
-
-    /* ===== ROLE BADGES ===== */
-    .au-role-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    /* ===== EMAIL & META ===== */
-    .au-email,
-    .au-last-login,
-    .au-created-date {
-        font-size: 14px;
-        color: var(--au-text-primary);
-    }
-
-    .au-text-muted {
-        color: var(--au-text-secondary);
-    }
-
-    /* ===== ACTIONS MENU ===== */
-    .au-actions-menu {
-        display: inline-block;
-        position: relative;
-    }
-
-    .au-btn-menu {
-        padding: 8px 10px;
-        background: transparent;
-        border: 1px solid var(--au-border);
-        border-radius: 4px;
-        cursor: pointer;
-        color: var(--au-text-secondary);
-        transition: all var(--au-transition);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 36px;
-        min-height: 36px;
-        font-size: 16px;
-        position: relative;
-    }
-
-    .au-btn-menu:hover {
-        background: var(--au-bg-secondary);
-        border-color: var(--au-primary);
-        color: var(--au-primary);
-    }
-
-    .au-btn-menu:focus,
-    .au-btn-menu[aria-expanded="true"] {
-        background: var(--au-bg-secondary);
-        border-color: var(--au-primary);
-        color: var(--au-primary);
-        outline: none;
-    }
-
-    /* ===== FORM INLINE ===== */
-    .au-form-inline {
-        display: inline;
-        margin: 0;
-        padding: 0;
-        border: none;
-        background: none;
-    }
-
-    /* ===== EMPTY STATE ===== */
-    .au-empty-state-cell {
-        padding: 60px 20px !important;
-    }
-
-    .au-empty-state {
+    .content-right {
+        width: 280px;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        text-align: center;
+        gap: 24px;
     }
 
-    .au-empty-icon {
-        font-size: 64px;
-        opacity: 0.4;
-    }
-
-    .au-empty-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--au-text-primary);
-        margin: 0;
-    }
-
-    .au-empty-hint {
-        font-size: 13px;
-        color: var(--au-text-secondary);
-        margin: 0;
-    }
-
-    /* ===== PAGINATION ===== */
-    .au-table-footer {
-        padding: 16px;
-        border-top: 1px solid var(--au-border);
-        background: var(--au-bg-secondary);
-        text-align: center;
-    }
-
-    .au-pagination {
+    /* Cards */
+    .enterprise-card {
+        background: var(--white);
+        border: 1px solid var(--jira-border);
+        border-radius: 8px;
         display: flex;
-        gap: 4px;
-        justify-content: center;
-        margin: 0;
-        list-style: none;
-        padding: 0;
+        flex-direction: column;
+        overflow: hidden;
     }
 
-    .au-page-item {
-        display: inline-block;
-    }
-
-    .au-page-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 32px;
-        height: 32px;
-        padding: 0 8px;
-        border: 1px solid var(--au-border);
-        border-radius: 4px;
-        color: var(--au-primary);
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 500;
-        transition: all var(--au-transition);
-    }
-
-    .au-page-link:hover {
-        background: var(--au-primary-light);
-        border-color: var(--au-primary);
-    }
-
-    .au-page-item.active .au-page-link {
-        background: var(--au-primary);
-        border-color: var(--au-primary);
-        color: white;
-    }
-
-    /* ===== BULK ACTIONS ===== */
-    .au-bulk-actions {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--au-bg-primary);
-        border-top: 1px solid var(--au-border);
-        box-shadow: 0 -2px 8px rgba(9, 30, 66, 0.1);
-        z-index: 100;
-        animation: au-slide-up 0.2s ease;
-    }
-
-    @keyframes au-slide-up {
-        from {
-            transform: translateY(100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    .au-bulk-actions-content {
+    .card-header-bar {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--jira-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px 32px;
-        gap: 16px;
     }
 
-    .au-bulk-actions-text {
-        font-size: 14px;
-        color: var(--au-text-primary);
-        flex: 1;
+    .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--jira-dark);
+        margin: 0;
     }
 
-    .au-bulk-actions-buttons {
+    .badge-count {
+        font-size: 12px;
+        font-weight: 600;
+        background: #F4F5F7;
+        color: var(--jira-gray);
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    /* Table */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .enterprise-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .enterprise-table th {
+        background: #F9FAFB;
+        padding: 10px 20px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--jira-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--jira-border);
+    }
+
+    .enterprise-table td {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--jira-border);
+        font-size: 13px;
+        color: var(--jira-dark);
+        vertical-align: middle;
+    }
+
+    .table-row-hover:hover {
+        background: #F9FAFB;
+    }
+
+    /* User Cell */
+    .user-cell {
         display: flex;
-        gap: 8px;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
         flex-shrink: 0;
     }
 
-    .d-none {
-        display: none !important;
+    .user-avatar img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
     }
 
-    /* ===== RESPONSIVE ===== */
+    .avatar-initials {
+        width: 32px;
+        height: 32px;
+        background: var(--jira-blue);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-name-link {
+        color: var(--jira-blue) !important;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .user-name-link:hover {
+        text-decoration: underline;
+    }
+
+    .user-username {
+        color: var(--jira-gray);
+        font-size: 11px;
+    }
+
+    .admin-badge {
+        color: #FF991F;
+        font-size: 14px;
+        margin-left: 4px;
+    }
+
+    /* Badges & Pills */
+    .role-badge {
+        background: #E9F2FF;
+        color: #0052CC;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-pill.success {
+        background: #E3FCEF;
+        color: #006644;
+    }
+
+    .status-pill.warning {
+        background: #FFF0B3;
+        color: #172B4D;
+    }
+
+    .status-pill.inactive {
+        background: #DFE1E6;
+        color: #42526E;
+    }
+
+    /* Sidebar */
+    .sidebar-card {
+        background: var(--white);
+        border: 1px solid var(--jira-border);
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .sidebar-card-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--jira-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+    }
+
+    /* Forms */
+    .form-control-enterprise,
+    .form-select-enterprise {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid var(--jira-border);
+        border-radius: 4px;
+        font-size: 14px;
+        color: var(--jira-dark);
+        background: #F4F5F7;
+        transition: all 0.2s;
+    }
+
+    .form-control-enterprise:focus,
+    .form-select-enterprise:focus {
+        background: var(--white);
+        border-color: var(--jira-blue);
+        outline: none;
+    }
+
+    .input-icon-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--jira-gray);
+    }
+
+    .input-icon-wrapper input {
+        padding-left: 32px;
+    }
+
+    /* Bulk Actions */
+    .bulk-actions-toolbar {
+        background: #E3FCEF;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ABF5D1;
+    }
+
+    .bulk-selected-count {
+        font-weight: 600;
+        color: #006644;
+        font-size: 13px;
+    }
+
+    .bulk-actions-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-button.small {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+
+    .action-button.success {
+        background: white;
+        color: var(--jira-green);
+        border-color: var(--jira-green);
+    }
+
+    .action-button.warning {
+        background: white;
+        color: var(--jira-yellow);
+        border-color: var(--jira-yellow);
+    }
+
+    .action-button.danger {
+        background: white;
+        color: var(--jira-red);
+        border-color: var(--jira-red);
+    }
+
+    /* Pagination */
+    .card-footer-pagination {
+        padding: 16px 20px;
+        border-top: 1px solid var(--jira-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #F9FAFB;
+    }
+
+    .pagination-buttons {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pagination-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--jira-border);
+        border-radius: 4px;
+        background: var(--white);
+        color: var(--jira-dark);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .pagination-btn:hover {
+        background: #EBECF0;
+    }
+
+    .pagination-btn.active {
+        background: var(--jira-blue);
+        color: white;
+        border-color: var(--jira-blue);
+    }
+
+    .pagination-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Checkboxes */
+    .custom-checkbox {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--jira-blue);
+        cursor: pointer;
+    }
+
+    /* Responsive */
     @media (max-width: 1024px) {
-        .au-header {
+        .page-content {
             flex-direction: column;
-            align-items: flex-start;
-            padding: 24px;
-            gap: 16px;
         }
 
-        .au-header-right {
+        .content-right {
             width: 100%;
-        }
-
-        .au-filters {
-            padding: 16px 24px;
-            gap: 12px;
-        }
-
-        .au-filters-form {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .au-filter-group {
-            width: 100%;
-            min-width: unset;
-        }
-
-        .au-filter-actions {
-            width: 100%;
-        }
-
-        .au-filter-export {
-            width: 100%;
-            margin-left: 0;
-        }
-
-        .au-content {
-            padding: 20px 24px;
-        }
-
-        .au-breadcrumb {
-            padding: 12px 24px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .au-header {
-            padding: 20px 16px;
-            gap: 12px;
-        }
-
-        .au-title {
-            font-size: 24px;
-        }
-
-        .au-filters {
-            flex-direction: column;
-            padding: 12px 16px;
-            gap: 8px;
-        }
-
-        .au-content {
-            padding: 16px;
-        }
-
-        .au-table th,
-        .au-table td {
-            padding: 12px;
-            font-size: 13px;
-        }
-
-        .au-table th {
-            font-size: 11px;
-        }
-
-        .au-avatar {
-            width: 36px;
-            height: 36px;
-        }
-
-        .au-col-checkbox {
-            width: 40px;
-            padding: 12px 8px;
-        }
-
-        .au-col-actions {
-            width: 50px;
-        }
-
-        .au-bulk-actions-content {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 12px 16px;
-        }
-
-        .au-bulk-actions-text {
-            text-align: center;
-        }
-
-        .au-bulk-actions-buttons {
-            width: 100%;
-            justify-content: space-around;
-        }
-
-        .au-breadcrumb {
-            padding: 8px 16px;
-            font-size: 11px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .au-title {
-            font-size: 18px;
-        }
-
-        .au-subtitle {
-            font-size: 12px;
-        }
-
-        .au-table th,
-        .au-table td {
-            padding: 8px 10px;
-            font-size: 12px;
-        }
-
-        .au-table th {
-            font-size: 10px;
-        }
-
-        .au-btn {
-            padding: 8px 12px;
-            font-size: 12px;
-        }
-
-        .au-btn-sm {
-            padding: 4px 8px;
-            font-size: 11px;
-        }
-
-        /* Hide less important columns on mobile */
-        .au-table th:nth-child(6),
-        .au-table th:nth-child(7),
-        .au-table td:nth-child(6),
-        .au-table td:nth-child(7) {
-            display: none;
-        }
-
-        .au-badge {
-            font-size: 9px;
-            padding: 3px 6px;
-        }
-
-        .au-user-name {
-            font-size: 13px;
-        }
-
-        .au-user-username {
-            font-size: 10px;
         }
     }
 </style>
 
-<?php \App\Core\View::endSection(); ?>
-
-<?php \App\Core\View::section('scripts'); ?>
-<script>
-    // ===== DROPDOWN MENU INITIALIZATION (Pure Vanilla JS) =====
-    console.log('[ADMIN-USERS] Initializing dropdown menus...');
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Find all dropdown buttons
-        const dropdownButtons = document.querySelectorAll('.au-dropdown [data-bs-toggle="dropdown"]');
-        console.log('[ADMIN-USERS] Found ' + dropdownButtons.length + ' dropdown buttons');
-
-        dropdownButtons.forEach((button) => {
-            // Find the menu - it's the next sibling ul
-            const menu = button.nextElementSibling;
-
-            if (!menu || !menu.classList.contains('au-dropdown-menu')) {
-                console.warn('[ADMIN-USERS] Menu not found for button:', button);
-                return;
-            }
-
-            // Remove Bootstrap's data attribute to prevent conflicts
-            button.removeAttribute('data-bs-toggle');
-
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('[ADMIN-USERS] Button clicked, toggling menu');
-
-                // Close all other menus
-                document.querySelectorAll('.au-dropdown-menu.show').forEach((otherMenu) => {
-                    if (otherMenu !== menu) {
-                        otherMenu.classList.remove('show');
-                        // Find and update the button for this menu
-                        const otherBtn = otherMenu.previousElementSibling;
-                        if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
-                    }
-                });
-
-                // Toggle this menu
-                const isOpen = menu.classList.toggle('show');
-                button.setAttribute('aria-expanded', isOpen);
-                console.log('[ADMIN-USERS] Menu is now ' + (isOpen ? 'open' : 'closed'));
-            });
-
-            // Close when clicking menu items
-            menu.querySelectorAll('a, button').forEach((item) => {
-                item.addEventListener('click', function () {
-                    setTimeout(() => {
-                        menu.classList.remove('show');
-                        button.setAttribute('aria-expanded', 'false');
-                    }, 50);
-                });
-            });
-        });
-
-        // Close all menus when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.au-dropdown')) {
-                document.querySelectorAll('.au-dropdown-menu.show').forEach((menu) => {
-                    menu.classList.remove('show');
-                    const btn = menu.previousElementSibling;
-                    if (btn) btn.setAttribute('aria-expanded', 'false');
-                });
-            }
-        });
-
-        console.log('[ADMIN-USERS] Dropdown initialization complete');
-    });
-
-    // ===== BULK ACTIONS =====
-    document.getElementById('selectAll')?.addEventListener('change', function () {
-        document.querySelectorAll('.au-user-checkbox').forEach(cb => cb.checked = this.checked);
-        updateBulkActions();
-    });
-
-    document.querySelectorAll('.au-user-checkbox').forEach(cb => {
-        cb.addEventListener('change', updateBulkActions);
-    });
-
-    function updateBulkActions() {
-        const checked = document.querySelectorAll('.au-user-checkbox:checked');
-        const bulkActions = document.getElementById('bulkActions');
-        const selectedCount = document.getElementById('selectedCount');
-
-        if (checked.length > 0) {
-            bulkActions.classList.remove('d-none');
-            selectedCount.textContent = checked.length;
-        } else {
-            bulkActions.classList.add('d-none');
-        }
-    }
-
-    function getSelectedIds() {
-        return Array.from(document.querySelectorAll('.au-user-checkbox:checked')).map(cb => cb.value);
-    }
-
-    async function bulkActivate() {
-        const ids = getSelectedIds();
-        if (confirm(`Activate ${ids.length} users?`)) {
-            try {
-                const response = await fetch('<?= url("/admin/users/bulk-activate") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': document.querySelector('[name="_token"]')?.value || ''
-                    },
-                    body: JSON.stringify({ user_ids: ids })
-                });
-                if (response.ok) location.reload();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to activate users');
-            }
-        }
-    }
-
-    async function bulkDeactivate() {
-        const ids = getSelectedIds();
-        if (confirm(`Deactivate ${ids.length} users?`)) {
-            try {
-                const response = await fetch('<?= url("/admin/users/bulk-deactivate") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': document.querySelector('[name="_token"]')?.value || ''
-                    },
-                    body: JSON.stringify({ user_ids: ids })
-                });
-                if (response.ok) location.reload();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to deactivate users');
-            }
-        }
-    }
-
-    async function bulkDelete() {
-        const ids = getSelectedIds();
-        if (confirm(`Delete ${ids.length} users? This cannot be undone.`)) {
-            try {
-                const response = await fetch('<?= url("/admin/users/bulk-delete") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': document.querySelector('[name="_token"]')?.value || ''
-                    },
-                    body: JSON.stringify({ user_ids: ids })
-                });
-                if (response.ok) location.reload();
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to delete users');
-            }
-        }
-    }
-</script>
 <?php \App\Core\View::endSection(); ?>

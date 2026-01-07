@@ -548,23 +548,33 @@
 }
 
 .btn-primary {
-    background-color: var(--color-primary);
-    color: var(--color-white);
-    border-color: var(--color-primary);
+    background-color: var(--color-primary) !important;
+    color: var(--color-white) !important;
+    border-color: var(--color-primary) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
 }
 
 .btn-primary:hover {
-    background-color: var(--color-primary-dark);
+    background-color: var(--color-primary-dark) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-primary i,
+.btn-primary svg {
+    color: var(--color-white) !important;
+    fill: var(--color-white) !important;
 }
 
 .btn-secondary {
-    background-color: var(--color-white);
-    color: var(--color-text);
-    border-color: var(--color-border);
+    background-color: var(--color-white) !important;
+    color: var(--color-text) !important;
+    border-color: var(--color-border) !important;
 }
 
 .btn-secondary:hover {
-    background-color: var(--color-background);
+    background-color: var(--color-background) !important;
+    color: var(--color-text) !important;
 }
 
 /* ============================================

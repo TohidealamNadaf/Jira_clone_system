@@ -17,21 +17,22 @@ class NotificationService
             'SELECT id, issue_key, project_id, summary FROM issues WHERE id = ?',
             [$issueId]
         );
-        
-        if (!$issue) return;
-        
+
+        if (!$issue)
+            return;
+
         // Get all project members except creator
         $members = Database::select(
             'SELECT DISTINCT user_id FROM project_members WHERE project_id = ? AND user_id != ?',
             [$issue['project_id'], $userId]
         );
-        
+
         foreach ($members as $member) {
             // Check user preference
             if (!self::shouldNotify($member['user_id'], 'issue_created')) {
                 continue;
             }
-            
+
             self::create(
                 userId: $member['user_id'],
                 type: 'issue_created',
@@ -45,7 +46,7 @@ class NotificationService
             );
         }
     }
-    
+
     /**
      * Dispatch notification when user is assigned to issue
      */
@@ -58,9 +59,10 @@ class NotificationService
             'SELECT id, issue_key, summary, project_id FROM issues WHERE id = ?',
             [$issueId]
         );
-        
-        if (!$issue) return;
-        
+
+        if (!$issue)
+            return;
+
         // Notify new assignee
         if (self::shouldNotify($assigneeId, 'issue_assigned')) {
             self::create(
@@ -74,7 +76,7 @@ class NotificationService
                 priority: 'high'
             );
         }
-        
+
         // Notify previous assignee if assignment changed
         if ($previousAssigneeId && $previousAssigneeId !== $assigneeId) {
             if (self::shouldNotify($previousAssigneeId, 'issue_assigned')) {
@@ -91,7 +93,7 @@ class NotificationService
             }
         }
     }
-    
+
     /**
      * Dispatch notification when issue is commented on
      */
@@ -104,9 +106,10 @@ class NotificationService
             'SELECT id, issue_key, summary, assignee_id, project_id FROM issues WHERE id = ?',
             [$issueId]
         );
-        
-        if (!$issue) return;
-        
+
+        if (!$issue)
+            return;
+
         // Notify assignee
         if ($issue['assignee_id'] && $issue['assignee_id'] !== $commenterId) {
             if (self::shouldNotify($issue['assignee_id'], 'issue_commented')) {
@@ -124,7 +127,7 @@ class NotificationService
             }
         }
     }
-    
+
     /**
      * Dispatch notification when issue status changes
      */
@@ -137,9 +140,10 @@ class NotificationService
             'SELECT id, issue_key, summary, assignee_id, project_id FROM issues WHERE id = ?',
             [$issueId]
         );
-        
-        if (!$issue) return;
-        
+
+        if (!$issue)
+            return;
+
         // Notify assignee of status change
         if ($issue['assignee_id'] && $issue['assignee_id'] !== $userId) {
             if (self::shouldNotify($issue['assignee_id'], 'issue_status_changed')) {
@@ -157,7 +161,7 @@ class NotificationService
             }
         }
     }
-    
+
     /**
      * Create a notification record
      * For large-scale deployments (100+ devs), this uses optimized database inserts
@@ -193,38 +197,38 @@ class NotificationService
                 'priority' => $priority,
                 'is_read' => 0,
             ]);
-            
+
             // Log successful creation
             error_log(sprintf(
-                '[NOTIFICATION] Created: type=%s, user=%d, issue=%s, priority=%s, id=%d',
+                '[NOTIFICATION] Created: type=%s, user=%d, issue=%s, priority=%s, id=%d' . PHP_EOL,
                 $type,
                 $userId,
                 $relatedIssueId ?? 'N/A',
                 $priority,
                 $id
             ), 3, storage_path('logs/notifications.log'));
-            
+
             // Queue delivery for enabled channels (in-app, email, push)
             // This happens asynchronously to avoid blocking the request
             self::queueDeliveries($id, $userId, $type);
-            
+
             return $id;
         } catch (\Exception $e) {
             // Log error with full context
             error_log(sprintf(
-                '[NOTIFICATION ERROR] Failed to create: type=%s, user=%d, error=%s',
+                '[NOTIFICATION ERROR] Failed to create: type=%s, user=%d, error=%s' . PHP_EOL,
                 $type,
                 $userId,
                 $e->getMessage()
             ), 3, storage_path('logs/notifications.log'));
-            
+
             // Queue for retry
             self::queueForRetry('create', $relatedIssueId ?? 0, $e->getMessage());
-            
+
             return null;
         }
     }
-    
+
     /**
      * Get unread notifications for user with pagination
      * Optimized for fast retrieval with composite index
@@ -241,14 +245,14 @@ class NotificationService
             [$userId]
         );
     }
-    
+
     /**
      * Get all notifications with pagination
      */
     public static function getAll(int $userId, int $page = 1, int $perPage = 25): array
     {
         $offset = ($page - 1) * $perPage;
-        
+
         return Database::select(
             'SELECT id, type, title, message, action_url, actor_user_id, 
                     is_read, priority, created_at 
@@ -259,7 +263,7 @@ class NotificationService
             [$userId]
         );
     }
-    
+
     /**
      * Get total notification count for pagination
      */
@@ -269,10 +273,10 @@ class NotificationService
             'SELECT COUNT(*) as count FROM notifications WHERE user_id = ?',
             [$userId]
         );
-        
+
         return $result['count'] ?? 0;
     }
-    
+
     /**
      * Mark single notification as read
      */
@@ -284,10 +288,10 @@ class NotificationService
             'id = ? AND user_id = ?',
             [$notificationId, $userId]
         );
-        
+
         return (bool) $result;
     }
-    
+
     /**
      * Mark all notifications as read for user
      */
@@ -299,10 +303,10 @@ class NotificationService
             'user_id = ? AND is_read = 0',
             [$userId]
         );
-        
+
         return (bool) $result;
     }
-    
+
     /**
      * Check if user has notification preference enabled for event type and channel
      * Returns true by default if no preference exists
@@ -322,12 +326,12 @@ class NotificationService
         if (!in_array($channel, $validChannels)) {
             $channel = 'in_app';
         }
-        
+
         $preference = Database::selectOne(
             'SELECT in_app, email, push FROM notification_preferences WHERE user_id = ? AND event_type = ?',
             [$userId, $eventType]
         );
-        
+
         if (!$preference) {
             // Default: in_app and email enabled, push disabled
             if ($channel === 'in_app' || $channel === 'email') {
@@ -335,11 +339,11 @@ class NotificationService
             }
             return false;
         }
-        
+
         // Return the channel preference value
         return (bool) $preference[$channel];
     }
-    
+
     /**
      * Get all notification preferences for user
      */
@@ -350,7 +354,7 @@ class NotificationService
             [$userId]
         );
     }
-    
+
     /**
      * Update notification preference with upsert
      */
@@ -373,7 +377,7 @@ class NotificationService
             ['user_id', 'event_type']
         );
     }
-    
+
     /**
      * Delete a notification
      */
@@ -385,7 +389,7 @@ class NotificationService
             [$notificationId, $userId]
         );
     }
-    
+
     /**
      * Get unread notification count for user
      * Optimized query for performance with 100+ users
@@ -396,10 +400,10 @@ class NotificationService
             'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
             [$userId]
         );
-        
+
         return $result['count'] ?? 0;
     }
-    
+
     /**
      * Bulk create notifications for multiple users
      * Optimized for batch operations during issue creation
@@ -407,7 +411,7 @@ class NotificationService
     public static function createBulk(array $userIds, array $notificationData): int
     {
         $count = 0;
-        
+
         foreach ($userIds as $userId) {
             try {
                 self::create(
@@ -427,10 +431,10 @@ class NotificationService
                 error_log("Failed to create notification for user {$userId}: " . $e->getMessage());
             }
         }
-        
+
         return $count;
     }
-    
+
     /**
      * Archive old notifications (older than 90 days)
      * Run this as a cron job for large-scale deployments
@@ -438,23 +442,23 @@ class NotificationService
     public static function archiveOldNotifications(int $daysOld = 90): int
     {
         $cutoffDate = date('Y-m-d H:i:s', strtotime("-{$daysOld} days"));
-        
+
         // Move to archive table
         Database::query(
             'INSERT INTO notifications_archive SELECT * FROM notifications WHERE created_at < ?',
             [$cutoffDate]
         );
-        
+
         // Delete from main table
         $stmt = Database::delete(
             'notifications',
             'created_at < ?',
             [$cutoffDate]
         );
-        
+
         return $stmt;
     }
-    
+
     /**
      * Get notification statistics for user
      */
@@ -464,17 +468,17 @@ class NotificationService
             'SELECT COUNT(*) as count FROM notifications WHERE user_id = ?',
             [$userId]
         );
-        
+
         $unread = Database::selectOne(
             'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
             [$userId]
         );
-        
+
         $byType = Database::select(
             'SELECT type, COUNT(*) as count FROM notifications WHERE user_id = ? GROUP BY type',
             [$userId]
         );
-        
+
         return [
             'total' => $total['count'] ?? 0,
             'unread' => $unread['count'] ?? 0,
@@ -514,7 +518,7 @@ class NotificationService
              WHERE dispatch_id = ? AND status = ?',
             [$dispatchId, 'completed']
         );
-        
+
         return $existing !== null;
     }
 
@@ -553,27 +557,27 @@ class NotificationService
         int $commentId
     ): void {
         $dispatchId = null;
-        
+
         try {
             // Step 1: Generate unique dispatch ID
             $dispatchId = self::generateDispatchId('comment_added', $issueId, $commentId, $commenterId);
-            
+
             // Step 2: Check for duplicate dispatch
             if (self::isDuplicateDispatch($dispatchId)) {
                 error_log(sprintf(
-                    '[NOTIFICATION] Duplicate dispatch prevented: dispatch_id=%s, issue_id=%d',
+                    '[NOTIFICATION] Duplicate dispatch prevented: dispatch_id=%s, issue_id=%d' . PHP_EOL,
                     $dispatchId,
                     $issueId
                 ), 3, storage_path('logs/notifications.log'));
                 return;
             }
-            
+
             // Step 3: Create dispatch log entry (marks as pending)
             self::createDispatchLog($dispatchId, 'comment_added', $issueId, $commentId, $commenterId);
-            
+
             // Step 4: Begin atomic transaction
             Database::beginTransaction();
-            
+
             // Step 5: Query issue and recipients
             $issue = Database::selectOne(
                 'SELECT id, issue_key, summary, project_id, assignee_id FROM issues WHERE id = ?',
@@ -641,21 +645,24 @@ class NotificationService
 
             // Log successful dispatch
             error_log(sprintf(
-                '[NOTIFICATION] Comment dispatch completed: dispatch_id=%s, issue=%d, comment=%d, recipients=%d',
+                '[NOTIFICATION] Comment dispatch completed: dispatch_id=%s, issue=%d, comment=%d, recipients=%d' . PHP_EOL,
                 $dispatchId,
                 $issueId,
                 $commentId,
                 count($recipients)
             ), 3, storage_path('logs/notifications.log'));
-            
+
         } catch (\Exception $e) {
             try {
                 Database::rollback();
             } catch (\Exception $rollbackError) {
-                error_log('Rollback failed: ' . $rollbackError->getMessage(), 3, 
-                    storage_path('logs/notifications.log'));
+                error_log(
+                    'Rollback failed: ' . $rollbackError->getMessage() . PHP_EOL,
+                    3,
+                    storage_path('logs/notifications.log')
+                );
             }
-            
+
             // Update dispatch log with error
             if ($dispatchId) {
                 try {
@@ -672,14 +679,14 @@ class NotificationService
                     // Log entry might not exist
                 }
             }
-            
+
             error_log(sprintf(
-                '[NOTIFICATION ERROR] Failed to dispatch comment notifications: issue=%d, dispatch=%s, error=%s',
+                '[NOTIFICATION ERROR] Failed to dispatch comment notifications: issue=%d, dispatch=%s, error=%s' . PHP_EOL,
                 $issueId,
                 $dispatchId ?? 'unknown',
                 $e->getMessage()
             ), 3, storage_path('logs/notifications.log'));
-            
+
             // Queue for retry
             self::queueForRetry('comment_dispatch', $issueId, $e->getMessage());
         }
@@ -696,27 +703,27 @@ class NotificationService
         int $userId
     ): void {
         $dispatchId = null;
-        
+
         try {
             // Step 1: Generate unique dispatch ID
             $dispatchId = self::generateDispatchId('status_changed', $issueId, null, $userId);
-            
+
             // Step 2: Check for duplicate dispatch
             if (self::isDuplicateDispatch($dispatchId)) {
                 error_log(sprintf(
-                    '[NOTIFICATION] Duplicate dispatch prevented: dispatch_id=%s, issue_id=%d',
+                    '[NOTIFICATION] Duplicate dispatch prevented: dispatch_id=%s, issue_id=%d' . PHP_EOL,
                     $dispatchId,
                     $issueId
                 ), 3, storage_path('logs/notifications.log'));
                 return;
             }
-            
+
             // Step 3: Create dispatch log entry (marks as pending)
             self::createDispatchLog($dispatchId, 'status_changed', $issueId, null, $userId);
-            
+
             // Step 4: Begin atomic transaction
             Database::beginTransaction();
-            
+
             // Step 5: Query issue and recipients
             $issue = Database::selectOne(
                 'SELECT id, issue_key, summary, project_id, assignee_id FROM issues WHERE id = ?',
@@ -724,7 +731,7 @@ class NotificationService
             );
 
             if (!$issue) {
-               throw new \Exception("Issue not found: $issueId");
+                throw new \Exception("Issue not found: $issueId");
             }
 
             // Get recipients (assignee + watchers)
@@ -732,17 +739,17 @@ class NotificationService
 
             // Add assignee
             if ($issue['assignee_id'] && $issue['assignee_id'] !== $userId) {
-               $recipients[] = $issue['assignee_id'];
+                $recipients[] = $issue['assignee_id'];
             }
 
             // Add watchers
             $watchers = Database::select(
-               'SELECT DISTINCT user_id FROM issue_watchers WHERE issue_id = ? AND user_id != ?',
-               [$issueId, $userId]
+                'SELECT DISTINCT user_id FROM issue_watchers WHERE issue_id = ? AND user_id != ?',
+                [$issueId, $userId]
             );
 
             foreach ($watchers as $watcher) {
-               $recipients[] = $watcher['user_id'];
+                $recipients[] = $watcher['user_id'];
             }
 
             // Remove duplicates
@@ -750,14 +757,14 @@ class NotificationService
 
             // Step 6: Create notifications for each recipient in transaction
             foreach ($recipients as $recipientId) {
-               if (self::shouldNotify($recipientId, 'issue_status_changed')) {
-                   Database::insert('notifications', [
-                       'user_id' => $recipientId,
-                       'dispatch_id' => $dispatchId,
-                       'type' => 'issue_status_changed',
-                       'title' => 'Status Changed',
-                       'message' => "{$issue['issue_key']} status changed to {$newStatus}",
-                       'action_url' => "/issues/{$issue['issue_key']}",
+                if (self::shouldNotify($recipientId, 'issue_status_changed')) {
+                    Database::insert('notifications', [
+                        'user_id' => $recipientId,
+                        'dispatch_id' => $dispatchId,
+                        'type' => 'issue_status_changed',
+                        'title' => 'Status Changed',
+                        'message' => "{$issue['issue_key']} status changed to {$newStatus}",
+                        'action_url' => "/issues/{$issue['issue_key']}",
                         'actor_user_id' => $userId,
                         'related_issue_id' => $issueId,
                         'related_project_id' => $issue['project_id'],
@@ -784,7 +791,7 @@ class NotificationService
 
             // Log successful dispatch
             error_log(sprintf(
-                '[NOTIFICATION] Status dispatch completed: dispatch_id=%s, issue=%d, status=%s, recipients=%d',
+                '[NOTIFICATION] Status dispatch completed: dispatch_id=%s, issue=%d, status=%s, recipients=%d' . PHP_EOL,
                 $dispatchId,
                 $issueId,
                 $newStatus,
@@ -794,10 +801,13 @@ class NotificationService
             try {
                 Database::rollback();
             } catch (\Exception $rollbackError) {
-                error_log('Rollback failed: ' . $rollbackError->getMessage(), 3, 
-                    storage_path('logs/notifications.log'));
+                error_log(
+                    'Rollback failed: ' . $rollbackError->getMessage() . PHP_EOL,
+                    3,
+                    storage_path('logs/notifications.log')
+                );
             }
-            
+
             // Update dispatch log with error
             if ($dispatchId) {
                 try {
@@ -814,14 +824,14 @@ class NotificationService
                     // Log entry might not exist
                 }
             }
-            
+
             error_log(sprintf(
-                '[NOTIFICATION ERROR] Failed to dispatch status change notifications: issue=%d, dispatch=%s, error=%s',
+                '[NOTIFICATION ERROR] Failed to dispatch status change notifications: issue=%d, dispatch=%s, error=%s' . PHP_EOL,
                 $issueId,
                 $dispatchId ?? 'unknown',
                 $e->getMessage()
             ), 3, storage_path('logs/notifications.log'));
-            
+
             // Queue for retry
             self::queueForRetry('status_dispatch', $issueId, $e->getMessage());
         }
@@ -840,7 +850,8 @@ class NotificationService
             [$issueId]
         );
 
-        if (!$issue || $mentionedUserId === $mentionerUserId) return;
+        if (!$issue || $mentionedUserId === $mentionerUserId)
+            return;
 
         if (self::shouldNotify($mentionedUserId, 'issue_mentioned')) {
             self::create(
@@ -878,8 +889,11 @@ class NotificationService
             // Get user details
             $user = Database::selectOne('SELECT id, email FROM users WHERE id = ?', [$userId]);
             if (!$user || !$user['email']) {
-                error_log("Cannot queue deliveries: user {$userId} not found or no email", 3,
-                    storage_path('logs/notifications.log'));
+                error_log(
+                    "Cannot queue deliveries: user {$userId} not found or no email" . PHP_EOL,
+                    3,
+                    storage_path('logs/notifications.log')
+                );
                 return;
             }
 
@@ -889,8 +903,11 @@ class NotificationService
                 [$notificationId]
             );
             if (!$notification) {
-                error_log("Cannot queue deliveries: notification {$notificationId} not found", 3,
-                    storage_path('logs/notifications.log'));
+                error_log(
+                    "Cannot queue deliveries: notification {$notificationId} not found" . PHP_EOL,
+                    3,
+                    storage_path('logs/notifications.log')
+                );
                 return;
             }
 
@@ -911,13 +928,16 @@ class NotificationService
                     Database::insert('notification_deliveries', [
                         'notification_id' => $notificationId,
                         'channel' => 'in_app',
-                        'status' => 'delivered',
+                        'status' => 'sent',
                         'retry_count' => 0,
                         'created_at' => date('Y-m-d H:i:s'),
                     ]);
                 } catch (\Exception $e) {
-                    error_log("Failed to queue in_app delivery: " . $e->getMessage(), 3,
-                        storage_path('logs/notifications.log'));
+                    error_log(
+                        "Failed to queue in_app delivery: " . $e->getMessage() . PHP_EOL,
+                        3,
+                        storage_path('logs/notifications.log')
+                    );
                 }
             }
 
@@ -936,16 +956,25 @@ class NotificationService
                         'retry_count' => 0,
                         'created_at' => date('Y-m-d H:i:s'),
                     ]);
-                    error_log("Queued push delivery for notification {$notificationId}", 3,
-                        storage_path('logs/notifications.log'));
+                    error_log(
+                        "Queued push delivery for notification {$notificationId}" . PHP_EOL,
+                        3,
+                        storage_path('logs/notifications.log')
+                    );
                 } catch (\Exception $e) {
-                    error_log("Failed to queue push delivery: " . $e->getMessage(), 3,
-                        storage_path('logs/notifications.log'));
+                    error_log(
+                        "Failed to queue push delivery: " . $e->getMessage() . PHP_EOL,
+                        3,
+                        storage_path('logs/notifications.log')
+                    );
                 }
             }
         } catch (\Exception $e) {
-            error_log("Exception in queueDeliveries: " . $e->getMessage(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                "Exception in queueDeliveries: " . $e->getMessage() . PHP_EOL,
+                3,
+                storage_path('logs/notifications.log')
+            );
         }
     }
 
@@ -962,25 +991,28 @@ class NotificationService
     {
         try {
             global $config;
-            
+
             // Get config from global scope or use defaults
             if (!isset($config)) {
                 $config = require(__DIR__ . '/../../config/config.php');
             }
 
             $emailService = new EmailService($config);
-            
+
             // Map notification type to email template
             $templateMap = [
                 'issue_assigned' => 'issue-assigned',
                 'issue_commented' => 'issue-commented',
                 'issue_status_changed' => 'issue-status-changed',
             ];
-            
+
             $template = $templateMap[$notification['type']] ?? null;
             if (!$template) {
-                error_log("No email template for notification type: " . $notification['type'], 3,
-                    storage_path('logs/notifications.log'));
+                error_log(
+                    "No email template for notification type: " . $notification['type'] . PHP_EOL,
+                    3,
+                    storage_path('logs/notifications.log')
+                );
                 return;
             }
 
@@ -1015,29 +1047,32 @@ class NotificationService
             Database::insert('notification_deliveries', [
                 'notification_id' => $notification['id'],
                 'channel' => 'email',
-                'status' => $sent ? 'delivered' : 'failed',
+                'status' => $sent ? 'sent' : 'failed',
                 'retry_count' => 0,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
             if ($sent) {
                 error_log(sprintf(
-                    '[EMAIL] Sent: user=%d, type=%s, to=%s',
+                    '[EMAIL] Sent: user=%d, type=%s, to=%s' . PHP_EOL,
                     $userId,
                     $notification['type'],
                     $userEmail
                 ), 3, storage_path('logs/notifications.log'));
             } else {
                 error_log(sprintf(
-                    '[EMAIL FAILED] user=%d, type=%s, to=%s',
+                    '[EMAIL FAILED] user=%d, type=%s, to=%s' . PHP_EOL,
                     $userId,
                     $notification['type'],
                     $userEmail
                 ), 3, storage_path('logs/notifications.log'));
             }
         } catch (\Exception $e) {
-            error_log("Exception in queueEmailDelivery: " . $e->getMessage() . " - " . $e->getTraceAsString(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                "Exception in queueEmailDelivery: " . $e->getMessage() . " - " . $e->getTraceAsString() . PHP_EOL,
+                3,
+                storage_path('logs/notifications.log')
+            );
         }
     }
 
@@ -1063,18 +1098,21 @@ class NotificationService
                 'retry_count' => $retryCount,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
-            
+
             error_log(sprintf(
-                '[NOTIFICATION RETRY] Queued for retry: type=%s, issue=%d, retries=%d',
+                '[NOTIFICATION RETRY] Queued for retry: type=%s, issue=%d, retries=%d' . PHP_EOL,
                 $dispatchType,
                 $relatedIssueId,
                 $retryCount
             ), 3, storage_path('logs/notifications.log'));
-            
+
             return true;
         } catch (\Exception $e) {
-            error_log("Failed to queue retry: " . $e->getMessage(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                "Failed to queue retry: " . $e->getMessage() . PHP_EOL,
+                3,
+                storage_path('logs/notifications.log')
+            );
             return false;
         }
     }
@@ -1085,13 +1123,14 @@ class NotificationService
      * 
      * FIX 8: Added retry processing for failed notifications
      */
-    public static function processFailedNotifications(int $maxRetries = 3): int {
+    public static function processFailedNotifications(int $maxRetries = 3): int
+    {
         try {
             $failed = Database::select(
                 'SELECT * FROM notification_deliveries WHERE status = ? AND retry_count < ? ORDER BY created_at ASC LIMIT 100',
                 ['failed', $maxRetries]
             );
-            
+
             $retryCount = 0;
             foreach ($failed as $delivery) {
                 try {
@@ -1102,28 +1141,37 @@ class NotificationService
                         'id = ?',
                         [$delivery['id']]
                     );
-                    
+
                     $retryCount++;
-                    error_log("Retried failed delivery {$delivery['id']}", 3,
-                        storage_path('logs/notifications.log'));
+                    error_log(
+                        "Retried failed delivery {$delivery['id']}" . PHP_EOL,
+                        3,
+                        storage_path('logs/notifications.log')
+                    );
                 } catch (\Exception $e) {
-                    error_log("Retry failed for delivery {$delivery['id']}: " . $e->getMessage(), 3,
-                        storage_path('logs/notifications.log'));
+                    error_log(
+                        "Retry failed for delivery {$delivery['id']}: " . $e->getMessage() . PHP_EOL,
+                        3,
+                        storage_path('logs/notifications.log')
+                    );
                 }
             }
-            
+
             if ($retryCount > 0) {
                 error_log(sprintf(
-                    '[NOTIFICATION RETRY] Processed %d failed notifications, max_retries=%d',
+                    '[NOTIFICATION RETRY] Processed %d failed notifications, max_retries=%d' . PHP_EOL,
                     $retryCount,
                     $maxRetries
                 ), 3, storage_path('logs/notifications.log'));
             }
-            
+
             return $retryCount;
         } catch (\Exception $e) {
-            error_log('Exception processing failed notifications: ' . $e->getMessage(), 3,
-                storage_path('logs/notifications.log'));
+            error_log(
+                'Exception processing failed notifications: ' . $e->getMessage() . PHP_EOL,
+                3,
+                storage_path('logs/notifications.log')
+            );
             return 0;
         }
     }

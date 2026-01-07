@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     console.log('📍 [CREATE-ISSUE-MODAL] Initializing global create issue modal...');
 
+    // State variables (moved to higher scope to be accessible by all functions)
+    let isEditMode = false;
+    let currentIssueKey = null;
+    let currentIssueId = null;
+
+
     // Get the modal element (defined in components/create-issue-modal.php)
     const createIssueModal = document.getElementById('createIssueModal');
 
@@ -706,10 +712,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Expose globally for potential future use
-        // State variables
-        let isEditMode = false;
-        let currentIssueKey = null;
-        let currentIssueId = null;
+        // State variables (already declared in parent scope)
 
         window.CreateIssueModal = {
             modal: modal,

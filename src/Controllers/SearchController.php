@@ -31,6 +31,7 @@ class SearchController extends Controller
             'assignee' => $request->input('assignee', ''),
             'reporter' => $request->input('reporter', ''),
             'created' => $request->input('created', ''),
+            'due' => $request->input('due', ''),
             'exclude_done' => $request->input('exclude_done', false), // Hide done issues by default
         ];
 
@@ -433,6 +434,21 @@ class SearchController extends Controller
                     break;
                 case 'month':
                     $conditions[] = "i.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+                    break;
+            }
+        }
+
+        // Due date filter
+        if (!empty($filters['due'])) {
+            switch ($filters['due']) {
+                case 'overdue':
+                    $conditions[] = "i.due_date < CURDATE()";
+                    break;
+                case 'today':
+                    $conditions[] = "i.due_date = CURDATE()";
+                    break;
+                case 'week':
+                    $conditions[] = "i.due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)";
                     break;
             }
         }

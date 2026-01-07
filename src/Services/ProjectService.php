@@ -49,7 +49,7 @@ class ProjectService
 
         $projects = Database::select(
             "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.issue_count, p.created_by, p.created_at, p.updated_at,
-                    u.display_name as lead_name,
+                    u.display_name as lead_name, u.avatar as lead_avatar,
                     pc.name as category_name,
                     COALESCE(issue_counts.total_issues, 0) as issue_count,
                     COALESCE(member_counts.total_members, 0) as member_count
@@ -74,6 +74,15 @@ class ProjectService
             $params
         );
 
+        // Format projects to include nested lead object structure
+        $projects = array_map(function ($project) {
+            $project['lead'] = $project['lead_id'] ? [
+                'display_name' => $project['lead_name'],
+                'avatar' => $project['lead_avatar']
+            ] : null;
+            return $project;
+        }, $projects);
+
         return [
             'items' => $projects,
             'total' => $total,
@@ -87,7 +96,7 @@ class ProjectService
     {
         $project = Database::selectOne(
             "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.budget, p.budget_currency, p.created_by, p.created_at, p.updated_at,
-                    u.display_name as lead_name,
+                    u.display_name as lead_name, u.avatar as lead_avatar,
                     pc.name as category_name,
                     creator.display_name as created_by_name
              FROM projects p
@@ -98,6 +107,13 @@ class ProjectService
             [$key]
         );
 
+        if ($project) {
+            $project['lead'] = $project['lead_id'] ? [
+                'display_name' => $project['lead_name'],
+                'avatar' => $project['lead_avatar']
+            ] : null;
+        }
+
         return $project ?: null;
     }
 
@@ -105,7 +121,7 @@ class ProjectService
     {
         $project = Database::selectOne(
             "SELECT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, p.default_assignee, p.avatar, p.is_archived, p.is_private, p.issue_count, p.budget, p.budget_currency, p.created_by, p.created_at, p.updated_at,
-                    u.display_name as lead_name,
+                    u.display_name as lead_name, u.avatar as lead_avatar,
                     pc.name as category_name,
                     creator.display_name as created_by_name
              FROM projects p
@@ -115,6 +131,13 @@ class ProjectService
              WHERE p.id = ?",
             [$id]
         );
+
+        if ($project) {
+            $project['lead'] = $project['lead_id'] ? [
+                'display_name' => $project['lead_name'],
+                'avatar' => $project['lead_avatar']
+            ] : null;
+        }
 
         return $project ?: null;
     }

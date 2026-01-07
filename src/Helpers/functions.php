@@ -379,6 +379,32 @@ function format_datetime(?string $datetime, string $format = 'M j, Y g:i A'): st
 }
 
 /**
+ * Format time spent (minutes to Jira-style string)
+ */
+function format_time($minutes): string
+{
+    $minutes = (int) $minutes;
+    if ($minutes <= 0) {
+        return '0m';
+    }
+
+    $hours = floor($minutes / 60);
+    $mins = $minutes % 60;
+    $days = floor($hours / 8); // Standard Jira day is 8h
+    $hours = $hours % 8;
+
+    $parts = [];
+    if ($days > 0)
+        $parts[] = $days . 'd';
+    if ($hours > 0)
+        $parts[] = $hours . 'h';
+    if ($mins > 0)
+        $parts[] = $mins . 'm';
+
+    return implode(' ', $parts);
+}
+
+/**
  * Format time ago
  */
 function time_ago(?string $datetime): string

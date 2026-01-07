@@ -16,14 +16,15 @@ if (file_exists(__DIR__ . '/../.env')) {
 }
 
 // Helper function for env vars
-function env(string $key, mixed $default = null): mixed {
+function env(string $key, mixed $default = null): mixed
+{
     return $_ENV[$key] ?? $_SERVER[$key] ?? $default;
 }
 
 return [
     // Application
     'app' => [
-        'name' => 'CWAYS MIS',
+        'name' => 'CWays MIS',
         'env' => env('APP_ENV', 'production'),
         'debug' => env('APP_DEBUG', false),
         'url' => env('APP_URL', 'https://jira.yourdomain.com'),
@@ -36,7 +37,7 @@ return [
     'database' => [
         'host' => env('DB_HOST', 'localhost'),
         'port' => env('DB_PORT', 3306),
-        'name' => env('DB_NAME', 'jira_production'),
+        'name' => env('DB_NAME', 'cways_mis'),
         'username' => env('DB_USER', 'jira_user'),
         'password' => env('DB_PASS', ''), // REQUIRED: Strong password
         'charset' => 'utf8mb4',
@@ -63,7 +64,7 @@ return [
         'password' => env('MAIL_PASSWORD', ''), // SendGrid API key or SMTP password
         'encryption' => env('MAIL_ENCRYPTION', 'tls'),
         'from_address' => env('MAIL_FROM_ADDRESS', 'notifications@yourdomain.com'),
-        'from_name' => env('MAIL_FROM_NAME', 'Jira Clone'),
+        'from_name' => env('MAIL_FROM_NAME', 'CWays MIS'),
     ],
 
     // JWT Authentication
@@ -79,14 +80,19 @@ return [
         'max_size' => 10 * 1024 * 1024, // 10MB
         'path' => env('UPLOAD_PATH', 'uploads'),
         'allowed_types' => [
-            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
             'application/pdf',
             'application/msword',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/vnd.ms-excel',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'text/plain', 'text/csv',
-            'application/zip', 'application/x-rar-compressed',
+            'text/plain',
+            'text/csv',
+            'application/zip',
+            'application/x-rar-compressed',
         ],
     ],
 

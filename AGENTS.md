@@ -1,4 +1,4 @@
-# AGENTS.md - Jira Clone System Developer Guide
+# AGENTS.md - CWays MIS System Developer Guide
 
 **⚠️ AUTHORITY DOCUMENT** - This is the single source of truth for all code standards, conventions, and architecture.
 
@@ -14,11 +14,11 @@
 
 ## Database Configuration ⚠️ IMPORTANT
 
-**Database Name**: `jiira_clonee_system` (intentionally misspelled - DO NOT CHANGE)
-- This unconventional spelling is deliberate per project requirements
+**Database Name**: `cways_mis`
+- Primary database for the MIS system
 - Collation: `utf8mb4_unicode_ci`
-- Config: `config/config.php` line 25 - `'name' => 'jiira_clonee_system'`
-- Do NOT attempt to "fix" this spelling to `jira_clone`
+- Config: `config/config.php` and `config/config.local.php`
+- Renamed from `jiira_clonee_system` in January 2026 to match branding.
 
 ## Admin 403 Forbidden Fix (December 15, 2025) ✅ COMPLETE
 
@@ -3849,3 +3849,30 @@ The calendar system has NO BUGS and NO MISSING COMPONENTS:
   - `AVATAR_404_ERROR_RESOLUTION_SUMMARY.md`
   - `AVATAR_FIX_DEPLOYMENT_SUMMARY.md`
 
+## Enterprise Health Dashboard & SMTP Integration (January 2026) ✅ COMPLETE
+
+**Status**: LIVE - Dynamic monitoring and enterprise email active.
+
+### Dynamic Admin Health Dashboard
+- **Location**: `/admin` (Main Dashboard)
+- **Features**:
+   - **Database Status**: Real-time connectivity check.
+   - **Email Service**: Live SMTP socket connection verification.
+   - **Disk Usage**: Monitoring of `storage/` directory with percentage and total/used info.
+   - **Background Jobs**: Real-time counts of pending and failed emails from `email_queue`.
+   - **Notification Health**: Integration with `NotificationLogger` for error stats and log size.
+- **Helper**: `App\Helpers\SystemHealth` - Centralized diagnostic logic.
+
+### Gmail SMTP Configuration
+- **Provider**: Gmail SMTP (`smtp.gmail.com`)
+- **Encryption**: TLS (Port 587)
+- **Authentication**: Configured with Google App Password for security and bypass of 2FA.
+- **From Address**: `vostro631@gmail.com`
+- **From Name**: `CWays MIS`
+- **Config**: `config/config.local.php` and `.env` updated with live credentials.
+
+### System Renaming & Branding
+- **New App Name**: `CWays MIS`
+- **Database Name**: `cways_mis`
+- **Branding**: System-wide update of all headers, footers, email templates, and configurations to reflect the new identity.
+- **Status**: ✅ 100% SUCCESSFUL

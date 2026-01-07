@@ -242,40 +242,49 @@
                     </h3>
                 </div>
                 <div class="health-grid">
-                    <div class="health-item">
-                        <div class="health-icon health-success">
+                    <?php $db = $systemHealth['db']; ?>
+                    <div class="health-item" title="<?= e($db['message']) ?>">
+                        <div class="health-icon health-<?= $db['status'] ?>">
                             <i class="bi bi-database"></i>
                         </div>
                         <div class="health-info">
                             <div class="health-label">Database</div>
-                            <div class="health-status health-success">Connected</div>
+                            <div class="health-status health-<?= $db['status'] ?>"><?= e($db['label']) ?></div>
                         </div>
                     </div>
-                    <div class="health-item">
-                        <div class="health-icon health-success">
+
+                    <?php $mail = $systemHealth['mail']; ?>
+                    <div class="health-item" title="<?= e($mail['message']) ?>">
+                        <div class="health-icon health-<?= $mail['status'] ?>">
                             <i class="bi bi-envelope"></i>
                         </div>
                         <div class="health-info">
                             <div class="health-label">Email Service</div>
-                            <div class="health-status health-success">Operational</div>
+                            <div class="health-status health-<?= $mail['status'] ?>"><?= e($mail['label']) ?></div>
                         </div>
                     </div>
-                    <div class="health-item">
-                        <div class="health-icon health-warning">
+
+                    <?php $disk = $systemHealth['disk']; ?>
+                    <div class="health-item" title="Used: <?= e($disk['used']) ?> / Total: <?= e($disk['total']) ?>">
+                        <div class="health-icon health-<?= $disk['status'] ?>">
                             <i class="bi bi-hdd"></i>
                         </div>
                         <div class="health-info">
                             <div class="health-label">Disk Space</div>
-                            <div class="health-status health-warning"><?= e($stats['disk_usage'] ?? '75%') ?> used</div>
+                            <div class="health-status health-<?= $disk['status'] ?>"><?= e($disk['percent']) ?>% used
+                            </div>
                         </div>
                     </div>
-                    <div class="health-item">
-                        <div class="health-icon health-success">
+
+                    <?php $queue = $systemHealth['queue']; ?>
+                    <div class="health-item"
+                        title="Pending: <?= $queue['pending'] ?> | Failed: <?= $queue['failed'] ?>">
+                        <div class="health-icon health-<?= $queue['status'] ?>">
                             <i class="bi bi-clock"></i>
                         </div>
                         <div class="health-info">
                             <div class="health-label">Background Jobs</div>
-                            <div class="health-status health-success">Running</div>
+                            <div class="health-status health-<?= $queue['status'] ?>"><?= e($queue['label']) ?></div>
                         </div>
                     </div>
                 </div>
@@ -290,8 +299,8 @@
                     </h3>
                 </div>
                 <?php
-                $errorStats = \App\Helpers\NotificationLogger::getErrorStats();
-                $isOperational = \App\Helpers\NotificationLogger::isLogOperational();
+                $errorStats = $notificationHealth['error_stats'];
+                $isOperational = $notificationHealth['is_operational'];
                 ?>
                 <div class="health-grid">
                     <div class="health-item">
@@ -335,7 +344,7 @@
                         <div class="health-info">
                             <div class="health-label">Log Size</div>
                             <div class="health-status health-gray">
-                                <?= \App\Helpers\NotificationLogger::getLogFileSizeFormatted() ?>
+                                <?= e($notificationHealth['log_size']) ?>
                             </div>
                         </div>
                     </div>

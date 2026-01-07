@@ -199,7 +199,7 @@
 
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable" style="margin-top: 10px;">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" style="margin-top: 30px;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="uploadModalLabel">
@@ -282,7 +282,7 @@
 
 <!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable" style="margin-top: 10px;">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" style="margin-top: 30px;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editModalLabel">
@@ -369,7 +369,7 @@
 
 <!-- Preview Modal -->
 <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xxl-custom modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-xxl-custom modal-dialog-centered modal-dialog-scrollable" style="margin-top: 30px;">
         <div class="modal-content h-100">
             <div class="modal-header">
                 <h5 class="modal-title">
@@ -1050,6 +1050,12 @@
 
     .doc-item {
         animation: slideIn 0.3s ease-out forwards;
+    }
+
+    /* Modal XXL Custom Width */
+    .modal-xxl-custom {
+        max-width: 1200px !important;
+        width: 95% !important;
     }
 
     /* Responsive */

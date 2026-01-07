@@ -8,7 +8,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
 SET SQL_MODE = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
-USE `jiira_clonee_system`;
+USE `cways_mis`;
 
 -- =====================================================
 -- USER RATES TABLE

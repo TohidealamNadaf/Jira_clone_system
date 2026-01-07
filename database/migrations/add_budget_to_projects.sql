@@ -7,7 +7,7 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
 
-USE `jiira_clonee_system`;
+USE `cways_mis`;
 
 -- Check if columns exist before adding (prevents errors on re-run)
 ALTER TABLE `projects` 

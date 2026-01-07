@@ -5,7 +5,7 @@
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-USE `jiira_clonee_system`;
+USE `cways_mis`;
 
 -- =====================================================
 -- ROADMAP ITEMS TABLE

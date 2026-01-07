@@ -57,7 +57,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             <i class="bi bi-paperclip"></i> Attachments
                             <?php if (!empty($issue['attachments'])): ?>
                                 <span class="badge bg-secondary text-white ms-1"
-                                    style="font-size: 0.7rem; padding: 2px 6px;"><?= count($issue['attachments']) ?></span>
+                                    style="font-size: 0.7rem; padding: 2px 6px;"><?= count((array) ($issue['attachments'] ?? [])) ?></span>
                             <?php endif; ?>
                         </button>
                         <div class="dropdown-container">
@@ -171,13 +171,13 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                         </div>
                     <?php endif; ?>
 
-                    <?php if ($issue['labels']): ?>
+                    <?php if (!empty($issue['labels'])): ?>
                         <div class="detail-cell">
                             <div class="detail-label">Labels</div>
                             <div class="detail-value labels-row">
-                                <?php foreach ($issue['labels'] as $label): ?>
-                                    <span class="label-badge" style="background-color: <?= e($label['color']) ?>">
-                                        <?= e($label['name']) ?>
+                                <?php foreach ((array) ($issue['labels'] ?? []) as $label): ?>
+                                    <span class="label-badge" style="background-color: <?= e($label['color'] ?? '#ccc') ?>">
+                                        <?= e($label['name'] ?? '') ?>
                                     </span>
                                 <?php endforeach; ?>
                             </div>
@@ -192,7 +192,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                     <h3 class="section-title">
                         <i class="bi bi-chat-left-text"></i> Comments
                         <?php if (!empty($issue['comments'])): ?>
-                            <span class="section-badge"><?= count($issue['comments']) ?></span>
+                            <span class="section-badge"><?= count((array) ($issue['comments'] ?? [])) ?></span>
                         <?php endif; ?>
                     </h3>
                     <?php if (!empty($issue['comments'])): ?>
@@ -234,7 +234,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             <div class="comments-container" id="comments-container">
                                 <?php
                                 $commentsPerPage = 5;
-                                $totalComments = count($issue['comments']);
+                                $totalComments = count((array) ($issue['comments'] ?? []));
                                 $showInitial = min($commentsPerPage, $totalComments);
                                 ?>
                                 <?php for ($i = 0; $i < $showInitial; $i++):
@@ -432,7 +432,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                     <h3 class="section-title">
                         <i class="bi bi-clock-history"></i> Activity
                         <?php if (!empty($history)): ?>
-                            <span class="section-badge"><?= count($history) ?></span>
+                            <span class="section-badge"><?= count((array) ($history ?? [])) ?></span>
                         <?php endif; ?>
                     </h3>
                     <button class="btn btn-sm btn-outline activity-toggle-btn" type="button">
@@ -2324,7 +2324,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 <h5 class="modal-title">
                     <i class="bi bi-paperclip me-2"></i>Attachments
                     <?php if (!empty($issue['attachments'])): ?>
-                    <span class="badge bg-secondary ms-2"><?= count($issue['attachments']) ?></span>
+                    <span class="badge bg-secondary ms-2"><?= count((array) ($issue['attachments'] ?? [])) ?></span>
                     <?php endif; ?>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -2337,7 +2337,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 </div>
                 <?php else: ?>
                 <div class="attachments-grid">
-                    <?php foreach ($issue['attachments'] as $attachment): ?>
+                    <?php foreach ((array) ($issue['attachments'] ?? []) as $attachment): ?>
                     <div class="attachment-item">
                         <div class="attachment-icon">
                             <?php
@@ -2427,7 +2427,8 @@ $currentUserId = $authUser ? $authUser['id'] : null;
 
 <!-- Preview Modal -->
 <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 800px; margin-top: 10px;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+        style="max-width: 1200px; margin-top: 10px;">
         <div class="modal-content h-100" style="min-height: 80vh;">
             <div class="modal-header">
                 <h5 class="modal-title">

@@ -11,6 +11,8 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Session;
 use App\Core\Database;
+use App\Helpers\SystemHealth;
+use App\Helpers\NotificationLogger;
 
 class AdminController extends Controller
 {
@@ -30,6 +32,22 @@ class AdminController extends Controller
             'disk_usage' => '75%',
         ];
 
+        $systemHealth = [
+            'db' => SystemHealth::getDatabaseStatus(),
+            'mail' => SystemHealth::getMailerStatus(),
+            'disk' => SystemHealth::getDiskUsage(),
+            'queue' => SystemHealth::getQueueStatus(),
+        ];
+
+        $notificationHealth = [
+            'error_stats' => NotificationLogger::getErrorStats(),
+            'is_operational' => NotificationLogger::isLogOperational(),
+            'log_size' => NotificationLogger::getLogFileSizeFormatted(),
+        ];
+
+        $stats['disk_usage'] = $systemHealth['disk']['percent'] . '%';
+        $stats['storage_used'] = $systemHealth['disk']['used'];
+
         $recentActivity = Database::select(
             "SELECT a.*, u.display_name as user_name
              FROM audit_logs a
@@ -48,6 +66,8 @@ class AdminController extends Controller
         return $this->view('admin.index', [
             'stats' => $stats,
             'recentActivity' => $recentActivity,
+            'systemHealth' => $systemHealth,
+            'notificationHealth' => $notificationHealth,
         ]);
     }
 

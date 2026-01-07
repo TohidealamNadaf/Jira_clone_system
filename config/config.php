@@ -9,7 +9,7 @@ declare(strict_types=1);
 return [
     // Application
     'app' => [
-        'name' => 'CWAYS MIS',
+        'name' => 'CWays MIS',
         'env' => 'development', // development, production
         'debug' => true,
         'url' => 'http://localhost:8081/jira_clone_system/public',
@@ -22,7 +22,7 @@ return [
     'database' => [
         'host' => 'localhost',
         'port' => 3306,
-        'name' => 'jiira_clonee_system',
+        'name' => 'cways_mis',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8mb4',
@@ -51,7 +51,7 @@ return [
         'password' => '',
         'encryption' => '', // tls, ssl, or empty
         'from_address' => 'noreply@example.com',
-        'from_name' => 'Jira Clone',
+        'from_name' => 'CWays MIS',
     ],
 
     // JWT

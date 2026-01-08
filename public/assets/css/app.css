@@ -2524,7 +2524,7 @@ section {
 
     .modal-content {
         border-radius: 12px 12px 0 0;
-        max-height: 90vh;
+        /* max-height: 90vh; */
     }
 
     .row {
@@ -6952,6 +6952,7 @@ img:not([src]) {
     border: 1px solid var(--border-color);
     border-radius: 6px;
 }
+
 /* Attachments Modal Styles */
 .attachments-grid {
     display: grid;

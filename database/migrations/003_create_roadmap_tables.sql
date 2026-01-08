@@ -5,7 +5,7 @@
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-USE `cways_mis`;
+USE `cways_prod`;
 
 -- =====================================================
 -- ROADMAP ITEMS TABLE

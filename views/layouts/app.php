@@ -1205,7 +1205,7 @@
     <?php endforeach; ?>
 
     <!-- Main Content - Consistent for All Users -->
-    <main class="p-0" id="mainContent" style="background: transparent; min-height: calc(100vh - 200px); padding: 0;">
+    <main class="p-0" id="mainContent" style="background: transparent; min-height: auto; padding: 0;">
         <div style="width: 100%;">
             <?= \App\Core\View::yield('content') ?>
         </div>
@@ -2141,10 +2141,13 @@
         });
     </script>
 
-    <?= \App\Core\View::yield('scripts') ?>
-
     <!-- Create Issue Modal Component -->
     <?php include_once __DIR__ . '/../components/create-issue-modal.php'; ?>
+
+    <!-- Modals Section -->
+    <?= \App\Core\View::yield('modals') ?>
+
+    <?= \App\Core\View::yield('scripts') ?>
 
     <!-- Create Issue Modal JavaScript -->
     <script src="<?= url('/assets/js/create-issue-modal.js') ?>?v=<?= time() ?>"></script>

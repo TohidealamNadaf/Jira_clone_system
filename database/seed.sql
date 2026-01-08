@@ -145,6 +145,9 @@ INSERT INTO `projects` (`key`, `name`, `description`, `lead_id`, `category_id`, 
 -- =====================================================
 
 INSERT INTO `project_members` (`project_id`, `user_id`, `role_id`) VALUES
+(1, 1, 1),
+(2, 1, 1),
+(3, 1, 1),
 (1, 2, 2),  -- John (Developer)
 (1, 3, 2),  -- Jane (Developer)
 (1, 4, 3),  -- Mike (Project Manager)

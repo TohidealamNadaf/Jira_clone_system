@@ -127,7 +127,7 @@
                             <div class="member-card member-item"
                                 data-member-name="<?= strtolower(e($member['display_name'])) ?>"
                                 data-member-email="<?= strtolower(e($member['email'])) ?>"
-                                data-member-role="<?= e($member['role']) ?>">
+                                data-member-role="<?= e($member['role']) ?>" data-member-role-id="<?= e($member['role_id']) ?>">
 
                                 <div class="card-options">
                                     <?php if (can('manage-members', $project['id'])): ?>
@@ -146,6 +146,7 @@
                                                         data-member-id="<?= e($member['user_id']) ?>"
                                                         data-member-name="<?= e($member['display_name']) ?>"
                                                         data-member-role="<?= e($member['role']) ?>"
+                                                        data-member-role-id="<?= e($member['role_id']) ?>"
                                                         onclick="setupChangeRole(this); return false;">
                                                         Change Role
                                                     </a>
@@ -222,7 +223,8 @@
                                 <?php foreach ($members as $member): ?>
                                     <tr class="member-item" data-member-name="<?= strtolower(e($member['display_name'])) ?>"
                                         data-member-email="<?= strtolower(e($member['email'])) ?>"
-                                        data-member-role="<?= e($member['role']) ?>">
+                                        data-member-role="<?= e($member['role']) ?>"
+                                        data-member-role-id="<?= e($member['role_id']) ?>">
                                         <td>
                                             <div class="d-flex align-items-center gap-3">
                                                 <div class="member-avatar-small">
@@ -268,6 +270,7 @@
                                                                 data-member-id="<?= e($member['user_id']) ?>"
                                                                 data-member-name="<?= e($member['display_name']) ?>"
                                                                 data-member-role="<?= e($member['role']) ?>"
+                                                                data-member-role-id="<?= e($member['role_id']) ?>"
                                                                 onclick="setupChangeRole(this); return false;">Change Role</a>
                                                         </li>
                                                         <li>
@@ -352,46 +355,276 @@
     </div>
 </div>
 
-<!-- Modals (Add, Change Role, Remove) - Preserved & Restyled -->
-<!-- Add Member Modal -->
+<!-- Modals (Add, Change Role, Remove) -->
+<?php \App\Core\View::endSection(); ?>
+<?php \App\Core\View::section('modals'); ?>
+
+<!-- Redesigned Add Member Modal -->
+<style>
+    /* ============================================
+       GLOBAL MODAL RULES - HIDE ALL BY DEFAULT
+       ============================================ */
+    /* Hide all modals by default */
+    .modal {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Show only the active modal */
+    .modal.show {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* When modal is open, prevent body scroll and hide content below modal */
+    body.modal-open,
+    body:has(.modal.show) {
+        overflow: hidden !important;
+        /* Prevent scrolling when modal open */
+    }
+
+    /* ============================================
+       MODAL BACKDROP FIX - ENSURES MODAL BLOCKS ALL INTERACTIONS
+       ============================================ */
+    /* Ensure backdrop covers entire viewport and blocks all interactions */
+    #addMemberModal.modal {
+        z-index: 2050 !important;
+    }
+
+    #addMemberModal.modal.show {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    #addMemberModal .modal-backdrop {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+        z-index: 2040 !important;
+        pointer-events: auto !important;
+        /* Ensure backdrop blocks mouse events */
+    }
+
+    #addMemberModal .modal-backdrop.show {
+        opacity: 1 !important;
+        display: block !important;
+    }
+
+    /* Add Member Modal - Standard Design matching Create Issue */
+    #addMemberModal.modal.show {
+        overflow: hidden !important;
+        /* Prevent body scroll when modal open */
+    }
+
+    /* Fixed Modal Dialog - Rely on Bootstrap's structure but enforce clean resets */
+    #addMemberModal .modal-dialog {
+        max-width: 500px;
+        margin: 1.75rem auto;
+        z-index: 2050 !important;
+        position: relative;
+        /* Remove custom flex/height that might cause stretching ghosts */
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        pointer-events: none;
+        /* Standard Bootstrap */
+    }
+
+    #addMemberModal .modal-content {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+        height: auto !important;
+        background-color: #ffffff !important;
+        z-index: 2051 !important;
+        overflow: hidden;
+        pointer-events: auto;
+        /* Re-enable clicks */
+    }
+
+    #addMemberModal .modal-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    /* Form Layout Fix */
+    #addMemberForm {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        /* Align with modal-content */
+        background-color: transparent !important;
+        /* Prevent double-background */
+    }
+
+    #addMemberModal .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    #addMemberModal .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        background-color: #ffffff;
+    }
+
+    #addMemberModal .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    #addMemberModal .form-select {
+        font-size: 14px;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        width: 100%;
+        background-color: #fff;
+        /* Ensure white bg */
+    }
+
+    #addMemberModal .form-select:focus {
+        border-color: #8b1956;
+        box-shadow: 0 0 0 3px rgba(139, 25, 86, 0.1);
+        outline: none;
+    }
+
+    #addMemberModal .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    #addMemberModal .btn {
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 6px;
+    }
+
+    /* Fix dropdown z-index issues */
+    .dropdown-menu {
+        z-index: 1055 !important;
+    }
+</style>
+
 <div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Invite New Member</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form action="<?= url("/projects/{$project['key']}/members") ?>" method="POST" id="addMemberForm">
-                    <?= csrf_token() ?>
+
+            <form action="<?= url("/projects/{$project['key']}/members") ?>" method="POST" id="addMemberForm">
+                <div class="modal-body">
+                    <?= csrf_field() ?>
                     <div class="mb-4">
                         <label class="form-label">Select User</label>
                         <select name="user_id" class="form-select" required>
                             <option value="">Choose user...</option>
                             <?php foreach ($availableUsers as $user): ?>
-                                <option value="<?= e($user['id']) ?>"><?= e($user['display_name'] ?? $user['email']) ?>
+                                <option value="<?= e($user['id']) ?>" data-is-admin="<?= e($user['is_admin']) ?>">
+                                    <?= e($user['display_name'] ?? $user['email']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-0">
                         <label class="form-label">Role</label>
-                        <select name="role" class="form-select" required>
-                            <option value="developer">Developer</option>
-                            <option value="qa">QA Tester</option>
-                            <option value="viewer">Viewer</option>
-                            <option value="project_lead">Project Lead</option>
+                        <select name="role_id" id="addMemberRole" class="form-select" required>
+                            <?php foreach ($availableRoles as $role): ?>
+                                <option value="<?= e($role['id']) ?>" data-role-slug="<?= e($role['slug']) ?>">
+                                    <?= e($role['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Member</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Member</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<!-- Change Role Modal Styles -->
+<style>
+    /* Ensure backdrop covers entire viewport for changeRoleModal */
+    #changeRoleModal.modal {
+        z-index: 2050 !important;
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    #changeRoleModal.modal.show {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    #changeRoleModal.modal.show {
+        overflow: hidden !important;
+        /* Prevent body scroll when modal open */
+    }
+
+    #changeRoleModal .modal-backdrop {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+        z-index: 2040 !important;
+        pointer-events: auto !important;
+        /* Ensure backdrop blocks mouse events */
+    }
+
+    #changeRoleModal .modal-backdrop.show {
+        opacity: 1 !important;
+        display: block !important;
+    }
+
+    #changeRoleModal .modal-dialog {
+        z-index: 2050 !important;
+        position: relative;
+    }
+
+    #changeRoleModal .modal-content {
+        background-color: #ffffff !important;
+        z-index: 2051 !important;
+    }
+
+    #changeRoleModal .modal-body {
+        background-color: #ffffff;
+    }
+</style>
 
 <!-- Change Role Modal -->
 <div class="modal fade" id="changeRoleModal" tabindex="-1" aria-hidden="true">
@@ -403,16 +636,15 @@
             </div>
             <div class="modal-body">
                 <form method="POST" id="changeRoleForm">
-                    <?= csrf_token() ?>
+                    <?= csrf_field() ?>
                     <input type="hidden" name="_method" value="PUT">
                     <p class="mb-4">Updating role for <strong id="roleMemberName"></strong></p>
                     <div class="mb-4">
                         <label class="form-label">New Role</label>
-                        <select id="newRole" name="role" class="form-select" required>
-                            <option value="developer">Developer</option>
-                            <option value="qa">QA Tester</option>
-                            <option value="viewer">Viewer</option>
-                            <option value="project_lead">Project Lead</option>
+                        <select id="newRole" name="role_id" class="form-select" required>
+                            <?php foreach ($availableRoles as $role): ?>
+                                <option value="<?= e($role['id']) ?>"><?= e($role['name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="d-flex justify-content-end gap-2">
@@ -425,6 +657,57 @@
     </div>
 </div>
 
+<!-- Remove Member Modal Styles -->
+<style>
+    /* Ensure backdrop covers entire viewport for removeMemberModal */
+    #removeMemberModal.modal {
+        z-index: 2050 !important;
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    #removeMemberModal.modal.show {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    #removeMemberModal.modal.show {
+        overflow: hidden !important;
+        /* Prevent body scroll when modal open */
+    }
+
+    #removeMemberModal .modal-backdrop {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
+        z-index: 2040 !important;
+        pointer-events: auto !important;
+        /* Ensure backdrop blocks mouse events */
+    }
+
+    #removeMemberModal .modal-backdrop.show {
+        opacity: 1 !important;
+        display: block !important;
+    }
+
+    #removeMemberModal .modal-dialog {
+        z-index: 2050 !important;
+        position: relative;
+    }
+
+    #removeMemberModal .modal-content {
+        background-color: #ffffff !important;
+        z-index: 2051 !important;
+    }
+
+    #removeMemberModal .modal-body {
+        background-color: #ffffff;
+    }
+</style>
+
 <!-- Remove Member Modal -->
 <div class="modal fade" id="removeMemberModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -436,7 +719,7 @@
             <div class="modal-body">
                 <p>Are you sure you want to remove <strong id="removeMemberName"></strong>? This cannot be undone.</p>
                 <form method="POST" id="removeMemberForm">
-                    <?= csrf_token() ?>
+                    <?= csrf_field() ?>
                     <input type="hidden" name="_method" value="DELETE">
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -1190,10 +1473,32 @@
         });
     });
 
+    // Role Auto-Detection Logic
+    const userSelect = document.querySelector('select[name="user_id"]');
+    const roleSelect = document.getElementById('addMemberRole');
+
+    if (userSelect && roleSelect) {
+        userSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const isAdmin = selectedOption.dataset.isAdmin == '1';
+
+            // Logic: If Admin -> Administrator, else -> Developer (default)
+            // Iterate options to find matching role
+            let targetSlug = isAdmin ? 'administrator' : 'developer';
+
+            for (let i = 0; i < roleSelect.options.length; i++) {
+                if (roleSelect.options[i].dataset.roleSlug === targetSlug) {
+                    roleSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        });
+    }
+
     // Modal Helpers
     function setupChangeRole(el) {
         document.getElementById('roleMemberName').textContent = el.dataset.memberName;
-        document.getElementById('newRole').value = el.dataset.memberRole;
+        document.getElementById('newRole').value = el.dataset.memberRoleId;
         // Dynamically set action
         const baseAction = document.getElementById('addMemberForm').action;
         document.getElementById('changeRoleForm').action = baseAction + '/' + el.dataset.memberId;
@@ -1208,13 +1513,15 @@
 
 <style>
     /* 
-   FIX: Use :has() and :focus-within to elevate z-index when dropdown is active.
-   This solves the Grid Stacking Context issue where later cards cover earlier dropdowns.
-*/
+    FIX: Use :has() and :focus-within to elevate z-index when dropdown is active.
+    IMPORTANT: z-index values must stay BELOW modal backdrop (2040) to prevent cards from appearing above modal.
+    This solves the Grid Stacking Context issue where later cards cover earlier dropdowns.
+    */
     .member-card:focus-within,
     .member-card:hover,
     .member-card:has(.dropdown-menu.show) {
-        z-index: 100 !important;
+        z-index: 10 !important;
+        /* Reduced from 100 to stay below modal backdrop (2040) */
         border-color: var(--jira-blue) !important;
     }
 
@@ -1222,7 +1529,8 @@
     .member-item:hover,
     .member-item:focus-within,
     .member-item:has(.dropdown-menu.show) {
-        z-index: 100;
+        z-index: 10;
+        /* Reduced from 100 to stay below modal backdrop (2040) */
         position: relative;
     }
 
@@ -1230,7 +1538,8 @@
     .dropdown-menu {
         border: 1px solid var(--jira-border);
         box-shadow: var(--shadow-md);
-        z-index: 1000 !important;
+        z-index: 1055 !important;
+        /* Higher than cards (10) but below modal (2040) */
         margin-top: 4px;
 
         /* FIX: Transparent dropdown on mobile */
@@ -1246,16 +1555,19 @@
             background-color: #ffffff !important;
             border: 1px solid var(--jira-border);
             box-shadow: 0 8px 24px rgba(9, 30, 66, 0.15);
-            z-index: 2000 !important;
+            z-index: 1055 !important;
+            /* Consistent with desktop, below modal */
         }
     }
 
-    /* Prevent background bleeding on mobile browsers */
+    /* Prevent background bleeding - but allow modal to properly overlay */
     .member-card,
     .members-grid,
     .members-list {
-        isolation: isolate;
+        /* Removed: isolation: isolate; - This was creating stacking context that blocked modal */
     }
+
+
 
     /* Force dropdown to be fully opaque and readable */
     .dropdown-menu .dropdown-item {

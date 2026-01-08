@@ -22,7 +22,7 @@ return [
     'database' => [
         'host' => 'localhost',
         'port' => 3306,
-        'name' => 'cways_mis',
+        'name' => 'cways_prod',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8mb4',

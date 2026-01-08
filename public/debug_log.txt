@@ -1,0 +1,243 @@
+[2026-01-07 10:17:59] IssueController::store called.
+[2026-01-07 10:17:59] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => board_2025-12-15.csv
+                )
+
+            [full_path] => Array
+                (
+                    [0] => board_2025-12-15.csv
+                )
+
+            [type] => Array
+                (
+                    [0] => text/csv
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\phpBFFC.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 2411
+                )
+
+        )
+
+)
+
+[2026-01-07 10:17:59] POST: Array
+(
+    [project_id] => 4
+    [issue_type_id] => 2
+    [summary] => Member is not getting added
+    [description] => <ol>
+<li><strong>Member add modal UI is cramped.</strong></li>
+<li><strong>and when submit the modal the page expired error is showing.</strong></li>
+</ol>
+    [priority_id] => 4
+    [start_date] => 2026-01-21
+    [end_date] => 2026-01-31
+)
+
+[2026-01-07 10:17:59] Processing file: board_2025-12-15.csv
+[2026-01-07 10:17:59] File uploaded successfully. Path: uploads/attachments/2026/01/0c03ed14646518c1c04c894e5523705e.csv
+[2026-01-07 10:17:59] Database insert FAILED: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'cways_prod.issue_attachments' doesn't exist
+[2026-01-07 10:20:43] IssueController::store called.
+[2026-01-07 10:20:43] FILES: Array
+(
+)
+
+[2026-01-07 10:20:43] POST: Array
+(
+    [project_id] => 4
+    [issue_type_id] => 4
+    [summary] => sdafas
+    [description] => <p>asdf</p>
+    [assignee_id] => 1
+    [priority_id] => 4
+)
+
+[2026-01-07 11:00:29] IssueController::store called.
+[2026-01-07 11:00:29] FILES: Array
+(
+)
+
+[2026-01-07 11:00:29] POST: Array
+(
+    [project_id] => 1
+    [issue_type_id] => 1
+    [summary] => Issue Checking
+    [description] => <ol>
+<li><strong>php migrate_reconstructed.php</strong></li>
+</ol>
+    [assignee_id] => 5
+    [priority_id] => 3
+)
+
+[2026-01-07 11:05:27] IssueController::store called.
+[2026-01-07 11:05:27] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => jiira_clonee_system (3).sql
+                )
+
+            [full_path] => Array
+                (
+                    [0] => jiira_clonee_system (3).sql
+                )
+
+            [type] => Array
+                (
+                    [0] => application/octet-stream
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\php37BD.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 38895
+                )
+
+        )
+
+)
+
+[2026-01-07 11:05:27] POST: Array
+(
+    [project_id] => 3
+    [issue_type_id] => 3
+    [summary] => dsaf
+    [description] => <p>asdfa</p>
+    [assignee_id] => 3
+    [priority_id] => 4
+)
+
+[2026-01-07 11:05:27] Processing file: jiira_clonee_system (3).sql
+[2026-01-07 11:05:27] File uploaded successfully. Path: uploads/attachments/2026/01/c846516c6676408f9efe3ca2f1c968fe.sql
+[2026-01-07 11:05:27] Database insert success.
+[2026-01-08 10:03:08] IssueController::store called.
+[2026-01-08 10:03:08] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => cways_mis (1).sql
+                )
+
+            [full_path] => Array
+                (
+                    [0] => cways_mis (1).sql
+                )
+
+            [type] => Array
+                (
+                    [0] => application/octet-stream
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\phpC41B.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 36125
+                )
+
+        )
+
+)
+
+[2026-01-08 10:03:08] POST: Array
+(
+    [project_id] => 3
+    [issue_type_id] => 4
+    [summary] => Testing an issue with attachment
+    [description] => <p>board:3625 POST http://localhost:8080/Jira_clone_system/public/api/v1/issues/ECOM-4/transitions 500 (Internal Server Error) handleDrop @ board:3625Understand this error board:3644 [DROP] Error: Unexpected non-whitespace character after JSON at position 188 (line 1 column 189) handleDrop @ board:3644Understand this error board:4345 [ERROR] ✗ Failed: Unexpected non-whitespace character after JSON at position 188 (line 1 column 189)<br><br><strong>carefully analyze @file:comphre</strong></p>
+    [assignee_id] => 2
+    [priority_id] => 2
+)
+
+[2026-01-08 10:03:09] Processing file: cways_mis (1).sql
+[2026-01-08 10:03:09] File uploaded successfully. Path: uploads/attachments/2026/01/30d2b4234a37a2983e596e8ebb67e9ef.sql
+[2026-01-08 10:03:09] Database insert success.
+[2026-01-08 10:28:21] IssueController::store called.
+[2026-01-08 10:28:21] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Invoice-4IIUN1LG-0001.pdf
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Invoice-4IIUN1LG-0001.pdf
+                )
+
+            [type] => Array
+                (
+                    [0] => application/pdf
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\phpDAF1.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 48778
+                )
+
+        )
+
+)
+
+[2026-01-08 10:28:21] POST: Array
+(
+    [project_id] => 4
+    [issue_type_id] => 4
+    [summary] => Checking CWays Issue
+    [description] => <p>You are an AI assistant embedded in a production, enterprise-grade software system. PROJECT CONTEXT - This is a production-ready, enterprise-level Jira clone for internal company use. - The codebase is modular and used by real users; stability and backward compatibility are mandatory. MANDATORY CONTEXT LOADING - Always read and understand all `.md` files and `agents.md` before proposing changes. CORE RULES - Be accurate, practical, and concise. - Never invent APIs, data, or behavior. - If information is missing, state it clearly and request what is needed. - All output must be production-ready. CHANGE POLICY (CRITICAL) - Never change code blindly. - First identify where the code is used and what depends on it. - Preserve existing behavior unless explicitly approved to change it. BUG / FIX WORKFLOW 1. Identify the root cause. 2. Verify current usage and dependencies. 3. Propose the minimal safe fix. 4. Ensure backward compatibility. 5. Explain why the fix is safe. DEFAULT MODE - Production-first - Stability-first - Backward-compatibility-first in http://localhost:8080/Jira_clone_system/public/projects/ECOM/members when adding team member the modal is unstable there is white card is getting stretched behind the modal with its same width please fix that and also and it is not fetching realtime users and its role please check also that</p>
+    [priority_id] => 4
+)
+
+[2026-01-08 10:28:21] Processing file: Invoice-4IIUN1LG-0001.pdf
+[2026-01-08 10:28:21] File uploaded successfully. Path: uploads/attachments/2026/01/b6a612292e4686e8a3ba0b4386cc5765.pdf
+[2026-01-08 10:28:21] Database insert success.

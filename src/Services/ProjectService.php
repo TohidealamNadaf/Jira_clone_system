@@ -343,7 +343,7 @@ class ProjectService
     public function getAvailableUsers(int $projectId): array
     {
         return Database::select(
-            "SELECT u.id, u.email, u.display_name, u.avatar, u.first_name, u.last_name
+            "SELECT u.id, u.email, u.display_name, u.avatar, u.first_name, u.last_name, u.is_admin
              FROM users u
              WHERE u.is_active = 1
              AND u.id NOT IN (

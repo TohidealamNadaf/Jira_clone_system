@@ -7,7 +7,7 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
 
-USE `cways_mis`;
+USE `cways_prod`;
 
 -- Check if columns exist before adding (prevents errors on re-run)
 ALTER TABLE `projects` 

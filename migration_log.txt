@@ -1,0 +1,301 @@
+Starting migration at 2026-01-07 10:45:05
+=====================================================
+       JIRA CLONE MIGRATION TOOL
+=====================================================
+[1/3] Resetting Database 'cways_mis'...
+[2/3] Importing SQL Dump...
+   Found 293 statements.
+   WARNING: Statement 5 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'attachments' already exists
+   WARNING: Statement 6 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'audit_logs' already exists
+   WARNING: Statement 7 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.audit_logs' doesn't exist in engine
+   WARNING: Statement 8 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'boards' already exists
+   WARNING: Statement 9 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'board_columns' already exists
+   WARNING: Statement 10 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'budget_alerts' already exists
+   WARNING: Statement 11 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'comments' already exists
+   WARNING: Statement 12 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comments' doesn't exist in engine
+   WARNING: Statement 13 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'comment_history' already exists
+   WARNING: Statement 14 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'components' already exists
+   WARNING: Statement 15 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'custom_fields' already exists
+   WARNING: Statement 16 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'custom_field_contexts' already exists
+   WARNING: Statement 17 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'custom_field_values' already exists
+   WARNING: Statement 18 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'dashboards' already exists
+   WARNING: Statement 19 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'dashboard_gadgets' already exists
+   WARNING: Statement 20 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'email_queue' already exists
+   WARNING: Statement 21 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'groups' already exists
+   WARNING: Statement 22 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'group_members' already exists
+   WARNING: Statement 23 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issues' already exists
+   WARNING: Statement 24 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 25 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 26 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 27 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 28 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 29 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 30 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 31 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 32 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_attachments' already exists
+   WARNING: Statement 33 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_attachments' doesn't exist in engine
+   WARNING: Statement 34 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_components' already exists
+   WARNING: Statement 35 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_history' already exists
+   WARNING: Statement 36 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_history' doesn't exist in engine
+   WARNING: Statement 37 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_labels' already exists
+   WARNING: Statement 38 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_links' already exists
+   WARNING: Statement 39 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_link_types' already exists
+   WARNING: Statement 40 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_priorities' already exists
+   WARNING: Statement 41 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_priorities' doesn't exist in engine
+   WARNING: Statement 42 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_time_logs' already exists
+   WARNING: Statement 43 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_time_logs' doesn't exist in engine
+   WARNING: Statement 44 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_types' already exists
+   WARNING: Statement 45 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_types' doesn't exist in engine
+   WARNING: Statement 46 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_versions' already exists
+   WARNING: Statement 47 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_votes' already exists
+   WARNING: Statement 48 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'issue_watchers' already exists
+   WARNING: Statement 49 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_watchers' doesn't exist in engine
+   Executed 50 / 293...
+   WARNING: Statement 50 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'labels' already exists
+   WARNING: Statement 51 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'mentions' already exists
+   WARNING: Statement 52 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'notifications' already exists
+   WARNING: Statement 53 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notifications' doesn't exist in engine
+   WARNING: Statement 54 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'notifications_archive' already exists
+   WARNING: Statement 55 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'notification_deliveries' already exists
+   WARNING: Statement 56 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'notification_dispatch_log' already exists
+   WARNING: Statement 57 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'notification_preferences' already exists
+   WARNING: Statement 58 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_preferences' doesn't exist in engine
+   WARNING: Statement 59 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'password_resets' already exists
+   WARNING: Statement 60 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.password_resets' doesn't exist in engine
+   WARNING: Statement 61 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'permissions' already exists
+   WARNING: Statement 62 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.permissions' doesn't exist in engine
+   WARNING: Statement 63 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'personal_access_tokens' already exists
+   WARNING: Statement 64 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.personal_access_tokens' doesn't exist in engine
+   WARNING: Statement 65 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'projects' already exists
+   WARNING: Statement 66 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.projects' doesn't exist in engine
+   WARNING: Statement 67 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'project_budgets' already exists
+   WARNING: Statement 68 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'project_categories' already exists
+   WARNING: Statement 69 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_categories' doesn't exist in engine
+   WARNING: Statement 70 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'project_documents' already exists
+   WARNING: Statement 71 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_documents' doesn't exist in engine
+   WARNING: Statement 72 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'project_members' already exists
+   WARNING: Statement 73 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_members' doesn't exist in engine
+   WARNING: Statement 74 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'project_workflows' already exists
+   WARNING: Statement 75 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_workflows' doesn't exist in engine
+   WARNING: Statement 76 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'push_device_tokens' already exists
+   WARNING: Statement 77 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'roadmap_dependencies' already exists
+   WARNING: Statement 78 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'roadmap_items' already exists
+   WARNING: Statement 79 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_items' doesn't exist in engine
+   WARNING: Statement 80 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'roadmap_item_issues' already exists
+   WARNING: Statement 81 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'roadmap_item_sprints' already exists
+   WARNING: Statement 82 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'roles' already exists
+   WARNING: Statement 83 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roles' doesn't exist in engine
+   WARNING: Statement 84 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'role_permissions' already exists
+   WARNING: Statement 85 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.role_permissions' doesn't exist in engine
+   WARNING: Statement 86 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'saved_filters' already exists
+   WARNING: Statement 87 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'settings' already exists
+   WARNING: Statement 88 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'sprints' already exists
+   WARNING: Statement 89 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'sprint_issues' already exists
+   WARNING: Statement 90 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'statuses' already exists
+   WARNING: Statement 91 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.statuses' doesn't exist in engine
+   WARNING: Statement 92 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'time_tracking_settings' already exists
+   WARNING: Statement 93 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.time_tracking_settings' doesn't exist in engine
+   WARNING: Statement 94 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'users' already exists
+   WARNING: Statement 95 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.users' doesn't exist in engine
+   WARNING: Statement 96 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'user_rates' already exists
+   WARNING: Statement 97 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'user_roles' already exists
+   WARNING: Statement 98 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_roles' doesn't exist in engine
+   WARNING: Statement 99 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'user_sessions' already exists
+   Executed 100 / 293...
+   WARNING: Statement 100 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_sessions' doesn't exist in engine
+   WARNING: Statement 101 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'user_settings' already exists
+   WARNING: Statement 102 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_settings' doesn't exist in engine
+   WARNING: Statement 103 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'versions' already exists
+   WARNING: Statement 104 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'workflows' already exists
+   WARNING: Statement 105 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflows' doesn't exist in engine
+   WARNING: Statement 106 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'workflow_statuses' already exists
+   WARNING: Statement 107 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflow_statuses' doesn't exist in engine
+   WARNING: Statement 108 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'workflow_transitions' already exists
+   WARNING: Statement 109 failed: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'worklogs' already exists
+   WARNING: Statement 110 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.worklogs' doesn't exist in engine
+   WARNING: Statement 112 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.attachments' doesn't exist in engine
+   WARNING: Statement 113 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.audit_logs' doesn't exist in engine
+   WARNING: Statement 114 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.boards' doesn't exist in engine
+   WARNING: Statement 115 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.board_columns' doesn't exist in engine
+   WARNING: Statement 116 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.budget_alerts' doesn't exist in engine
+   WARNING: Statement 117 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comments' doesn't exist in engine
+   WARNING: Statement 118 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comments' doesn't exist in engine
+   WARNING: Statement 119 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comment_history' doesn't exist in engine
+   WARNING: Statement 120 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.components' doesn't exist in engine
+   WARNING: Statement 121 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_fields' doesn't exist in engine
+   WARNING: Statement 122 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_field_contexts' doesn't exist in engine
+   WARNING: Statement 123 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_field_values' doesn't exist in engine
+   WARNING: Statement 124 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.dashboards' doesn't exist in engine
+   WARNING: Statement 125 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.dashboard_gadgets' doesn't exist in engine
+   WARNING: Statement 126 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.email_queue' doesn't exist in engine
+   WARNING: Statement 127 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.groups' doesn't exist in engine
+   WARNING: Statement 128 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.group_members' doesn't exist in engine
+   WARNING: Statement 129 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 130 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 131 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_attachments' doesn't exist in engine
+   WARNING: Statement 132 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_components' doesn't exist in engine
+   WARNING: Statement 133 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_history' doesn't exist in engine
+   WARNING: Statement 134 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_labels' doesn't exist in engine
+   WARNING: Statement 135 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_links' doesn't exist in engine
+   WARNING: Statement 136 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_link_types' doesn't exist in engine
+   WARNING: Statement 137 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_priorities' doesn't exist in engine
+   WARNING: Statement 138 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_time_logs' doesn't exist in engine
+   WARNING: Statement 139 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_types' doesn't exist in engine
+   WARNING: Statement 140 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_versions' doesn't exist in engine
+   WARNING: Statement 141 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_votes' doesn't exist in engine
+   WARNING: Statement 142 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_watchers' doesn't exist in engine
+   WARNING: Statement 143 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.labels' doesn't exist in engine
+   WARNING: Statement 144 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.mentions' doesn't exist in engine
+   WARNING: Statement 145 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notifications' doesn't exist in engine
+   WARNING: Statement 146 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notifications_archive' doesn't exist in engine
+   WARNING: Statement 147 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_deliveries' doesn't exist in engine
+   WARNING: Statement 148 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_dispatch_log' doesn't exist in engine
+   WARNING: Statement 149 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_preferences' doesn't exist in engine
+   Executed 150 / 293...
+   WARNING: Statement 150 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.password_resets' doesn't exist in engine
+   WARNING: Statement 151 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.permissions' doesn't exist in engine
+   WARNING: Statement 152 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.personal_access_tokens' doesn't exist in engine
+   WARNING: Statement 153 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.projects' doesn't exist in engine
+   WARNING: Statement 154 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_budgets' doesn't exist in engine
+   WARNING: Statement 155 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_categories' doesn't exist in engine
+   WARNING: Statement 156 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_documents' doesn't exist in engine
+   WARNING: Statement 157 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_members' doesn't exist in engine
+   WARNING: Statement 158 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_workflows' doesn't exist in engine
+   WARNING: Statement 159 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.push_device_tokens' doesn't exist in engine
+   WARNING: Statement 160 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_dependencies' doesn't exist in engine
+   WARNING: Statement 161 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_items' doesn't exist in engine
+   WARNING: Statement 162 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_item_issues' doesn't exist in engine
+   WARNING: Statement 163 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_item_sprints' doesn't exist in engine
+   WARNING: Statement 164 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roles' doesn't exist in engine
+   WARNING: Statement 165 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.role_permissions' doesn't exist in engine
+   WARNING: Statement 166 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.saved_filters' doesn't exist in engine
+   WARNING: Statement 167 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.settings' doesn't exist in engine
+   WARNING: Statement 168 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.sprints' doesn't exist in engine
+   WARNING: Statement 169 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.sprint_issues' doesn't exist in engine
+   WARNING: Statement 170 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.statuses' doesn't exist in engine
+   WARNING: Statement 171 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.time_tracking_settings' doesn't exist in engine
+   WARNING: Statement 172 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.users' doesn't exist in engine
+   WARNING: Statement 173 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_rates' doesn't exist in engine
+   WARNING: Statement 174 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_roles' doesn't exist in engine
+   WARNING: Statement 175 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_sessions' doesn't exist in engine
+   WARNING: Statement 176 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_settings' doesn't exist in engine
+   WARNING: Statement 177 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.versions' doesn't exist in engine
+   WARNING: Statement 178 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflows' doesn't exist in engine
+   WARNING: Statement 179 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflow_statuses' doesn't exist in engine
+   WARNING: Statement 180 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflow_transitions' doesn't exist in engine
+   WARNING: Statement 181 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.worklogs' doesn't exist in engine
+   WARNING: Statement 183 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.attachments' doesn't exist in engine
+   WARNING: Statement 184 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.audit_logs' doesn't exist in engine
+   WARNING: Statement 185 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.boards' doesn't exist in engine
+   WARNING: Statement 186 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.board_columns' doesn't exist in engine
+   WARNING: Statement 187 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.budget_alerts' doesn't exist in engine
+   WARNING: Statement 188 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comments' doesn't exist in engine
+   WARNING: Statement 189 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comment_history' doesn't exist in engine
+   WARNING: Statement 190 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.components' doesn't exist in engine
+   WARNING: Statement 191 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_fields' doesn't exist in engine
+   WARNING: Statement 192 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_field_contexts' doesn't exist in engine
+   WARNING: Statement 193 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_field_values' doesn't exist in engine
+   WARNING: Statement 194 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.dashboards' doesn't exist in engine
+   WARNING: Statement 195 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.dashboard_gadgets' doesn't exist in engine
+   WARNING: Statement 196 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.email_queue' doesn't exist in engine
+   WARNING: Statement 197 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.groups' doesn't exist in engine
+   WARNING: Statement 198 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 199 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_attachments' doesn't exist in engine
+   Executed 200 / 293...
+   WARNING: Statement 200 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_history' doesn't exist in engine
+   WARNING: Statement 201 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_links' doesn't exist in engine
+   WARNING: Statement 202 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_link_types' doesn't exist in engine
+   WARNING: Statement 203 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_priorities' doesn't exist in engine
+   WARNING: Statement 204 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_time_logs' doesn't exist in engine
+   WARNING: Statement 205 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_types' doesn't exist in engine
+   WARNING: Statement 206 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.labels' doesn't exist in engine
+   WARNING: Statement 207 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.mentions' doesn't exist in engine
+   WARNING: Statement 208 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notifications' doesn't exist in engine
+   WARNING: Statement 209 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notifications_archive' doesn't exist in engine
+   WARNING: Statement 210 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_deliveries' doesn't exist in engine
+   WARNING: Statement 211 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_dispatch_log' doesn't exist in engine
+   WARNING: Statement 212 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_preferences' doesn't exist in engine
+   WARNING: Statement 213 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.password_resets' doesn't exist in engine
+   WARNING: Statement 214 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.permissions' doesn't exist in engine
+   WARNING: Statement 215 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.personal_access_tokens' doesn't exist in engine
+   WARNING: Statement 216 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.projects' doesn't exist in engine
+   WARNING: Statement 217 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_budgets' doesn't exist in engine
+   WARNING: Statement 218 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_categories' doesn't exist in engine
+   WARNING: Statement 219 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_documents' doesn't exist in engine
+   WARNING: Statement 220 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_workflows' doesn't exist in engine
+   WARNING: Statement 221 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.push_device_tokens' doesn't exist in engine
+   WARNING: Statement 222 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_dependencies' doesn't exist in engine
+   WARNING: Statement 223 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_items' doesn't exist in engine
+   WARNING: Statement 224 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_item_issues' doesn't exist in engine
+   WARNING: Statement 225 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_item_sprints' doesn't exist in engine
+   WARNING: Statement 226 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roles' doesn't exist in engine
+   WARNING: Statement 227 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.saved_filters' doesn't exist in engine
+   WARNING: Statement 228 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.settings' doesn't exist in engine
+   WARNING: Statement 229 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.sprints' doesn't exist in engine
+   WARNING: Statement 230 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.statuses' doesn't exist in engine
+   WARNING: Statement 231 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.time_tracking_settings' doesn't exist in engine
+   WARNING: Statement 232 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.users' doesn't exist in engine
+   WARNING: Statement 233 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_rates' doesn't exist in engine
+   WARNING: Statement 234 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_roles' doesn't exist in engine
+   WARNING: Statement 235 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_settings' doesn't exist in engine
+   WARNING: Statement 236 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.versions' doesn't exist in engine
+   WARNING: Statement 237 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflows' doesn't exist in engine
+   WARNING: Statement 238 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflow_statuses' doesn't exist in engine
+   WARNING: Statement 239 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflow_transitions' doesn't exist in engine
+   WARNING: Statement 240 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.worklogs' doesn't exist in engine
+   WARNING: Statement 241 failed: SQLSTATE[HY000]: General error: 1005 Can't create table `cways_mis`.`active_timers` (errno: 150 "Foreign key constraint is incorrectly formed")
+   WARNING: Statement 242 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.attachments' doesn't exist in engine
+   WARNING: Statement 243 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.boards' doesn't exist in engine
+   WARNING: Statement 244 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.board_columns' doesn't exist in engine
+   WARNING: Statement 245 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.budget_alerts' doesn't exist in engine
+   WARNING: Statement 246 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comments' doesn't exist in engine
+   WARNING: Statement 247 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.comment_history' doesn't exist in engine
+   WARNING: Statement 248 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.components' doesn't exist in engine
+   WARNING: Statement 249 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_field_contexts' doesn't exist in engine
+   Executed 250 / 293...
+   WARNING: Statement 250 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.custom_field_values' doesn't exist in engine
+   WARNING: Statement 251 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.dashboards' doesn't exist in engine
+   WARNING: Statement 252 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.dashboard_gadgets' doesn't exist in engine
+   WARNING: Statement 253 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.group_members' doesn't exist in engine
+   WARNING: Statement 254 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issues' doesn't exist in engine
+   WARNING: Statement 255 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_attachments' doesn't exist in engine
+   WARNING: Statement 256 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_components' doesn't exist in engine
+   WARNING: Statement 257 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_history' doesn't exist in engine
+   WARNING: Statement 258 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_labels' doesn't exist in engine
+   WARNING: Statement 259 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_links' doesn't exist in engine
+   WARNING: Statement 260 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_time_logs' doesn't exist in engine
+   WARNING: Statement 261 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_versions' doesn't exist in engine
+   WARNING: Statement 262 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_votes' doesn't exist in engine
+   WARNING: Statement 263 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.issue_watchers' doesn't exist in engine
+   WARNING: Statement 264 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.labels' doesn't exist in engine
+   WARNING: Statement 265 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.mentions' doesn't exist in engine
+   WARNING: Statement 266 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notifications' doesn't exist in engine
+   WARNING: Statement 267 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_deliveries' doesn't exist in engine
+   WARNING: Statement 268 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_dispatch_log' doesn't exist in engine
+   WARNING: Statement 269 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.notification_preferences' doesn't exist in engine
+   WARNING: Statement 270 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.password_resets' doesn't exist in engine
+   WARNING: Statement 271 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.personal_access_tokens' doesn't exist in engine
+   WARNING: Statement 272 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.projects' doesn't exist in engine
+   WARNING: Statement 273 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_budgets' doesn't exist in engine
+   WARNING: Statement 274 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_documents' doesn't exist in engine
+   WARNING: Statement 275 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.project_members' doesn't exist in engine
+   WARNING: Statement 276 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.push_device_tokens' doesn't exist in engine
+   WARNING: Statement 277 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_dependencies' doesn't exist in engine
+   WARNING: Statement 278 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_items' doesn't exist in engine
+   WARNING: Statement 279 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_item_issues' doesn't exist in engine
+   WARNING: Statement 280 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.roadmap_item_sprints' doesn't exist in engine
+   WARNING: Statement 281 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.role_permissions' doesn't exist in engine
+   WARNING: Statement 282 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.saved_filters' doesn't exist in engine
+   WARNING: Statement 283 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.sprints' doesn't exist in engine
+   WARNING: Statement 284 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.sprint_issues' doesn't exist in engine
+   WARNING: Statement 285 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_rates' doesn't exist in engine
+   WARNING: Statement 286 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_roles' doesn't exist in engine
+   WARNING: Statement 287 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_sessions' doesn't exist in engine
+   WARNING: Statement 288 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.user_settings' doesn't exist in engine
+   WARNING: Statement 289 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.versions' doesn't exist in engine
+   WARNING: Statement 290 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflow_statuses' doesn't exist in engine
+   WARNING: Statement 291 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.workflow_transitions' doesn't exist in engine
+   WARNING: Statement 292 failed: SQLSTATE[42S02]: Base table or view not found: 1932 Table 'cways_mis.worklogs' doesn't exist in engine
+[3/3] Verification...
+   Total Tables: 1
+SUCCESS: Migration completed!

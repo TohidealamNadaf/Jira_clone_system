@@ -1,0 +1,11 @@
+--- OUTPUT ---
+Attempting transition for ECOM-6...
+EXCEPTION: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'cways_prod.project_workflows' doesn't exist
+#0 C:\xampp\htdocs\Jira_clone_system\src\Core\Database.php(68): PDO->prepare('SELECT workflow...')
+#1 C:\xampp\htdocs\Jira_clone_system\src\Core\Database.php(95): App\Core\Database::query('SELECT workflow...', Array)
+#2 C:\xampp\htdocs\Jira_clone_system\src\Services\IssueService.php(666): App\Core\Database::selectOne('SELECT workflow...', Array)
+#3 C:\xampp\htdocs\Jira_clone_system\src\Services\IssueService.php(363): App\Services\IssueService->isTransitionAllowed(2, 2, 1, 3)
+#4 C:\xampp\htdocs\Jira_clone_system\debug_transition.php(31): App\Services\IssueService->transitionIssue(6, 2, 1)
+#5 {main}
+
+--- ERROR ---

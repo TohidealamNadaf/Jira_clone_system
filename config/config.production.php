@@ -37,7 +37,7 @@ return [
     'database' => [
         'host' => env('DB_HOST', 'localhost'),
         'port' => env('DB_PORT', 3306),
-        'name' => env('DB_NAME', 'cways_mis'),
+        'name' => env('DB_NAME', 'cways_prod'),
         'username' => env('DB_USER', 'jira_user'),
         'password' => env('DB_PASS', ''), // REQUIRED: Strong password
         'charset' => 'utf8mb4',

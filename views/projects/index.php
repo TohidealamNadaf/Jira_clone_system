@@ -188,9 +188,10 @@
                                 <span class="lead-placeholder">Unassigned</span>
                             <?php endif; ?>
                         </div>
-                        <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="btn btn-outline-primary">
+                        <button type="button" class="btn btn-outline-primary open-create-issue-modal"
+                            data-project-id="<?= e($project['id']) ?>">
                             <i class="bi bi-plus"></i> New Issue
-                        </a>
+                        </button>
                     </div>
                 </div>
             <?php endforeach; ?>

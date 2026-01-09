@@ -35,10 +35,10 @@
                 <i class="bi bi-collection"></i>
                 <span>Group</span>
             </button>
-            <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="toolbar-btn btn-primary">
+            <button class="toolbar-btn btn-primary open-create-issue-modal" data-project-id="<?= e($project['id']) ?>">
                 <i class="bi bi-plus-lg"></i>
                 <span>Create</span>
-            </a>
+            </button>
             <button class="toolbar-btn menu-btn" title="More options">
                 <i class="bi bi-three-dots-vertical"></i>
             </button>

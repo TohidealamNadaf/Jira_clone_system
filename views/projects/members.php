@@ -614,15 +614,23 @@
     #changeRoleModal .modal-dialog {
         z-index: 2050 !important;
         position: relative;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        pointer-events: none;
     }
 
     #changeRoleModal .modal-content {
         background-color: #ffffff !important;
         z-index: 2051 !important;
+        height: auto !important;
+        overflow: hidden;
+        pointer-events: auto;
     }
 
     #changeRoleModal .modal-body {
         background-color: #ffffff;
+        overflow-y: auto;
     }
 </style>
 
@@ -696,15 +704,24 @@
     #removeMemberModal .modal-dialog {
         z-index: 2050 !important;
         position: relative;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        pointer-events: none;
+        margin-top: 20px !important;
     }
 
     #removeMemberModal .modal-content {
         background-color: #ffffff !important;
         z-index: 2051 !important;
+        height: auto !important;
+        overflow: hidden;
+        pointer-events: auto;
     }
 
     #removeMemberModal .modal-body {
         background-color: #ffffff;
+        overflow-y: auto;
     }
 </style>
 

@@ -951,7 +951,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
         z-index: 100;
     }
 
-    .dropdown-item {
+    .dropdown-menu .dropdown-item {
         display: block;
         width: 100%;
         padding: 10px 16px;
@@ -966,11 +966,11 @@ $currentUserId = $authUser ? $authUser['id'] : null;
         transition: all var(--transition);
     }
 
-    .dropdown-item:last-child {
+    .dropdown-menu .dropdown-item:last-child {
         border-bottom: none;
     }
 
-    .dropdown-item:hover {
+    .dropdown-menu .dropdown-item:hover {
         background: var(--bg-secondary);
     }
 

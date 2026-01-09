@@ -31,9 +31,10 @@
                 </p>
             </div>
             <?php if (can('issues.create', $project['id'])): ?>
-                <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="btn btn-primary">
+                <button type="button" class="btn btn-primary open-create-issue-modal"
+                    data-project-id="<?= e($project['id']) ?>">
                     <i class="bi bi-plus-lg"></i> Create Issue
-                </a>
+                </button>
             <?php endif; ?>
         </div>
     </div>
@@ -111,9 +112,10 @@
                 <h3 class="empty-state-title">No issues found</h3>
                 <p class="empty-state-description">No issues match your current filters.</p>
                 <?php if (can('issues.create', $project['id'])): ?>
-                    <a href="<?= url("/projects/{$project['key']}/issues/create") ?>" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary open-create-issue-modal"
+                        data-project-id="<?= e($project['id']) ?>">
                         <i class="bi bi-plus-lg"></i> Create First Issue
-                    </a>
+                    </button>
                 <?php endif; ?>
             </div>
         </div>

@@ -17,11 +17,13 @@ class IssueApiController extends Controller
 {
     private IssueService $issueService;
     private ProjectService $projectService;
+    private \App\Services\SprintService $sprintService;
 
     public function __construct()
     {
         $this->issueService = new IssueService();
         $this->projectService = new ProjectService();
+        $this->sprintService = new \App\Services\SprintService();
     }
 
     private function apiUser(): array
@@ -653,5 +655,112 @@ class IssueApiController extends Controller
             "SELECT * FROM issue_link_types ORDER BY name ASC"
         );
         $this->json($linkTypes);
+    }
+    public function updateSprint(Request $request): never
+    {
+        $issueIdOrKey = $request->param('key');
+
+        // Try to get issue by ID first if numeric, then by Key
+        $issue = is_numeric($issueIdOrKey)
+            ? $this->issueService->getIssueById((int) $issueIdOrKey)
+            : $this->issueService->getIssueByKey($issueIdOrKey);
+
+        if (!$issue) {
+            $this->json(['error' => 'Issue not found'], 404);
+        }
+
+        // DEBUG LOGGING
+        error_log("UpdateSprint Params: " . json_encode($request->all()));
+
+        $data = $request->validateApi([
+            'sprint_id' => 'nullable|integer',
+        ]);
+
+        $sprintId = isset($data['sprint_id']) ? (int) $data['sprint_id'] : null;
+
+        try {
+            // If already in a sprint, we should probably mark it as removed from that one in sprint_issues
+            // before adding it to the new one, to maintain SprintService's internal consistency.
+            if ($issue['sprint_id'] && $issue['sprint_id'] != $sprintId) {
+                try {
+                    $this->sprintService->removeIssueFromSprint((int) $issue['sprint_id'], (int) $issue['id'], $this->apiUserId());
+                } catch (\Exception $e) {
+                    // Ignore if removal fails (e.g. not found in that sprint)
+                }
+            }
+
+            if ($sprintId === null) {
+                // Moved to backlog (handled by remove above if it was in a sprint, but double check)
+                if ($issue['sprint_id']) {
+                    // Already handled by removeIssueFromSprint above
+                } else {
+                    // Already in backlog, nothing to do
+                }
+            } else {
+                // Move to sprint
+                $this->sprintService->addIssueToSprint($sprintId, (int) $issue['id'], $this->apiUserId());
+            }
+
+            $this->json(['message' => 'Issue sprint updated successfully']);
+        } catch (\InvalidArgumentException $e) {
+            $this->json(['error' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            $this->json(['error' => 'Internal server error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function bulkMove(Request $request): never
+    {
+        $data = $request->validateApi([
+            'issue_ids' => 'required|array',
+            'sprint_id' => 'nullable|integer',
+        ]);
+
+        $issueIds = array_map('intval', $data['issue_ids']);
+        $sprintId = isset($data['sprint_id']) ? (int) $data['sprint_id'] : null;
+        $userId = $this->apiUserId();
+
+        $successCount = 0;
+        $errors = [];
+
+        foreach ($issueIds as $issueId) {
+            try {
+                $issue = $this->issueService->getIssueById($issueId);
+                if (!$issue) {
+                    $errors[] = "Issue #$issueId not found";
+                    continue;
+                }
+
+                // Remove from current sprint if any
+                if ($issue['sprint_id'] && $issue['sprint_id'] != $sprintId) {
+                    try {
+                        $this->sprintService->removeIssueFromSprint((int) $issue['sprint_id'], $issueId, $userId);
+                    } catch (\Exception $e) {
+                        // Ignore
+                    }
+                }
+
+                if ($sprintId !== null) {
+                    $this->sprintService->addIssueToSprint($sprintId, $issueId, $userId);
+                } else {
+                    // Moving to backlog is already done by removeIssueFromSprint
+                    // If it wasn't in a sprint, it's already in backlog.
+                }
+
+                $successCount++;
+            } catch (\Exception $e) {
+                $errors[] = "Failed to move issue #$issueId: " . $e->getMessage();
+            }
+        }
+
+
+
+        if ($successCount === 0 && !empty($errors)) {
+            $this->json(['error' => 'None of the issues could be moved', 'details' => $errors], 422);
+        }
+
+        $this->json([
+            'message' => "Successfully moved $successCount issues",
+        ]);
     }
 }

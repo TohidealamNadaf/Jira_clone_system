@@ -4,19 +4,17 @@
 
 <div class="board-page-wrapper">
     <!-- Breadcrumb Navigation -->
-    <nav class="breadcrumb-nav">
-        <a href="<?= url('/dashboard') ?>" class="breadcrumb-link">
-            <i class="bi bi-house-door"></i> Dashboard
+    <div class="project-breadcrumb">
+        <a href="<?= url('/projects') ?>" class="breadcrumb-link">
+            <i class="bi bi-house-door"></i> Projects
         </a>
-        <span class="breadcrumb-sep">/</span>
-        <a href="<?= url('/projects') ?>" class="breadcrumb-link">Projects</a>
-        <span class="breadcrumb-sep">/</span>
-        <a href="<?= url("/projects/{$project['key']}") ?>" class="breadcrumb-link">
+        <span class="breadcrumb-separator">/</span>
+        <a href="<?= url('/projects/' . $project['key']) ?>" class="breadcrumb-link">
             <?= e($project['name']) ?>
         </a>
-        <span class="breadcrumb-sep">/</span>
-        <span class="breadcrumb-current">Board</span>
-    </nav>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Kanban Board</span>
+    </div>
 
     <!-- Board Toolbar -->
     <div class="board-toolbar">
@@ -31,6 +29,10 @@
             </button>
         </div>
         <div class="toolbar-right">
+            <a href="<?= url('/projects/' . $project['key'] . '/boards') ?>" class="toolbar-btn">
+                <i class="bi bi-layout-three-columns"></i>
+                <span>Boards</span>
+            </a>
             <button class="toolbar-btn" id="groupBtn" title="Group by">
                 <i class="bi bi-collection"></i>
                 <span>Group</span>
@@ -148,9 +150,49 @@
 
 <style>
     /* ============================================
-   KANBAN BOARD - ENTERPRISE REDESIGN
-   Compact & Clean - All Content Visible
-   ============================================ */
+    BREADCRUMB NAVIGATION
+    ============================================ */
+
+    .project-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: #FFFFFF;
+        border-bottom: 1px solid #DFE1E6;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .breadcrumb-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #8B1956;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .breadcrumb-link:hover {
+        color: #6F123F;
+        text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+        color: #626F86;
+        font-weight: 300;
+    }
+
+    .breadcrumb-current {
+        color: #161B22;
+        font-weight: 600;
+    }
+
+    /* ============================================
+    KANBAN BOARD - ENTERPRISE REDESIGN
+    Compact & Clean - All Content Visible
+    ============================================ */
 
     :root {
         --jira-blue: #8B1956 !important;

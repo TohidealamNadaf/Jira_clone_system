@@ -3,88 +3,8 @@
 <?php \App\Core\View::section('content'); ?>
 
 <div class="jira-project-wrapper">
-    <!-- Breadcrumb Navigation -->
-    <div class="project-breadcrumb">
-        <a href="<?= url('/projects') ?>" class="breadcrumb-link">
-            <i class="bi bi-house-door"></i> Projects
-        </a>
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current"><?= e($project['name']) ?></span>
-    </div>
-
-    <!-- Project Header Section -->
-    <div class="project-header">
-        <!-- Left: Project Avatar + Info -->
-        <div class="project-header-left">
-            <div class="project-avatar-wrapper">
-                <?php if ($project['avatar'] ?? null): ?>
-                    <img src="<?= e(url($project['avatar'])) ?>" class="project-avatar" alt="<?= e($project['name']) ?>">
-                <?php else: ?>
-                    <div class="project-avatar project-avatar-initials">
-                        <?= strtoupper(substr($project['key'], 0, 2)) ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <div class="project-info">
-                <h1 class="project-title"><?= e($project['name']) ?></h1>
-                <div class="project-meta">
-                    <span class="project-key"><?= e($project['key']) ?></span>
-                    <?php if ($project['category_name'] ?? null): ?>
-                        <span class="project-category"><?= e($project['category_name']) ?></span>
-                    <?php endif; ?>
-                    <?php if ($project['is_archived'] ?? false): ?>
-                        <span class="project-badge archived">Archived</span>
-                    <?php endif; ?>
-                </div>
-                <?php if ($project['description'] ?? null): ?>
-                    <p class="project-description"><?= e($project['description']) ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- Right: Navigation Buttons -->
-        <div class="project-header-actions">
-            <a href="<?= url("/projects/{$project['key']}/board") ?>" class="action-button">
-                <i class="bi bi-kanban"></i>
-                <span>Board</span>
-            </a>
-            <a href="<?= url("/projects/{$project['key']}/issues") ?>" class="action-button">
-                <i class="bi bi-list-ul"></i>
-                <span>Issues</span>
-            </a>
-            <a href="<?= url("/projects/{$project['key']}/backlog") ?>" class="action-button">
-                <i class="bi bi-inbox"></i>
-                <span>Backlog</span>
-            </a>
-            <a href="<?= url("/projects/{$project['key']}/sprints") ?>" class="action-button">
-                <i class="bi bi-lightning-charge"></i>
-                <span>Sprints</span>
-            </a>
-            <a href="<?= url("/projects/{$project['key']}/reports") ?>" class="action-button">
-                <i class="bi bi-bar-chart"></i>
-                <span>Reports</span>
-            </a>
-            <a href="<?= url("/projects/{$project['key']}/documentation") ?>" class="action-button">
-                <i class="bi bi-folder-fill"></i>
-                <span>Documentation</span>
-            </a>
-            <a href="<?= url("/projects/{$project['key']}/roadmap") ?>" class="action-button">
-                <i class="bi bi-signpost-2"></i>
-                <span>Roadmap</span>
-            </a>
-            <a href="<?= url("/time-tracking/project/{$project['id']}") ?>" class="action-button">
-                <i class="bi bi-hourglass-split"></i>
-                <span>Time Tracking</span>
-            </a>
-            <?php if (can('edit-project', $project['id'])): ?>
-                <a href="<?= url("/projects/{$project['key']}/settings") ?>" class="action-button">
-                    <i class="bi bi-gear"></i>
-                    <span>Settings</span>
-                </a>
-            <?php endif; ?>
-        </div>
-    </div>
+    <!-- Standard Project Header -->
+    <?php require __DIR__ . '/partials/header.php'; ?>
 
     <!-- Quick Actions Bar -->
     <div class="quick-actions-bar">
@@ -146,11 +66,11 @@
                                             class="issue-summary"><?= e(substr($issue['summary'], 0, 60)) ?><?= strlen($issue['summary']) > 60 ? '...' : '' ?></span>
                                     </div>
                                     <div class="issue-item-right">
-                                         <span class="status-badge"
-                                             style="background-color: <?= e($issue['status']['color'] ?? '#DFE1E6') ?>; color: white !important;">
-                                             <?= e($issue['status']['name'] ?? 'Open') ?>
-                                         </span>
-                                     </div>
+                                        <span class="status-badge"
+                                            style="background-color: <?= e($issue['status']['color'] ?? '#DFE1E6') ?>; color: white !important;">
+                                            <?= e($issue['status']['name'] ?? 'Open') ?>
+                                        </span>
+                                    </div>
                                 </a>
                             <?php endforeach; ?>
                         </div>

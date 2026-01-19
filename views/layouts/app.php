@@ -11,6 +11,14 @@
     <meta http-equiv="Expires" content="0">
     <title><?= e($title ?? 'Dashboard') ?> - <?= e(config('app.name')) ?></title>
 
+    <script>
+        window.APP_CONFIG = {
+            baseUrl: '<?= url('') ?>',
+            apiBase: '<?= url('/api/v1') ?>',
+            csrfToken: '<?= e(csrf_token()) ?>'
+        };
+    </script>
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -20,6 +28,9 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
 
+
+    <!-- jQuery (Protocol Relative) -->
+    <script src="//code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <!-- TinyMCE (Community Edition via CDNJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>

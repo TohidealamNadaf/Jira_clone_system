@@ -13,16 +13,22 @@ use App\Core\Request;
 use App\Core\Session;
 use App\Services\ProjectService;
 use App\Services\ActivityService;
+use App\Services\SprintService;
+use App\Services\BoardService;
 
 class ProjectController extends Controller
 {
     private ProjectService $projectService;
     private ActivityService $activityService;
+    private SprintService $sprintService;
+    private BoardService $boardService;
 
     public function __construct()
     {
         $this->projectService = new ProjectService();
         $this->activityService = new ActivityService();
+        $this->sprintService = new SprintService();
+        $this->boardService = new BoardService();
     }
 
     public function index(Request $request): string
@@ -223,6 +229,17 @@ class ProjectController extends Controller
             abort(404, 'Project not found');
         }
 
+        // Redirect to Board Backlog if a Scrum board exists
+        $scrumBoardId = \App\Core\Database::selectValue(
+            "SELECT id FROM boards WHERE project_id = ? AND type = 'scrum' ORDER BY id ASC LIMIT 1",
+            [$project['id']]
+        );
+
+        if ($scrumBoardId) {
+            redirect('/boards/' . $scrumBoardId . '/backlog');
+            exit;
+        }
+
         // Get all issues not in any sprint (backlog items)
         $backlogIssues = Database::select(
             "SELECT i.*, 
@@ -268,6 +285,115 @@ class ProjectController extends Controller
             'project' => $project,
             'sprints' => $sprints,
         ]);
+    }
+
+    public function storeSprint(Request $request): void
+    {
+        $key = $request->param('key');
+        error_log('[SPRINT] Starting sprint creation for project: ' . $key);
+        
+        $project = $this->projectService->getProjectByKey($key);
+
+        if (!$project) {
+            error_log('[SPRINT] Project not found: ' . $key);
+            abort(404, 'Project not found');
+        }
+
+        error_log('[SPRINT] Project found, checking authorization');
+        $this->authorize('projects.edit', $project['id']); // Assuming edit permission covers sprint creation
+
+        // Use validateApi if JSON request, otherwise use validate
+        if ($request->isJson()) {
+            error_log('[SPRINT] JSON request detected, using validateApi');
+            $data = $request->validateApi([
+                'name' => 'required|max:255',
+                'goal' => 'nullable|max:1000',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+            ]);
+        } else {
+            error_log('[SPRINT] Regular form request, using validate');
+            $data = $request->validate([
+                'name' => 'required|max:255',
+                'goal' => 'nullable|max:1000',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+            ]);
+        }
+
+        error_log('[SPRINT] Validated data: ' . json_encode($data));
+
+        // Manual validation: end_date must be after start_date
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            $startDate = strtotime($data['start_date']);
+            $endDate = strtotime($data['end_date']);
+            if ($endDate <= $startDate) {
+                error_log('[SPRINT] Date validation failed: end_date must be after start_date');
+                if ($request->wantsJson()) {
+                    $this->json(['error' => 'End date must be after start date'], 422);
+                }
+                Session::flash('error', 'End date must be after start date');
+                $this->redirect(url("/projects/{$key}/sprints"));
+            }
+        }
+
+        // Find the First Scrum Board for this project
+        // If not found, create one or error. 
+        // Ideally we should prompt user to select board, but for now we default to the first one.
+        $boards = Database::select("SELECT * FROM boards WHERE project_id = ? AND type = 'scrum' ORDER BY id ASC LIMIT 1", [$project['id']]);
+
+        if (empty($boards)) {
+            // Fallback: Check if ANY board exists
+            error_log('[SPRINT] No scrum board found, checking for any board');
+            $boards = Database::select("SELECT * FROM boards WHERE project_id = ? ORDER BY id ASC LIMIT 1", [$project['id']]);
+        }
+
+        if (empty($boards)) {
+            error_log('[SPRINT] No board found for project: ' . $key);
+            if ($request->wantsJson()) {
+                $this->json(['error' => 'No board found for this project. Please create a board first.'], 404);
+            }
+            $this->redirectWith(url("/projects/{$key}/boards/create"), 'error', 'Please create a board first.');
+        }
+
+        $boardId = $boards[0]['id'];
+        error_log('[SPRINT] Using board ID: ' . $boardId);
+
+        try {
+            error_log('[SPRINT] Creating sprint with service');
+            $sprint = $this->sprintService->createSprint($boardId, $data, $this->userId());
+            
+            error_log('[SPRINT] Sprint created successfully with ID: ' . $sprint['id']);
+
+            if ($request->wantsJson()) {
+                error_log('[SPRINT] Returning JSON response');
+                $this->json(['success' => true, 'sprint' => $sprint], 201);
+            }
+
+            error_log('[SPRINT] Redirecting to sprints page');
+            $this->redirectWith(
+                url("/projects/{$key}/sprints"),
+                'success',
+                'Sprint created successfully.'
+            );
+        } catch (\InvalidArgumentException $e) {
+            error_log('[SPRINT] InvalidArgumentException: ' . $e->getMessage());
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            Session::flash('error', $e->getMessage());
+            $this->redirect(url("/projects/{$key}/sprints"));
+        } catch (\Exception $e) {
+            error_log('[SPRINT] Exception: ' . $e->getMessage());
+            error_log('[SPRINT] Exception trace: ' . $e->getTraceAsString());
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 500);
+            }
+
+            Session::flash('error', 'Error creating sprint: ' . $e->getMessage());
+            $this->redirect(url("/projects/{$key}/sprints"));
+        }
     }
 
     public function board(Request $request): string

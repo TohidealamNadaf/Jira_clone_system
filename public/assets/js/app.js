@@ -8,31 +8,58 @@
     // ==========================================
     // Constants & Configuration
     // ==========================================
-    const API_BASE = '/api/v1';
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const config = window.APP_CONFIG || {
+        baseUrl: '',
+        apiBase: '/api/v1',
+        csrfToken: document.querySelector('meta[name="csrf-token"]')?.content || ''
+    };
+
+    // Helper to format/normalize URL
+    const normalizeUrl = (url) => {
+        if (url.startsWith('http') || url.startsWith('//')) return url;
+
+        // If it starts with /api/v1, ensure it's prefixed with the full apiBase
+        if (url.startsWith('/api/v1')) {
+            return config.apiBase + url.substring(7);
+        }
+
+        // Otherwise use baseUrl
+        let normalized = url.startsWith('/') ? url : '/' + url;
+        return config.baseUrl + normalized;
+    };
 
     // ==========================================
     // API Helper
     // ==========================================
     const api = {
         async request(url, options = {}) {
+            const normalizedUrl = normalizeUrl(url);
+
             const defaults = {
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
+                    'X-CSRF-TOKEN': config.csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
                 },
             };
 
-            const config = { ...defaults, ...options };
+            const requestConfig = { ...defaults, ...options };
             if (options.headers) {
-                config.headers = { ...defaults.headers, ...options.headers };
+                requestConfig.headers = { ...defaults.headers, ...options.headers };
             }
 
             try {
-                const response = await fetch(url, config);
-                const data = await response.json();
+                const response = await fetch(normalizedUrl, requestConfig);
+                const text = await response.text();
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse JSON response:', text);
+                    throw { status: response.status, data: text, error: 'Invalid JSON' };
+                }
 
                 if (!response.ok) {
                     throw { status: response.status, data };

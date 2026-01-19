@@ -225,6 +225,10 @@ class ProjectService
                 ]);
             }
 
+            // ✅ AUTOMATICALLY CREATE DEFAULT SCRUM BOARD FOR NEW PROJECT
+            // This ensures all new projects have a Scrum board for consistent backlog functionality
+            $this->createDefaultScrumBoard($projectId, $data['name'], $userId);
+
             $this->logAudit('project_created', 'project', $projectId, null, $data, $userId);
 
             return $this->getProjectById($projectId);
@@ -685,6 +689,46 @@ class ProjectService
             'currency' => $currency,
             'is_exceeded' => $spent > $totalBudget
         ];
+    }
+
+    /**
+     * Create a default Scrum board for a new project
+     * ✅ ENSURES CONSISTENT BACKLOG ROUTING FOR ALL PROJECTS (Real Jira behavior)
+     */
+    private function createDefaultScrumBoard(int $projectId, string $projectName, int $userId): void
+    {
+        try {
+            // Create default Scrum board for the project
+            $boardId = Database::insert('boards', [
+                'project_id' => $projectId,
+                'name' => "{$projectName} Scrum Board",
+                'type' => 'scrum',
+                'filter_jql' => null,
+                'is_private' => 0,
+                'owner_id' => $userId,
+            ]);
+
+            // Create default Kanban columns (To Do, In Progress, Done)
+            // Using standard Jira status categories
+            $columns = [
+                ['name' => 'To Do', 'sort_order' => 0],
+                ['name' => 'In Progress', 'sort_order' => 1],
+                ['name' => 'Done', 'sort_order' => 2],
+            ];
+
+            foreach ($columns as $column) {
+                Database::insert('board_columns', [
+                    'board_id' => $boardId,
+                    'name' => $column['name'],
+                    'sort_order' => $column['sort_order'],
+                ]);
+            }
+
+            error_log("[ProjectService] ✅ Default Scrum board created: Board ID {$boardId} for Project {$projectId}");
+        } catch (\Exception $e) {
+            error_log("[ProjectService] ⚠️ Failed to create default Scrum board: " . $e->getMessage());
+            // Don't fail project creation if board creation fails, but log it
+        }
     }
 
     private function logAudit(string $action, string $entityType, ?int $entityId, ?array $oldValues, ?array $newValues, int $userId): void

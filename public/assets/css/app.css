@@ -2310,6 +2310,7 @@ section {
 .text-truncate-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
+    line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -2317,6 +2318,7 @@ section {
 .text-truncate-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -2324,6 +2326,7 @@ section {
 .text-truncate-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -2524,7 +2527,7 @@ section {
 
     .modal-content {
         border-radius: 12px 12px 0 0;
-        /* max-height: 90vh; */
+        max-height: 90vh;
     }
 
     .row {
@@ -4272,11 +4275,6 @@ a.btn-primary:focus {
 }
 
 /* Ensure all Bootstrap primary color usages are plum */
-.btn:not(.btn-secondary):not(.btn-success):not(.btn-warning):not(.btn-danger):not(.btn-info):not(.btn-dark):not(.btn-light),
-.btn.btn-primary,
-.btn.btn-outline-primary {
-    /* Already handled above */
-}
 
 /* Links within specific components */
 .issue-detail-link,
@@ -4301,12 +4299,6 @@ a.btn-primary:focus {
 }
 
 /* Status badges and type indicators */
-.badge-status,
-.badge-type,
-.issue-type-icon,
-.status-icon {
-    /* Uses existing badge overrides */
-}
 
 /* Modal dialog primary button */
 .modal-footer .btn-primary {
@@ -4332,12 +4324,6 @@ a.btn-primary:focus {
 }
 
 /* Final catch-all for any remaining blue from Bootstrap */
-:not(.brand-color-info):not(.brand-color-warning):not(.brand-color-success):not(.brand-color-danger)>.bg-primary,
-:not(.brand-color-info):not(.brand-color-warning):not(.brand-color-success):not(.brand-color-danger)>.text-primary,
-:not(.brand-color-info):not(.brand-color-warning):not(.brand-color-success):not(.brand-color-danger)>.border-primary,
-:not(.brand-color-info):not(.brand-color-warning):not(.brand-color-success):not(.brand-color-danger)>.btn-primary {
-    /* Already handled in main rules */
-}
 
 /* ======================================
     COMPREHENSIVE NAVBAR THEME FIX (Dec 12, 2025)

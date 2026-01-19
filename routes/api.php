@@ -85,8 +85,10 @@ $router->group(['prefix' => '/api/v1'], function ($router) {
 
         // Issues
         $router->get('/issues', [IssueApiController::class, 'index']);
+        $router->post('/issues/bulk-move', [IssueApiController::class, 'bulkMove']);
         $router->get('/issues/{key}', [IssueApiController::class, 'show']);
         $router->put('/issues/{key}', [IssueApiController::class, 'update']);
+        $router->put('/issues/{key}/sprint', [IssueApiController::class, 'updateSprint']);
         $router->delete('/issues/{key}', [IssueApiController::class, 'destroy']);
 
         // Issue Actions

@@ -12,7 +12,7 @@ return [
         'name' => 'CWays MIS',
         'env' => 'development', // development, production
         'debug' => true,
-        'url' => 'http://localhost:8081/jira_clone_system/public',
+        'url' => 'http://localhost:8080/Jira_clone_system/public',
         'timezone' => 'UTC',
         'locale' => 'en',
         'key' => 'd62ba6fe4db129cdfbb444e1961575c7', // Change this!

@@ -1,0 +1,127 @@
+================================================================================
+                    ROUTING & BOARD COLUMNS FIX
+                         January 12, 2026
+================================================================================
+
+ISSUE:
+  - /projects/CWAYSMIS/boards shows "0 columns, 0 issues"
+  - /boards/6?sprint_id=10 shows empty board (no columns/issues)
+  - Sprint "View Board" button doesn't work
+
+ROOT CAUSE:
+  - Board ID 6 has NO columns configured in board_columns table
+  - Board columns are required to display issues on Kanban board
+
+SOLUTION:
+  Three files created to fix the issue:
+  
+  1. src/Controllers/BoardController.php (MODIFIED)
+     - Updated index() method to load columns for each board
+     - Now shows correct column counts and issue counts
+  
+  2. public/setup-board-columns.php (NEW)
+     - Web interface to create missing board columns
+     - Checks status and creates columns
+     - Recommended: Use this for safety
+  
+  3. create_board_columns.php (NEW)
+     - CLI script to create columns
+     - Alternative to web interface
+
+================================================================================
+                        STEP-BY-STEP FIX
+================================================================================
+
+STEP 1: Create Board Columns
+  
+  Option A (RECOMMENDED - Web Interface):
+    1. Open: http://localhost:8080/Jira_clone_system/public/setup-board-columns.php
+    2. Click "Check Status"
+    3. If boards are missing columns, click "Create Columns"
+    4. Wait for success message
+    5. Delete the file after use
+  
+  Option B (CLI):
+    1. Run: php create_board_columns.php
+    2. Script will create columns for all boards
+    3. Verify: Check output messages
+    4. Delete the file after use
+
+STEP 2: Verify the Fix
+
+  1. Clear browser cache: CTRL+SHIFT+DEL
+  2. Hard refresh: CTRL+F5
+  3. Navigate to: /projects/CWAYSMIS/boards
+     ✓ Should show board with 3 columns (To Do, In Progress, Done)
+     ✓ Should show issue count (not 0)
+  
+  4. Click "View Board" on a board
+     ✓ Should show Kanban board with columns and issues
+  
+  5. From sprint page, click "View Board"
+     ✓ Should show board filtered to that sprint
+  
+  6. Navigate to: /boards/6
+     ✓ Should show board with columns and issues
+  
+  7. Navigate to: /boards/6?sprint_id=10
+     ✓ Should show board filtered to sprint 10
+
+STEP 3: Cleanup
+
+  Delete temporary fix files:
+    - public/setup-board-columns.php
+    - create_board_columns.php
+    - check_board_columns.php
+    - This file (FIX_ROUTING_ACTION_CARD.txt)
+
+================================================================================
+                       WHAT CHANGED
+================================================================================
+
+File: src/Controllers/BoardController.php
+  - Added: Database import
+  - Modified: index() method to load columns for each board
+  - Impact: Board list now shows correct columns and issue counts
+  - Backward Compatibility: ✓ YES (only adds data, no breaking changes)
+
+File: public/setup-board-columns.php (NEW)
+  - Purpose: Web interface to create missing board columns
+  - Access: http://localhost:8080/Jira_clone_system/public/setup-board-columns.php
+  - Status: Production ready (can be used by any user)
+  - Delete after use: YES
+
+================================================================================
+                       TESTING CHECKLIST
+================================================================================
+
+[ ] Board list shows columns count (not 0)
+[ ] Board list shows issue count (not 0)
+[ ] /boards/6 shows columns with issues
+[ ] /boards/6?sprint_id=10 shows filtered board
+[ ] Sprint "View Board" button works
+[ ] Drag-and-drop works on board
+[ ] No console errors (F12)
+[ ] No PHP errors in logs
+
+================================================================================
+                        QUICK FAQ
+================================================================================
+
+Q: Why was the board empty?
+A: The board existed but had no columns configured. Board columns are required
+   to map which statuses appear in which columns.
+
+Q: Will this affect existing data?
+A: No. This only adds missing column data. All existing issues are preserved.
+
+Q: Is this reversible?
+A: Yes. If needed, you can delete board columns and recreate them.
+
+Q: Do all boards need columns?
+A: Yes. All Kanban/Scrum boards need at least one column to function.
+
+Q: What if I have multiple projects with this issue?
+A: The setup script creates columns for ALL boards at once.
+
+================================================================================

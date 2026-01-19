@@ -165,10 +165,10 @@ class BoardService
         }
 
         $columns = $board['columns'];
-        
+
         foreach ($columns as &$column) {
             $statusIds = json_decode($column['status_ids'] ?? '[]', true);
-            
+
             if (empty($statusIds)) {
                 $column['issues'] = [];
                 continue;
@@ -176,7 +176,7 @@ class BoardService
 
             $placeholders = implode(',', array_fill(0, count($statusIds), '?'));
             $params = $statusIds;
-            
+
             $sql = "SELECT i.*, 
                            it.name as issue_type_name, it.icon as issue_type_icon, it.color as issue_type_color,
                            ip.name as priority_name, ip.icon as priority_icon, ip.color as priority_color,
@@ -187,7 +187,7 @@ class BoardService
                     LEFT JOIN users assignee ON i.assignee_id = assignee.id
                     WHERE i.project_id = ? 
                     AND i.status_id IN ($placeholders)";
-            
+
             $params = array_merge([$board['project_id']], $statusIds);
 
             if ($sprintId) {
@@ -210,7 +210,7 @@ class BoardService
         }
 
         $board['columns'] = $columns;
-        
+
         if ($board['type'] === 'scrum') {
             $board['active_sprint'] = Database::selectOne(
                 "SELECT * FROM sprints WHERE board_id = ? AND status = 'active' LIMIT 1",
@@ -276,7 +276,7 @@ class BoardService
         if ($issue['status_id'] != $targetStatusId) {
             $oldStatus = Database::selectValue("SELECT name FROM statuses WHERE id = ?", [$issue['status_id']]);
             $newStatus = Database::selectValue("SELECT name FROM statuses WHERE id = ?", [$targetStatusId]);
-            
+
             $updateData['status_id'] = $targetStatusId;
             $historyRecords[] = ['field' => 'status', 'old' => $oldStatus, 'new' => $newStatus];
 
@@ -289,13 +289,13 @@ class BoardService
         }
 
         if ($issue['sprint_id'] != $targetSprintId) {
-            $oldSprint = $issue['sprint_id'] 
-                ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$issue['sprint_id']]) 
+            $oldSprint = $issue['sprint_id']
+                ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$issue['sprint_id']])
                 : 'Backlog';
-            $newSprint = $targetSprintId 
-                ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$targetSprintId]) 
+            $newSprint = $targetSprintId
+                ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$targetSprintId])
                 : 'Backlog';
-            
+
             $updateData['sprint_id'] = $targetSprintId;
             $historyRecords[] = ['field' => 'sprint', 'old' => $oldSprint, 'new' => $newSprint];
         }
@@ -347,7 +347,7 @@ class BoardService
             "SELECT bc.*, 
                     (SELECT GROUP_CONCAT(s.name SEPARATOR ', ') 
                      FROM statuses s 
-                     WHERE JSON_CONTAINS(bc.status_ids, CAST(s.id AS JSON))) as status_names
+                     WHERE JSON_CONTAINS(bc.status_ids, CAST(s.id AS CHAR))) as status_names
              FROM board_columns bc 
              WHERE bc.board_id = ? 
              ORDER BY bc.sort_order ASC",
@@ -644,13 +644,14 @@ class BoardService
         $movedCount = 0;
 
         Database::transaction(function () use ($issueIds, $sprintId, $userId, &$movedCount) {
-            $sprintName = $sprintId 
-                ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$sprintId]) 
+            $sprintName = $sprintId
+                ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$sprintId])
                 : 'Backlog';
 
             foreach ($issueIds as $issueId) {
                 $issue = Database::selectOne("SELECT * FROM issues WHERE id = ?", [$issueId]);
-                if (!$issue) continue;
+                if (!$issue)
+                    continue;
 
                 $oldSprintName = $issue['sprint_id']
                     ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$issue['sprint_id']])

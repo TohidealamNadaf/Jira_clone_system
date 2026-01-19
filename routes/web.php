@@ -76,6 +76,7 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/projects/{key}/activity', [ProjectController::class, 'activity'])->name('projects.activity');
     $router->get('/projects/{key}/backlog', [ProjectController::class, 'backlog'])->name('projects.backlog');
     $router->get('/projects/{key}/sprints', [ProjectController::class, 'sprints'])->name('projects.sprints');
+    $router->post('/projects/{key}/sprints', [ProjectController::class, 'storeSprint'])->name('projects.sprints.store');
     $router->get('/projects/{key}/board', [ProjectController::class, 'board'])->name('projects.board');
     $router->get('/projects/{key}/reports', [ProjectController::class, 'reports'])->name('projects.reports');
     $router->get('/projects/{key}/roadmap', [RoadmapController::class, 'show'])->name('projects.roadmap');
@@ -154,6 +155,9 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->delete('/sprints/{id}', [SprintController::class, 'destroy'])->name('sprints.destroy');
     $router->post('/sprints/{id}/issues', [SprintController::class, 'addIssue'])->name('sprints.issues.add');
     $router->delete('/sprints/{id}/issues/{issueId}', [SprintController::class, 'removeIssue'])->name('sprints.issues.remove');
+
+    // Sprint Board View (redirects to board with sprint_id parameter)
+    $router->get('/projects/{key}/sprints/{id}/board', [SprintController::class, 'viewBoard'])->name('sprints.board');
 
     // Search
     $router->get('/search', [SearchController::class, 'index'])->name('search.index');

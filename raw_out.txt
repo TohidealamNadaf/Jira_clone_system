@@ -1,0 +1,42 @@
+Array
+(
+    [id] => 1
+    [name] => ECOM Development Board
+    [type] => scrum
+    [project_key] => ECOM
+)
+Array
+(
+    [id] => 2
+    [name] => ECOM Kanban Board
+    [type] => kanban
+    [project_key] => ECOM
+)
+Array
+(
+    [id] => 3
+    [name] => Mobile Apps Board
+    [type] => scrum
+    [project_key] => MOBILE
+)
+Array
+(
+    [id] => 4
+    [name] => Infrastructure Board
+    [type] => kanban
+    [project_key] => INFRA
+)
+Array
+(
+    [id] => 5
+    [name] => Infrastructure Scrum Board
+    [type] => scrum
+    [project_key] => INFRA
+)
+Array
+(
+    [id] => 6
+    [name] => CWays MIS Scrum Board
+    [type] => scrum
+    [project_key] => CWAYSMIS
+)

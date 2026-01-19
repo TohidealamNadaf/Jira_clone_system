@@ -217,7 +217,7 @@
                             <p>Drag & drop your file here or <span class="text-plum cursor-pointer">browse</span></p>
                             <span class="file-info text-muted">Supported formats: PDF, Word, Excel, Images,
                                 Videos</span>
-                            <input type="file" id="documentFile" name="document" required hidden
+                            <input type="file" id="documentFile" name="documents[]" required hidden multiple
                                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.odp,.rpt,.jpg,.jpeg,.png,.gif,.bmp,.svg,.mp4,.avi,.mov,.wmv,.flv,.webm,.mkv,.mp3,.wav,.flac,.aac,.ogg,.wma,.zip,.rar,.7z,.tar,.gz">
                         </div>
                         <div id="selectedFileDisplay" class="mt-2 d-none">
@@ -1170,12 +1170,45 @@
 
         function handleFiles(files) {
             if (files.length > 0) {
-                const file = files[0];
-                fileInput.files = files; // Sync with input
-                fileNameSpan.textContent = file.name;
+                const docTitleInput = document.getElementById('docTitle');
+
+                // For single file, show title input (optional)
+                if (files.length === 1) {
+                    const file = files[0];
+                    docTitleInput.value = file.name.split('.').slice(0, -1).join('.') || file.name;
+                    fileNameSpan.innerHTML = `<div class="file-item"><i class="bi bi-file-earmark me-2"></i>${file.name}</div>`;
+                    docTitleInput.closest('.mb-3').style.display = 'block';
+                    docTitleInput.required = true;
+                } else {
+                    // For multiple files, show a list
+                    let fileListHtml = '<div class="file-queue-list">';
+                    for (let i = 0; i < files.length; i++) {
+                        fileListHtml += `<div class="file-item py-1 border-bottom-soft d-flex align-items-center">
+                            <i class="bi bi-file-earmark me-2 text-muted"></i>
+                            <span class="text-truncate" style="max-width: 250px;">${files[i].name}</span>
+                            <span class="ms-auto badge bg-light text-muted fw-normal">${formatBytes(files[i].size)}</span>
+                        </div>`;
+                    }
+                    fileListHtml += '</div>';
+                    fileNameSpan.innerHTML = fileListHtml;
+
+                    // Hide title field for multiple files as they'll use filenames
+                    docTitleInput.closest('.mb-3').style.display = 'none';
+                    docTitleInput.required = false;
+                }
+
                 fileDisplay.classList.remove('d-none');
                 dropZone.classList.add('d-none');
             }
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         }
 
         // Remove file
@@ -1184,6 +1217,11 @@
             fileInput.value = '';
             fileDisplay.classList.add('d-none');
             dropZone.classList.remove('d-none');
+
+            const docTitleInput = document.getElementById('docTitle');
+            docTitleInput.closest('.mb-3').style.display = 'block';
+            docTitleInput.value = '';
+            docTitleInput.required = true;
         });
 
         // Upload form handling

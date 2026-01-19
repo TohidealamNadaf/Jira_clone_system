@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Database;
 use App\Core\Request;
 use App\Core\Session;
 use App\Services\BoardService;
@@ -29,7 +30,7 @@ class BoardController extends Controller
 
     public function index(Request $request): string
     {
-        $projectKey = $request->param('projectKey');
+        $projectKey = $request->param('key');
         $project = $this->projectService->getProjectByKey($projectKey);
 
         if (!$project) {
@@ -37,6 +38,28 @@ class BoardController extends Controller
         }
 
         $boards = $this->boardService->getBoards($project['id']);
+
+        // Load columns and issue counts for each board
+        foreach ($boards as &$board) {
+            $board['columns'] = $this->boardService->getBoardColumns($board['id']);
+
+            // Count issues per board by getting all status IDs from columns
+            $statusIds = [];
+            foreach ($board['columns'] as $column) {
+                $colStatusIds = json_decode($column['status_ids'] ?? '[]', true);
+                $statusIds = array_merge($statusIds, $colStatusIds ?? []);
+            }
+
+            if (!empty($statusIds)) {
+                $placeholders = implode(',', array_fill(0, count($statusIds), '?'));
+                $board['issue_count'] = (int) Database::selectValue(
+                    "SELECT COUNT(*) FROM issues WHERE project_id = ? AND status_id IN ($placeholders)",
+                    array_merge([$project['id']], $statusIds)
+                );
+            } else {
+                $board['issue_count'] = 0;
+            }
+        }
 
         if ($request->wantsJson()) {
             $this->json($boards);
@@ -50,7 +73,7 @@ class BoardController extends Controller
 
     public function create(Request $request): string
     {
-        $projectKey = $request->param('projectKey');
+        $projectKey = $request->param('key');
         $project = $this->projectService->getProjectByKey($projectKey);
 
         if (!$project) {
@@ -78,6 +101,9 @@ class BoardController extends Controller
         $project = $this->projectService->getProjectById($board['project_id']);
         $sprints = $this->sprintService->getSprints($boardId);
 
+        // Extract columns from board for view rendering
+        $columns = $board['columns'] ?? [];
+
         if ($request->wantsJson()) {
             $this->json([
                 'board' => $board,
@@ -88,6 +114,7 @@ class BoardController extends Controller
         return $this->view('boards.show', [
             'project' => $project,
             'board' => $board,
+            'columns' => $columns,
             'sprints' => $sprints,
         ]);
     }
@@ -218,10 +245,10 @@ class BoardController extends Controller
         }
 
         $project = $this->projectService->getProjectById($board['project_id']);
-        
+
         $page = (int) ($request->input('page') ?? 1);
         $backlogIssues = $this->boardService->getBacklogIssues($boardId, $page);
-        
+
         $sprints = $this->sprintService->getSprints($boardId);
         $futureSprints = array_filter($sprints, fn($s) => $s['status'] !== 'completed');
 
@@ -235,7 +262,7 @@ class BoardController extends Controller
         return $this->view('boards.backlog', [
             'project' => $project,
             'board' => $board,
-            'backlog' => $backlogIssues,
+            'backlogIssues' => $backlogIssues['items'] ?? [],
             'sprints' => $futureSprints,
         ]);
     }

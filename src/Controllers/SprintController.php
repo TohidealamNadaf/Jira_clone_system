@@ -383,4 +383,35 @@ class SprintController extends Controller
         $velocity = $this->sprintService->getAverageVelocity($boardId, $sprintCount);
         $this->json(['average_velocity' => $velocity]);
     }
+
+    /**
+     * View a sprint's board
+     * Route: GET /projects/{key}/sprints/{id}/board
+     * Redirects to the board view for the sprint's board with sprint_id parameter
+     */
+    public function viewBoard(Request $request): void
+    {
+        $sprintId = (int) $request->param('id');
+        $projectKey = $request->param('key');
+
+        // Get sprint details including board_id
+        $sprint = $this->sprintService->getSprintById($sprintId);
+        if (!$sprint) {
+            abort(404, 'Sprint not found');
+        }
+
+        // Verify the sprint belongs to the project
+        if ($sprint['project_key'] !== $projectKey) {
+            abort(404, 'Sprint not found in this project');
+        }
+
+        // Get the board for this sprint
+        $board = $this->boardService->getBoardById($sprint['board_id']);
+        if (!$board) {
+            abort(404, 'Board not found');
+        }
+
+        // Redirect to board view with sprint_id parameter to filter to this sprint
+        $this->redirect(url("/boards/{$board['id']}?sprint_id={$sprintId}"));
+    }
 }

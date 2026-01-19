@@ -264,16 +264,44 @@ class SprintService
             throw new \InvalidArgumentException('Issue not found');
         }
 
-        $oldSprintName = $issue['sprint_id'] 
-            ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$issue['sprint_id']]) 
+        $oldSprintName = $issue['sprint_id']
+            ? Database::selectValue("SELECT name FROM sprints WHERE id = ?", [$issue['sprint_id']])
             : 'Backlog';
 
         Database::update('issues', ['sprint_id' => $sprintId], 'id = ?', [$issueId]);
 
-        Database::insert('sprint_issues', [
-            'sprint_id' => $sprintId,
-            'issue_id' => $issueId,
-        ]);
+        // Check if issue was previously in this sprint
+        $existing = Database::selectOne(
+            "SELECT * FROM sprint_issues WHERE sprint_id = ? AND issue_id = ?",
+            [$sprintId, $issueId]
+        );
+
+        if ($existing) {
+            // Reactivate the issue in this sprint
+            // We need to verify if the table supports added_at/updated_at, but we know it supports removed_at from removeIssueFromSprint
+            $updateData = ['removed_at' => null];
+
+            // Try to update added_at if we want to treat this as a new addition event, 
+            // but strictly speaking we might just want to clear removed_at. 
+            // Given the reporting logic uses added_at, refreshing it is probably better.
+            // However, we don't know for sure if added_at exists in schema (inferred).
+            // Let's assume it does since getSprintReport uses it.
+            try {
+                // Check if we can select added_at
+                // If this throws, we catch and just update removed_at
+                $updateData['added_at'] = date('Y-m-d H:i:s');
+                Database::update('sprint_issues', $updateData, 'sprint_id = ? AND issue_id = ?', [$sprintId, $issueId]);
+            } catch (\Exception $e) {
+                // Fallback: just clear removed_at
+                unset($updateData['added_at']);
+                Database::update('sprint_issues', $updateData, 'sprint_id = ? AND issue_id = ?', [$sprintId, $issueId]);
+            }
+        } else {
+            Database::insert('sprint_issues', [
+                'sprint_id' => $sprintId,
+                'issue_id' => $issueId,
+            ]);
+        }
 
         Database::insert('issue_history', [
             'issue_id' => $issueId,
@@ -304,9 +332,14 @@ class SprintService
 
         Database::update('issues', ['sprint_id' => null], 'id = ?', [$issueId]);
 
-        Database::update('sprint_issues', [
-            'removed_at' => date('Y-m-d H:i:s'),
-        ], 'sprint_id = ? AND issue_id = ?', [$sprintId, $issueId]);
+        try {
+            Database::update('sprint_issues', [
+                'removed_at' => date('Y-m-d H:i:s'),
+            ], 'sprint_id = ? AND issue_id = ?', [$sprintId, $issueId]);
+        } catch (\Exception $e) {
+            // Fallback: hard delete if soft delete fails (e.g. column missing)
+            Database::delete('sprint_issues', 'sprint_id = ? AND issue_id = ?', [$sprintId, $issueId]);
+        }
 
         Database::insert('issue_history', [
             'issue_id' => $issueId,
@@ -351,7 +384,7 @@ class SprintService
         while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
             $idealPoints = $this->calculateIdealBurndown($totalPoints, $startDate, $endDate, $currentDate);
-            
+
             if ($currentDate <= $today) {
                 $completedPoints = (float) Database::selectValue(
                     "SELECT COALESCE(SUM(i.story_points), 0) 
@@ -372,7 +405,7 @@ class SprintService
                      AND DATE(i.resolved_at) <= ?",
                     [$sprintId, $dateStr]
                 );
-                
+
                 $burndownData[] = [
                     'date' => $dateStr,
                     'ideal_points' => round($idealPoints, 1),
@@ -426,7 +459,7 @@ class SprintService
     {
         $totalDays = $startDate->diff($endDate)->days;
         $elapsedDays = $startDate->diff($currentDate)->days;
-        
+
         if ($totalDays === 0) {
             return 0;
         }
@@ -492,14 +525,14 @@ class SprintService
 
         $recentVelocities = array_slice($sprints, -3);
         $velocities = array_column($recentVelocities, 'velocity');
-        
+
         if (count($velocities) < 2) {
             return 'stable';
         }
 
         $first = $velocities[0] ?? 0;
         $last = end($velocities) ?? 0;
-        
+
         if ($first == 0) {
             return 'stable';
         }

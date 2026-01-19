@@ -1,35 +1,32 @@
 <?php
-$host = 'localhost';
-$user = 'root';
-$pass = ''; // Using empty password as per .env
-$db = 'cways_mis';
+require_once __DIR__ . '/vendor/autoload.php';
 
-echo "Attempting to connect to database '$db'...\n";
+use App\Core\Database;
+
+$outputFile = __DIR__ . '/db_diagnosis.txt';
+$output = "";
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "Connection successful!\n";
-
-    echo "Attempting to list tables...\n";
-    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
-
-    if (empty($tables)) {
-        echo "No tables found in database '$db'.\n";
-    } else {
-        echo "Tables found: " . count($tables) . "\n";
-        foreach ($tables as $table) {
-            echo "- $table: ";
-            // Try to select 1 row to see if engine error happens
-            try {
-                $pdo->query("SELECT 1 FROM `$table` LIMIT 1");
-                echo "OK\n";
-            } catch (Exception $e) {
-                echo "ERROR: " . $e->getMessage() . "\n";
-            }
-        }
+    $output .= "--- TABLES ---\n";
+    $tables = Database::select("SHOW TABLES");
+    foreach ($tables as $table) {
+        $val = array_values($table)[0];
+        $output .= $val . "\n";
     }
 
-} catch (PDOException $e) {
-    echo "Connection failed: " . $e->getMessage() . "\n";
+    $output .= "\n--- project_documents COLUMNS ---\n";
+    try {
+        $cols = Database::select("SHOW COLUMNS FROM project_documents");
+        foreach ($cols as $col) {
+            $output .= $col['Field'] . " (" . $col['Type'] . ")\n";
+        }
+    } catch (Exception $e) {
+        $output .= "Error listing columns for project_documents: " . $e->getMessage() . "\n";
+    }
+
+} catch (Exception $e) {
+    $output .= "CRITICAL ERROR: " . $e->getMessage() . "\n";
 }
+
+file_put_contents($outputFile, $output);
+echo "Diagnosis complete. Check db_diagnosis.txt\n";

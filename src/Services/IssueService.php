@@ -1379,4 +1379,133 @@ class IssueService
             throw new \Exception('Failed to create issue: ' . $e->getMessage());
         }
     }
+    public function getAttachments(int $issueId): array
+    {
+        return Database::select(
+            "SELECT ia.*, u.display_name as author_name 
+             FROM issue_attachments ia
+             JOIN users u ON ia.uploaded_by = u.id
+             WHERE ia.issue_id = ?
+             ORDER BY ia.created_at DESC",
+            [$issueId]
+        );
+    }
+
+    public function addAttachment(int $issueId, array $file, int $userId): array
+    {
+        $uploadDir = __DIR__ . '/../../public/uploads/attachments/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $filename = uniqid() . '_' . $file['name'];
+        $filepath = $uploadDir . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+            throw new \Exception('Failed to upload file');
+        }
+
+        $attachmentId = Database::insert('issue_attachments', [
+            'issue_id' => $issueId,
+            'filename' => $file['name'],
+            'filepath' => '/uploads/attachments/' . $filename,
+            'file_size' => $file['size'],
+            'file_type' => $file['type'],
+            'uploaded_by' => $userId
+        ]);
+
+        $this->logAudit('attachment_added', 'issue', $issueId, null, ['filename' => $file['name']], $userId);
+
+        return Database::selectOne(
+            "SELECT ia.*, u.display_name as author_name 
+             FROM issue_attachments ia
+             JOIN users u ON ia.uploaded_by = u.id
+             WHERE ia.id = ?",
+            [$attachmentId]
+        );
+    }
+
+    public function deleteAttachment(int $attachmentId, int $userId): bool
+    {
+        $attachment = Database::selectOne("SELECT * FROM issue_attachments WHERE id = ?", [$attachmentId]);
+        if (!$attachment) {
+            throw new \InvalidArgumentException('Attachment not found');
+        }
+
+        $this->logAudit('attachment_deleted', 'issue', $attachment['issue_id'], $attachment, null, $userId);
+
+        return Database::delete('issue_attachments', 'id = ?', [$attachmentId]) > 0;
+    }
+
+    public function getWorklogs(int $issueId): array
+    {
+        return Database::select(
+            "SELECT w.*, u.display_name as user_name, u.avatar as user_avatar
+             FROM worklogs w
+             JOIN users u ON w.user_id = u.id
+             WHERE w.issue_id = ?
+             ORDER BY w.started_at DESC",
+            [$issueId]
+        );
+    }
+
+    public function updateWorklog(int $worklogId, array $data, int $userId): array
+    {
+        $worklog = Database::selectOne("SELECT * FROM worklogs WHERE id = ?", [$worklogId]);
+        if (!$worklog) {
+            throw new \InvalidArgumentException('Worklog not found');
+        }
+
+        $updateData = [];
+        if (isset($data['time_spent']))
+            $updateData['time_spent'] = $data['time_spent'];
+        if (isset($data['started_at']))
+            $updateData['started_at'] = $data['started_at'];
+        if (isset($data['description']))
+            $updateData['description'] = $data['description'];
+
+        if (empty($updateData)) {
+            return $worklog;
+        }
+
+        Database::update('worklogs', $updateData, 'id = ?', [$worklogId]);
+
+        // Recalculate issue time spent if needed
+        if (isset($data['time_spent'])) {
+            $diff = $data['time_spent'] - $worklog['time_spent'];
+            if ($diff != 0) {
+                Database::query(
+                    "UPDATE issues SET 
+                        time_spent = GREATEST(0, time_spent + ?),
+                        remaining_estimate = GREATEST(0, remaining_estimate - ?)
+                     WHERE id = ?",
+                    [$diff, $diff, $worklog['issue_id']]
+                );
+            }
+        }
+
+        return Database::selectOne("SELECT * FROM worklogs WHERE id = ?", [$worklogId]);
+    }
+
+    public function deleteWorklog(int $worklogId, int $userId): bool
+    {
+        $worklog = Database::selectOne("SELECT * FROM worklogs WHERE id = ?", [$worklogId]);
+        if (!$worklog) {
+            throw new \InvalidArgumentException('Worklog not found');
+        }
+
+        // Revert time spent on issue
+        Database::query(
+            "UPDATE issues SET 
+                time_spent = GREATEST(0, time_spent - ?),
+                remaining_estimate = remaining_estimate + ?
+             WHERE id = ?",
+            [$worklog['time_spent'], $worklog['time_spent'], $worklog['issue_id']]
+        );
+
+        return Database::delete('worklogs', 'id = ?', [$worklogId]) > 0;
+    }
+
+
+
 }

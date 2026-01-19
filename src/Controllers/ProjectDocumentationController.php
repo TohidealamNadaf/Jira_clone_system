@@ -100,47 +100,90 @@ class ProjectDocumentationController extends Controller
             }
 
             // Validate file upload
-            if (!isset($_FILES['document']) || $_FILES['document']['error'] !== UPLOAD_ERR_OK) {
-                $this->json(['success' => false, 'error' => 'No file uploaded or upload error'], 400);
+            if (!isset($_FILES['documents'])) {
+                $this->json(['success' => false, 'error' => 'No files uploaded'], 400);
                 return;
             }
 
-            // Validate required fields
-            $validator = new Validator($request->all(), [
-                'title' => 'required|max:255',
-                'category' => 'required|in:requirement,design,technical,user_guide,training,report,other'
-            ]);
+            $files = $_FILES['documents'];
+            $fileCount = is_array($files['name']) ? count($files['name']) : 1;
+
+            // Normalize files array if it's multiple
+            $uploadedFiles = [];
+            if (is_array($files['name'])) {
+                for ($i = 0; $i < $fileCount; $i++) {
+                    if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                        $uploadedFiles[] = [
+                            'name' => $files['name'][$i],
+                            'type' => $files['type'][$i],
+                            'tmp_name' => $files['tmp_name'][$i],
+                            'error' => $files['error'][$i],
+                            'size' => $files['size'][$i]
+                        ];
+                    }
+                }
+            } else {
+                if ($files['error'] === UPLOAD_ERR_OK) {
+                    $uploadedFiles[] = $files;
+                }
+            }
+
+            if (empty($uploadedFiles)) {
+                $this->json(['success' => false, 'error' => 'No valid files uploaded or upload error occurred'], 400);
+                return;
+            }
+
+            // Validate required fields (title is only required for single file upload if not provided)
+            $isMulti = count($uploadedFiles) > 1;
+            $validationRules = [
+                'category' => 'required|in:requirement,design,technical,user_guide,training,report,other,specification'
+            ];
+
+            if (!$isMulti) {
+                $validationRules['title'] = 'required|max:255';
+            }
+
+            $validator = new Validator($request->all(), $validationRules);
 
             if ($validator->fails()) {
                 $this->json(['success' => false, 'error' => 'Validation failed', 'errors' => $validator->errors()], 422);
                 return;
             }
 
-            // Validate document data
-            $documentData = [
-                'title' => $request->input('title', ''),
-                'description' => $request->input('description', ''),
-                'category' => $request->input('category', 'other'),
-                'version' => $request->input('version', '1.0'),
-                'is_public' => $request->input('is_public', '1') === '1'
-            ];
+            $results = [];
+            $successCount = 0;
+            $userId = $_SESSION['user']['id'] ?? 1;
 
-            // Upload document
-            $result = $this->docService->uploadDocument(
-                $_FILES['document'],
-                $project['id'],
-                $_SESSION['user']['id'] ?? 1,
-                $documentData
-            );
+            foreach ($uploadedFiles as $file) {
+                // Determine title: use form title only if it's a single upload, otherwise use filename
+                $title = ($isMulti || empty($request->input('title')))
+                    ? pathinfo($file['name'], PATHINFO_FILENAME)
+                    : $request->input('title');
 
-            if ($result['success']) {
+                $documentData = [
+                    'title' => $title,
+                    'description' => $request->input('description', ''),
+                    'category' => $request->input('category', 'other'),
+                    'version' => $request->input('version', '1.0'),
+                    'is_public' => $request->input('is_public', '1') === '1'
+                ];
+
+                $result = $this->docService->uploadDocument($file, $project['id'], $userId, $documentData);
+
+                if ($result['success']) {
+                    $successCount++;
+                    $results[] = $result['document_id'];
+                }
+            }
+
+            if ($successCount > 0) {
                 $this->json([
                     'success' => true,
-                    'message' => $result['message'],
-                    'document_id' => $result['document_id']
+                    'message' => $successCount . " document(s) uploaded successfully",
+                    'document_ids' => $results
                 ]);
             } else {
-                $this->json(['success' => false, 'error' => $result['error']], 400);
+                $this->json(['success' => false, 'error' => 'Failed to upload any documents'], 400);
             }
 
         } catch (Exception $e) {

@@ -127,7 +127,7 @@ class IssueApiController extends Controller
             $this->json(['error' => 'Issue not found'], 404);
         }
 
-        $data = $request->validate([
+        $data = $request->validateApi([
             'summary' => 'nullable|max:500',
             'description' => 'nullable|max:50000',
             'issue_type_id' => 'nullable|integer',
@@ -146,10 +146,13 @@ class IssueApiController extends Controller
             'fix_versions' => 'nullable|array',
         ]);
 
+        // Filter out keys that were not present in the request input to allow partial updates
+        $data = array_intersect_key($data, $request->all());
+
         try {
             $updated = $this->issueService->updateIssue($issue['id'], $data, $this->apiUserId());
             $this->json(['success' => true, 'issue' => $updated]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Throwable $e) {
             $this->json(['error' => $e->getMessage()], 422);
         }
     }
@@ -180,7 +183,7 @@ class IssueApiController extends Controller
             $this->json(['error' => 'Issue not found'], 404);
         }
 
-        $data = $request->validate([
+        $data = $request->validateApi([
             'status_id' => 'required|integer',
         ]);
 
@@ -218,7 +221,7 @@ class IssueApiController extends Controller
             $this->json(['error' => 'Issue not found'], 404);
         }
 
-        $data = $request->validate([
+        $data = $request->validateApi([
             'assignee_id' => 'nullable|integer',
         ]);
 
@@ -312,7 +315,7 @@ class IssueApiController extends Controller
             $this->json(['error' => 'Issue not found'], 404);
         }
 
-        $data = $request->validate([
+        $data = $request->validateApi([
             'body' => 'required|max:50000',
         ]);
 
@@ -341,7 +344,7 @@ class IssueApiController extends Controller
             $this->json(['error' => 'You can only edit your own comments'], 403);
         }
 
-        $data = $request->validate([
+        $data = $request->validateApi([
             'body' => 'required|max:50000',
         ]);
 

@@ -332,12 +332,12 @@
     JIRA BACKLOG - ENTERPRISE DESIGN
     ============================================ */
     :root {
-        --jira-blue: #8B1956 !important;
-        --jira-blue-dark: #6F123F !important;
-        --jira-dark: #161B22 !important;
-        --jira-gray: #626F86 !important;
-        --jira-light: #F7F8FA !important;
-        --jira-border: #DFE1E6 !important;
+        --jira-blue: #8B1956;
+        --jira-blue-dark: #6F123F;
+        --jira-dark: #161B22;
+        --jira-gray: #626F86;
+        --jira-light: #F7F8FA;
+        --jira-border: #DFE1E6;
     }
 
     /* Layout & Wrapper */
@@ -447,8 +447,8 @@
     }
 
     .btn-quick-action.primary {
-        background: var(--jira-blue);
-        color: white;
+        background-color: var(--jira-blue) !important;
+        color: white !important;
         padding: 8px 16px;
         border-radius: 6px;
         font-weight: 600;
@@ -461,10 +461,15 @@
         border: none;
     }
 
-    .btn-quick-action.primary:hover {
-        background: var(--jira-blue-dark);
-        color: white;
+    .btn-quick-action.primary span {
+        color: white !important;
     }
+
+    .btn-quick-action.primary:hover {
+        background-color: var(--jira-blue-dark) !important;
+        color: white !important;
+    }
+
 
     /* Main Content */
     .project-content {

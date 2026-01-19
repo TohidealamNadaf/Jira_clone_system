@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const issueTypeSelect = document.getElementById('global-modal-issueType');
         if (!issueTypeSelect) return;
 
-        issueTypeSelect.innerHTML = '<option value="">Select issue type</option>';
+        issueTypeSelect.innerHTML = '<option value="">Select work type</option>';
 
         if (Array.isArray(issueTypes) && issueTypes.length > 0) {
             issueTypes.forEach(type => {

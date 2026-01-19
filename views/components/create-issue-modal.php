@@ -224,10 +224,10 @@
                     <!-- Issue Type Field -->
                     <div class="form-group">
                         <label for="global-modal-issueType" class="form-label">
-                            Issue Type<span class="required-star">*</span>
+                            Work Type<span class="required-star">*</span>
                         </label>
                         <select class="form-select" id="global-modal-issueType" name="issueType" required>
-                            <option value="">Select issue type</option>
+                            <option value="">Select work type</option>
                         </select>
                     </div>
 

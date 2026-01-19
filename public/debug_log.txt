@@ -1,0 +1,54 @@
+[2026-01-19 05:49:44] IssueController::store called.
+[2026-01-19 05:49:44] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => cways_prod v8.sql
+                )
+
+            [full_path] => Array
+                (
+                    [0] => cways_prod v8.sql
+                )
+
+            [type] => Array
+                (
+                    [0] => application/octet-stream
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\php4892.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 313972
+                )
+
+        )
+
+)
+
+[2026-01-19 05:49:44] POST: Array
+(
+    [project_id] => 4
+    [issue_type_id] => 2
+    [summary] => Checking issue is working or not.
+    [description] => <p>Checking Issue working or not.</p>
+    [assignee_id] => 1
+    [priority_id] => 4
+    [start_date] => 2026-01-19
+    [end_date] => 2026-01-20
+)
+
+[2026-01-19 05:49:45] Processing file: cways_prod v8.sql
+[2026-01-19 05:49:45] File uploaded successfully. Path: uploads/attachments/2026/01/0a4472940310e3e048d2be316f8ec9df.sql
+[2026-01-19 05:49:45] Database insert success.

@@ -669,9 +669,6 @@ class IssueApiController extends Controller
             $this->json(['error' => 'Issue not found'], 404);
         }
 
-        // DEBUG LOGGING
-        error_log("UpdateSprint Params: " . json_encode($request->all()));
-
         $data = $request->validateApi([
             'sprint_id' => 'nullable|integer',
         ]);

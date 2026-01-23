@@ -30,8 +30,15 @@ class RoadmapController extends Controller
     public function index(Request $request): string
     {
         $projectId = $request->input('project_id');
-        $projects = $this->projectService->getAllProjects();
-        
+        $user = $this->user();
+
+        if ($user['is_admin']) {
+            $projects = $this->projectService->getAllProjects();
+        } else {
+            $userProjects = $this->projectService->getUserProjects($user['id']);
+            $projects = ['items' => $userProjects];
+        }
+
         // Default to first project if not specified
         if (empty($projectId) && !empty($projects['items'])) {
             $projectId = $projects['items'][0]['id'] ?? null;
@@ -41,11 +48,27 @@ class RoadmapController extends Controller
         $selectedProject = null;
 
         if ($projectId) {
-            $selectedProject = $this->projectService->getProjectById((int)$projectId);
-            
+            $selectedProject = $this->projectService->getProjectById((int) $projectId);
+
             if ($selectedProject) {
-                $this->authorize('issues.view', (int)$projectId);
-                
+                if (!$this->authenticated()) {
+                    $this->redirect('/login');
+                }
+
+                // Check access: Admin or Project Member
+                $canAccess = $user['is_admin'];
+                if (!$canAccess) {
+                    $isMember = Database::selectOne(
+                        "SELECT 1 FROM project_members WHERE project_id = ? AND user_id = ?",
+                        [$selectedProject['id'], $user['id']]
+                    );
+                    $canAccess = (bool) $isMember;
+                }
+
+                if (!$canAccess) {
+                    abort(403, 'Unauthorized access to project roadmap');
+                }
+
                 $filters = [
                     'status' => $request->input('status'),
                     'type' => $request->input('type'),
@@ -53,10 +76,10 @@ class RoadmapController extends Controller
                 ];
 
                 $roadmapData = [
-                    'items' => $this->roadmapService->getProjectRoadmap((int)$projectId, array_filter($filters)),
-                    'summary' => $this->roadmapService->getRoadmapSummary((int)$projectId),
-                    'timeline' => $this->roadmapService->getTimelineRange((int)$projectId),
-                    'atRiskItems' => $this->roadmapService->checkRiskStatus((int)$projectId),
+                    'items' => $this->roadmapService->getProjectRoadmap((int) $projectId, array_filter($filters)),
+                    'summary' => $this->roadmapService->getRoadmapSummary((int) $projectId),
+                    'timeline' => $this->roadmapService->getTimelineRange((int) $projectId),
+                    'atRiskItems' => $this->roadmapService->checkRiskStatus((int) $projectId),
                 ];
             }
         }
@@ -88,7 +111,24 @@ class RoadmapController extends Controller
             abort(404, 'Project not found');
         }
 
-        $this->authorize('issues.view', $project['id']);
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
+
+        // Check access: Admin or Project Member
+        $user = $this->user();
+        $canAccess = $user['is_admin'];
+        if (!$canAccess) {
+            $isMember = Database::selectOne(
+                "SELECT 1 FROM project_members WHERE project_id = ? AND user_id = ?",
+                [$project['id'], $user['id']]
+            );
+            $canAccess = (bool) $isMember;
+        }
+
+        if (!$canAccess) {
+            abort(403, 'Unauthorized access to project roadmap');
+        }
 
         // Get filter parameters
         $filters = [

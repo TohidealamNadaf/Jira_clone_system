@@ -146,9 +146,10 @@ class ProjectService
      * Get all projects a user has access to
      * (member of project or is admin)
      */
-    public function getUserProjects(int $userId, bool $includeArchived = false): array
+    public function getUserProjects(int $userId, bool $includeArchived = false, bool $isAdmin = false): array
     {
         $archivedClause = $includeArchived ? '' : 'AND p.is_archived = 0';
+        $adminParam = $isAdmin ? 1 : 0;
 
         return Database::select(
             "SELECT DISTINCT p.id, p.`key`, p.name, p.description, p.lead_id, p.category_id, 
@@ -165,10 +166,10 @@ class ProjectService
              LEFT JOIN project_categories pc ON p.category_id = pc.id
              LEFT JOIN project_members pm ON p.id = pm.project_id AND pm.user_id = ?
              LEFT JOIN roles r ON pm.role_id = r.id
-             WHERE (pm.user_id = ? OR p.lead_id = ? OR ? = 1)
+             WHERE (pm.user_id = ? OR p.lead_id = ? OR p.created_by = ? OR ? = 1)
              $archivedClause
              ORDER BY p.name ASC",
-            [$userId, $userId, $userId, 0]  // Last param for future admin check
+            [$userId, $userId, $userId, $userId, $adminParam]
         );
     }
 
@@ -213,8 +214,9 @@ class ProjectService
                 'created_by' => $userId,
             ]);
 
+            // Default role for project creator: prefer project_manager or administrator
             $defaultRole = Database::selectOne(
-                "SELECT id FROM roles WHERE slug = 'project-admin' LIMIT 1"
+                "SELECT id FROM roles WHERE slug IN ('project_manager', 'administrator') ORDER BY id DESC LIMIT 1"
             );
 
             if ($defaultRole) {
@@ -347,8 +349,10 @@ class ProjectService
     public function getAvailableUsers(int $projectId): array
     {
         return Database::select(
-            "SELECT u.id, u.email, u.display_name, u.avatar, u.first_name, u.last_name, u.is_admin
+            "SELECT u.id, u.email, u.display_name, u.avatar, u.first_name, u.last_name, u.is_admin,
+                    ur.role_id as global_role_id
              FROM users u
+             LEFT JOIN user_roles ur ON u.id = ur.user_id AND ur.project_id IS NULL
              WHERE u.is_active = 1
              AND u.id NOT IN (
                  SELECT user_id FROM project_members WHERE project_id = ?

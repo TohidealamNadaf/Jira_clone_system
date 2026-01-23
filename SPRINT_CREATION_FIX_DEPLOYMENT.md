@@ -71,7 +71,7 @@ Check browser console (F12 → Console tab) and verify no errors appear.
 ### ✅ Test 1: Valid Sprint Creation
 **Duration**: 2 minutes  
 **Steps**:
-1. Navigate to: `http://localhost:8080/jira_clone_system/public/projects/CWAYSMIS/sprints`
+1. Navigate to: `http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints`
 2. Click "Create Sprint" button
 3. Enter:
    - Sprint Name: `Test Sprint 1`

@@ -52,3 +52,87 @@
 [2026-01-19 05:49:45] Processing file: cways_prod v8.sql
 [2026-01-19 05:49:45] File uploaded successfully. Path: uploads/attachments/2026/01/0a4472940310e3e048d2be316f8ec9df.sql
 [2026-01-19 05:49:45] Database insert success.
+[2026-01-22 06:15:46] IssueController::store called.
+[2026-01-22 06:15:46] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => BalanceListGL.rpt
+                )
+
+            [full_path] => Array
+                (
+                    [0] => BalanceListGL.rpt
+                )
+
+            [type] => Array
+                (
+                    [0] => application/x-rpt
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp\tmp\php12CA.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 14336
+                )
+
+        )
+
+)
+
+[2026-01-22 06:15:46] POST: Array
+(
+    [project_id] => 5
+    [issue_type_id] => 5
+    [summary] => Checking Issue
+    [description] => <p><strong>login.ts:36 &nbsp;POST http://localhost:4200/cways_mis_backend/api/v1/auth/login 404 (Not Found)</strong></p>
+    [assignee_id] => 1
+    [priority_id] => 3
+)
+
+[2026-01-22 06:15:46] Processing file: BalanceListGL.rpt
+[2026-01-22 06:15:46] File uploaded successfully. Path: uploads/attachments/2026/01/7f86ebc19779ad820a933f1ee951dfb1.rpt
+[2026-01-22 06:15:46] Database insert success.
+[2026-01-23 09:14:36] IssueController::store called.
+[2026-01-23 09:14:36] FILES: Array
+(
+)
+
+[2026-01-23 09:14:36] POST: Array
+(
+    [project_id] => 7
+    [issue_type_id] => 3
+    [summary] => Issue working on
+    [description] => <p><strong>Issue working on</strong></p>
+    [assignee_id] => 14
+    [priority_id] => 3
+    [start_date] => 2026-01-23
+    [end_date] => 2026-01-31
+)
+
+[2026-01-23 09:39:08] IssueController::store called.
+[2026-01-23 09:39:08] FILES: Array
+(
+)
+
+[2026-01-23 09:39:08] POST: Array
+(
+    [project_id] => 7
+    [issue_type_id] => 1
+    [summary] => issue checking
+    [description] => <p>daf</p>
+    [assignee_id] => 14
+    [priority_id] => 2
+)
+

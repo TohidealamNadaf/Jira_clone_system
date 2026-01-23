@@ -25,7 +25,9 @@ class CalendarController extends Controller
      */
     public function index(): string
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         return $this->view('calendar.index');
     }
 
@@ -34,7 +36,9 @@ class CalendarController extends Controller
      */
     public function show(Request $request): string
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         // We can reuse the main view but pass the project key to pre-filter in JS if needed
         return $this->view('calendar.index', ['projectKey' => $request->param('key')]);
     }
@@ -44,7 +48,9 @@ class CalendarController extends Controller
      */
     public function getEvents(Request $request): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
 
         try {
             // FullCalendar sends 'start' and 'end' as ISO strings
@@ -110,7 +116,9 @@ class CalendarController extends Controller
      */
     public function projects(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $projects = $this->calendarService->getProjectsForFilter();
             $this->json(['success' => true, 'data' => $projects]);
@@ -124,7 +132,9 @@ class CalendarController extends Controller
      */
     public function upcoming(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $events = $this->calendarService->getUpcomingIssues();
             $this->json(['success' => true, 'data' => $events]);
@@ -138,7 +148,9 @@ class CalendarController extends Controller
      */
     public function overdue(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $events = $this->calendarService->getOverdueIssues();
             $this->json(['success' => true, 'data' => $events]);
@@ -152,7 +164,9 @@ class CalendarController extends Controller
      */
     public function statuses(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $statuses = $this->calendarService->getStatusesForFilter();
             $this->json(['success' => true, 'data' => $statuses]);
@@ -166,7 +180,9 @@ class CalendarController extends Controller
      */
     public function priorities(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $priorities = $this->calendarService->getPrioritiesForFilter();
             $this->json(['success' => true, 'data' => $priorities]);
@@ -180,7 +196,9 @@ class CalendarController extends Controller
      */
     public function issueTypes(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $types = $this->calendarService->getIssueTypesForFilter();
             $this->json(['success' => true, 'data' => $types]);
@@ -194,7 +212,9 @@ class CalendarController extends Controller
      */
     public function users(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $users = $this->calendarService->getUsersForFilter();
             $this->json(['success' => true, 'data' => $users]);
@@ -208,7 +228,9 @@ class CalendarController extends Controller
      */
     public function toggleWatch(Request $request): void
     {
-        $this->authorize('issues.view'); // Assuming any viewer can watch
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        } // Assuming any viewer can watch
         $key = $request->param('key');
         $user = $request->user();
 
@@ -230,7 +252,9 @@ class CalendarController extends Controller
      */
     public function checkWatchStatus(Request $request): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         $key = $request->param('key');
         $user = $request->user();
 
@@ -252,7 +276,9 @@ class CalendarController extends Controller
      */
     public function unscheduled(): void
     {
-        $this->authorize('issues.view');
+        if (!$this->authenticated()) {
+            $this->redirect('/login');
+        }
         try {
             $issues = $this->calendarService->getUnscheduledIssues();
             $this->json(['success' => true, 'data' => $issues]);
@@ -267,7 +293,7 @@ class CalendarController extends Controller
     public function scheduleIssue(Request $request): void
     {
         $this->authorize('issues.edit');
-        
+
         $issueId = $request->input('issue_id');
         $dueDate = $request->input('due_date');
         $startDate = $request->input('start_date');

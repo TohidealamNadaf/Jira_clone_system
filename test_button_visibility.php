@@ -73,7 +73,7 @@
         <ol>
             <li>Clear browser cache: <strong>CTRL + SHIFT + DEL</strong></li>
             <li>Hard refresh: <strong>CTRL + F5</strong></li>
-            <li>Go to: <strong>http://localhost:8080/Jira_clone_system/public/admin/users/2</strong></li>
+            <li>Go to: <strong>http://localhost:8080/cways_mis/public/admin/users/2</strong></li>
             <li>Button text should now be visible!</li>
         </ol>
     </div>

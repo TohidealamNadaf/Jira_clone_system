@@ -94,7 +94,7 @@ Click "Clear data"
 ### Step 2: Hard Refresh Page
 ```
 Press CTRL + F5
-Navigate to: http://localhost:8080/Jira_clone_system/public/projects/CWAYSMIS/sprints
+Navigate to: http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints
 ```
 
 ### Step 3: Open Developer Console
@@ -116,7 +116,7 @@ You should see these logs in order:
 [SPRINT-FORM] Opening create sprint modal
 [SPRINT-FORM] Form submitted
 [SPRINT-FORM] Form data: {name: "Sprint 1", goal: null, start_date: null, end_date: null}
-[SPRINT-FORM] Posting to: http://localhost:8080/Jira_clone_system/public/projects/CWAYSMIS/sprints
+[SPRINT-FORM] Posting to: http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints
 [SPRINT-FORM] Response status: 201
 [SPRINT-FORM] Sprint created successfully, reloading...
 ```

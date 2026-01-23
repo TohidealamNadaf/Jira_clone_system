@@ -121,35 +121,59 @@ class SearchController extends Controller
             'projects' => [],
         ];
 
+        // Permission conditions
+        $user = $this->user();
+        $permissionSql = "";
+        $permissionParams = [];
+
+        if (!$user['is_admin']) {
+            $permissionSql = " AND i.project_id IN (SELECT project_id FROM project_members WHERE user_id = ?)";
+            $permissionParams[] = $user['id'];
+        }
+
         if (preg_match('/^[A-Z]+-\d+$/i', $query)) {
-            $issue = Database::selectOne(
-                "SELECT i.id, i.issue_key, i.summary, s.name as status_name, s.color as status_color
+            $sql = "SELECT i.id, i.issue_key, i.summary, s.name as status_name, s.color as status_color
                  FROM issues i
                  JOIN statuses s ON i.status_id = s.id
-                 WHERE i.issue_key = ?",
-                [strtoupper($query)]
+                 WHERE i.issue_key = ?" . $permissionSql;
+
+            $issue = Database::selectOne(
+                $sql,
+                array_merge([strtoupper($query)], $permissionParams)
             );
             if ($issue) {
                 $results['issues'][] = $issue;
             }
         } else {
-            $results['issues'] = Database::select(
-                "SELECT i.id, i.issue_key, i.summary, s.name as status_name, s.color as status_color
+            $sql = "SELECT i.id, i.issue_key, i.summary, s.name as status_name, s.color as status_color
                  FROM issues i
                  JOIN statuses s ON i.status_id = s.id
-                 WHERE i.issue_key LIKE ? OR i.summary LIKE ?
+                 WHERE (i.issue_key LIKE ? OR i.summary LIKE ?)" . $permissionSql . "
                  ORDER BY i.updated_at DESC
-                 LIMIT 5",
-                ["%{$query}%", "%{$query}%"]
+                 LIMIT 5";
+
+            $results['issues'] = Database::select(
+                $sql,
+                array_merge(["%{$query}%", "%{$query}%"], $permissionParams)
             );
 
-            $results['projects'] = Database::select(
-                "SELECT id, key, name
+            // Filter Projects too? Yes.
+            $projectPermissionSql = "";
+            $projectPermissionParams = [];
+            if (!$user['is_admin']) {
+                $projectPermissionSql = " AND id IN (SELECT project_id FROM project_members WHERE user_id = ?)";
+                $projectPermissionParams[] = $user['id'];
+            }
+
+            $projectSql = "SELECT id, key, name
                  FROM projects
-                 WHERE key LIKE ? OR name LIKE ?
+                 WHERE (key LIKE ? OR name LIKE ?)" . $projectPermissionSql . "
                  ORDER BY name
-                 LIMIT 3",
-                ["%{$query}%", "%{$query}%"]
+                 LIMIT 3";
+
+            $results['projects'] = Database::select(
+                $projectSql,
+                array_merge(["%{$query}%", "%{$query}%"], $projectPermissionParams)
             );
         }
 
@@ -354,6 +378,16 @@ class SearchController extends Controller
         $offset = ($page - 1) * $perPage;
         $conditions = [];
         $params = [];
+
+        // Permission check
+        $user = $this->user();
+        if (!$user['is_admin']) {
+            // Join with project_members to ensure user has access
+            // We'll handle this by adding a subquery or join condition
+            // Since this method builds a WHERE clause, let's add an IN condition
+            $conditions[] = "i.project_id IN (SELECT project_id FROM project_members WHERE user_id = ?)";
+            $params[] = $user['id'];
+        }
 
         // Text search
         if (!empty($query)) {
@@ -571,6 +605,13 @@ class SearchController extends Controller
         $conditions = [];
         $params = [];
         $orderBy = 'i.created_at DESC';
+
+        // Permission check
+        $user = $this->user();
+        if (!$user['is_admin']) {
+            $conditions[] = "i.project_id IN (SELECT project_id FROM project_members WHERE user_id = ?)";
+            $params[] = $user['id'];
+        }
 
         $jql = trim($jql);
 

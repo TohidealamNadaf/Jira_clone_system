@@ -70,13 +70,14 @@ if (is_dir($avatarDir)) {
         echo "✅ <strong>PASS:</strong> Avatar directory exists with " . count($files) . " files<br>";
         echo "Location: " . htmlspecialchars($avatarDir);
         echo "</div>";
-        
+
         echo "<h3>Sample Avatar Files:</h3>";
         echo "<table>";
         echo "<tr><th>Filename</th><th>Size</th><th>Last Modified</th></tr>";
         $count = 0;
         foreach (array_slice($files, 0, 5) as $file) {
-            if ($count >= 5) break;
+            if ($count >= 5)
+                break;
             $path = $avatarDir . '/' . $file;
             $size = filesize($path);
             $modified = date('Y-m-d H:i:s', filemtime($path));
@@ -120,7 +121,7 @@ if (empty($allUsers)) {
     $correctPaths = 0;
     $wrongPaths = 0;
     $wrongPathUsers = [];
-    
+
     foreach ($allUsers as $user) {
         if (str_contains($user['avatar'], '/uploads/avatars/')) {
             $correctPaths++;
@@ -129,7 +130,7 @@ if (empty($allUsers)) {
             $wrongPathUsers[] = $user;
         }
     }
-    
+
     if ($wrongPaths === 0) {
         echo "<div class='status pass'>";
         echo "✅ <strong>PASS:</strong> All " . count($allUsers) . " users have correct avatar paths<br>";
@@ -140,7 +141,7 @@ if (empty($allUsers)) {
         echo "⚠️ <strong>WARNING:</strong> Found " . $wrongPaths . " users with /public/avatars/ paths<br>";
         echo "These will be auto-corrected by the code fix, but database cleanup is recommended.";
         echo "</div>";
-        
+
         echo "<h3>Users with Wrong Avatar Paths:</h3>";
         echo "<table>";
         echo "<tr><th>ID</th><th>Email</th><th>Current Path</th><th>Will be Corrected To</th></tr>";
@@ -167,7 +168,7 @@ if (function_exists('url')) {
     $testUrl = url($testPath);
 }
 
-if ($testUrl && (str_contains($testUrl, '/jira_clone_system/public') || str_contains($testUrl, 'localhost'))) {
+if ($testUrl && (str_contains($testUrl, '/cways_mis/public') || str_contains($testUrl, 'localhost'))) {
     echo "<div class='status pass'>";
     echo "✅ <strong>PASS:</strong> URL helper working correctly<br>";
     echo "Input: <code>" . htmlspecialchars($testPath) . "</code><br>";
@@ -210,15 +211,15 @@ if ($allPass) {
     echo "<div class='status warning'>";
     echo "<h3>⚠️ Issues Detected - Next Steps:</h3>";
     echo "<ol>";
-    
+
     if (!str_contains(file_get_contents($functionFile), '/public/avatars/')) {
         echo "<li><strong>Apply Code Fix:</strong> Update src/Helpers/functions.php with avatar fallback handler</li>";
     }
-    
+
     if ($wrongPaths > 0) {
         echo "<li><strong>Clean Database:</strong> Visit <code>fix_avatar_database.php</code> to auto-fix avatar paths</li>";
     }
-    
+
     echo "<li><strong>Clear Browser Cache:</strong> CTRL + SHIFT + DEL → All time → Clear data</li>";
     echo "<li><strong>Hard Refresh:</strong> CTRL + F5</li>";
     echo "</ol>";

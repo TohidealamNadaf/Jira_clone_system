@@ -549,7 +549,8 @@
                         <select name="user_id" class="form-select" required>
                             <option value="">Choose user...</option>
                             <?php foreach ($availableUsers as $user): ?>
-                                <option value="<?= e($user['id']) ?>" data-is-admin="<?= e($user['is_admin']) ?>">
+                                <option value="<?= e($user['id']) ?>" data-is-admin="<?= e($user['is_admin']) ?>"
+                                    data-global-role-id="<?= e($user['global_role_id'] ?? '') ?>">
                                     <?= e($user['display_name'] ?? $user['email']) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -1526,6 +1527,23 @@
         const baseAction = document.getElementById('addMemberForm').action;
         document.getElementById('removeMemberForm').action = baseAction + '/' + el.dataset.memberId;
     }
+
+    // Automate Role Selection in Add Member Modal
+    document.querySelector('#addMemberModal select[name="user_id"]')?.addEventListener('change', function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const globalRoleId = selectedOption.getAttribute('data-global-role-id');
+        const roleSelect = document.getElementById('addMemberRole');
+
+        if (globalRoleId && roleSelect) {
+            // Find the option with the matching role_id
+            for (let i = 0; i < roleSelect.options.length; i++) {
+                if (roleSelect.options[i].value === globalRoleId) {
+                    roleSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    });
 </script>
 
 <style>

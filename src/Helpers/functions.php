@@ -97,7 +97,7 @@ function url(string $path = ''): string
 /**
  * Get application base path (for JavaScript use)
  * Returns just the path part, not the full URL
- * Examples: '/jira_clone_system/public', '/', '/apps/jira/public'
+ * Examples: '/cways_mis/public', '/', '/apps/jira/public'
  */
 function basePath(): string
 {

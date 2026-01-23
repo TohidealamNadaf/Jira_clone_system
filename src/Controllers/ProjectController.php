@@ -41,7 +41,38 @@ class ProjectController extends Controller
 
         $page = (int) ($request->input('page') ?? 1);
         $perPage = (int) ($request->input('per_page') ?? 25);
-        $projects = $this->projectService->getAllProjects(array_filter($filters), $page, $perPage);
+
+        $user = $this->user();
+        if ($user['is_admin']) {
+            $projects = $this->projectService->getAllProjects(array_filter($filters), $page, $perPage);
+        } else {
+            // getUserProjects returns a flat array, we might need to manually handle pagination or update the service.
+            // Checking ProjectService, getUserProjects returns array but DOES NOT support pagination params.
+            // getAllProjects supports pagination.
+            // I should update getUserProjects to support pagination or manually paginate here.
+
+            // Let's inspect getUserProjects signature again from previous read:
+            // public function getUserProjects(int $userId, bool $includeArchived = false, bool $isAdmin = false): array
+
+            // It returns all projects. For consistency with the view which expects 'items', 'total', 'last_page' keys (from getAllProjects),
+            // I should probably wrap the result of getUserProjects to match the structure if I use it directly,
+            // OR ideally update getUserProjects to support pagination.
+
+            $allUserProjects = $this->projectService->getUserProjects($user['id']);
+
+            // Manual pagination for now to avoid changing Service signature deeply if not needed
+            $total = count($allUserProjects);
+            $offset = ($page - 1) * $perPage;
+            $items = array_slice($allUserProjects, $offset, $perPage);
+
+            $projects = [
+                'items' => $items,
+                'total' => $total,
+                'per_page' => $perPage,
+                'current_page' => $page,
+                'last_page' => (int) ceil($total / $perPage),
+            ];
+        }
 
         // Get categories for filter dropdown
         $categories = Database::select("SELECT * FROM project_categories ORDER BY name ASC");
@@ -291,7 +322,7 @@ class ProjectController extends Controller
     {
         $key = $request->param('key');
         error_log('[SPRINT] Starting sprint creation for project: ' . $key);
-        
+
         $project = $this->projectService->getProjectByKey($key);
 
         if (!$project) {
@@ -362,7 +393,7 @@ class ProjectController extends Controller
         try {
             error_log('[SPRINT] Creating sprint with service');
             $sprint = $this->sprintService->createSprint($boardId, $data, $this->userId());
-            
+
             error_log('[SPRINT] Sprint created successfully with ID: ' . $sprint['id']);
 
             if ($request->wantsJson()) {
@@ -504,6 +535,7 @@ class ProjectController extends Controller
             'category_id' => 'nullable|integer',
             'default_assignee' => 'nullable|in:project_lead,unassigned',
             'is_archived' => 'nullable|boolean',
+            'is_private' => 'nullable|boolean',
         ]);
 
         // Handle Avatar Upload
@@ -545,8 +577,15 @@ class ProjectController extends Controller
                 $this->json(['success' => true, 'project' => $updated]);
             }
 
+            // If we came from settings, try to preserve the tab hash
+            $referer = $_SERVER['HTTP_REFERER'] ?? '';
+            $hash = '';
+            if (strpos($referer, '#') !== false) {
+                $hash = substr($referer, strpos($referer, '#'));
+            }
+
             $this->redirectWith(
-                url("/projects/{$updated['key']}"),
+                url("/projects/{$updated['key']}/settings" . $hash),
                 'success',
                 'Project updated successfully.'
             );
@@ -933,8 +972,9 @@ class ProjectController extends Controller
     public function quickCreateList(Request $request): void
     {
         try {
-            // Get projects user has access to
-            $projects = $this->projectService->getUserProjects($this->userId());
+            $user = $this->user();
+            $isAdmin = (isset($user['is_admin']) && $user['is_admin'] == 1);
+            $projects = $this->projectService->getUserProjects($this->userId(), false, $isAdmin);
 
             // Return JSON response
             $this->json($projects);

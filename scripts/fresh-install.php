@@ -45,11 +45,11 @@ try {
         $dbConfig['port'],
         $dbConfig['charset']
     );
-    
+
     $pdo = new PDO($dsn, $dbConfig['username'], $dbConfig['password'], [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
-    
+
     echo "✅ Connected to MySQL server\n";
 } catch (PDOException $e) {
     echo "❌ Failed to connect: " . $e->getMessage() . "\n";
@@ -76,35 +76,41 @@ echo "\n📋 Step 2: Running schema.sql...\n";
 $schemaFile = $basePath . '/database/schema.sql';
 if (file_exists($schemaFile)) {
     $sql = file_get_contents($schemaFile);
-    
+
     // Split by statement (simple approach)
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
-    
+
     // Remove comments and execute
     $statements = array_filter(
         array_map('trim', explode(';', $sql)),
-        function($s) { return !empty($s) && strpos($s, '--') !== 0; }
+        function ($s) {
+            return !empty($s) && strpos($s, '--') !== 0; }
     );
-    
+
     $count = 0;
     foreach ($statements as $stmt) {
-        if (empty(trim($stmt))) continue;
-        if (stripos($stmt, 'CREATE DATABASE') !== false) continue;
-        if (stripos($stmt, 'USE `') !== false) continue;
-        
+        if (empty(trim($stmt)))
+            continue;
+        if (stripos($stmt, 'CREATE DATABASE') !== false)
+            continue;
+        if (stripos($stmt, 'USE `') !== false)
+            continue;
+
         try {
             $pdo->exec($stmt);
             $count++;
         } catch (PDOException $e) {
             // Ignore duplicate table/key errors
-            if (strpos($e->getMessage(), '1050') === false && 
+            if (
+                strpos($e->getMessage(), '1050') === false &&
                 strpos($e->getMessage(), '1061') === false &&
-                strpos($e->getMessage(), '1060') === false) {
+                strpos($e->getMessage(), '1060') === false
+            ) {
                 echo "   ⚠️ Warning: " . $e->getMessage() . "\n";
             }
         }
     }
-    
+
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
     echo "   ✅ Executed {$count} statements\n";
 } else {
@@ -117,18 +123,20 @@ echo "\n🌱 Step 3: Running seed.sql...\n";
 $seedFile = $basePath . '/database/seed.sql';
 if (file_exists($seedFile)) {
     $sql = file_get_contents($seedFile);
-    
+
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
-    
+
     $statements = array_filter(
         array_map('trim', explode(';', $sql)),
-        function($s) { return !empty($s) && strpos($s, '--') !== 0; }
+        function ($s) {
+            return !empty($s) && strpos($s, '--') !== 0; }
     );
-    
+
     $count = 0;
     foreach ($statements as $stmt) {
-        if (empty(trim($stmt))) continue;
-        
+        if (empty(trim($stmt)))
+            continue;
+
         try {
             $pdo->exec($stmt);
             $count++;
@@ -139,7 +147,7 @@ if (file_exists($seedFile)) {
             }
         }
     }
-    
+
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
     echo "   ✅ Executed {$count} statements\n";
 } else {
@@ -157,7 +165,7 @@ try {
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->execute([$adminEmail]);
     $existing = $stmt->fetch();
-    
+
     if ($existing) {
         // Update password
         $stmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE email = ?");
@@ -212,7 +220,7 @@ $migrationsDir = $basePath . '/database/migrations';
 if (is_dir($migrationsDir)) {
     $files = glob($migrationsDir . '/*.sql');
     sort($files);
-    
+
     $migrationCount = 0;
     foreach ($files as $file) {
         try {
@@ -233,13 +241,19 @@ echo "\n🔔 Step 7: Initializing notification preferences...\n";
 try {
     $stmt = $pdo->query("SELECT id FROM users");
     $users = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    
+
     $eventTypes = [
-        'issue_created', 'issue_assigned', 'issue_commented', 
-        'issue_status_changed', 'issue_mentioned', 'issue_watched',
-        'project_created', 'project_member_added', 'comment_reply'
+        'issue_created',
+        'issue_assigned',
+        'issue_commented',
+        'issue_status_changed',
+        'issue_mentioned',
+        'issue_watched',
+        'project_created',
+        'project_member_added',
+        'comment_reply'
     ];
-    
+
     $prefCount = 0;
     foreach ($users as $userId) {
         foreach ($eventTypes as $eventType) {
@@ -274,7 +288,7 @@ echo "  Password: Admin@123\n\n";
 
 echo "  Access URL:\n";
 echo "  ─────────────────────\n";
-echo "  http://localhost:8080/jira_clone_system/public/\n\n";
+echo "  http://localhost:8080/cways_mis/public/\n\n";
 
 echo "  ⚠️  Remember to:\n";
 echo "  • Change the admin password after login\n";

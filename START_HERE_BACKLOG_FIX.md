@@ -55,7 +55,7 @@ Optional (for reference):
 - `AGENTS.md` (updated with fix)
 
 ### Step 3: Test
-Visit verification tool: `http://localhost:8080/jira_clone_system/public/verify-backlog-routing.php`
+Visit verification tool: `http://localhost:8080/cways_mis/public/verify-backlog-routing.php`
 
 All projects should show ✅ PASS
 
@@ -78,7 +78,7 @@ All projects should show ✅ PASS
 ```
 
 ### Web Tool
-Visit: `http://localhost:8080/jira_clone_system/public/verify-backlog-routing.php`
+Visit: `http://localhost:8080/cways_mis/public/verify-backlog-routing.php`
 
 Should show all GREEN ✅
 
@@ -143,7 +143,7 @@ php test-backlog-fix.php
 
 ### Web Verification
 ```
-http://localhost:8080/jira_clone_system/public/verify-backlog-routing.php
+http://localhost:8080/cways_mis/public/verify-backlog-routing.php
 ```
 
 ### Database Query

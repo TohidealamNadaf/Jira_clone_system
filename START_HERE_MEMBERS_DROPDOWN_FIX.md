@@ -125,7 +125,7 @@ CTRL+F5
 
 ### Step 3: Test
 ```
-URL: http://localhost:8080/Jira_clone_system/public/projects/CWAYS/members
+URL: http://localhost:8080/cways_mis/public/projects/CWAYS/members
 
 Grid View:
   1. Hover over member card → three-dot button appears

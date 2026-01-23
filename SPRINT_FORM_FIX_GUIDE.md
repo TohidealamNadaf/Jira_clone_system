@@ -41,7 +41,7 @@ Press F12 → Console tab
 
 ### Step 2: Navigate to Sprints Page
 ```
-http://localhost:8080/Jira_clone_system/public/projects/CWAYSMIS/sprints
+http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints
 ```
 
 ### Step 3: Check Console Output

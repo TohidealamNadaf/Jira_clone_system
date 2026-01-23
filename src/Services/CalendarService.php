@@ -54,6 +54,10 @@ class CalendarService
      */
     private function getEvents(string $start, string $end, array $filters = []): array
     {
+        $user = auth();
+        $userId = $user['id'] ?? 0;
+        $isAdmin = $user['is_admin'] ?? false;
+
         $sql = "
             SELECT DISTINCT
                 i.id,
@@ -92,6 +96,7 @@ class CalendarService
             JOIN issue_types it ON i.issue_type_id = it.id
             LEFT JOIN users assignee ON i.assignee_id = assignee.id
             LEFT JOIN users reporter ON i.reporter_id = reporter.id
+            " . (!$isAdmin ? "JOIN project_members pm ON proj.id = pm.project_id AND pm.user_id = :current_user_id" : "") . "
             WHERE
                 (
                     (i.start_date BETWEEN :start1 AND :end1) OR
@@ -111,6 +116,10 @@ class CalendarService
             'start4' => $end,
             'end4' => $start // Logic for spanning: start <= range_end AND end >= range_start
         ];
+
+        if (!$isAdmin) {
+            $params['current_user_id'] = $userId;
+        }
 
         // Apply filters
         if (!empty($filters['project_key'])) {
@@ -270,7 +279,22 @@ class CalendarService
      */
     public function getProjectsForFilter(): array
     {
-        return Database::select("SELECT id, `key`, name FROM projects ORDER BY name ASC");
+        $user = auth();
+        $userId = $user['id'] ?? 0;
+        $isAdmin = $user['is_admin'] ?? false;
+
+        if ($isAdmin) {
+            return Database::select("SELECT id, `key`, name FROM projects ORDER BY name ASC");
+        }
+
+        return Database::select(
+            "SELECT DISTINCT p.id, p.`key`, p.name 
+             FROM projects p
+             JOIN project_members pm ON p.id = pm.project_id
+             WHERE pm.user_id = ?
+             ORDER BY p.name ASC",
+            [$userId]
+        );
     }
 
     /**
@@ -278,6 +302,10 @@ class CalendarService
      */
     public function getUnscheduledIssues(): array
     {
+        $user = auth();
+        $userId = $user['id'] ?? 0;
+        $isAdmin = $user['is_admin'] ?? false;
+
         $sql = "
             SELECT
                 i.id,
@@ -316,6 +344,7 @@ class CalendarService
             JOIN issue_types it ON i.issue_type_id = it.id
             LEFT JOIN users assignee ON i.assignee_id = assignee.id
             LEFT JOIN users reporter ON i.reporter_id = reporter.id
+            " . (!$isAdmin ? "JOIN project_members pm ON proj.id = pm.project_id AND pm.user_id = :current_user_id" : "") . "
             WHERE 
                 i.start_date IS NULL
                 AND i.due_date IS NULL
@@ -325,10 +354,15 @@ class CalendarService
                 i.created_at DESC
         ";
 
-        $issues = Database::select($sql);
+        $params = [];
+        if (!$isAdmin) {
+            $params['current_user_id'] = $userId;
+        }
+
+        $issues = Database::select($sql, $params);
 
         // Process avatar paths through avatar() helper to fix 404 errors
-        return array_map(function(array $issue): array {
+        return array_map(function (array $issue): array {
             if (!empty($issue['assignee_avatar'])) {
                 $issue['assignee_avatar'] = avatar($issue['assignee_avatar']);
             }

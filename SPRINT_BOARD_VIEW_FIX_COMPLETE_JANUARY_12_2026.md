@@ -8,7 +8,7 @@
 ### Problem
 When users clicked "View Board" button on sprint cards, they were redirected to:
 ```
-http://localhost:8080/Jira_clone_system/public/projects/CWAYSMIS/sprints/10/board
+http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints/10/board
 ```
 
 This URL returned a **404 Not Found** error because:

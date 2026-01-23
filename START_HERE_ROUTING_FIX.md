@@ -11,7 +11,7 @@ Your board pages are showing empty or "0 columns, 0 issues":
 
 Visit this URL and click one button:
 
-### 👉 **FIX URL**: `http://localhost:8080/Jira_clone_system/public/setup-board-columns.php`
+### 👉 **FIX URL**: `http://localhost:8080/cways_mis/public/setup-board-columns.php`
 
 ### Steps:
 1. Open the URL above in your browser
@@ -32,7 +32,7 @@ These columns are required for the Kanban board view to work.
 
 ## After the Fix - What to Test
 
-1. Go to: `http://localhost:8080/Jira_clone_system/public/projects/CWAYSMIS/boards`
+1. Go to: `http://localhost:8080/cways_mis/public/projects/CWAYSMIS/boards`
    - ✅ Should show "3 columns" (not "0 columns")
    - ✅ Should show issue count (not "0 issues")
 
@@ -44,7 +44,7 @@ These columns are required for the Kanban board view to work.
    - ✅ Click "View Board" on a sprint
    - ✅ Should show board filtered to that sprint
 
-4. Go to: `http://localhost:8080/Jira_clone_system/public/boards/6`
+4. Go to: `http://localhost:8080/cways_mis/public/boards/6`
    - ✅ Should show board with issues
 
 ## Cleanup

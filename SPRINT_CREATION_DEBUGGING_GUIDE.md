@@ -64,7 +64,7 @@ F12 → Console tab → Look for [SPRINT-FORM] messages
 [SPRINT-FORM] Opening create sprint modal
 [SPRINT-FORM] Form submitted
 [SPRINT-FORM] Form data: {name: "Sprint 1", ...}
-[SPRINT-FORM] Posting to: http://localhost:8080/Jira_clone_system/public/projects/CWAYSMIS/sprints
+[SPRINT-FORM] Posting to: http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints
 [SPRINT-FORM] Response status: 201
 [SPRINT-FORM] Sprint created successfully, reloading...
 ```
@@ -172,12 +172,12 @@ SELECT * FROM boards WHERE project_id = (SELECT id FROM projects WHERE key='CWAY
 # Clear all caches
 # 1. Browser cache: CTRL + SHIFT + DEL → All time → Clear
 # 2. Browser local storage: F12 → Application → Local Storage → Clear
-# 3. XAMPP cache: Delete files in C:\xampp\htdocs\Jira_clone_system\storage\cache\
+# 3. XAMPP cache: Delete files in C:\xampp\htdocs\cways_mis\storage\cache\
 ```
 
 ### Step 2: Navigate to Sprints Page
 ```
-http://localhost:8080/Jira_clone_system/public/projects/CWAYSMIS/sprints
+http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints
 ```
 
 ### Step 3: Open Developer Tools

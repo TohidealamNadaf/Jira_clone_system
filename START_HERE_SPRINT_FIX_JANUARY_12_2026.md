@@ -105,7 +105,7 @@ This reloads all JavaScript.
 
 ### 3️⃣ Test Sprint Creation (5 minutes)
 
-1. Open: `http://localhost:8080/jira_clone_system/public/projects/CWAYSMIS/sprints`
+1. Open: `http://localhost:8080/cways_mis/public/projects/CWAYSMIS/sprints`
 2. Click: "Create Sprint" button
 3. Enter:
    - Sprint Name: `Test Sprint 1`

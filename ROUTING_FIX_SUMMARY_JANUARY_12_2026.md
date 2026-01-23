@@ -49,7 +49,7 @@ Web-based tool to create missing board columns:
 
 **How to use**:
 ```
-1. Visit: http://localhost:8080/Jira_clone_system/public/setup-board-columns.php
+1. Visit: http://localhost:8080/cways_mis/public/setup-board-columns.php
 2. Click "Check Status"
 3. Click "Create Columns" if needed
 4. Verify success
@@ -124,7 +124,7 @@ All of these now work correctly with the fix.
 
 ### Option A: Use Web Tool (Recommended)
 ```
-1. Visit: http://localhost:8080/Jira_clone_system/public/setup-board-columns.php
+1. Visit: http://localhost:8080/cways_mis/public/setup-board-columns.php
 2. Click "Check Status"
 3. Click "Create Columns"
 4. Done - delete the file

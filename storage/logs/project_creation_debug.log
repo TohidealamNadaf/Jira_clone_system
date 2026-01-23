@@ -20,9 +20,9 @@
 [2025-12-06 07:36:55]    Created project ID: 13
 [2025-12-06 07:36:55] 6. Verifying project persistence...
 [2025-12-06 07:36:55] ❌ Transaction failed: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'key, name FROM projects WHERE id = ?' at line 1
-[2025-12-06 07:36:55]    Stack: #0 C:\xampp\htdocs\jira_clone_system\src\Core\Database.php(68): PDO->prepare('SELECT id, key,...')
-#1 C:\xampp\htdocs\jira_clone_system\src\Core\Database.php(95): App\Core\Database::query('SELECT id, key,...', Array)
-#2 C:\xampp\htdocs\jira_clone_system\debug_project_creation.php(96): App\Core\Database::selectOne('SELECT id, key,...', Array)
+[2025-12-06 07:36:55]    Stack: #0 C:\xampp\htdocs\cways_mis\src\Core\Database.php(68): PDO->prepare('SELECT id, key,...')
+#1 C:\xampp\htdocs\cways_mis\src\Core\Database.php(95): App\Core\Database::query('SELECT id, key,...', Array)
+#2 C:\xampp\htdocs\cways_mis\debug_project_creation.php(96): App\Core\Database::selectOne('SELECT id, key,...', Array)
 #3 {main}
 [2025-12-06 07:36:55] === DEBUG COMPLETE ===
 

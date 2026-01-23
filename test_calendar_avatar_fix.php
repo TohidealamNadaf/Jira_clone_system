@@ -5,7 +5,7 @@
  */
 
 // Simulate the getAvatarUrl function from calendar-realtime.js in PHP for testing
-function testGetAvatarUrl($path, $webBase = 'http://localhost:8080/jira_clone_system/public/') {
+function testGetAvatarUrl($path, $webBase = 'http://localhost:8080/cways_mis/public/') {
     if (!$path) return '';
     if (strpos($path, 'http') === 0) return $path;
     
@@ -54,31 +54,31 @@ $testCases = [
     [
         'Incorrect path with /avatars/',
         '/avatars/avatar_1_1767684205.png',
-        'http://localhost:8080/jira_clone_system/public/',
-        'http://localhost:8080/jira_clone_system/public/uploads/avatars/avatar_1_1767684205.png'
+        'http://localhost:8080/cways_mis/public/',
+        'http://localhost:8080/cways_mis/public/uploads/avatars/avatar_1_1767684205.png'
     ],
     [
         'Correct path with /uploads/avatars/',
         '/uploads/avatars/avatar_1_1767684205.png',
-        'http://localhost:8080/jira_clone_system/public/',
-        'http://localhost:8080/jira_clone_system/public/uploads/avatars/avatar_1_1767684205.png'
+        'http://localhost:8080/cways_mis/public/',
+        'http://localhost:8080/cways_mis/public/uploads/avatars/avatar_1_1767684205.png'
     ],
     [
         'Incorrect path without leading slash',
         'avatars/avatar_1_1767684205.png',
-        'http://localhost:8080/jira_clone_system/public/',
-        'http://localhost:8080/jira_clone_system/public/avatars/avatar_1_1767684205.png'
+        'http://localhost:8080/cways_mis/public/',
+        'http://localhost:8080/cways_mis/public/avatars/avatar_1_1767684205.png'
     ],
     [
         'Full HTTP URL (should pass through)',
         'http://example.com/avatars/user.png',
-        'http://localhost:8080/jira_clone_system/public/',
+        'http://localhost:8080/cways_mis/public/',
         'http://example.com/avatars/user.png'
     ],
     [
         'Empty path (should return empty)',
         '',
-        'http://localhost:8080/jira_clone_system/public/',
+        'http://localhost:8080/cways_mis/public/',
         ''
     ],
 ];

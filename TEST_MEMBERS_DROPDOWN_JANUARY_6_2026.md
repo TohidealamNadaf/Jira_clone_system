@@ -39,7 +39,7 @@
 
 ### Test 1.1: Button Visibility and Hover
 ```
-Location: http://localhost:8080/Jira_clone_system/public/projects/CWAYS/members
+Location: http://localhost:8080/cways_mis/public/projects/CWAYS/members
 
 Steps:
 1. Load the members page (should show member cards)

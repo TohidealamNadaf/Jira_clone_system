@@ -1033,7 +1033,7 @@ class NotificationService
                 'issue' => $issue,
                 'notification' => $notification,
                 'user_email' => $userEmail,
-                'app_url' => $config['app']['url'] ?? 'http://localhost:8080/jira_clone_system/public',
+                'app_url' => $config['app']['url'] ?? 'http://localhost:8080/cways_mis/public',
             ];
 
             // Send email via EmailService

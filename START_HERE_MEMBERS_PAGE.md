@@ -206,7 +206,7 @@ rm -rf storage/cache/*
 # CTRL+F5
 
 # 3. Visit the page
-# http://localhost:8080/Jira_clone_system/public/projects/CWAYS/members
+# http://localhost:8080/cways_mis/public/projects/CWAYS/members
 
 # 4. Test (30 seconds)
 # ✓ Search works

@@ -213,7 +213,7 @@
                         </div>
                     </div>
                     <div class="ps-card-body">
-                        <form action="<?= url("/projects/{$project['key']}/settings/access") ?>" method="POST">
+                        <form action="<?= url("/projects/{$project['key']}") ?>" method="POST">
                             <?= csrf_field() ?>
                             <input type="hidden" name="_method" value="PUT">
 
@@ -275,7 +275,7 @@
                         </div>
                     </div>
                     <div class="ps-card-body">
-                        <form action="<?= url("/projects/{$project['key']}/settings/notifications") ?>" method="POST">
+                        <form action="<?= url("/projects/{$project['key']}") ?>" method="POST">
                             <?= csrf_field() ?>
                             <input type="hidden" name="_method" value="PUT">
 

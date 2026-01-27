@@ -276,13 +276,13 @@ class AdminController extends Controller
                 "SELECT COUNT(*) FROM issues WHERE reporter_id = ?",
                 [$userId]
             ),
-            
+
             // Issues assigned to this user
             'assigned_issues' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues WHERE assignee_id = ? AND resolved_at IS NULL",
                 [$userId]
             ),
-            
+
             // Issues resolved/closed by this user (status = done)
             'resolved_issues' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues i 
@@ -290,25 +290,25 @@ class AdminController extends Controller
                  WHERE i.assignee_id = ? AND s.category = 'done'",
                 [$userId]
             ),
-            
+
             // Comments made by this user
             'comments_count' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM comments WHERE user_id = ? AND deleted_at IS NULL",
                 [$userId]
             ),
-            
+
             // Total assigned to count (all assigned issues regardless of status)
             'assigned_to_count' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues WHERE assignee_id = ?",
                 [$userId]
             ),
-            
+
             // Projects user is member of
             'projects_member_of' => (int) Database::selectValue(
                 "SELECT COUNT(DISTINCT project_id) FROM project_members WHERE user_id = ?",
                 [$userId]
             ),
-            
+
             // Time tracked (in hours if worklogs table exists)
             'time_tracked_hours' => (float) Database::selectValue(
                 "SELECT COALESCE(SUM(time_spent), 0) / 3600 FROM issues WHERE assignee_id = ?",
@@ -1521,11 +1521,30 @@ class AdminController extends Controller
         $perPage = 50;
         $offset = ($page - 1) * $perPage;
 
-        $entityType = $request->input('entity_type');
+        $entityType = $request->input('entity');
         $action = $request->input('action');
         $userId = $request->input('user_id');
-        $dateFrom = $request->input('date_from');
-        $dateTo = $request->input('date_to');
+        $dateRange = $request->input('date_range');
+
+        $dateFrom = null;
+        $dateTo = null;
+
+        if ($dateRange) {
+            switch ($dateRange) {
+                case 'today':
+                    $dateFrom = date('Y-m-d');
+                    break;
+                case 'week':
+                    $dateFrom = date('Y-m-d', strtotime('monday this week'));
+                    break;
+                case 'month':
+                    $dateFrom = date('Y-m-d', strtotime('first day of this month'));
+                    break;
+                case 'quarter':
+                    $dateFrom = date('Y-m-d', strtotime('-3 months'));
+                    break;
+            }
+        }
 
         $conditions = [];
         $params = [];
@@ -1572,6 +1591,8 @@ class AdminController extends Controller
             array_merge($params, [$perPage, $offset])
         );
 
+        $users = Database::select("SELECT id, display_name FROM users ORDER BY display_name");
+
         $pagination = [
             'total' => $total,
             'per_page' => $perPage,
@@ -1583,18 +1604,20 @@ class AdminController extends Controller
             $this->json([
                 'logs' => $logs,
                 'pagination' => $pagination,
+                'users' => $users,
             ]);
         }
 
         return $this->view('admin.audit-log', [
-            'logs' => $logs,
+            'entries' => $logs,
             'pagination' => $pagination,
+            'totalEntries' => $total,
+            'users' => $users,
             'filters' => [
-                'entity_type' => $entityType,
+                'entity' => $entityType,
                 'action' => $action,
                 'user_id' => $userId,
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
+                'date_range' => $dateRange,
             ],
         ]);
     }

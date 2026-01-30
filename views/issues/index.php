@@ -30,12 +30,17 @@
                     <span class="project-name"><?= e($project['name']) ?></span>
                 </p>
             </div>
-            <?php if (can('issues.create', $project['id'])): ?>
-                <button type="button" class="btn btn-primary open-create-issue-modal"
-                    data-project-id="<?= e($project['id']) ?>">
-                    <i class="bi bi-plus-lg"></i> Create Issue
+            <div class="header-actions">
+                <button type="button" class="btn btn-danger bulk-delete-btn" style="display: none;" id="bulkDeleteBtn">
+                    <i class="bi bi-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
                 </button>
-            <?php endif; ?>
+                <?php if (can('issues.create', $project['id'])): ?>
+                    <button type="button" class="btn btn-primary open-create-issue-modal"
+                        data-project-id="<?= e($project['id']) ?>">
+                        <i class="bi bi-plus-lg"></i> Create Issue
+                    </button>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -125,6 +130,11 @@
             <table class="issues-table">
                 <thead>
                     <tr class="table-header-row">
+                        <th class="col-checkbox">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="selectAllIssues" class="issue-checkbox-all">
+                            </div>
+                        </th>
                         <th class="col-key">Key</th>
                         <th class="col-summary">Summary</th>
                         <th class="col-type">Type</th>
@@ -138,7 +148,12 @@
                 </thead>
                 <tbody>
                     <?php foreach ($issues['data'] as $issue): ?>
-                        <tr class="table-body-row" onclick="window.location.href='<?= url("/issue/{$issue['issue_key']}") ?>'">
+                        <tr class="table-body-row" data-issue-id="<?= $issue['id'] ?>" data-href="<?= url("/issue/{$issue['issue_key']}") ?>">
+                            <td class="col-checkbox">
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" class="issue-checkbox" value="<?= $issue['id'] ?>">
+                                </div>
+                            </td>
                             <td class="col-key">
                                 <a href="<?= url("/issue/{$issue['issue_key']}") ?>" class="issue-key-link">
                                     <?= e($issue['issue_key']) ?>
@@ -989,6 +1004,144 @@
             justify-content: center;
         }
     }
+
+    /* Bulk Delete Styles */
+    .header-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .btn-danger {
+        background: #D73A49 !important;
+        color: white !important;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-danger:hover {
+        background: #B31D28 !important;
+        box-shadow: 0 4px 12px rgba(215, 58, 73, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .col-checkbox {
+        width: 40px !important;
+        padding: 12px 0 12px 12px !important;
+    }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .issue-checkbox, .issue-checkbox-all {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    /* Ensure checkbox stays visible on mobile */
+    @media (max-width: 576px) {
+        .col-checkbox {
+            display: table-cell !important;
+        }
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAllIssues');
+    const issueCheckboxes = document.querySelectorAll('.issue-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const tableRows = document.querySelectorAll('.table-body-row');
+
+    // Handle row clicks (excluding checkbox column)
+    tableRows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Don't trigger if clicking checkbox or its wrapper
+            if (e.target.closest('.col-checkbox')) return;
+            
+            const href = this.dataset.href;
+            if (href) window.location.href = href;
+        });
+    });
+
+    function updateBulkDeleteUI() {
+        const selectedIssues = document.querySelectorAll('.issue-checkbox:checked');
+        const count = selectedIssues.length;
+        
+        selectedCountSpan.textContent = count;
+        bulkDeleteBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+        
+        // Update select all state
+        if (selectAll) {
+            selectAll.checked = count === issueCheckboxes.length && issueCheckboxes.length > 0;
+            selectAll.indeterminate = count > 0 && count < issueCheckboxes.length;
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            issueCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateBulkDeleteUI();
+        });
+    }
+
+    issueCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkDeleteUI);
+    });
+
+    bulkDeleteBtn.addEventListener('click', async function() {
+        const selectedIssues = Array.from(document.querySelectorAll('.issue-checkbox:checked')).map(cb => cb.value);
+        
+        if (selectedIssues.length === 0) return;
+
+        if (!confirm(`Are you sure you want to delete ${selectedIssues.length} selected issues?`)) {
+            return;
+        }
+
+        try {
+            const projectId = <?= json_encode($project['id']) ?>;
+            const response = await fetch('<?= url("/issues/bulk-delete") ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Request-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '<?= csrf_token() ?>'
+                },
+                body: JSON.stringify({
+                    issue_ids: selectedIssues,
+                    project_id: projectId
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(result.error || 'Failed to delete issues');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while deleting issues.');
+        }
+    });
+});
+</script>
 
 <?php \App\Core\View::endSection(); ?>

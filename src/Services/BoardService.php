@@ -186,7 +186,8 @@ class BoardService
                     JOIN issue_priorities ip ON i.priority_id = ip.id
                     LEFT JOIN users assignee ON i.assignee_id = assignee.id
                     WHERE i.project_id = ? 
-                    AND i.status_id IN ($placeholders)";
+                    AND i.status_id IN ($placeholders)
+                    AND i.is_deleted = 0";
 
             $params = array_merge([$board['project_id']], $statusIds);
 
@@ -231,7 +232,7 @@ class BoardService
         $offset = ($page - 1) * $perPage;
 
         $total = (int) Database::selectValue(
-            "SELECT COUNT(*) FROM issues WHERE project_id = ? AND sprint_id IS NULL",
+            "SELECT COUNT(*) FROM issues WHERE project_id = ? AND sprint_id IS NULL AND is_deleted = 0",
             [$board['project_id']]
         );
 
@@ -248,7 +249,7 @@ class BoardService
              JOIN issue_priorities ip ON i.priority_id = ip.id
              LEFT JOIN users assignee ON i.assignee_id = assignee.id
              LEFT JOIN issues epic ON i.epic_id = epic.id
-             WHERE i.project_id = ? AND i.sprint_id IS NULL
+             WHERE i.project_id = ? AND i.sprint_id IS NULL AND i.is_deleted = 0
              ORDER BY i.sort_order ASC, i.created_at DESC
              LIMIT $perPage OFFSET $offset",
             [$board['project_id']]

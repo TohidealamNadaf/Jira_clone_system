@@ -566,7 +566,7 @@ class SprintService
              JOIN statuses s ON i.status_id = s.id
              JOIN issue_priorities ip ON i.priority_id = ip.id
              LEFT JOIN users assignee ON i.assignee_id = assignee.id
-             WHERE i.sprint_id = ?
+             WHERE i.sprint_id = ? AND i.is_deleted = 0
              ORDER BY i.sort_order ASC, i.created_at DESC",
             [$sprintId]
         );

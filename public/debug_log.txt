@@ -136,3 +136,108 @@
     [priority_id] => 2
 )
 
+[2026-01-30 05:52:39] IssueController::store called.
+[2026-01-30 05:52:39] FILES: Array
+(
+)
+
+[2026-01-30 05:52:39] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System allows submitting Insurance Deductions form without any records and shows an unexpected error message.
+    [description] => <p data-start="184" data-end="228"><strong data-start="184" data-end="193">Path:</strong><br data-start="193" data-end="196">Payroll &rarr; Insurance Deductions</p>
+<p data-start="230" data-end="255"><strong data-start="230" data-end="253">Steps to Reproduce:</strong></p>
+<p data-start="259" data-end="308">1.Navigate to <strong data-start="271" data-end="305">Payroll &rarr; Insurance Deductions</strong>.</p>
+<p data-start="312" data-end="337">2.Do not add any records.</p>
+<p data-start="341" data-end="360">3.Click <strong data-start="347" data-end="357">Submit</strong>.</p>
+<p data-start="362" data-end="490"><strong data-start="362" data-end="382">Expected Result:</strong><br data-start="382" data-end="385">1.A validation message should appear indicating that at least one record must be added before submitting.</p>
+<p data-start="492" data-end="611"><strong data-start="492" data-end="510">Actual Result:</strong><br data-start="510" data-end="513">1.The system allows submission and shows an unexpected error message before the form is submitted.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-01-30 05:55:22] IssueController::store called.
+[2026-01-30 05:55:22] FILES: Array
+(
+)
+
+[2026-01-30 05:55:22] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Amount field in Variable Deductions is mandatory, but no validation message appears when left blank.
+    [description] => <p data-start="175" data-end="218"><strong data-start="175" data-end="184">Path:</strong><br data-start="184" data-end="187">Payroll &rarr; Variable Deductions</p>
+<p data-start="220" data-end="245"><strong data-start="220" data-end="243">Steps to Reproduce:</strong></p>
+<p data-start="249" data-end="297">1.Navigate to <strong data-start="261" data-end="294">Payroll &rarr; Variable Deductions</strong>.</p>
+<p data-start="301" data-end="336">2.Leave the <strong data-start="311" data-end="321">Amount</strong> field blank.</p>
+<p data-start="340" data-end="359">3.Click <strong data-start="346" data-end="356">Submit</strong>.</p>
+<p data-start="361" data-end="467"><strong data-start="361" data-end="381">Expected Result:</strong><br data-start="381" data-end="384">1.A validation message should appear indicating that the Amount field is mandatory.</p>
+<p data-start="469" data-end="569"><strong data-start="469" data-end="487">Actual Result:</strong><br data-start="487" data-end="490">1.The system does not allow submission, but no validation message is displayed.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-01-30 05:57:11] IssueController::store called.
+[2026-01-30 05:57:11] FILES: Array
+(
+)
+
+[2026-01-30 05:57:11] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System allows negative values in the Amount field of Variable Deductions.
+    [description] => <p data-start="148" data-end="191"><strong data-start="148" data-end="157">Path:</strong><br data-start="157" data-end="160">Payroll &rarr; Variable Deductions</p>
+<p data-start="193" data-end="218"><strong data-start="193" data-end="216">Steps to Reproduce:</strong></p>
+<p data-start="222" data-end="270">1.Navigate to <strong data-start="234" data-end="267">Payroll &rarr; Variable Deductions</strong>.</p>
+<p data-start="274" data-end="338">2.Enter a negative value (e.g., <code data-start="304" data-end="310">-200</code>) in the <strong data-start="319" data-end="329">Amount</strong> field.</p>
+<p data-start="342" data-end="361">3.Click <strong data-start="348" data-end="358">Submit</strong>.</p>
+<p data-start="363" data-end="446"><strong data-start="363" data-end="383">Expected Result:</strong><br data-start="383" data-end="386">1.An error message should appear preventing negative values.</p>
+<p data-start="448" data-end="526"><strong data-start="448" data-end="466">Actual Result:</strong><br data-start="466" data-end="469">1.The system accepts negative values in the Amount field.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-01-30 05:58:58] IssueController::store called.
+[2026-01-30 05:58:58] FILES: Array
+(
+)
+
+[2026-01-30 05:58:58] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System allows duplicate entries for the same employee in Variable Deductions.
+    [description] => <p data-start="152" data-end="195"><strong data-start="152" data-end="161">Path:</strong><br data-start="161" data-end="164">Payroll &rarr; Variable Deductions</p>
+<p data-start="197" data-end="222"><strong data-start="197" data-end="220">Steps to Reproduce:</strong></p>
+<p data-start="226" data-end="274">1.Navigate to <strong data-start="238" data-end="271">Payroll &rarr; Variable Deductions</strong>.</p>
+<p data-start="278" data-end="315">2.Add an employee (e.g., Employee A).</p>
+<p data-start="319" data-end="360">3.Attempt to add the same employee again.</p>
+<p data-start="362" data-end="472"><strong data-start="362" data-end="382">Expected Result:</strong><br data-start="382" data-end="385">1.The system should prevent duplicate entries and display an appropriate error message.</p>
+<p data-start="474" data-end="555"><strong data-start="474" data-end="492">Actual Result:</strong><br data-start="492" data-end="495">1.The system allows duplicate entries for the same employee.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-01-30 06:00:57] IssueController::store called.
+[2026-01-30 06:00:57] FILES: Array
+(
+)
+
+[2026-01-30 06:00:57] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System disables the Submit button when no employee records are added in Variable Deductions.
+    [description] => <p data-start="202" data-end="245"><strong data-start="202" data-end="211">Path:</strong><br data-start="211" data-end="214">Payroll &rarr; Variable Deductions</p>
+<p data-start="247" data-end="272"><strong data-start="247" data-end="270">Steps to Reproduce:</strong></p>
+<p data-start="276" data-end="324">1.Navigate to <strong data-start="288" data-end="321">Payroll &rarr; Variable Deductions</strong>.</p>
+<p data-start="328" data-end="362">2.Do not add any employee records.</p>
+<p data-start="366" data-end="385">3.Click <strong data-start="372" data-end="382">Submit</strong>.</p>
+<p data-start="387" data-end="505"><strong data-start="387" data-end="407">Expected Result:</strong><br data-start="407" data-end="410">1.A validation message should display indicating that at least one employee record is required.</p>
+<p data-start="507" data-end="623"><strong data-start="507" data-end="525">Actual Result:</strong><br data-start="525" data-end="528">1.The Submit button is disabled, preventing submission. No separate validation message appears.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+

@@ -113,6 +113,7 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/issue/{issueKey}/edit', [IssueController::class, 'edit'])->name('issues.edit');
     $router->put('/issue/{issueKey}', [IssueController::class, 'update'])->name('issues.update');
     $router->delete('/issue/{issueKey}', [IssueController::class, 'destroy'])->name('issues.destroy');
+    $router->post('/issues/bulk-delete', [IssueController::class, 'bulkDelete'])->name('issues.bulk_delete');
     $router->post('/issue/{issueKey}/transition', [IssueController::class, 'transition'])->name('issues.transition');
     $router->post('/issue/{issueKey}/assign', [IssueController::class, 'assign'])->name('issues.assign');
     $router->post('/issue/{issueKey}/watch', [IssueController::class, 'watch'])->name('issues.watch');

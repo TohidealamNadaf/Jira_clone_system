@@ -6,7 +6,7 @@ $dbname = 'cways_prod';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
-    $stmt = $pdo->query("DESCRIBE roadmap_item_issues");
+    $stmt = $pdo->query("DESCRIBE issues");
     $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo "TABLE STRUCTURE:\n";

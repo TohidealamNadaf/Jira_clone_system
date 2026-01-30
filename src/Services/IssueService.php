@@ -14,7 +14,7 @@ class IssueService
 {
     public function getIssues(array $filters = [], string $orderBy = 'created_at', string $order = 'DESC', int $page = 1, int $perPage = 25): array
     {
-        $where = ['1 = 1'];
+        $where = ['i.is_deleted = 0'];
         $params = [];
 
         if (!empty($filters['project_id'])) {
@@ -156,7 +156,7 @@ class IssueService
              LEFT JOIN issues parent ON i.parent_id = parent.id
              LEFT JOIN issues epic ON i.epic_id = epic.id
              LEFT JOIN sprints sp ON i.sprint_id = sp.id
-             WHERE i.issue_key = :issue_key",
+             WHERE i.issue_key = :issue_key AND i.is_deleted = 0",
             ['issue_key' => $issueKey]
         );
 
@@ -340,17 +340,58 @@ class IssueService
 
         $this->logAudit('issue_deleted', 'issue', $issueId, $issue, null, $userId);
 
-        $deleted = Database::delete('issues', 'id = ?', [$issueId]) > 0;
+        $deleted = Database::update('issues', [
+            'is_deleted' => 1,
+            'summary' => $issue['summary'] . '*'
+        ], 'id = ?', [$issueId]) > 0;
 
         if ($deleted) {
-            // Decrement the issue count in the project
+            // Decrement the issue count in the project (ensure it doesn't underflow)
             Database::query(
-                "UPDATE projects SET issue_count = issue_count - 1 WHERE id = ?",
+                "UPDATE projects SET issue_count = CASE WHEN issue_count > 0 THEN issue_count - 1 ELSE 0 END WHERE id = ?",
                 [$issue['project_id']]
             );
         }
 
         return $deleted;
+    }
+
+    public function bulkSoftDelete(array $issueIds, int $userId): int
+    {
+        if (empty($issueIds)) {
+            return 0;
+        }
+
+        $deletedCount = 0;
+        Database::transaction(function () use ($issueIds, $userId, &$deletedCount) {
+            foreach ($issueIds as $issueId) {
+                $issueId = (int) $issueId;
+                try {
+                    $issue = Database::selectOne("SELECT * FROM issues WHERE id = ? AND is_deleted = 0", [$issueId]);
+                    if (!$issue) continue;
+
+                    Database::update('issues', [
+                        'is_deleted' => 1,
+                        'summary' => $issue['summary'] . '*'
+                    ], 'id = ?', [$issueId]);
+
+                    $this->recordHistory($issueId, $userId, 'status', $issue['status_id'], 'Deleted (Soft)');
+                    $this->logAudit('issue_deleted_soft', 'issue', $issueId, $issue, null, $userId);
+
+                    // Decrement the issue count in the project (ensure it doesn't underflow)
+                    Database::query(
+                        "UPDATE projects SET issue_count = CASE WHEN issue_count > 0 THEN issue_count - 1 ELSE 0 END WHERE id = ?",
+                        [$issue['project_id']]
+                    );
+
+                    $deletedCount++;
+                } catch (\Exception $e) {
+                    error_log("Failed to soft delete issue #$issueId: " . $e->getMessage());
+                }
+            }
+        });
+
+        return $deletedCount;
     }
 
     public function transitionIssue(int $issueId, int $targetStatusId, int $userId): array

@@ -257,6 +257,26 @@ class IssueController extends Controller
         }
     }
 
+    public function bulkDelete(Request $request): void
+    {
+        $data = $request->validate([
+            'issue_ids' => 'required|array',
+            'project_id' => 'required|integer'
+        ]);
+
+        $this->authorize('issues.delete', (int) $data['project_id']);
+
+        try {
+            $deletedCount = $this->issueService->bulkSoftDelete($data['issue_ids'], $this->userId());
+            $this->json([
+                'success' => true,
+                'message' => "Successfully deleted $deletedCount issues."
+            ]);
+        } catch (\Exception $e) {
+            $this->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function transition(Request $request): void
     {
         $issueKey = $request->param('issueKey');

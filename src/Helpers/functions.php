@@ -756,3 +756,29 @@ function sanitize_issues_for_json(array $issues): array
 {
     return array_map('sanitize_issue_for_json', $issues);
 }
+/**
+ * Get contrast color (black or white) based on background hex color
+ */
+function contrast_color(string $hexColor): string
+{
+    // Remove # if present
+    $hex = ltrim($hexColor, '#');
+
+    // Convert to RGB
+    if (strlen($hex) === 3) {
+        $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
+        $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
+        $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
+    } else {
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+    }
+
+    // Calculate luminance (perceived brightness)
+    // Formula: L = 0.299*R + 0.587*G + 0.114*B
+    $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+
+    // Return black for light backgrounds, white for dark backgrounds
+    return $luminance > 0.5 ? '#000000' : '#ffffff';
+}

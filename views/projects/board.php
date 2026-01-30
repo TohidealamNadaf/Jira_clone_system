@@ -104,7 +104,7 @@
                                         <div class="card-footer">
                                             <div class="footer-left">
                                                 <span class="issue-type-label"
-                                                    style="background-color: <?= e($issue['issue_type_color'] ?? '#8B1956') ?>;"
+                                                    style="background-color: <?= e($issue['issue_type_color'] ?? '#8B1956') ?>; color: <?= contrast_color($issue['issue_type_color'] ?? '#8B1956') ?>;"
                                                     title="<?= e($issue['issue_type_name'] ?? 'Task') ?>">
                                                     <i class="bi bi-<?= e($issue['issue_type_icon'] ?? 'list-check') ?>"></i>
                                                     <span><?= e($issue['issue_type_name'] ?? 'Task') ?></span>

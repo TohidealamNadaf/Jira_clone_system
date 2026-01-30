@@ -498,13 +498,19 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 <div class="sidebar-content">
                     <div class="detail-row">
                         <span class="detail-label">Type</span>
-                        <span class="detail-badge" style="background-color: <?= e($issue['issue_type_color']) ?>">
+                        <span class="detail-badge"
+                            style="background-color: <?= e($issue['issue_type_color']) ?>; color: <?= contrast_color($issue['issue_type_color']) ?> !important; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 4px;">
+                            <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
                             <?= e($issue['issue_type_name']) ?>
                         </span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Priority</span>
-                        <span class="detail-badge" style="background-color: <?= e($issue['priority_color']) ?>">
+                        <span class="detail-badge"
+                            style="background-color: <?= e($issue['priority_color']) ?>; color: <?= contrast_color($issue['priority_color']) ?> !important; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 4px;">
+                            <?php if (!empty($issue['priority_icon'])): ?>
+                                <i class="bi bi-<?= e($issue['priority_icon']) ?>"></i>
+                            <?php endif; ?>
                             <?= e($issue['priority_name']) ?>
                         </span>
                     </div>
@@ -514,7 +520,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             <div class="dropdown">
                                 <button class="detail-badge dropdown-toggle" type="button" data-bs-toggle="dropdown"
                                     aria-expanded="false"
-                                    style="background-color: <?= e($issue['status_color']) ?>; color: white !important; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                     <?= e($issue['status_name']) ?>
                                 </button>
                                 <ul class="dropdown-menu">
@@ -539,7 +545,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             </div>
                         <?php else: ?>
                             <span class="detail-badge"
-                                style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
+                                style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important;">
                                 <?= e($issue['status_name']) ?>
                             </span>
                         <?php endif; ?>

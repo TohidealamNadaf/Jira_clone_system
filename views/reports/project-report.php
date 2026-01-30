@@ -1,4 +1,4 @@
-<?php \App\Core\View::extends('layouts.app'); ?>
+<?php \App\Core\View:: extends('layouts.app'); ?>
 
 <?php \App\Core\View::section('content'); ?>
 
@@ -707,7 +707,8 @@
             <button class="btn-report btn-secondary-report" onclick="exportReport()" title="Export report data">
                 <i class="bi bi-download"></i> Export
             </button>
-            <a href="<?= url("/projects/{$project['key']}") ?>" class="btn-report btn-secondary-report" title="Back to project">
+            <a href="<?= url("/projects/{$project['key']}") ?>" class="btn-report btn-secondary-report"
+                title="Back to project">
                 <i class="bi bi-arrow-left"></i> Back
             </a>
         </div>
@@ -734,9 +735,9 @@
                     <option value="">All Types</option>
                     <?php if (!empty($issueTypes)): ?>
                         <?php foreach ($issueTypes as $type): ?>
-                        <option value="<?= $type['id'] ?>">
-                            <?= e($type['name']) ?>
-                        </option>
+                            <option value="<?= $type['id'] ?>">
+                                <?= e($type['name']) ?>
+                            </option>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </select>
@@ -748,9 +749,9 @@
                     <option value="">All Statuses</option>
                     <?php if (!empty($statuses)): ?>
                         <?php foreach ($statuses as $status): ?>
-                        <option value="<?= $status['id'] ?>">
-                            <?= e($status['name']) ?>
-                        </option>
+                            <option value="<?= $status['id'] ?>">
+                                <?= e($status['name']) ?>
+                            </option>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </select>
@@ -777,7 +778,8 @@
                 </div>
                 <div class="metric-value"><?= $summary['resolved_issues'] ?? 0 ?></div>
                 <div class="metric-footer">
-                    <strong><?= isset($summary['total_issues']) && $summary['total_issues'] > 0 ? round(($summary['resolved_issues'] ?? 0) / $summary['total_issues'] * 100) : 0 ?>%</strong> of total
+                    <strong><?= isset($summary['total_issues']) && $summary['total_issues'] > 0 ? round(($summary['resolved_issues'] ?? 0) / $summary['total_issues'] * 100) : 0 ?>%</strong>
+                    of total
                 </div>
             </div>
 
@@ -822,7 +824,7 @@
                 </div>
                 <div class="metric-value">
                     <span style="font-size: 28px;">
-                        <?php 
+                        <?php
                         $avgPriority = $summary['avg_priority_level'] ?? 3;
                         echo $avgPriority == 1 ? '🔴' : ($avgPriority == 2 ? '🟠' : ($avgPriority == 3 ? '🟡' : '🔵'));
                         ?>
@@ -854,7 +856,8 @@
 
             <!-- Issues Created vs Resolved -->
             <div class="chart-card timeline-chart">
-                <h3 class="chart-title">Issues Created vs Resolved (Last <?= isset($_GET['days']) ? $_GET['days'] : 30 ?> days)</h3>
+                <h3 class="chart-title">Issues Created vs Resolved (Last
+                    <?= isset($_GET['days']) ? $_GET['days'] : 30 ?> days)</h3>
                 <div class="chart-wrapper" style="position: relative; min-height: 350px;">
                     <canvas id="createdVsResolvedChart"></canvas>
                 </div>
@@ -863,97 +866,102 @@
 
         <!-- Team Performance Table -->
         <?php if (!empty($teamPerformance)): ?>
-        <div style="margin-bottom: 1.5rem;">
-            <h3 class="section-header">Team Performance</h3>
-             <div style="margin-top: 16px;">
-                <div class="data-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Team Member</th>
-                                <th>Issues Assigned</th>
-                                <th>Issues Resolved</th>
-                                <th>Avg Resolution Time</th>
-                                <th>Completion Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($teamPerformance as $member): ?>
-                            <tr>
-                                <td>
-                                    <strong><?= e($member['name'] ?? 'Unknown') ?></strong>
-                                </td>
-                                <td class="text-secondary"><?= $member['assigned'] ?? 0 ?></td>
-                                <td class="text-secondary"><?= $member['resolved'] ?? 0 ?></td>
-                                <td class="text-secondary">
-                                    <?php 
-                                    $avgTime = $member['avg_time'] ?? 0;
-                                    echo is_numeric($avgTime) ? round($avgTime, 1) : $avgTime;
-                                    ?> days
-                                </td>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div class="progress-bar-container" style="width: 80px; flex-shrink: 0;">
-                                            <div class="progress-bar-fill" style="width: <?= isset($member['assigned']) && $member['assigned'] > 0 ? round(($member['resolved'] ?? 0) / $member['assigned'] * 100) : 0 ?>%;"></div>
-                                        </div>
-                                        <span style="font-size: 12px; color: #626F86; font-weight: 600; min-width: 30px;">
-                                            <?= isset($member['assigned']) && $member['assigned'] > 0 ? round(($member['resolved'] ?? 0) / $member['assigned'] * 100) : 0 ?>%
-                                        </span>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <div style="margin-bottom: 1.5rem;">
+                <h3 class="section-header">Team Performance</h3>
+                <div style="margin-top: 16px;">
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Team Member</th>
+                                    <th>Issues Assigned</th>
+                                    <th>Issues Resolved</th>
+                                    <th>Avg Resolution Time</th>
+                                    <th>Completion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($teamPerformance as $member): ?>
+                                    <tr>
+                                        <td>
+                                            <strong><?= e($member['name'] ?? 'Unknown') ?></strong>
+                                        </td>
+                                        <td class="text-secondary"><?= $member['assigned'] ?? 0 ?></td>
+                                        <td class="text-secondary"><?= $member['resolved'] ?? 0 ?></td>
+                                        <td class="text-secondary">
+                                            <?php
+                                            $avgTime = $member['avg_time'] ?? 0;
+                                            echo is_numeric($avgTime) ? round($avgTime, 1) : $avgTime;
+                                            ?> days
+                                        </td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <div class="progress-bar-container" style="width: 80px; flex-shrink: 0;">
+                                                    <div class="progress-bar-fill"
+                                                        style="width: <?= isset($member['assigned']) && $member['assigned'] > 0 ? round(($member['resolved'] ?? 0) / $member['assigned'] * 100) : 0 ?>%;">
+                                                    </div>
+                                                </div>
+                                                <span
+                                                    style="font-size: 12px; color: #626F86; font-weight: 600; min-width: 30px;">
+                                                    <?= isset($member['assigned']) && $member['assigned'] > 0 ? round(($member['resolved'] ?? 0) / $member['assigned'] * 100) : 0 ?>%
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
         <?php endif; ?>
 
         <!-- Recent Issues Table -->
         <?php if (!empty($recentIssues)): ?>
-        <div style="margin-bottom: 1.5rem;">
-            <h3 class="section-header">Recent Issues</h3>
-             <div style="margin-top: 16px;">
-                <div class="data-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Key</th>
-                                <th>Summary</th>
-                                <th>Status</th>
-                                <th>Assignee</th>
-                                <th>Created</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($recentIssues as $issue): ?>
-                            <tr>
-                                <td>
-                                    <a href="<?= url("/issue/{$issue['issue_key']}") ?>">
-                                        <?= e($issue['issue_key']) ?>
-                                    </a>
-                                </td>
-                                <td><?= e(substr($issue['summary'], 0, 50)) ?><?= strlen($issue['summary']) > 50 ? '...' : '' ?></td>
-                                <td>
-                                    <span class="status-badge" style="background-color: <?= e($issue['status_color'] ?? '#DFE1E6') ?>; color: white !important;">
-                                        <?= e($issue['status_name']) ?>
-                                    </span>
-                                </td>
-                                <td class="text-secondary"><?= e($issue['assignee_name'] ?? 'Unassigned') ?></td>
-                                <td class="text-secondary"><?= date('M d, Y', strtotime($issue['created_at'])) ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <div style="margin-bottom: 1.5rem;">
+                <h3 class="section-header">Recent Issues</h3>
+                <div style="margin-top: 16px;">
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Summary</th>
+                                    <th>Status</th>
+                                    <th>Assignee</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($recentIssues as $issue): ?>
+                                    <tr>
+                                        <td>
+                                            <a href="<?= url("/issue/{$issue['issue_key']}") ?>">
+                                                <?= e($issue['issue_key']) ?>
+                                            </a>
+                                        </td>
+                                        <td><?= e(substr($issue['summary'], 0, 50)) ?><?= strlen($issue['summary']) > 50 ? '...' : '' ?>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge"
+                                                style="background-color: <?= e($issue['status_color'] ?? '#DFE1E6') ?>; color: <?= contrast_color($issue['status_color'] ?? '#DFE1E6') ?> !important;">
+                                                <?= e($issue['status_name']) ?>
+                                            </span>
+                                        </td>
+                                        <td class="text-secondary"><?= e($issue['assignee_name'] ?? 'Unassigned') ?></td>
+                                        <td class="text-secondary"><?= date('M d, Y', strtotime($issue['created_at'])) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
         <?php else: ?>
-        <div class="empty-state" style="margin-top: 1.5rem;">
-            <span class="empty-state-icon">📊</span>
-            <p class="empty-state-text">No issues found for the selected filters</p>
-        </div>
+            <div class="empty-state" style="margin-top: 1.5rem;">
+                <span class="empty-state-icon">📊</span>
+                <p class="empty-state-text">No issues found for the selected filters</p>
+            </div>
         <?php endif; ?>
     </div>
 </div>

@@ -119,7 +119,8 @@
                                 </td>
                                 <td class="col-summary">
                                     <div class="summary-cell">
-                                        <span class="type-icon" style="background-color: <?= e($issue['issue_type_color']) ?>">
+                                        <span class="type-icon"
+                                            style="background-color: <?= e($issue['issue_type_color']) ?>; color: <?= contrast_color($issue['issue_type_color']) ?>;">
                                             <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
                                         </span>
                                         <span class="summary-text" title="<?= e($issue['summary']) ?>">
@@ -135,7 +136,7 @@
                                 </td>
                                 <td class="col-status">
                                     <span class="badge-status"
-                                        style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
+                                        style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important;">
                                         <?= e($issue['status_name']) ?>
                                     </span>
                                 </td>

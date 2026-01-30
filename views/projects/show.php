@@ -67,7 +67,7 @@
                                     </div>
                                     <div class="issue-item-right">
                                         <span class="status-badge"
-                                            style="background-color: <?= e($issue['status']['color'] ?? '#DFE1E6') ?>; color: white !important;">
+                                            style="background-color: <?= e($issue['status']['color'] ?? '#DFE1E6') ?>; color: <?= contrast_color($issue['status']['color'] ?? '#DFE1E6') ?> !important;">
                                             <?= e($issue['status']['name'] ?? 'Open') ?>
                                         </span>
                                     </div>

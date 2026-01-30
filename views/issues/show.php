@@ -510,10 +510,39 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Status</span>
-                        <span class="detail-badge"
-                            style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
-                            <?= e($issue['status_name']) ?>
-                        </span>
+                        <?php if (!empty($transitions)): ?>
+                            <div class="dropdown">
+                                <button class="detail-badge dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    style="background-color: <?= e($issue['status_color']) ?>; color: white !important; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <?= e($issue['status_name']) ?>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <h6 class="dropdown-header">Current: <?= e($issue['status_name']) ?></h6>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <h6 class="dropdown-header">Transition To:</h6>
+                                    </li>
+                                    <?php foreach ($transitions as $transition): ?>
+                                        <li>
+                                            <a class="dropdown-item" href="#"
+                                                onclick="transitionIssue(<?= $transition['status_id'] ?>, '<?= e($transition['status_name']) ?>'); return false;">
+                                                <?= e($transition['status_name']) ?>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php else: ?>
+                            <span class="detail-badge"
+                                style="background-color: <?= e($issue['status_color']) ?>; color: white !important;">
+                                <?= e($issue['status_name']) ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <?php if ($issue['start_date']): ?>
                         <div class="detail-row">
@@ -599,7 +628,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="transition-form">
-                <div class="modal-body">
+                <div class="modal-body" style="padding-top: 10px;">
                     <p>Transition to: <strong id="transition-status"></strong></p>
                 </div>
                 <div class="modal-footer">

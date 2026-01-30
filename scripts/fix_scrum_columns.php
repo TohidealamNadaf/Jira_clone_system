@@ -9,9 +9,6 @@ set_time_limit(300);
 echo "=== Scrum Board Columns Migration ===\n\n";
 
 try {
-    // Database::init(); // Connection is lazy loaded
-
-
     // 1. Ensure all required statuses exist
     $standardColumns = [
         'Open' => 0,
@@ -24,7 +21,7 @@ try {
         'Reopened' => 7
     ];
 
-    // Status metadata (color match based on standard categories)
+    // Status metadata (match standard categories)
     $statusMeta = [
         'Open' => ['category' => 'todo', 'color' => '#42526E'],
         'To Do' => ['category' => 'todo', 'color' => '#42526E'],
@@ -39,6 +36,7 @@ try {
     echo "Step 1: Verifying Statuses...\n";
     foreach ($standardColumns as $name => $order) {
         $exists = Database::selectOne("SELECT 1 FROM statuses WHERE name = ?", [$name]);
+
         if (!$exists) {
             echo "  - Creating missing status: $name\n";
             $meta = $statusMeta[$name] ?? ['category' => 'todo', 'color' => '#42526E'];
@@ -53,11 +51,9 @@ try {
     }
     echo "  ✅ All statuses verified.\n\n";
 
-
     // 2. Update Boards
     echo "Step 2: Updating Boards...\n";
 
-    // Get all boards
     $boards = Database::select("SELECT id, name, project_id FROM boards");
     $updatedCount = 0;
     $skippedCount = 0;
@@ -66,20 +62,10 @@ try {
         $boardId = $board['id'];
         $boardName = $board['name'];
 
-        // Check current column count
         $columnCount = Database::selectValue("SELECT COUNT(*) FROM board_columns WHERE board_id = ?", [$boardId]);
 
-        // CWays MIS (ID 6) might already be correct, but let's standardize ALL to be safe
-        // Unless it has significantly modified columns? 
-        // Logic: If column count is NOT 8, or if it is 3 (the broken state), fix it.
-        // Actually, let's enforce 8 columns for consistency as requested.
-
         if ($columnCount == 8) {
-            // Check if they are the standard ones? or just skip?
-            // Let's assume if 8, it's likely correct or manually customized. 
-            // Better to only fix those with < 8 columns (likely the broken 3-column ones)
-            // or explicitly broken logic.
-            echo "  - Board '{$boardName}' (ID: $boardId) has 8 columns. Skipping (assumed correct).\n";
+            echo "  - Board '{$boardName}' (ID: $boardId) has 8 columns. Skipping.\n";
             $skippedCount++;
             continue;
         }
@@ -92,6 +78,7 @@ try {
         // Insert standard columns
         foreach ($standardColumns as $name => $order) {
             $statusId = Database::selectValue("SELECT id FROM statuses WHERE name = ?", [$name]);
+
             if ($statusId) {
                 Database::insert('board_columns', [
                     'board_id' => $boardId,

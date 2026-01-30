@@ -45,7 +45,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                         </span>
                     </div>
                     <div class="issue-actions-group">
-                        <?php if (can('issues.edit', $issue['project_id'])): ?>
+                        <?php if (can('issues.edit', $issue['project_id']) || $issue['reporter_id'] === $currentUserId): ?>
                             <a href="#" onclick="CreateIssueModal.openEdit('<?= $issue['issue_key'] ?>'); return false;"
                                 class="btn btn-sm btn-outline">
                                 <i class="bi bi-pencil"></i> Edit
@@ -204,7 +204,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 </div>
                 <div class="section-content">
                     <!-- Add Comment Form -->
-                    <?php if (can('issues.comment', $issue['project_id'])): ?>
+                    <?php if ($currentUserId): ?>
                         <form id="comment-form" class="comment-form">
                             <div class="form-group">
                                 <label class="form-label"><i class="bi bi-pencil-square"></i> Add a comment</label>

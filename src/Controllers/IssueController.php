@@ -142,7 +142,10 @@ class IssueController extends Controller
             abort(404, 'Issue not found');
         }
 
-        $this->authorize('issues.edit', $issue['project_id']);
+        // Allow reporter to edit their own issue, otherwise check permissions
+        if ($issue['reporter_id'] !== $this->userId()) {
+            $this->authorize('issues.edit', $issue['project_id']);
+        }
 
         $project = $this->issueService->getProjectWithDetails($issue['project_id']);
 
@@ -165,7 +168,10 @@ class IssueController extends Controller
             abort(404, 'Issue not found');
         }
 
-        $this->authorize('issues.edit', $issue['project_id']);
+        // Allow reporter to edit their own issue, otherwise check permissions
+        if ($issue['reporter_id'] !== $this->userId()) {
+            $this->authorize('issues.edit', $issue['project_id']);
+        }
 
         $data = $request->validate([
             'summary' => 'nullable|max:500',

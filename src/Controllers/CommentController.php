@@ -32,7 +32,8 @@ class CommentController extends Controller
             abort(404, 'Issue not found');
         }
 
-        $this->authorize('issues.comment', $issue['project_id']);
+        // Allow all authenticated users to comment
+        // $this->authorize('issues.comment', $issue['project_id']);
 
         $data = $request->validate([
             'body' => 'required|max:50000',
@@ -61,8 +62,8 @@ class CommentController extends Controller
                                u.id as author_id, u.display_name as author_name, u.avatar as author_avatar
                         FROM comments c
                         INNER JOIN users u ON c.user_id = u.id
-                        WHERE c.id = " . (int)$commentId;
-                
+                        WHERE c.id = " . (int) $commentId;
+
                 $stmt = $pdo->query($sql);
                 $comment = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -88,7 +89,7 @@ class CommentController extends Controller
 
             // Dispatch notification for comment
             NotificationService::dispatchIssueCommented($issue['id'], $userId, (int) $commentId);
-            
+
             $this->notifyWatchers($issue, 'comment_added', $comment);
 
             if ($request->wantsJson()) {

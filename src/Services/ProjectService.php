@@ -711,7 +711,6 @@ class ProjectService
                 'is_private' => 0,
                 'owner_id' => $userId,
             ]);
-
             // Create default Scrum columns (Full Standard Set)
             // Matching "CWays MIS" and standard workflow
             $standardColumns = [
@@ -724,11 +723,10 @@ class ProjectService
                 'Closed' => 6,
                 'Reopened' => 7
             ];
-
             foreach ($standardColumns as $name => $order) {
                 // Find status ID for this column
                 $statusId = Database::selectValue("SELECT id FROM statuses WHERE name = ? LIMIT 1", [$name]);
-
+                
                 if ($statusId) {
                     Database::insert('board_columns', [
                         'board_id' => $boardId,
@@ -738,11 +736,9 @@ class ProjectService
                     ]);
                 }
             }
-
             error_log("[ProjectService] ✅ Default Scrum board created: Board ID {$boardId} for Project {$projectId}");
         } catch (\Exception $e) {
             error_log("[ProjectService] ⚠️ Failed to create default Scrum board: " . $e->getMessage());
-            // Don't fail project creation if board creation fails, but log it
         }
     }
 

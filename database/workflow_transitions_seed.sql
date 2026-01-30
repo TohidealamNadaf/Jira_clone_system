@@ -35,7 +35,7 @@ INSERT INTO `workflow_transitions` (`workflow_id`, `name`, `from_status_id`, `to
 (1, 'Done → In Progress', 6, 3),
 
 -- From Closed (7)
-(1, 'Closed → To Do', 7, 2),
+(1, 'Closed → To Do', 7, 2);
 
 -- Agile Workflow (ID: 2) - similar to Standard
 INSERT INTO `workflow_transitions` (`workflow_id`, `name`, `from_status_id`, `to_status_id`) VALUES
@@ -46,7 +46,7 @@ INSERT INTO `workflow_transitions` (`workflow_id`, `name`, `from_status_id`, `to
 (2, 'Testing → Done', 5, 6),
 (2, 'Done → Closed', 6, 7),
 (2, 'In Progress → To Do', 3, 2),
-(2, 'In Review → In Progress', 4, 3),
+(2, 'In Review → In Progress', 4, 3);
 
 -- Kanban Workflow (ID: 3) - simplified
 INSERT INTO `workflow_transitions` (`workflow_id`, `name`, `from_status_id`, `to_status_id`) VALUES

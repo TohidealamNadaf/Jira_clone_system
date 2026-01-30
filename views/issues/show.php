@@ -2523,7 +2523,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 if (mime === 'application/pdf') {
                     container.innerHTML = `<iframe src="${previewUrl}" width="100%" height="100%" style="border:none; min-height: 80vh;"></iframe>`;
                 } else if (mime.startsWith('image/')) {
-                    container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 bg-light p-4"><img src="${previewUrl}" class="img-fluid" style="max-height: 80vh;"></div>`;
+                    container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 bg-light p-4"><img src="${previewUrl}" class="img-fluid" style="max-height: 80vh;" onerror="this.outerHTML='<div class=\'text-center text-muted\'><i class=\'bi bi-file-earmark-x display-1\'></i><p class=\'mt-2\'>Preview not available or file not found</p></div>'"></div>`;
                 } else if (mime.startsWith('video/')) {
                     container.innerHTML = `<div class="d-flex justify-content-center align-items-center h-100 bg-black"><video controls class="w-100" style="max-height: 80vh;"><source src="${previewUrl}" type="${mime}"></video></div>`;
                 } else if (mime.startsWith('audio/')) {

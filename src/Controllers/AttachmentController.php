@@ -121,6 +121,7 @@ class AttachmentController extends Controller
         $filePath = public_path($attachment['file_path']);
 
         if (!file_exists($filePath)) {
+            error_log("Attachment file missing from disk: " . $filePath . " (ID: " . $attachmentId . ")");
             abort(404, 'File not found');
         }
 

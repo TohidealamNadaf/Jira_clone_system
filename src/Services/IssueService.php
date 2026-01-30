@@ -1434,25 +1434,35 @@ class IssueService
 
     public function addAttachment(int $issueId, array $file, int $userId): array
     {
-        $uploadDir = __DIR__ . '/../../public/uploads/attachments/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+        // Use the same logic as Controller::uploadFile for consistency
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $filename = bin2hex(random_bytes(16)) . '.' . $extension;
+        
+        // Create directory structure (year/month)
+        $subPath = 'attachments/' . date('Y/m');
+        $uploadPath = config('upload.path', 'uploads');
+        $fullPath = public_path($uploadPath . '/' . $subPath);
+
+        if (!is_dir($fullPath)) {
+            mkdir($fullPath, 0755, true);
         }
 
-        $filename = uniqid() . '_' . $file['name'];
-        $filepath = $uploadDir . $filename;
-
-        if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+        $destination = $fullPath . '/' . $filename;
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
             throw new \Exception('Failed to upload file');
         }
 
+        $relativePath = $uploadPath . '/' . $subPath . '/' . $filename;
+
         $attachmentId = Database::insert('issue_attachments', [
             'issue_id' => $issueId,
-            'filename' => $file['name'],
-            'filepath' => '/uploads/attachments/' . $filename,
+            'filename' => $filename,
+            'original_name' => $file['name'],
+            'file_path' => $relativePath,
             'file_size' => $file['size'],
-            'file_type' => $file['type'],
-            'uploaded_by' => $userId
+            'mime_type' => $file['type'],
+            'uploaded_by' => $userId,
+            'created_at' => date('Y-m-d H:i:s')
         ]);
 
         $this->logAudit('attachment_added', 'issue', $issueId, null, ['filename' => $file['name']], $userId);
@@ -1471,6 +1481,12 @@ class IssueService
         $attachment = Database::selectOne("SELECT * FROM issue_attachments WHERE id = ?", [$attachmentId]);
         if (!$attachment) {
             throw new \InvalidArgumentException('Attachment not found');
+        }
+
+        // Delete file from disk
+        $fullPath = public_path($attachment['file_path']);
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
         }
 
         $this->logAudit('attachment_deleted', 'issue', $attachment['issue_id'], $attachment, null, $userId);

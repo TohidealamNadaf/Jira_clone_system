@@ -628,7 +628,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="transition-form">
-                <div class="modal-body" style="padding-top: 10px;">
+                <div class="modal-body" style="padding-top: 20px;">
                     <p>Transition to: <strong id="transition-status"></strong></p>
                 </div>
                 <div class="modal-footer">

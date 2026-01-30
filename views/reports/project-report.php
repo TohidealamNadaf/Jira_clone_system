@@ -857,7 +857,8 @@
             <!-- Issues Created vs Resolved -->
             <div class="chart-card timeline-chart">
                 <h3 class="chart-title">Issues Created vs Resolved (Last
-                    <?= isset($_GET['days']) ? $_GET['days'] : 30 ?> days)</h3>
+                    <?= isset($_GET['days']) ? $_GET['days'] : 30 ?> days)
+                </h3>
                 <div class="chart-wrapper" style="position: relative; min-height: 350px;">
                     <canvas id="createdVsResolvedChart"></canvas>
                 </div>
@@ -944,8 +945,8 @@
                                         </td>
                                         <td>
                                             <span class="status-badge"
-                                                style="background-color: <?= e($issue['status_color'] ?? '#DFE1E6') ?>; color: <?= contrast_color($issue['status_color'] ?? '#DFE1E6') ?> !important;">
-                                                <?= e($issue['status_name']) ?>
+                                                style="background-color: <?= e($issue['status_color'] ?? '#DFE1E6') ?>; color: <?= contrast_color($issue['status_color'] ?? '#DFE1E6') ?> !important; display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px;">
+                                                <?= e($issue['status_name'] ?: 'Status') ?>
                                             </span>
                                         </td>
                                         <td class="text-secondary"><?= e($issue['assignee_name'] ?? 'Unassigned') ?></td>

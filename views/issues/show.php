@@ -500,8 +500,10 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                         <span class="detail-label">Type</span>
                         <span class="detail-badge"
                             style="background-color: <?= e($issue['issue_type_color']) ?>; color: <?= contrast_color($issue['issue_type_color']) ?> !important; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 4px;">
-                            <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
-                            <?= e($issue['issue_type_name']) ?>
+                            <?php if (!empty($issue['issue_type_icon'])): ?>
+                                <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
+                            <?php endif; ?>
+                            <?= e($issue['issue_type_name'] ?: 'Type') ?>
                         </span>
                     </div>
                     <div class="detail-row">
@@ -511,7 +513,7 @@ $currentUserId = $authUser ? $authUser['id'] : null;
                             <?php if (!empty($issue['priority_icon'])): ?>
                                 <i class="bi bi-<?= e($issue['priority_icon']) ?>"></i>
                             <?php endif; ?>
-                            <?= e($issue['priority_name']) ?>
+                            <?= e($issue['priority_name'] ?: 'Priority') ?>
                         </span>
                     </div>
                     <div class="detail-row">

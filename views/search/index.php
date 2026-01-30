@@ -320,12 +320,15 @@
                                 <a href="<?= url('/issue/' . $issue['issue_key']) ?>" class="result-key-link">
                                     <?= e($issue['issue_key']) ?>
                                 </a>
-                                <span class="result-priority-badge" style="background-color: <?= e($issue['priority_color']) ?>; color: <?= contrast_color($issue['priority_color']) ?> !important;">
-                                    <?= e($issue['priority_name']) ?>
+                                <span class="result-priority-badge" style="background-color: <?= e($issue['priority_color']) ?>; color: <?= contrast_color($issue['priority_color']) ?> !important; display: inline-flex; align-items: center; gap: 4px;">
+                                    <?php if (!empty($issue['priority_icon'])): ?>
+                                        <i class="bi bi-<?= e($issue['priority_icon']) ?>"></i>
+                                    <?php endif; ?>
+                                    <?= e($issue['priority_name'] ?: 'Priority') ?>
                                 </span>
                             </div>
-                            <span class="result-status-badge" style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important;">
-                                <?= e($issue['status_name']) ?>
+                            <span class="result-status-badge" style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important; display: inline-flex; align-items: center; gap: 4px;">
+                                <?= e($issue['status_name'] ?: 'Status') ?>
                             </span>
                         </div>
 
@@ -406,13 +409,16 @@
                                     <?php endif; ?>
                                 </td>
                                 <td class="col-status">
-                                    <span class="status-badge-table" style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important;">
-                                        <?= e($issue['status_name']) ?>
+                                    <span class="status-badge-table" style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px;">
+                                        <?= e($issue['status_name'] ?: 'Status') ?>
                                     </span>
                                 </td>
                                 <td class="col-priority">
-                                    <span class="priority-badge-table" style="background-color: <?= e($issue['priority_color']) ?>; color: <?= contrast_color($issue['priority_color']) ?> !important;">
-                                        <?= e($issue['priority_name']) ?>
+                                    <span class="priority-badge-table" style="background-color: <?= e($issue['priority_color']) ?>; color: <?= contrast_color($issue['priority_color']) ?> !important; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px;">
+                                        <?php if (!empty($issue['priority_icon'])): ?>
+                                            <i class="bi bi-<?= e($issue['priority_icon']) ?>"></i>
+                                        <?php endif; ?>
+                                        <?= e($issue['priority_name'] ?: 'Priority') ?>
                                     </span>
                                 </td>
                                 <td class="col-updated">

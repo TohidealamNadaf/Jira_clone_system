@@ -16,7 +16,7 @@ $prioritySlug = strtolower(str_replace(' ', '-', $issue['priority_name'] ?? ''))
     data-due="<?= e($dueBucket) ?>" data-updated-today="<?= $updatedToday ? 'true' : 'false' ?>">
     <div class="issue-type-icon"
         style="background-color: <?= e($issue['issue_type_color'] ?? 'var(--jira-blue)') ?>; color: <?= contrast_color($issue['issue_type_color'] ?? '#0052cc') // Default jira blue approx ?>;">
-        <i class="bi bi-<?= e($issue['issue_type_icon'] ?? 'list-check') ?>"></i>
+        <i class="bi bi-<?= e($issue['issue_type_icon'] ?: 'list-check') ?>"></i>
     </div>
     <div class="issue-key">
         <?= e($issue['issue_key']) ?>
@@ -37,7 +37,7 @@ $prioritySlug = strtolower(str_replace(' ', '-', $issue['priority_name'] ?? ''))
         <?= e(substr($issue['priority_name'] ?? 'N', 0, 1)) ?>
     </span>
     <span class="issue-status"
-        style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>; color: <?= contrast_color($issue['status_color'] ?? '#0052cc') ?> !important;">
-        <?= e($issue['status_name'] ?? 'New') ?>
+        style="background-color: <?= e($issue['status_color'] ?? 'var(--jira-blue)') ?>; color: <?= contrast_color($issue['status_color'] ?? '#0052cc') ?> !important; display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px;">
+        <?= e($issue['status_name'] ?: 'New') ?>
     </span>
 </a>

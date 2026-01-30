@@ -173,20 +173,26 @@
                             </td>
                             <td class="col-type">
                                 <span class="badge-type"
-                                    style="background-color: <?= e($issue['issue_type_color']) ?>20; color: <?= e($issue['issue_type_color']) ?>;">
-                                    <?= e($issue['issue_type_name']) ?>
+                                    style="background-color: <?= e($issue['issue_type_color']) ?>; color: <?= contrast_color($issue['issue_type_color']) ?>; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px;">
+                                    <?php if (!empty($issue['issue_type_icon'])): ?>
+                                        <i class="bi bi-<?= e($issue['issue_type_icon']) ?>"></i>
+                                    <?php endif; ?>
+                                    <?= e($issue['issue_type_name'] ?: 'Type') ?>
                                 </span>
                             </td>
                             <td class="col-status">
                                 <span class="badge-status"
-                                    style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important;">
-                                    <?= e($issue['status_name']) ?>
+                                    style="background-color: <?= e($issue['status_color']) ?>; color: <?= contrast_color($issue['status_color']) ?> !important; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px;">
+                                    <?= e($issue['status_name'] ?: 'Status') ?>
                                 </span>
                             </td>
                             <td class="col-priority">
                                 <span class="badge-priority"
-                                    style="background-color: <?= e($issue['priority_color']) ?>20; color: <?= e($issue['priority_color']) ?>;">
-                                    <?= e($issue['priority_name']) ?>
+                                    style="background-color: <?= e($issue['priority_color']) ?>; color: <?= contrast_color($issue['priority_color']) ?> !important; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px;">
+                                    <?php if (!empty($issue['priority_icon'])): ?>
+                                        <i class="bi bi-<?= e($issue['priority_icon']) ?>"></i>
+                                    <?php endif; ?>
+                                    <?= e($issue['priority_name'] ?: 'Priority') ?>
                                 </span>
                             </td>
                             <td class="col-assignee">

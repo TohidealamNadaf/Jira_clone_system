@@ -27,7 +27,7 @@ try {
     );
 
     echo "Step 1️⃣ : Finding projects without Scrum boards...\n";
-    
+
     $stmt = $pdo->prepare("
         SELECT p.id, p.`key`, p.name, p.created_by
         FROM projects p

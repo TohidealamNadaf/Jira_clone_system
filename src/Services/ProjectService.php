@@ -712,20 +712,31 @@ class ProjectService
                 'owner_id' => $userId,
             ]);
 
-            // Create default Kanban columns (To Do, In Progress, Done)
-            // Using standard Jira status categories
-            $columns = [
-                ['name' => 'To Do', 'sort_order' => 0],
-                ['name' => 'In Progress', 'sort_order' => 1],
-                ['name' => 'Done', 'sort_order' => 2],
+            // Create default Scrum columns (Full Standard Set)
+            // Matching "CWays MIS" and standard workflow
+            $standardColumns = [
+                'Open' => 0,
+                'To Do' => 1,
+                'In Progress' => 2,
+                'In Review' => 3,
+                'Testing' => 4,
+                'Done' => 5,
+                'Closed' => 6,
+                'Reopened' => 7
             ];
 
-            foreach ($columns as $column) {
-                Database::insert('board_columns', [
-                    'board_id' => $boardId,
-                    'name' => $column['name'],
-                    'sort_order' => $column['sort_order'],
-                ]);
+            foreach ($standardColumns as $name => $order) {
+                // Find status ID for this column
+                $statusId = Database::selectValue("SELECT id FROM statuses WHERE name = ? LIMIT 1", [$name]);
+
+                if ($statusId) {
+                    Database::insert('board_columns', [
+                        'board_id' => $boardId,
+                        'name' => $name,
+                        'status_ids' => json_encode([$statusId]),
+                        'sort_order' => $order,
+                    ]);
+                }
             }
 
             error_log("[ProjectService] ✅ Default Scrum board created: Board ID {$boardId} for Project {$projectId}");

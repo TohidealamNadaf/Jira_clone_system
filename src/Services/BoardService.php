@@ -683,26 +683,29 @@ class BoardService
 
     private function createDefaultColumns(int $boardId, string $type): void
     {
-        $statuses = Database::select("SELECT id, name, category FROM statuses ORDER BY sort_order ASC");
-
-        $columns = [
-            'todo' => ['name' => 'To Do', 'statuses' => []],
-            'in_progress' => ['name' => 'In Progress', 'statuses' => []],
-            'done' => ['name' => 'Done', 'statuses' => []],
+        // Create default columns based on standard "CWays MIS" workflow
+        $standardColumns = [
+            'Open' => 0,
+            'To Do' => 1,
+            'In Progress' => 2,
+            'In Review' => 3,
+            'Testing' => 4,
+            'Done' => 5,
+            'Closed' => 6,
+            'Reopened' => 7
         ];
 
-        foreach ($statuses as $status) {
-            $columns[$status['category']]['statuses'][] = $status['id'];
-        }
+        foreach ($standardColumns as $name => $order) {
+            $statusId = Database::selectValue("SELECT id FROM statuses WHERE name = ? LIMIT 1", [$name]);
 
-        $order = 0;
-        foreach ($columns as $category => $column) {
-            Database::insert('board_columns', [
-                'board_id' => $boardId,
-                'name' => $column['name'],
-                'status_ids' => json_encode($column['statuses']),
-                'sort_order' => $order++,
-            ]);
+            if ($statusId) {
+                Database::insert('board_columns', [
+                    'board_id' => $boardId,
+                    'name' => $name,
+                    'status_ids' => json_encode([$statusId]),
+                    'sort_order' => $order,
+                ]);
+            }
         }
     }
 

@@ -10,10 +10,10 @@ declare(strict_types=1);
 ini_set('expose_php', '0');
 
 // Suppress array key warnings for development (these are benign and handled with null coalescing)
-ini_set('error_reporting', E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
+error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
 
 // Register output buffer to remove any CSP headers that might be added
-ob_start(function($buffer) {
+ob_start(function ($buffer) {
     return $buffer;
 });
 
@@ -22,7 +22,7 @@ if (!headers_sent()) {
     // Remove any existing CSP restrictions
     header_remove('Content-Security-Policy');
     header_remove('Content-Security-Policy-Report-Only');
-    
+
     // Set completely permissive CSP for development
     header("Content-Security-Policy: *", true);
 }
@@ -42,6 +42,6 @@ if (config('app.debug') && !is_ajax() && !wants_json()) {
     $memory = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
     $queries = count(\App\Core\Database::getQueryLog());
     $queryTime = round(\App\Core\Database::getTotalQueryTime(), 2);
-    
+
     echo "<!-- Page generated in {$time}ms | Memory: {$memory}MB | Queries: {$queries} ({$queryTime}ms) -->";
 }

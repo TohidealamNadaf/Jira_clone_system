@@ -1083,6 +1083,14 @@
             font-size: 11px;
         }
     }
+    .toolbar-btn.active {
+        background: rgba(139, 25, 86, 0.1) !important;
+        border-color: var(--jira-blue) !important;
+        color: var(--jira-blue) !important;
+    }
+    .toolbar-btn.active i {
+        color: var(--jira-blue) !important;
+    }
 </style>
 
 <?php \App\Core\View::endSection(); ?>
@@ -1440,13 +1448,9 @@
         const filterBtn = document.getElementById('filterBtn');
         if (type !== 'none') {
             filterBtn.classList.add('active');
-            filterBtn.style.background = '#e9f2ff';
-            filterBtn.style.borderColor = '#0052cc';
             showToast(`✓ Filter applied: ${type}`, 'success');
         } else {
             filterBtn.classList.remove('active');
-            filterBtn.style.background = '';
-            filterBtn.style.borderColor = '';
             showToast('✓ Filter cleared', 'info');
         }
         

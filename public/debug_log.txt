@@ -525,3 +525,1799 @@
 [2026-01-30 09:06:35] Processing file: Screenshot 2026-01-30 143441.png
 [2026-01-30 09:06:35] File uploaded successfully. Path: uploads/attachments/2026/01/23fe90b2bc7c856fc7e938840a8314c8.png
 [2026-01-30 09:06:35] Database insert success.
+[2026-01-31 08:38:21] IssueController::store called.
+[2026-01-31 08:38:21] FILES: Array
+(
+)
+
+[2026-01-31 08:38:21] POST: Array
+(
+    [project_id] => 11
+    [issue_type_id] => 3
+    [summary] => General Ledger Account operations
+    [description] => <h3 data-start="213" data-end="235"><strong data-start="217" data-end="233">Description:</strong></h3>
+<p data-start="236" data-end="356"><strong data-start="264" data-end="309">System &rarr; Finance &rarr; General Ledger Account</strong> module cover the following functionalities:</p>
+<ul data-start="357" data-end="524">
+<li data-start="357" data-end="390">
+<p data-start="359" data-end="390">Create General Ledger Account</p>
+</li>
+<li data-start="391" data-end="422">
+<p data-start="393" data-end="422">Edit General Ledger Account</p>
+</li>
+<li data-start="423" data-end="456">
+<p data-start="425" data-end="456">Delete General Ledger Account</p>
+</li>
+<li data-start="457" data-end="490">
+<p data-start="459" data-end="490">Filter General Ledger Account</p>
+</li>
+<li data-start="491" data-end="524">
+<p data-start="493" data-end="524">Search General Ledger Account</p>
+</li>
+</ul>
+    [assignee_id] => 8
+    [priority_id] => 2
+    [start_date] => 2026-01-31
+    [end_date] => 2026-02-03
+)
+
+[2026-02-02 04:56:30] IssueController::store called.
+[2026-02-02 04:56:30] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => checkbox.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => checkbox.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpA0F.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 364421
+                )
+
+        )
+
+)
+
+[2026-02-02 04:56:30] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Checkbox toggles correctly, but the corresponding employee row remains highlighted even after deselection.
+    [description] => <p data-start="641" data-end="939">In the Employee Management module under Prefix selection, when a checkbox is unchecked, the checkbox state updates correctly. However, the associated row remains highlighted, indicating that the item is still selected. This results in a mismatch between the checkbox state and the row selection UI.</p>
+<h3 data-start="946" data-end="972"><strong data-start="950" data-end="972">Steps to Reproduce</strong></h3>
+<ol data-start="973" data-end="1164">
+<li data-start="973" data-end="1021">
+<p data-start="976" data-end="1021">Navigate to <strong data-start="988" data-end="1011">Employee Management</strong> screen.</p>
+</li>
+<li data-start="1022" data-end="1090">
+<p data-start="1025" data-end="1090">Select any employee record by checking the <strong data-start="1068" data-end="1087">Prefix checkbox</strong>.</p>
+</li>
+<li data-start="1091" data-end="1134">
+<p data-start="1094" data-end="1134">Observe that the row gets highlighted.</p>
+</li>
+<li data-start="1135" data-end="1164">
+<p data-start="1138" data-end="1164">Uncheck the same checkbox.</p>
+</li>
+</ol>
+<h3 data-start="1171" data-end="1196"><strong data-start="1175" data-end="1194">Expected Result</strong></h3>
+<ul data-start="1197" data-end="1335">
+<li data-start="1197" data-end="1280">
+<p data-start="1199" data-end="1280">When the checkbox is unchecked, the corresponding row should be <strong data-start="1263" data-end="1277">deselected</strong>.</p>
+</li>
+<li data-start="1281" data-end="1335">
+<p data-start="1283" data-end="1335">The row highlight should be <strong data-start="1311" data-end="1334">removed immediately</strong>.</p>
+</li>
+</ul>
+<h3 data-start="1342" data-end="1365"><strong data-start="1346" data-end="1363">Actual Result</strong></h3>
+<ul data-start="1366" data-end="1477">
+<li data-start="1366" data-end="1409">
+<p data-start="1368" data-end="1409">The checkbox is unchecked successfully.</p>
+</li>
+<li data-start="1410" data-end="1477">
+<p data-start="1412" data-end="1477">The row <strong data-start="1420" data-end="1443">remains highlighted</strong>, indicating it is still selected.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 3
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 04:56:30] Processing file: checkbox.png
+[2026-02-02 04:56:30] File uploaded successfully. Path: uploads/attachments/2026/02/bc87c6afd9fa0c81d3a8f6938e648f58.png
+[2026-02-02 04:56:30] Database insert success.
+[2026-02-02 05:03:54] IssueController::store called.
+[2026-02-02 05:03:54] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => city.png
+                    [1] => city_grid.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => city.png
+                    [1] => city_grid.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpD3BC.tmp
+                    [1] => C:\xampp11\tmp\phpD3BD.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 268752
+                    [1] => 377706
+                )
+
+        )
+
+)
+
+[2026-02-02 05:03:54] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Newly added city record does not appear in the grid after successful addition.
+    [description] => <p data-start="513" data-end="772">In the City module, when a user adds a new city record, the system accepts the input and displays a success message confirming the addition. However, the newly added city entry is not displayed in the grid, even though the operation is reported as successful.</p>
+<h3 data-start="779" data-end="805"><strong data-start="783" data-end="805">Steps to Reproduce</strong></h3>
+<ol data-start="806" data-end="990">
+<li data-start="806" data-end="843">
+<p data-start="809" data-end="843">Navigate to the <strong data-start="825" data-end="833">City</strong> module.</p>
+</li>
+<li data-start="844" data-end="877">
+<p data-start="847" data-end="877">Click on the <strong data-start="860" data-end="867">Add</strong> button.</p>
+</li>
+<li data-start="878" data-end="925">
+<p data-start="881" data-end="925">Enter valid details for a new city record.</p>
+</li>
+<li data-start="926" data-end="958">
+<p data-start="929" data-end="958">Click on <strong data-start="938" data-end="955">Save / Submit</strong>.</p>
+</li>
+<li data-start="959" data-end="990">
+<p data-start="962" data-end="990">Observe the success message.</p>
+</li>
+</ol>
+<h3 data-start="997" data-end="1022"><strong data-start="1001" data-end="1020">Expected Result</strong></h3>
+<ul data-start="1023" data-end="1144">
+<li data-start="1023" data-end="1071">
+<p data-start="1025" data-end="1071">The system should display a success message.</p>
+</li>
+<li data-start="1072" data-end="1144">
+<p data-start="1074" data-end="1144">The newly added city record should <strong data-start="1109" data-end="1143">immediately appear in the grid</strong>.</p>
+</li>
+</ul>
+<h3 data-start="1151" data-end="1174"><strong data-start="1155" data-end="1172">Actual Result</strong></h3>
+<ul data-start="1175" data-end="1271">
+<li data-start="1175" data-end="1208">
+<p data-start="1177" data-end="1208">Success message is displayed.</p>
+</li>
+<li data-start="1209" data-end="1271">
+<p data-start="1211" data-end="1271">The newly added city record <strong data-start="1239" data-end="1270">does not appear in the grid</strong>.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 1
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 05:03:54] Processing file: city.png
+[2026-02-02 05:03:54] File uploaded successfully. Path: uploads/attachments/2026/02/3140902babdb49f91bb2dc75d55b4aea.png
+[2026-02-02 05:03:54] Database insert success.
+[2026-02-02 05:03:54] Processing file: city_grid.png
+[2026-02-02 05:03:54] File uploaded successfully. Path: uploads/attachments/2026/02/ec0e7c48ac0eb12022f46fdb039b6f37.png
+[2026-02-02 05:03:54] Database insert success.
+[2026-02-02 05:08:51] IssueController::store called.
+[2026-02-02 05:08:51] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => relation.png
+                    [1] => relation_grid.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => relation.png
+                    [1] => relation_grid.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php5B88.tmp
+                    [1] => C:\xampp11\tmp\php5B99.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 264006
+                    [1] => 298138
+                )
+
+        )
+
+)
+
+[2026-02-02 05:08:51] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Incorrect validation message displayed when adding a new relation stating “Qualification already exists” even though no such entry is present in the Relation grid.
+    [description] => <p data-start="620" data-end="1027">In the Relation module, while attempting to add a new relation using the <strong data-start="693" data-end="700">Add</strong> option, the system displays a validation error message indicating that the <strong data-start="776" data-end="808">Qualification already exists</strong>. However, there is no corresponding record visible in the Relation grid, and the relation being added is not already present. This validation message is incorrect and prevents the user from adding a valid new relation.</p>
+<h3 data-start="1034" data-end="1060"><strong data-start="1038" data-end="1060">Steps to Reproduce</strong></h3>
+<ol data-start="1061" data-end="1217">
+<li data-start="1061" data-end="1107">
+<p data-start="1064" data-end="1107">Navigate to the <strong data-start="1080" data-end="1092">Relation</strong> grid/module.</p>
+</li>
+<li data-start="1108" data-end="1141">
+<p data-start="1111" data-end="1141">Click on the <strong data-start="1124" data-end="1131">Add</strong> button.</p>
+</li>
+<li data-start="1142" data-end="1186">
+<p data-start="1145" data-end="1186">Enter valid details for a new relation.</p>
+</li>
+<li data-start="1187" data-end="1217">
+<p data-start="1190" data-end="1217">Click on <strong data-start="1199" data-end="1216">Save / Submit</strong>.</p>
+</li>
+</ol>
+<h3 data-start="1224" data-end="1249"><strong data-start="1228" data-end="1247">Expected Result</strong></h3>
+<ul data-start="1250" data-end="1468">
+<li data-start="1250" data-end="1316">
+<p data-start="1252" data-end="1316">The system should validate only existing <strong data-start="1293" data-end="1305">Relation</strong> records.</p>
+</li>
+<li data-start="1317" data-end="1413">
+<p data-start="1319" data-end="1413">If the relation does not exist, the system should allow the record to be added successfully.</p>
+</li>
+<li data-start="1414" data-end="1468">
+<p data-start="1416" data-end="1468">No incorrect validation message should be displayed.</p>
+</li>
+</ul>
+<h3 data-start="1475" data-end="1498"><strong data-start="1479" data-end="1496">Actual Result</strong></h3>
+<ul data-start="1499" data-end="1648">
+<li data-start="1499" data-end="1576">
+<p data-start="1501" data-end="1576">The system displays an error message: <strong data-start="1539" data-end="1574">&ldquo;Qualification already exists.&rdquo;</strong></p>
+</li>
+<li data-start="1577" data-end="1648">
+<p data-start="1579" data-end="1648">The relation is not added, even though it does not exist in the grid.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 1
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 05:08:51] Processing file: relation.png
+[2026-02-02 05:08:51] File uploaded successfully. Path: uploads/attachments/2026/02/0a9da0297a0c9c64e1374c61de2e9260.png
+[2026-02-02 05:08:51] Database insert success.
+[2026-02-02 05:08:51] Processing file: relation_grid.png
+[2026-02-02 05:08:51] File uploaded successfully. Path: uploads/attachments/2026/02/d8b64410df03284f4bfd5ce9071f1b8b.png
+[2026-02-02 05:08:51] Database insert success.
+[2026-02-02 05:20:01] IssueController::store called.
+[2026-02-02 05:20:01] FILES: Array
+(
+)
+
+[2026-02-02 05:20:01] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Show Report button not visible after navigating away and returning to Employee Shift page
+    [description] => <div class="flex flex-col text-sm pb-25">
+<article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" dir="auto" tabindex="-1" data-turn-id="request-WEB:fbf6f5f5-acfb-42d6-baaf-1c6410ff1d71-2" data-testid="conversation-turn-6" data-scroll-anchor="true" data-turn="assistant">
+<div class="text-base my-auto mx-auto pb-10 [--thread-content-margin:--spacing(4)] @w-sm/main:[--thread-content-margin:--spacing(6)] @w-lg/main:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)">
+<div class="[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1">
+<div class="flex max-w-full flex-col grow">
+<div class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1" dir="auto" data-message-author-role="assistant" data-message-id="800b02b4-5d51-4b60-97a5-39d1b943c125" data-message-model-slug="gpt-5-2">
+<div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]">
+<div class="markdown prose dark:prose-invert w-full wrap-break-word dark markdown-new-styling">
+<h3 data-start="143" data-end="155"><strong data-start="147" data-end="155">Path</strong></h3>
+<p data-start="156" data-end="210">Time Office &rarr; Master &amp; Configurations &rarr; Employee Shift</p>
+<h3 data-start="212" data-end="225"><strong data-start="216" data-end="225">Steps</strong></h3>
+<ol data-start="226" data-end="454">
+<li data-start="226" data-end="255">
+<p data-start="229" data-end="255">Login to the application</p>
+</li>
+<li data-start="256" data-end="327">
+<p data-start="259" data-end="327">Navigate to Time Office &rarr; Master &amp; Configurations &rarr; Employee Shift</p>
+</li>
+<li data-start="328" data-end="373">
+<p data-start="331" data-end="373">Verify the Show Report button is visible</p>
+</li>
+<li data-start="374" data-end="412">
+<p data-start="377" data-end="412">Navigate to any other page/module</p>
+</li>
+<li data-start="413" data-end="454">
+<p data-start="416" data-end="454">Navigate back to Employee Shift page</p>
+</li>
+</ol>
+<h3 data-start="456" data-end="479"><strong data-start="460" data-end="479">Expected Result</strong></h3>
+<p data-start="480" data-end="558">Show Report button should be visible when returning to the Employee Shift page</p>
+<h3 data-start="560" data-end="581"><strong data-start="564" data-end="581">Actual Result</strong></h3>
+<p data-start="582" data-end="678" data-is-last-node="" data-is-only-node="">Show Report button is not visible after navigating away and returning to the Employee Shift page</p>
+</div>
+</div>
+</div>
+</div>
+<div class="z-0 flex min-h-[46px] justify-start">&nbsp;</div>
+</div>
+</div>
+</article>
+</div>
+<div class="pointer-events-none h-px w-px absolute bottom-0" aria-hidden="true" data-edge="true">&nbsp;</div>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-02 05:24:05] IssueController::store called.
+[2026-02-02 05:24:05] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => relation_delete.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => relation_delete.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php4B98.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 293505
+                )
+
+        )
+
+)
+
+[2026-02-02 05:24:05] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => No action performed after confirming delete in Employee Management – Relation.
+    [description] => <p data-start="565" data-end="910">In the Employee Management module under the Relation section, when the user clicks on <strong data-start="651" data-end="661">Delete</strong>, the system displays a confirmation message. However, after confirming the deletion, there is no system response&mdash;no success message, no error message, and no data removal. The user remains on the same page, and the selected relation is not deleted.</p>
+<h3 data-start="917" data-end="943"><strong data-start="921" data-end="943">Steps to Reproduce</strong></h3>
+<ol data-start="944" data-end="1158">
+<li data-start="944" data-end="992">
+<p data-start="947" data-end="992">Navigate to <strong data-start="959" data-end="982">Employee Management</strong> module.</p>
+</li>
+<li data-start="993" data-end="1029">
+<p data-start="996" data-end="1029">Go to the <strong data-start="1006" data-end="1018">Relation</strong> section.</p>
+</li>
+<li data-start="1030" data-end="1070">
+<p data-start="1033" data-end="1070">Select an existing relation record.</p>
+</li>
+<li data-start="1071" data-end="1107">
+<p data-start="1074" data-end="1107">Click on the <strong data-start="1087" data-end="1097">Delete</strong> button.</p>
+</li>
+<li data-start="1108" data-end="1158">
+<p data-start="1111" data-end="1158">Confirm the deletion in the confirmation popup.</p>
+</li>
+</ol>
+<h3 data-start="1165" data-end="1190"><strong data-start="1169" data-end="1188">Expected Result</strong></h3>
+<ul data-start="1191" data-end="1356">
+<li data-start="1191" data-end="1252">
+<p data-start="1193" data-end="1252">The selected relation should be <strong data-start="1225" data-end="1249">deleted successfully</strong>.</p>
+</li>
+<li data-start="1253" data-end="1299">
+<p data-start="1255" data-end="1299">A <strong data-start="1257" data-end="1276">success message</strong> should be displayed.</p>
+</li>
+<li data-start="1300" data-end="1356">
+<p data-start="1302" data-end="1356">The grid should refresh and remove the deleted record.</p>
+</li>
+</ul>
+<h3 data-start="1363" data-end="1386"><strong data-start="1367" data-end="1384">Actual Result</strong></h3>
+<ul data-start="1387" data-end="1537">
+<li data-start="1387" data-end="1423">
+<p data-start="1389" data-end="1423">Confirmation popup is displayed.</p>
+</li>
+<li data-start="1424" data-end="1475">
+<p data-start="1426" data-end="1475">After confirmation, <strong data-start="1446" data-end="1472">no action is performed</strong>.</p>
+</li>
+<li data-start="1476" data-end="1537">
+<p data-start="1478" data-end="1537">The record remains unchanged and the page does not refresh.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+)
+
+[2026-02-02 05:24:05] Processing file: relation_delete.png
+[2026-02-02 05:24:05] File uploaded successfully. Path: uploads/attachments/2026/02/c52f13feafe248360b7a17755f3f3508.png
+[2026-02-02 05:24:05] Database insert success.
+[2026-02-02 05:30:07] IssueController::store called.
+[2026-02-02 05:30:07] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Qualification_delete.png
+                    [1] => qualification_grid.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Qualification_delete.png
+                    [1] => qualification_grid.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpD216.tmp
+                    [1] => C:\xampp11\tmp\phpD217.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 285206
+                    [1] => 357131
+                )
+
+        )
+
+)
+
+[2026-02-02 05:30:07] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Qualification record remains visible in the grid after successful deletion message.
+    [description] => <p>In the Employee Management module under the Qualification section, when a user deletes a selected qualification record, the system displays a confirmation popup. After confirming, a <strong data-start="781" data-end="807">&ldquo;Successfully deleted&rdquo;</strong> message is shown. However, the deleted record continues to appear in the qualification grid, indicating that the UI is not updated or the record is not actually removed.</p>
+<h3 data-start="984" data-end="1010"><strong data-start="988" data-end="1010">Steps to Reproduce</strong></h3>
+<ol data-start="1011" data-end="1197">
+<li data-start="1011" data-end="1059">
+<p data-start="1014" data-end="1059">Navigate to <strong data-start="1026" data-end="1049">Employee Management</strong> module.</p>
+</li>
+<li data-start="1060" data-end="1100">
+<p data-start="1063" data-end="1100">Open the <strong data-start="1072" data-end="1089">Qualification</strong> section.</p>
+</li>
+<li data-start="1101" data-end="1146">
+<p data-start="1104" data-end="1146">Select an existing qualification record.</p>
+</li>
+<li data-start="1147" data-end="1172">
+<p data-start="1150" data-end="1172">Click on <strong data-start="1159" data-end="1169">Delete</strong>.</p>
+</li>
+<li data-start="1173" data-end="1197">
+<p data-start="1176" data-end="1197">Confirm the deletion.</p>
+</li>
+</ol>
+<h3 data-start="1204" data-end="1229"><strong data-start="1208" data-end="1227">Expected Result</strong></h3>
+<ul data-start="1230" data-end="1406">
+<li data-start="1230" data-end="1293">
+<p data-start="1232" data-end="1293">The system should delete the selected qualification record.</p>
+</li>
+<li data-start="1294" data-end="1336">
+<p data-start="1296" data-end="1336">A success message should be displayed.</p>
+</li>
+<li data-start="1337" data-end="1406">
+<p data-start="1339" data-end="1406">The deleted record should be <strong data-start="1368" data-end="1405">removed from the grid immediately</strong>.</p>
+</li>
+</ul>
+<h3 data-start="1413" data-end="1436"><strong data-start="1417" data-end="1434">Actual Result</strong></h3>
+<ul data-start="1437" data-end="1563">
+<li data-start="1437" data-end="1497">
+<p data-start="1439" data-end="1497">Success message <strong data-start="1455" data-end="1481">&ldquo;Successfully deleted&rdquo;</strong> is displayed.</p>
+</li>
+<li data-start="1498" data-end="1563">
+<p data-start="1500" data-end="1563">The deleted qualification record <strong data-start="1533" data-end="1562">still appears in the grid</strong>.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 1
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 05:30:07] Processing file: Qualification_delete.png
+[2026-02-02 05:30:07] File uploaded successfully. Path: uploads/attachments/2026/02/5495d436e2f8713ab21fb42ea90b4b1f.png
+[2026-02-02 05:30:07] Database insert success.
+[2026-02-02 05:30:07] Processing file: qualification_grid.png
+[2026-02-02 05:30:07] File uploaded successfully. Path: uploads/attachments/2026/02/0fca156bd2687ecaed93c7ee2be3d970.png
+[2026-02-02 05:30:07] Database insert success.
+[2026-02-02 05:39:20] IssueController::store called.
+[2026-02-02 05:39:20] FILES: Array
+(
+)
+
+[2026-02-02 05:39:20] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee Shift report displays records that are not present in Employee Shift list page
+    [description] => <h3 data-start="246" data-end="258"><strong data-start="250" data-end="258">Path</strong></h3>
+<p data-start="259" data-end="327">Time Office &rarr; Master &amp; Configurations &rarr; Employee Shift &rarr; Show Report</p>
+<h3 data-start="329" data-end="342"><strong data-start="333" data-end="342">Steps</strong></h3>
+<ol data-start="343" data-end="618">
+<li data-start="343" data-end="372">
+<p data-start="346" data-end="372">Login to the application</p>
+</li>
+<li data-start="373" data-end="444">
+<p data-start="376" data-end="444">Navigate to Time Office &rarr; Master &amp; Configurations &rarr; Employee Shift</p>
+</li>
+<li data-start="445" data-end="508">
+<p data-start="448" data-end="508">Note the records displayed in the Employee Shift list page</p>
+</li>
+<li data-start="509" data-end="549">
+<p data-start="512" data-end="549">Click on the <strong data-start="525" data-end="540">Show Report</strong> button</p>
+</li>
+<li data-start="550" data-end="618">
+<p data-start="553" data-end="618">Observe the records displayed in the Employee Shift report page</p>
+</li>
+</ol>
+<h3 data-start="620" data-end="643"><strong data-start="624" data-end="643">Expected Result</strong></h3>
+<p data-start="644" data-end="748">Employee Shift report should display only the records that are available in the Employee Shift list page</p>
+<h3 data-start="750" data-end="771"><strong data-start="754" data-end="771">Actual Result</strong></h3>
+<p data-start="772" data-end="872" data-is-last-node="" data-is-only-node="">Employee Shift report displays multiple records that are not present in the Employee Shift list page</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-02 05:50:24] IssueController::store called.
+[2026-02-02 05:50:24] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => date.png
+                    [1] => date_sort.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => date.png
+                    [1] => date_sort.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php645E.tmp
+                    [1] => C:\xampp11\tmp\php645F.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 372796
+                    [1] => 363878
+                )
+
+        )
+
+)
+
+[2026-02-02 05:50:24] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Date sorting is performed only by day value; month and year are ignored across all modules.
+    [description] => <p>In&nbsp;multiple modules, when sorting records by a date column, the system sorts the data only based on the&nbsp;<strong data-start="731" data-end="738">day</strong> portion of the date. The <strong data-start="764" data-end="808">month and year values are not considered</strong>, resulting in incorrect chronological order. This issue is consistently observed across all modules where date sorting is available.</p>
+<h3 data-start="948" data-end="974"><strong data-start="952" data-end="974">Steps to Reproduce</strong></h3>
+<ol data-start="975" data-end="1187">
+<li data-start="975" data-end="1032">
+<p data-start="978" data-end="1032">Navigate to any module containing a <strong data-start="1014" data-end="1029">date column</strong>.</p>
+</li>
+<li data-start="1033" data-end="1108">
+<p data-start="1036" data-end="1108">Ensure records exist with dates across different <strong data-start="1085" data-end="1105">months and years</strong>.</p>
+</li>
+<li data-start="1109" data-end="1187">
+<p data-start="1112" data-end="1187">Click on the date column header to apply sorting (ascending or descending).</p>
+</li>
+</ol>
+<h3 data-start="1194" data-end="1219"><strong data-start="1198" data-end="1217">Expected Result</strong></h3>
+<ul data-start="1220" data-end="1367">
+<li data-start="1220" data-end="1300">
+<p data-start="1222" data-end="1300">Records should be sorted using the <strong data-start="1257" data-end="1274">complete date</strong> (day, month, and year).</p>
+</li>
+<li data-start="1301" data-end="1367">
+<p data-start="1303" data-end="1367">The sorting order should reflect correct chronological sequence.</p>
+</li>
+</ul>
+<h3 data-start="1374" data-end="1397"><strong data-start="1378" data-end="1395">Actual Result</strong></h3>
+<ul data-start="1398" data-end="1511">
+<li data-start="1398" data-end="1447">
+<p data-start="1400" data-end="1447">Records are sorted only by the <strong data-start="1431" data-end="1438">day</strong> value.</p>
+</li>
+<li data-start="1448" data-end="1511">
+<p data-start="1450" data-end="1511">Dates from different months and years are placed incorrectly.</p>
+</li>
+</ul>
+)
+
+[2026-02-02 05:50:24] Processing file: date.png
+[2026-02-02 05:50:24] File uploaded successfully. Path: uploads/attachments/2026/02/90126f7a85cb80368e20478c8987a812.png
+[2026-02-02 05:50:24] Database insert success.
+[2026-02-02 05:50:24] Processing file: date_sort.png
+[2026-02-02 05:50:24] File uploaded successfully. Path: uploads/attachments/2026/02/c317ce8d7407bb2eae471f188a16a477.png
+[2026-02-02 05:50:24] Database insert success.
+[2026-02-02 05:52:01] IssueController::store called.
+[2026-02-02 05:52:01] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => date.png
+                    [1] => date_sort.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => date.png
+                    [1] => date_sort.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpDDE1.tmp
+                    [1] => C:\xampp11\tmp\phpDDF1.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 372796
+                    [1] => 363878
+                )
+
+        )
+
+)
+
+[2026-02-02 05:52:01] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Date sorting is performed only by day value; month and year are ignored across all modules.
+    [description] => <p>In multiple modules, when sorting records by a date column, the system sorts the data only based on the <strong data-start="731" data-end="738">day</strong> portion of the date. The <strong data-start="764" data-end="808">month and year values are not considered</strong>, resulting in incorrect chronological order. This issue is consistently observed across all modules where date sorting is available.</p>
+<h3 data-start="948" data-end="974"><strong data-start="952" data-end="974">Steps to Reproduce</strong></h3>
+<ol data-start="975" data-end="1187">
+<li data-start="975" data-end="1032">
+<p data-start="978" data-end="1032">Navigate to any module containing a <strong data-start="1014" data-end="1029">date column</strong>.</p>
+</li>
+<li data-start="1033" data-end="1108">
+<p data-start="1036" data-end="1108">Ensure records exist with dates across different <strong data-start="1085" data-end="1105">months and years</strong>.</p>
+</li>
+<li data-start="1109" data-end="1187">
+<p data-start="1112" data-end="1187">Click on the date column header to apply sorting (ascending or descending).</p>
+</li>
+</ol>
+<h3 data-start="1194" data-end="1219"><strong data-start="1198" data-end="1217">Expected Result</strong></h3>
+<ul data-start="1220" data-end="1367">
+<li data-start="1220" data-end="1300">
+<p data-start="1222" data-end="1300">Records should be sorted using the <strong data-start="1257" data-end="1274">complete date</strong> (day, month, and year).</p>
+</li>
+<li data-start="1301" data-end="1367">
+<p data-start="1303" data-end="1367">The sorting order should reflect correct chronological sequence.</p>
+</li>
+</ul>
+<h3 data-start="1374" data-end="1397"><strong data-start="1378" data-end="1395">Actual Result</strong></h3>
+<ul data-start="1398" data-end="1511">
+<li data-start="1398" data-end="1447">
+<p data-start="1400" data-end="1447">Records are sorted only by the <strong data-start="1431" data-end="1438">day</strong> value.</p>
+</li>
+<li data-start="1448" data-end="1511">
+<p data-start="1450" data-end="1511">Dates from different months and years are placed incorrectly.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 2
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 05:52:01] Processing file: date.png
+[2026-02-02 05:52:01] File uploaded successfully. Path: uploads/attachments/2026/02/deda708b6bd800d8a1ed5193888ba656.png
+[2026-02-02 05:52:01] Database insert success.
+[2026-02-02 05:52:01] Processing file: date_sort.png
+[2026-02-02 05:52:01] File uploaded successfully. Path: uploads/attachments/2026/02/b4b817aba74d4bb95447c75f211352a6.png
+[2026-02-02 05:52:01] Database insert success.
+[2026-02-02 05:59:18] IssueController::store called.
+[2026-02-02 05:59:18] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => designation.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => designation.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php89D5.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 295329
+                )
+
+        )
+
+)
+
+[2026-02-02 05:59:18] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Duplicate SR_No values are allowed and two SR.No columns are displayed in the Designation grid.
+    [description] => <p data-start="637" data-end="982">In the Employee Management module under the Designation section, the system allows creation of multiple records with the same <strong data-start="763" data-end="788">Serial Number (SR_No)</strong>. Additionally, the Designation grid displays <strong data-start="834" data-end="874">two separate columns labeled &ldquo;SR_No&rdquo;</strong>, which creates confusion and results in data inconsistency. SR_No should be unique and displayed only once.</p>
+<h3 data-start="989" data-end="1015"><strong data-start="993" data-end="1015">Steps to Reproduce</strong></h3>
+<ol data-start="1016" data-end="1250">
+<li data-start="1016" data-end="1064">
+<p data-start="1019" data-end="1064">Navigate to <strong data-start="1031" data-end="1054">Employee Management</strong> module.</p>
+</li>
+<li data-start="1065" data-end="1103">
+<p data-start="1068" data-end="1103">Open the <strong data-start="1077" data-end="1092">Designation</strong> section.</p>
+</li>
+<li data-start="1104" data-end="1154">
+<p data-start="1107" data-end="1154">Click on <strong data-start="1116" data-end="1123">Add</strong> to create a new designation.</p>
+</li>
+<li data-start="1155" data-end="1199">
+<p data-start="1158" data-end="1199">Enter an <strong data-start="1167" data-end="1176">SR_No</strong> that already exists.</p>
+</li>
+<li data-start="1200" data-end="1221">
+<p data-start="1203" data-end="1221">Save the record.</p>
+</li>
+<li data-start="1222" data-end="1250">
+<p data-start="1225" data-end="1250">Observe the grid columns.</p>
+</li>
+</ol>
+<h3 data-start="1257" data-end="1282"><strong data-start="1261" data-end="1280">Expected Result</strong></h3>
+<ul data-start="1283" data-end="1469">
+<li data-start="1283" data-end="1342">
+<p data-start="1285" data-end="1342">The system should <strong data-start="1303" data-end="1339">not allow duplicate SR_No values</strong>.</p>
+</li>
+<li data-start="1343" data-end="1416">
+<p data-start="1345" data-end="1416">A validation message should be shown if a duplicate SR_No is entered.</p>
+</li>
+<li data-start="1417" data-end="1469">
+<p data-start="1419" data-end="1469">The grid should display <strong data-start="1443" data-end="1468">only one SR_No column</strong>.</p>
+</li>
+</ul>
+<h3 data-start="1476" data-end="1499"><strong data-start="1480" data-end="1497">Actual Result</strong></h3>
+<ul data-start="1500" data-end="1616">
+<li data-start="1500" data-end="1553">
+<p data-start="1502" data-end="1553">Duplicate SR_No values can be saved successfully.</p>
+</li>
+<li data-start="1554" data-end="1616">
+<p data-start="1556" data-end="1616">The grid displays <strong data-start="1574" data-end="1595">two SR_No columns</strong> with the same label.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 2
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 05:59:18] Processing file: designation.png
+[2026-02-02 05:59:18] File uploaded successfully. Path: uploads/attachments/2026/02/baea62629338ddea43880a4ac6b94e58.png
+[2026-02-02 05:59:18] Database insert success.
+[2026-02-02 06:03:38] IssueController::store called.
+[2026-02-02 06:03:38] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => before_edit.png
+                    [1] => d_edit.png
+                    [2] => after_edit.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => before_edit.png
+                    [1] => d_edit.png
+                    [2] => after_edit.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                    [2] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php82CE.tmp
+                    [1] => C:\xampp11\tmp\php82CF.tmp
+                    [2] => C:\xampp11\tmp\php82D0.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                    [2] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 295978
+                    [1] => 205702
+                    [2] => 293243
+                )
+
+        )
+
+)
+
+[2026-02-02 06:03:38] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Designation record is not updated after successful edit confirmation.
+    [description] => <p data-start="630" data-end="1025">In the Employee Management module under the Designation section, when a user selects an existing record and attempts to edit it, the system displays a confirmation prompt. After confirming, a <strong data-start="822" data-end="841">success message</strong> is shown; however, the form fields are not cleared and the edited data is not saved or reflected in the grid. This indicates that the update operation is not being executed correctly.</p>
+<h3 data-start="1032" data-end="1058"><strong data-start="1036" data-end="1058">Steps to Reproduce</strong></h3>
+<ol data-start="1059" data-end="1316">
+<li data-start="1059" data-end="1107">
+<p data-start="1062" data-end="1107">Navigate to <strong data-start="1074" data-end="1097">Employee Management</strong> module.</p>
+</li>
+<li data-start="1108" data-end="1146">
+<p data-start="1111" data-end="1146">Open the <strong data-start="1120" data-end="1135">Designation</strong> section.</p>
+</li>
+<li data-start="1147" data-end="1190">
+<p data-start="1150" data-end="1190">Select an existing designation record.</p>
+</li>
+<li data-start="1191" data-end="1214">
+<p data-start="1194" data-end="1214">Click on <strong data-start="1203" data-end="1211">Edit</strong>.</p>
+</li>
+<li data-start="1215" data-end="1246">
+<p data-start="1218" data-end="1246">Modify one or more fields.</p>
+</li>
+<li data-start="1247" data-end="1279">
+<p data-start="1250" data-end="1279">Click on <strong data-start="1259" data-end="1276">Save / Update</strong>.</p>
+</li>
+<li data-start="1280" data-end="1316">
+<p data-start="1283" data-end="1316">Confirm the action when prompted.</p>
+</li>
+</ol>
+<h3 data-start="1323" data-end="1348"><strong data-start="1327" data-end="1346">Expected Result</strong></h3>
+<ul data-start="1349" data-end="1579">
+<li data-start="1349" data-end="1426">
+<p data-start="1351" data-end="1426">The system should update the designation record with the modified values.</p>
+</li>
+<li data-start="1427" data-end="1469">
+<p data-start="1429" data-end="1469">A success message should be displayed.</p>
+</li>
+<li data-start="1470" data-end="1535">
+<p data-start="1472" data-end="1535">The form should be cleared or closed after successful update.</p>
+</li>
+<li data-start="1536" data-end="1579">
+<p data-start="1538" data-end="1579">The grid should reflect the updated data.</p>
+</li>
+</ul>
+<h3 data-start="1586" data-end="1609"><strong data-start="1590" data-end="1607">Actual Result</strong></h3>
+<ul data-start="1610" data-end="1739">
+<li data-start="1610" data-end="1643">
+<p data-start="1612" data-end="1643">Success message is displayed.</p>
+</li>
+<li data-start="1644" data-end="1689">
+<p data-start="1646" data-end="1689">The form remains populated with old data.</p>
+</li>
+<li data-start="1690" data-end="1739">
+<p data-start="1692" data-end="1739">The record data is <strong data-start="1711" data-end="1726">not updated</strong> in the grid.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 2
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 06:03:39] Processing file: before_edit.png
+[2026-02-02 06:03:39] File uploaded successfully. Path: uploads/attachments/2026/02/9727e6f8e3cb74ed047e37f10be7c697.png
+[2026-02-02 06:03:39] Database insert success.
+[2026-02-02 06:03:39] Processing file: d_edit.png
+[2026-02-02 06:03:39] File uploaded successfully. Path: uploads/attachments/2026/02/3486596f5bddca526cca6a3327da3af4.png
+[2026-02-02 06:03:39] Database insert success.
+[2026-02-02 06:03:39] Processing file: after_edit.png
+[2026-02-02 06:03:39] File uploaded successfully. Path: uploads/attachments/2026/02/6515af8716d62dad0ceee572f0fd1fdb.png
+[2026-02-02 06:03:39] Database insert success.
+[2026-02-02 06:10:09] IssueController::store called.
+[2026-02-02 06:10:09] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => LE_edit.png
+                    [1] => while_edit.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => LE_edit.png
+                    [1] => while_edit.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php794E.tmp
+                    [1] => C:\xampp11\tmp\php794F.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 270811
+                    [1] => 207784
+                )
+
+        )
+
+)
+
+[2026-02-02 06:10:09] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Mandatory fields are blank and Left Date shows “Invalid date” while editing Left Employee records.
+    [description] => <p>In the Employee Management module under the <strong data-start="674" data-end="691">Left Employee</strong> section, when a user attempts to edit an existing record, some mandatory fields are displayed as blank and the <strong data-start="803" data-end="816">Left Date</strong> field shows <strong data-start="829" data-end="848">&ldquo;Invalid date.&rdquo;</strong><br data-start="848" data-end="851">However, during <strong data-start="867" data-end="874">Add</strong> operation, the system correctly enforces validation and does not allow submission without entering the mandatory date. This indicates an inconsistency in data binding or date parsing during the edit operation.</p>
+<h3 data-start="1091" data-end="1117"><strong data-start="1095" data-end="1117">Steps to Reproduce</strong></h3>
+<ol data-start="1118" data-end="1261">
+<li data-start="1118" data-end="1166">
+<p data-start="1121" data-end="1166">Navigate to <strong data-start="1133" data-end="1156">Employee Management</strong> module.</p>
+</li>
+<li data-start="1167" data-end="1207">
+<p data-start="1170" data-end="1207">Open the <strong data-start="1179" data-end="1196">Left Employee</strong> section.</p>
+</li>
+<li data-start="1208" data-end="1239">
+<p data-start="1211" data-end="1239">Select an existing record.</p>
+</li>
+<li data-start="1240" data-end="1261">
+<p data-start="1243" data-end="1261">Click on <strong data-start="1252" data-end="1260">Edit</strong>.</p>
+</li>
+</ol>
+<h3 data-start="1268" data-end="1293"><strong data-start="1272" data-end="1291">Expected Result</strong></h3>
+<ul data-start="1294" data-end="1518">
+<li data-start="1294" data-end="1373">
+<p data-start="1296" data-end="1373">All mandatory fields should be <strong data-start="1327" data-end="1344">pre-populated</strong> with existing record data.</p>
+</li>
+<li data-start="1374" data-end="1434">
+<p data-start="1376" data-end="1434">The <strong data-start="1380" data-end="1393">Left Date</strong> should display in a valid date format.</p>
+</li>
+<li data-start="1435" data-end="1518">
+<p data-start="1437" data-end="1518">Validation behavior should be consistent between <strong data-start="1486" data-end="1493">Add</strong> and <strong data-start="1498" data-end="1506">Edit</strong> operations.</p>
+</li>
+</ul>
+<h3 data-start="1525" data-end="1548"><strong data-start="1529" data-end="1546">Actual Result</strong></h3>
+<ul data-start="1549" data-end="1687">
+<li data-start="1549" data-end="1592">
+<p data-start="1551" data-end="1592">Some mandatory fields appear <strong data-start="1580" data-end="1589">blank</strong>.</p>
+</li>
+<li data-start="1593" data-end="1642">
+<p data-start="1595" data-end="1642"><strong data-start="1595" data-end="1608">Left Date</strong> displays as <strong data-start="1621" data-end="1640">&ldquo;Invalid date.&rdquo;</strong></p>
+</li>
+<li data-start="1643" data-end="1687">
+<p data-start="1645" data-end="1687">User may be blocked or misled during edit.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 1
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 06:10:09] Processing file: LE_edit.png
+[2026-02-02 06:10:09] File uploaded successfully. Path: uploads/attachments/2026/02/0f78cf4a1a3f4f6be96b264c8c76a8b8.png
+[2026-02-02 06:10:09] Database insert success.
+[2026-02-02 06:10:09] Processing file: while_edit.png
+[2026-02-02 06:10:09] File uploaded successfully. Path: uploads/attachments/2026/02/f33ed9a90032667b5408c17a450ea4c6.png
+[2026-02-02 06:10:09] Database insert success.
+[2026-02-02 06:13:16] IssueController::store called.
+[2026-02-02 06:13:16] FILES: Array
+(
+)
+
+[2026-02-02 06:13:16] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Show Report button is not working on Daily Attendance page
+    [description] => <h3 data-start="140" data-end="152"><strong data-start="144" data-end="152">Path</strong></h3>
+<p data-start="153" data-end="198">Time Office &rarr; Transactions &rarr; Daily Attendance</p>
+<h3 data-start="200" data-end="213"><strong data-start="204" data-end="213">Steps</strong></h3>
+<ol data-start="214" data-end="347">
+<li data-start="214" data-end="243">
+<p data-start="217" data-end="243">Login to the application</p>
+</li>
+<li data-start="244" data-end="306">
+<p data-start="247" data-end="306">Navigate to Time Office &rarr; Transactions &rarr; Daily Attendance</p>
+</li>
+<li data-start="307" data-end="347">
+<p data-start="310" data-end="347">Click on the <strong data-start="323" data-end="338">Show Report</strong> button</p>
+</li>
+</ol>
+<h3 data-start="349" data-end="372"><strong data-start="353" data-end="372">Expected Result</strong></h3>
+<p data-start="373" data-end="444">Daily Attendance report page should open and display attendance records</p>
+<h3 data-start="446" data-end="467"><strong data-start="450" data-end="467">Actual Result</strong></h3>
+<p data-start="468" data-end="535" data-is-last-node="" data-is-only-node="">Show Report button does not respond and no report page is displayed</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-02 06:24:31] IssueController::store called.
+[2026-02-02 06:24:31] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Delete.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Delete.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpA09F.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 206578
+                )
+
+        )
+
+)
+
+[2026-02-02 06:24:31] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Form fields become editable after initiating Delete action, causing ambiguity about which record is deleted.
+    [description] => <p data-start="662" data-end="1173">Across multiple modules (Left Employee, Caste, City, Relation, Qualification, State, Language, Pay Structure, Banks Group, Payment Bank), when a user initiates the <strong data-start="826" data-end="836">Delete</strong> action, the system clears certain form fields and allows the user to modify the remaining data <strong data-start="932" data-end="962">before confirming deletion</strong>.<br data-start="963" data-end="966">This behavior creates uncertainty regarding whether the system deletes the <strong data-start="1041" data-end="1071">originally selected record</strong> or the <strong data-start="1079" data-end="1128">modified data entered after the Delete action</strong>, leading to potential data integrity issues.</p>
+<p data-start="662" data-end="1173">&nbsp;</p>
+<h3 data-start="1180" data-end="1204"><strong data-start="1184" data-end="1204">Affected Modules</strong></h3>
+<ul data-start="1205" data-end="1346">
+<li data-start="1205" data-end="1222">
+<p data-start="1207" data-end="1222">Left Employee</p>
+</li>
+<li data-start="1223" data-end="1232">
+<p data-start="1225" data-end="1232">Caste</p>
+</li>
+<li data-start="1233" data-end="1241">
+<p data-start="1235" data-end="1241">City</p>
+</li>
+<li data-start="1242" data-end="1254">
+<p data-start="1244" data-end="1254">Relation</p>
+</li>
+<li data-start="1255" data-end="1272">
+<p data-start="1257" data-end="1272">Qualification</p>
+</li>
+<li data-start="1273" data-end="1282">
+<p data-start="1275" data-end="1282">State</p>
+</li>
+<li data-start="1283" data-end="1295">
+<p data-start="1285" data-end="1295">Language</p>
+</li>
+<li data-start="1296" data-end="1313">
+<p data-start="1298" data-end="1313">Pay Structure</p>
+</li>
+<li data-start="1314" data-end="1329">
+<p data-start="1316" data-end="1329">Banks Group</p>
+</li>
+<li data-start="1330" data-end="1346">
+<p data-start="1332" data-end="1346">Payment Bank</p>
+</li>
+</ul>
+<h3 data-start="1353" data-end="1379"><strong data-start="1357" data-end="1379">Steps to Reproduce</strong></h3>
+<ol data-start="1380" data-end="1604">
+<li data-start="1380" data-end="1425">
+<p data-start="1383" data-end="1425">Navigate to any of the affected modules.</p>
+</li>
+<li data-start="1426" data-end="1457">
+<p data-start="1429" data-end="1457">Select an existing record.</p>
+</li>
+<li data-start="1458" data-end="1483">
+<p data-start="1461" data-end="1483">Click on <strong data-start="1470" data-end="1480">Delete</strong>.</p>
+</li>
+<li data-start="1484" data-end="1531">
+<p data-start="1487" data-end="1531">Observe that some form fields are cleared.</p>
+</li>
+<li data-start="1532" data-end="1574">
+<p data-start="1535" data-end="1574">Modify the remaining editable fields.</p>
+</li>
+<li data-start="1575" data-end="1604">
+<p data-start="1578" data-end="1604">Confirm the delete action.</p>
+</li>
+</ol>
+<h3 data-start="1611" data-end="1636"><strong data-start="1615" data-end="1634">Expected Result</strong></h3>
+<ul data-start="1637" data-end="1848">
+<li data-start="1637" data-end="1716">
+<p data-start="1639" data-end="1716">Once <strong data-start="1644" data-end="1654">Delete</strong> is initiated, the form should be <strong data-start="1688" data-end="1713">read-only or disabled</strong>.</p>
+</li>
+<li data-start="1717" data-end="1772">
+<p data-start="1719" data-end="1772">No fields should be editable after clicking Delete.</p>
+</li>
+<li data-start="1773" data-end="1848">
+<p data-start="1775" data-end="1848">The system should clearly delete <strong data-start="1808" data-end="1847">only the originally selected record</strong>.</p>
+</li>
+</ul>
+<h3 data-start="1855" data-end="1878"><strong data-start="1859" data-end="1876">Actual Result</strong></h3>
+<ul data-start="1879" data-end="2057">
+<li data-start="1879" data-end="1921">
+<p data-start="1881" data-end="1921">Some fields are cleared automatically.</p>
+</li>
+<li data-start="1922" data-end="1986">
+<p data-start="1924" data-end="1986">Remaining fields remain editable before delete confirmation.</p>
+</li>
+<li data-start="1987" data-end="2057">
+<p data-start="1989" data-end="2057">It is unclear which data (original or modified) is actually deleted.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 1
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 06:24:31] Processing file: Delete.png
+[2026-02-02 06:24:31] File uploaded successfully. Path: uploads/attachments/2026/02/341ae7adf9c0e1f9d3af4e85b3d6b783.png
+[2026-02-02 06:24:31] Database insert success.
+[2026-02-02 06:25:39] IssueController::store called.
+[2026-02-02 06:25:39] FILES: Array
+(
+)
+
+[2026-02-02 06:25:39] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Irrelevant items section displayed on Department Details page
+    [description] => <h3 data-start="154" data-end="166"><strong data-start="158" data-end="166">Path</strong></h3>
+<p data-start="167" data-end="211">Organisation Structure &rarr; Master &rarr; Department</p>
+<h3 data-start="213" data-end="226"><strong data-start="217" data-end="226">Steps</strong></h3>
+<ol data-start="227" data-end="415">
+<li data-start="227" data-end="256">
+<p data-start="230" data-end="256">Login to the application</p>
+</li>
+<li data-start="257" data-end="318">
+<p data-start="260" data-end="318">Navigate to Organisation Structure &rarr; Master &rarr; Department</p>
+</li>
+<li data-start="319" data-end="356">
+<p data-start="322" data-end="356">Open the Department Details page</p>
+</li>
+<li data-start="357" data-end="415">
+<p data-start="360" data-end="415">Observe the fields and sections displayed on the page</p>
+</li>
+</ol>
+<h3 data-start="417" data-end="440"><strong data-start="421" data-end="440">Expected Result</strong></h3>
+<p data-start="441" data-end="579">Department Details page should display only relevant fields such as <strong data-start="509" data-end="528">Department Name</strong> and <strong data-start="533" data-end="543">Parent</strong> related to department configuration</p>
+<h3 data-start="581" data-end="602"><strong data-start="585" data-end="602">Actual Result</strong></h3>
+<p data-start="603" data-end="728" data-is-last-node="" data-is-only-node="">Additional items section (Selected Items, Item Name, Code, Select) is displayed which is not part of Department configuration</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-02 06:32:24] IssueController::store called.
+[2026-02-02 06:32:24] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => left_emp.png
+                    [1] => LE_printt.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => left_emp.png
+                    [1] => LE_printt.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpD6E1.tmp
+                    [1] => C:\xampp11\tmp\phpD6E2.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 270903
+                    [1] => 249579
+                )
+
+        )
+
+)
+
+[2026-02-02 06:32:24] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Print output does not include complete data for Left Employee records.
+    [description] => <p data-start="598" data-end="918">In the Employee Management module under the <strong data-start="642" data-end="659">Left Employee</strong> section, when the user clicks on the <strong data-start="697" data-end="706">Print</strong> button, the system generates a print output that contains only <strong data-start="770" data-end="793">partial information</strong>. Some data fields that are visible on the screen are missing from the printed document, resulting in an incomplete printout.</p>
+<h3 data-start="925" data-end="951"><strong data-start="929" data-end="951">Steps to Reproduce</strong></h3>
+<ol data-start="952" data-end="1129">
+<li data-start="952" data-end="1000">
+<p data-start="955" data-end="1000">Navigate to <strong data-start="967" data-end="990">Employee Management</strong> module.</p>
+</li>
+<li data-start="1001" data-end="1041">
+<p data-start="1004" data-end="1041">Open the <strong data-start="1013" data-end="1030">Left Employee</strong> section.</p>
+</li>
+<li data-start="1042" data-end="1095">
+<p data-start="1045" data-end="1095">Ensure a record with complete data is available.</p>
+</li>
+<li data-start="1096" data-end="1129">
+<p data-start="1099" data-end="1129">Click on the <strong data-start="1112" data-end="1121">Print</strong> button.</p>
+</li>
+</ol>
+<h3 data-start="1136" data-end="1161"><strong data-start="1140" data-end="1159">Expected Result</strong></h3>
+<ul data-start="1162" data-end="1309">
+<li data-start="1162" data-end="1251">
+<p data-start="1164" data-end="1251">The print output should include <strong data-start="1196" data-end="1224">all relevant data fields</strong> displayed on the screen.</p>
+</li>
+<li data-start="1252" data-end="1309">
+<p data-start="1254" data-end="1309">Printed data should match the on-screen record details.</p>
+</li>
+</ul>
+<h3 data-start="1316" data-end="1339"><strong data-start="1320" data-end="1337">Actual Result</strong></h3>
+<ul data-start="1340" data-end="1424">
+<li data-start="1340" data-end="1377">
+<p data-start="1342" data-end="1377">Only <strong data-start="1347" data-end="1363">partial data</strong> is printed.</p>
+</li>
+<li data-start="1378" data-end="1424">
+<p data-start="1380" data-end="1424">Some fields are missing in the print output.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 2
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 06:32:24] Processing file: left_emp.png
+[2026-02-02 06:32:24] File uploaded successfully. Path: uploads/attachments/2026/02/88c47f8f6262868ddcbe72a4914d9394.png
+[2026-02-02 06:32:24] Database insert success.
+[2026-02-02 06:32:24] Processing file: LE_printt.png
+[2026-02-02 06:32:24] File uploaded successfully. Path: uploads/attachments/2026/02/05970b53361c56e55dfd9473aaba9dd3.png
+[2026-02-02 06:32:24] Database insert success.
+[2026-02-02 06:36:11] IssueController::store called.
+[2026-02-02 06:36:11] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => IC.png
+                    [1] => add_company.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => IC.png
+                    [1] => add_company.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php4E95.tmp
+                    [1] => C:\xampp11\tmp\php4E96.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 228628
+                    [1] => 234999
+                )
+
+        )
+
+)
+
+[2026-02-02 06:36:11] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Form submission fails when all fields are filled, but succeeds when only mandatory fields are entered.
+    [description] => <p>In the Employee Management module under <strong data-start="679" data-end="702">Insurance Companies</strong>, when a user fills in <strong data-start="725" data-end="739">all fields</strong> (mandatory and optional) and attempts to submit the form, the system does not allow submission and no record is created.<br data-start="860" data-end="863">However, when the user fills <strong data-start="892" data-end="921">only the mandatory fields</strong>, the system allows the form to be submitted successfully. This indicates an issue with validation or handling of optional fields.</p>
+<h3 data-start="1058" data-end="1084"><strong data-start="1062" data-end="1084">Steps to Reproduce</strong></h3>
+<ol data-start="1085" data-end="1408">
+<li data-start="1085" data-end="1133">
+<p data-start="1088" data-end="1133">Navigate to <strong data-start="1100" data-end="1123">Employee Management</strong> module.</p>
+</li>
+<li data-start="1134" data-end="1180">
+<p data-start="1137" data-end="1180">Open the <strong data-start="1146" data-end="1169">Insurance Companies</strong> section.</p>
+</li>
+<li data-start="1181" data-end="1244">
+<p data-start="1184" data-end="1244">Click on <strong data-start="1193" data-end="1200">Add</strong> to create a new Insurance Company record.</p>
+</li>
+<li data-start="1245" data-end="1306">
+<p data-start="1248" data-end="1306">Fill in <strong data-start="1256" data-end="1280">all available fields</strong> (mandatory + optional).</p>
+</li>
+<li data-start="1307" data-end="1339">
+<p data-start="1310" data-end="1339">Click on <strong data-start="1319" data-end="1336">Save / Submit</strong>.</p>
+</li>
+<li data-start="1340" data-end="1408">
+<p data-start="1343" data-end="1408">Repeat the steps by filling <strong data-start="1371" data-end="1396">only mandatory fields</strong> and submit.</p>
+</li>
+</ol>
+<h3 data-start="1415" data-end="1440"><strong data-start="1419" data-end="1438">Expected Result</strong></h3>
+<ul data-start="1441" data-end="1613">
+<li data-start="1441" data-end="1515">
+<p data-start="1443" data-end="1515">The system should allow submission when <strong data-start="1483" data-end="1501">all valid data</strong> is entered.</p>
+</li>
+<li data-start="1516" data-end="1569">
+<p data-start="1518" data-end="1569">Optional fields should not block form submission.</p>
+</li>
+<li data-start="1570" data-end="1613">
+<p data-start="1572" data-end="1613">Validation behavior should be consistent.</p>
+</li>
+</ul>
+<h3 data-start="1620" data-end="1643"><strong data-start="1624" data-end="1641">Actual Result</strong></h3>
+<ul data-start="1644" data-end="1772">
+<li data-start="1644" data-end="1701">
+<p data-start="1646" data-end="1701">Submission is <strong data-start="1660" data-end="1671">blocked</strong> when all fields are filled.</p>
+</li>
+<li data-start="1702" data-end="1772">
+<p data-start="1704" data-end="1772">Submission is <strong data-start="1718" data-end="1732">successful</strong> when only mandatory fields are entered.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 1
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 06:36:11] Processing file: IC.png
+[2026-02-02 06:36:11] File uploaded successfully. Path: uploads/attachments/2026/02/caa05125bd34ed4d54a347961d42dcac.png
+[2026-02-02 06:36:11] Database insert success.
+[2026-02-02 06:36:11] Processing file: add_company.png
+[2026-02-02 06:36:11] File uploaded successfully. Path: uploads/attachments/2026/02/06d4c1b0e818d7a758af8fcdccbe20a5.png
+[2026-02-02 06:36:11] Database insert success.
+[2026-02-02 06:40:08] IssueController::store called.
+[2026-02-02 06:40:08] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => FI.png
+                    [1] => add_FI.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => FI.png
+                    [1] => add_FI.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                    [1] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpEAF8.tmp
+                    [1] => C:\xampp11\tmp\phpEB08.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                    [1] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 228575
+                    [1] => 239911
+                )
+
+        )
+
+)
+
+[2026-02-02 06:40:08] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Finance Institute form submission fails when all fields are filled, but succeeds when only mandatory fields are entered.
+    [description] => <p>In the Employee Management module under <strong data-start="715" data-end="737">Finance Institutes</strong>, when a user fills <strong data-start="757" data-end="781">all available fields</strong> (mandatory and optional) in the form and attempts to submit, the system does not allow the data to be saved.<br data-start="890" data-end="893">However, when the user fills <strong data-start="922" data-end="951">only the mandatory fields</strong>, the form is submitted successfully. This indicates an issue with validation or handling of optional fields in the Finance Institutes form.</p>
+<h3 data-start="1098" data-end="1124"><strong data-start="1102" data-end="1124">Steps to Reproduce</strong></h3>
+<ol data-start="1125" data-end="1378">
+<li data-start="1125" data-end="1173">
+<p data-start="1128" data-end="1173">Navigate to <strong data-start="1140" data-end="1163">Employee Management</strong> module.</p>
+</li>
+<li data-start="1174" data-end="1219">
+<p data-start="1177" data-end="1219">Open the <strong data-start="1186" data-end="1208">Finance Institutes</strong> section.</p>
+</li>
+<li data-start="1220" data-end="1242">
+<p data-start="1223" data-end="1242">Click on <strong data-start="1232" data-end="1239">Add</strong>.</p>
+</li>
+<li data-start="1243" data-end="1276">
+<p data-start="1246" data-end="1276">Fill in <strong data-start="1254" data-end="1273">all form fields</strong>.</p>
+</li>
+<li data-start="1277" data-end="1309">
+<p data-start="1280" data-end="1309">Click on <strong data-start="1289" data-end="1306">Save / Submit</strong>.</p>
+</li>
+<li data-start="1310" data-end="1378">
+<p data-start="1313" data-end="1378">Repeat the steps by filling <strong data-start="1341" data-end="1366">only mandatory fields</strong> and submit.</p>
+</li>
+</ol>
+<h3 data-start="1385" data-end="1410"><strong data-start="1389" data-end="1408">Expected Result</strong></h3>
+<ul data-start="1411" data-end="1582">
+<li data-start="1411" data-end="1487">
+<p data-start="1413" data-end="1487">The system should allow submission when <strong data-start="1453" data-end="1473">all valid fields</strong> are filled.</p>
+</li>
+<li data-start="1488" data-end="1541">
+<p data-start="1490" data-end="1541">Optional fields should not block form submission.</p>
+</li>
+<li data-start="1542" data-end="1582">
+<p data-start="1544" data-end="1582">Validation logic should be consistent.</p>
+</li>
+</ul>
+<h3 data-start="1589" data-end="1612"><strong data-start="1593" data-end="1610">Actual Result</strong></h3>
+<ul data-start="1613" data-end="1733">
+<li data-start="1613" data-end="1666">
+<p data-start="1615" data-end="1666">Submission is blocked when all fields are filled.</p>
+</li>
+<li data-start="1667" data-end="1733">
+<p data-start="1669" data-end="1733">Submission is successful when only mandatory fields are entered.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 2
+    [start_date] => 2026-02-02
+)
+
+[2026-02-02 06:40:08] Processing file: FI.png
+[2026-02-02 06:40:08] File uploaded successfully. Path: uploads/attachments/2026/02/caea615487d4f7fd485b387013fcea9e.png
+[2026-02-02 06:40:08] Database insert success.
+[2026-02-02 06:40:08] Processing file: add_FI.png
+[2026-02-02 06:40:08] File uploaded successfully. Path: uploads/attachments/2026/02/3a1e96af58426ec547f3c0bbb04f9a70.png
+[2026-02-02 06:40:08] Database insert success.
+[2026-02-02 07:05:52] IssueController::store called.
+[2026-02-02 07:05:52] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Screenshot 2026-02-02 122454.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Screenshot 2026-02-02 122454.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php7A69.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 184975
+                )
+
+        )
+
+)
+
+[2026-02-02 07:05:52] POST: Array
+(
+    [project_id] => 4
+    [issue_type_id] => 3
+    [summary] => Assignee dropdown intermittently fails to display user list on Create Issue screen
+    [description] => <p><strong data-start="295" data-end="304">Path:</strong><br data-start="304" data-end="307">CWays MIS &rarr; Projects &rarr; CWays MIS &rarr; Create Issue &rarr; Assignee dropdown</p>
+<h3 data-start="311" data-end="339"><strong data-start="315" data-end="337">Steps to Reproduce</strong></h3>
+<ol data-start="340" data-end="620">
+<li data-start="340" data-end="402">
+<p data-start="343" data-end="402">Login to the CWays MIS application with valid credentials</p>
+</li>
+<li data-start="403" data-end="444">
+<p data-start="406" data-end="444">Navigate to <strong data-start="418" data-end="442">Projects &rarr; CWays MIS</strong></p>
+</li>
+<li data-start="445" data-end="482">
+<p data-start="448" data-end="482">Click on <strong data-start="457" data-end="473">Create Issue</strong> button</p>
+</li>
+<li data-start="483" data-end="522">
+<p data-start="486" data-end="522">Click on the <strong data-start="499" data-end="511">Assignee</strong> dropdown</p>
+</li>
+<li data-start="523" data-end="557">
+<p data-start="526" data-end="557">Observe the dropdown behavior</p>
+</li>
+<li data-start="558" data-end="620">
+<p data-start="561" data-end="620">Refresh the page and repeat the same steps multiple times</p>
+</li>
+</ol>
+<h3 data-start="627" data-end="652"><strong data-start="631" data-end="650">Expected Result</strong></h3>
+<ul data-start="653" data-end="818">
+<li data-start="653" data-end="745">
+<p data-start="655" data-end="745">Assignee dropdown should consistently display the list of users every time it is clicked</p>
+</li>
+<li data-start="653" data-end="745">
+<p data-start="655" data-end="745">Dropdown options should load properly without requiring page refresh</p>
+</li>
+</ul>
+<h3 data-start="825" data-end="848"><strong data-start="829" data-end="846">Actual Result</strong></h3>
+<ul data-start="849" data-end="1022">
+<li data-start="849" data-end="909">
+<p data-start="851" data-end="909">Assignee dropdown sometimes does not display any options</p>
+</li>
+<li data-start="910" data-end="953">
+<p data-start="912" data-end="953">Dropdown appears blank or does not open</p>
+</li>
+<li data-start="954" data-end="1022">
+<p data-start="956" data-end="1022">User is unable to select an assignee until the page is refreshed</p>
+</li>
+</ul>
+<p data-start="501" data-end="526">&nbsp;</p>
+<p data-start="530" data-end="566">&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+    [assignee_id] => 14
+    [priority_id] => 2
+)
+
+[2026-02-02 07:05:52] Processing file: Screenshot 2026-02-02 122454.png
+[2026-02-02 07:05:52] File uploaded successfully. Path: uploads/attachments/2026/02/50ee0e02ba1996c625c610f60c2b0920.png
+[2026-02-02 07:05:52] Database insert success.
+[2026-02-02 07:13:40] IssueController::store called.
+[2026-02-02 07:13:40] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => Screenshot 2026-02-02 123610.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => Screenshot 2026-02-02 123610.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpA06E.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 138130
+                )
+
+        )
+
+)
+
+[2026-02-02 07:13:40] POST: Array
+(
+    [project_id] => 4
+    [issue_type_id] => 3
+    [summary] => Create Issue form data is not cleared when navigating back to the page.
+    [description] => <h3 data-start="272" data-end="286"><strong data-start="276" data-end="284">Path</strong></h3>
+<p data-start="287" data-end="337">Projects &rarr; CWays MIS&rarr; Create Issue</p>
+<h3 data-start="344" data-end="372"><strong data-start="348" data-end="370">Steps to Reproduce</strong></h3>
+<ol data-start="373" data-end="686">
+<li data-start="373" data-end="435">
+<p data-start="376" data-end="435">Login to the CWays MIS application with valid credentials</p>
+</li>
+<li data-start="436" data-end="477">
+<p data-start="439" data-end="477">Navigate to <strong data-start="451" data-end="475">Projects &rarr; CWays MIS</strong></p>
+</li>
+<li data-start="505" data-end="535">
+<p data-start="508" data-end="535">Click on <strong data-start="517" data-end="533">Create Issue</strong></p>
+</li>
+<li data-start="536" data-end="614">
+<p data-start="539" data-end="614">Enter data in fields such as Project, Work Type, Summary, and Description</p>
+</li>
+<li data-start="615" data-end="653">
+<p data-start="618" data-end="653">Click the <strong data-start="628" data-end="644">Browser Back</strong> button</p>
+</li>
+<li data-start="654" data-end="686">
+<p data-start="657" data-end="686">Open <strong data-start="662" data-end="678">Create Issue</strong> again</p>
+</li>
+</ol>
+<h3 data-start="693" data-end="718"><strong data-start="697" data-end="716">Expected Result</strong></h3>
+<ul data-start="719" data-end="850">
+<li data-start="719" data-end="798">
+<p data-start="721" data-end="798">When the user navigates back, all previously entered data should be cleared</p>
+</li>
+<li data-start="799" data-end="850">
+<p data-start="801" data-end="850">Create Issue form should open with blank fields</p>
+</li>
+</ul>
+<h3 data-start="857" data-end="880"><strong data-start="861" data-end="878">Actual Result</strong></h3>
+<ul data-start="881" data-end="1013">
+<li data-start="881" data-end="951">
+<p data-start="883" data-end="951">Previously entered data remains populated in the Create Issue form</p>
+</li>
+<li data-start="952" data-end="1013">
+<p data-start="954" data-end="1013">Form data is cleared only after performing a page refresh</p>
+</li>
+</ul>
+    [assignee_id] => 14
+    [priority_id] => 2
+)
+
+[2026-02-02 07:13:40] Processing file: Screenshot 2026-02-02 123610.png
+[2026-02-02 07:13:40] File uploaded successfully. Path: uploads/attachments/2026/02/f50dec5479db28f9a59224067127b432.png
+[2026-02-02 07:13:40] Database insert success.

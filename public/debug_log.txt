@@ -2321,3 +2321,67 @@
 [2026-02-02 07:13:40] Processing file: Screenshot 2026-02-02 123610.png
 [2026-02-02 07:13:40] File uploaded successfully. Path: uploads/attachments/2026/02/f50dec5479db28f9a59224067127b432.png
 [2026-02-02 07:13:40] Database insert success.
+[2026-02-02 09:10:51] IssueController::store called.
+[2026-02-02 09:10:51] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => biproduct.pdf
+                )
+
+            [full_path] => Array
+                (
+                    [0] => biproduct.pdf
+                )
+
+            [type] => Array
+                (
+                    [0] => application/pdf
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\phpE9AD.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 244195
+                )
+
+        )
+
+)
+
+[2026-02-02 09:10:51] POST: Array
+(
+    [project_id] => 5
+    [issue_type_id] => 1
+    [summary] => Checking issue is working or not
+    [description] => <p>Checking issue is working or not</p>
+    [assignee_id] => 3
+    [priority_id] => 2
+)
+
+[2026-02-02 09:26:01] IssueController::store called.
+[2026-02-02 09:26:01] FILES: Array
+(
+)
+
+[2026-02-02 09:26:01] POST: Array
+(
+    [project_id] => 5
+    [issue_type_id] => 2
+    [summary] => Checking issue is working or not
+    [description] => <p>Checking issue is working or not</p>
+    [assignee_id] => 3
+    [priority_id] => 2
+)
+

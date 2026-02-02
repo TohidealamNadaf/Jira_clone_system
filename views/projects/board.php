@@ -1135,6 +1135,7 @@
         setupDragAndDrop();
         setupSearch();
         setupAddCardButtons();
+        setupFilterButton();
         setupGroupButton();
         setupMoreMenu();
 
@@ -1325,6 +1326,131 @@
                 window.location.href = '<?= url("/projects/{$project['key']}/issues/create") ?>';
             });
         });
+    }
+
+    /**
+     * Setup Filter button
+     */
+    function setupFilterButton() {
+        const filterBtn = document.getElementById('filterBtn');
+        if (!filterBtn) return;
+
+        filterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showFilterMenu();
+        });
+    }
+
+    /**
+     * Show filter menu
+     */
+    function showFilterMenu() {
+        const filterBtn = document.getElementById('filterBtn');
+        const filterMenu = document.createElement('div');
+        filterMenu.className = 'board-menu-dropdown';
+        filterMenu.innerHTML = `
+        <button class="menu-item" onclick="filterBoard('assignee', 'me')">
+            <i class="bi bi-person-check"></i>
+            <span>My Issues</span>
+        </button>
+        <button class="menu-item" onclick="filterBoard('assignee', 'unassigned')">
+            <i class="bi bi-person-dash"></i>
+            <span>Unassigned</span>
+        </button>
+        <button class="menu-item" onclick="filterBoard('priority', 'High')">
+            <i class="bi bi-arrow-up-circle"></i>
+            <span>High Priority</span>
+        </button>
+        <hr style="margin: 4px 0;">
+        <button class="menu-item" onclick="filterBoard('none')">
+            <i class="bi bi-x-circle"></i>
+            <span>Clear Filter</span>
+        </button>
+    `;
+
+        const existingMenu = document.querySelector('.board-menu-dropdown');
+        if (existingMenu) {
+            existingMenu.remove();
+        }
+
+        document.body.appendChild(filterMenu);
+
+        // Position menu below the button
+        const rect = filterBtn.getBoundingClientRect();
+        filterMenu.style.top = (rect.bottom + 4) + 'px';
+        filterMenu.style.left = rect.left + 'px';
+
+        // Close menu when clicking outside
+        setTimeout(() => {
+            document.addEventListener('click', closeFilterMenu);
+        }, 100);
+    }
+
+    /**
+     * Close filter menu
+     */
+    function closeFilterMenu(e) {
+        const menu = document.querySelector('.board-menu-dropdown');
+        const filterBtn = document.getElementById('filterBtn');
+
+        if (menu && !menu.contains(e.target) && !filterBtn.contains(e.target)) {
+            menu.remove();
+            document.removeEventListener('click', closeFilterMenu);
+        }
+    }
+
+    /**
+     * Filter board items
+     */
+    function filterBoard(type, value) {
+        console.log(`[FILTER] Filtering by ${type}: ${value}`);
+        
+        const currentUserId = '<?= auth()['id'] ?>'; // Get current user ID
+        const currentUserName = '<?= auth()['display_name'] ?>'; 
+
+        document.querySelectorAll('.issue-card').forEach(card => {
+            let show = true;
+
+            if (type === 'assignee') {
+                 const assignee = card.dataset.assignee;
+                 // Note: Dataset assignee stores Name, not ID. 
+                 // For stricter checks we might need ID in dataset.
+                 // For now assuming 'Unassigned' literal check
+                 
+                 if (value === 'unassigned') {
+                     show = assignee === 'Unassigned' || !assignee;
+                 } else if (value === 'me') {
+                     // Check if assignee matches current user name (imperfect but functional for UI)
+                     // A better way would be adding data-assignee-id to the card
+                     show = assignee.includes(currentUserName) || assignee === '<?= auth()['name'] ?? '' ?>'; 
+                 }
+            } else if (type === 'priority') {
+                const priority = card.dataset.priority;
+                if (value === 'High') {
+                    show = priority === 'High' || priority === 'Urgent';
+                }
+            } else if (type === 'none') {
+                show = true;
+            }
+
+            card.style.display = show ? '' : 'none';
+        });
+
+        // Update UI state
+        const filterBtn = document.getElementById('filterBtn');
+        if (type !== 'none') {
+            filterBtn.classList.add('active');
+            filterBtn.style.background = '#e9f2ff';
+            filterBtn.style.borderColor = '#0052cc';
+            showToast(`✓ Filter applied: ${type}`, 'success');
+        } else {
+            filterBtn.classList.remove('active');
+            filterBtn.style.background = '';
+            filterBtn.style.borderColor = '';
+            showToast('✓ Filter cleared', 'info');
+        }
+        
+        document.querySelector('.board-menu-dropdown')?.remove();
     }
 
     /**

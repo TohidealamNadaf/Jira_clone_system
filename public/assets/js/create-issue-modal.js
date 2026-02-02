@@ -15,6 +15,15 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentIssueKey = null;
     let currentIssueId = null;
 
+    // Cache for modal data to prevent redundant API calls
+    const modalCache = {
+        projects: null,
+        users: null,
+        issueTypes: {}, // Project ID based cache
+        priorities: null,
+        globalIssueTypes: null
+    };
+
 
     // Get the modal element (defined in components/create-issue-modal.php)
     const createIssueModal = document.getElementById('createIssueModal');
@@ -83,56 +92,113 @@ document.addEventListener('DOMContentLoaded', function () {
     async function loadCreateIssueModalData() {
         console.log('🔄 [CREATE-ISSUE-MODAL] Loading modal data...');
 
+        const projectSelect = document.getElementById('global-modal-issueProject');
+        const assigneeSelect = document.getElementById('global-modal-issueAssignee');
+        const prioritySelect = document.getElementById('global-modal-issuePriority');
+        const issueTypeSelect = document.getElementById('global-modal-issueType');
+
         try {
             const basePath = getBasePath();
             const projectsUrl = getApiUrl('/projects/quick-create-list');
             const usersUrl = getApiUrl('/users/active');
             const issueTypesUrl = getApiUrl('/api/v1/issue-types');
+            const prioritiesUrl = getApiUrl('/api/v1/priorities');
 
-            console.log('📍 API URLs:', { projectsUrl, usersUrl, issueTypesUrl });
-
-            // Load projects
-            console.log('🔄 Fetching projects...');
-            try {
-                const projectsResponse = await fetch(projectsUrl);
-                if (projectsResponse.ok) {
-                    const projects = await projectsResponse.json();
-                    console.log('✅ Projects loaded:', projects);
-                    populateProjectDropdown(projects);
-                } else {
-                    console.error('❌ Failed to load projects. Status:', projectsResponse.status);
+            // 1. Load projects
+            if (modalCache.projects) {
+                console.log('📦 Using cached projects');
+                populateProjectDropdown(modalCache.projects);
+            } else {
+                if (projectSelect) projectSelect.innerHTML = '<option value="">Loading projects...</option>';
+                console.log('🔄 Fetching projects...');
+                try {
+                    const projectsResponse = await fetch(projectsUrl);
+                    if (projectsResponse.ok) {
+                        modalCache.projects = await projectsResponse.json();
+                        console.log('✅ Projects loaded:', modalCache.projects);
+                        populateProjectDropdown(modalCache.projects);
+                    } else {
+                        console.error('❌ Failed to load projects. Status:', projectsResponse.status);
+                        if (projectSelect) projectSelect.innerHTML = '<option value="">Error loading projects</option>';
+                    }
+                } catch (error) {
+                    console.error('❌ Error fetching projects:', error);
+                    if (projectSelect) projectSelect.innerHTML = '<option value="">Error loading projects</option>';
                 }
-            } catch (error) {
-                console.error('❌ Error fetching projects:', error);
             }
 
-            // Load active users for assignee dropdown
-            console.log('🔄 Fetching users...');
-            try {
-                const usersResponse = await fetch(usersUrl);
-                if (usersResponse.ok) {
-                    const users = await usersResponse.json();
-                    console.log('✅ Users loaded:', users);
-                    populateAssigneeDropdown(users);
-                    populateAssigneeDropdown(users);
-                } else {
-                    console.error('❌ Failed to load users. Status:', usersResponse.status);
+            // 2. Load active users for assignee dropdown
+            if (modalCache.users) {
+                console.log('📦 Using cached users');
+                populateAssigneeDropdown(modalCache.users);
+            } else {
+                if (assigneeSelect) assigneeSelect.innerHTML = '<option value="">Loading users...</option>';
+                console.log('🔄 Fetching users...');
+                try {
+                    const usersResponse = await fetch(usersUrl);
+                    if (usersResponse.ok) {
+                        modalCache.users = await usersResponse.json();
+                        console.log('✅ Users loaded:', modalCache.users);
+                        populateAssigneeDropdown(modalCache.users);
+                    } else {
+                        console.error('❌ Failed to load users. Status:', usersResponse.status);
+                        if (assigneeSelect) assigneeSelect.innerHTML = '<option value="">Error loading users</option>';
+                    }
+                } catch (error) {
+                    console.error('❌ Error fetching users:', error);
+                    if (assigneeSelect) assigneeSelect.innerHTML = '<option value="">Error loading users</option>';
                 }
-            } catch (error) {
-                console.error('❌ Error fetching users:', error);
             }
 
-            // Load issue types globally
-            console.log('🔄 Loading issue types...');
-            await loadIssueTypesForProject();
+            // 3. Load global issue types (fallback if no project selected)
+            if (modalCache.globalIssueTypes) {
+                console.log('📦 Using cached global issue types');
+                populateIssueTypeDropdown(modalCache.globalIssueTypes);
+            } else {
+                if (issueTypeSelect) issueTypeSelect.innerHTML = '<option value="">Loading types...</option>';
+                console.log('🔄 Loading issue types...');
+                try {
+                    const response = await fetch(issueTypesUrl);
+                    if (response.ok) {
+                        const data = await response.json();
+                        modalCache.globalIssueTypes = Array.isArray(data) ? data : (data.data || data.issue_types || []);
+                        console.log('✅ Global issue types loaded:', modalCache.globalIssueTypes);
+                        populateIssueTypeDropdown(modalCache.globalIssueTypes);
+                    } else {
+                        console.error('❌ Failed to load issue types. Status:', response.status);
+                        if (issueTypeSelect) issueTypeSelect.innerHTML = '<option value="">Error loading work types</option>';
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading issue types:', error);
+                    if (issueTypeSelect) issueTypeSelect.innerHTML = '<option value="">Error loading work types</option>';
+                }
+            }
 
-            // Load priorities
-            console.log('🔄 Loading priorities...');
-            await loadPriorityOptions();
+            // 4. Load priorities
+            if (modalCache.priorities) {
+                console.log('📦 Using cached priorities');
+                populatePriorityDropdown(modalCache.priorities);
+            } else {
+                if (prioritySelect) prioritySelect.innerHTML = '<option value="">Loading priorities...</option>';
+                console.log('🔄 Loading priorities...');
+                try {
+                    const response = await fetch(prioritiesUrl);
+                    if (response.ok) {
+                        modalCache.priorities = await response.json();
+                        populatePriorityDropdown(modalCache.priorities);
+                    } else {
+                        console.error('❌ Failed to load priorities. Status:', response.status);
+                        if (prioritySelect) prioritySelect.innerHTML = '<option value="">Error loading priorities</option>';
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading priorities:', error);
+                    if (prioritySelect) prioritySelect.innerHTML = '<option value="">Error loading priorities</option>';
+                }
+            }
 
-            console.log('✅ Modal data loaded successfully');
+            console.log('✅ Modal data loading process completed');
         } catch (error) {
-            console.error('❌ Error loading modal data:', error);
+            console.error('❌ Critical error in loadCreateIssueModalData:', error);
         }
     }
 
@@ -197,26 +263,48 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     async function loadIssueTypesForProject() {
         const issueTypeSelect = document.getElementById('global-modal-issueType');
-        if (!issueTypeSelect) {
-            console.warn('⚠️ Issue type dropdown (#global-modal-issueType) not found');
+        const projectSelect = document.getElementById('global-modal-issueProject');
+        if (!issueTypeSelect || !projectSelect) return;
+
+        const projectId = projectSelect.value;
+
+        // If no project is selected, we might still want to show global types or a prompt
+        if (!projectId) {
+            if (modalCache.globalIssueTypes) {
+                populateIssueTypeDropdown(modalCache.globalIssueTypes);
+            }
+            return;
+        }
+
+        // Check if we have this cached
+        if (modalCache.issueTypes[projectId]) {
+            console.log(`📦 Using cached issue types for project ${projectId}`);
+            populateIssueTypeDropdown(modalCache.issueTypes[projectId]);
             return;
         }
 
         try {
-            const issueTypesUrl = getApiUrl('/api/v1/issue-types');
+            issueTypeSelect.innerHTML = '<option value="">Loading work types...</option>';
+            const issueTypesUrl = getApiUrl('/api/v1/issue-types'); // Note: if there's a per-project endpoint, it should be used here
             console.log('🔄 Fetching issue types from:', issueTypesUrl);
 
             const response = await fetch(issueTypesUrl);
             if (response.ok) {
                 const data = await response.json();
-                console.log('✅ Issue types loaded:', data);
                 const issueTypes = Array.isArray(data) ? data : (data.data || data.issue_types || []);
+
+                // Cache it
+                modalCache.issueTypes[projectId] = issueTypes;
+
+                console.log(`✅ Issue types loaded for project ${projectId}:`, issueTypes);
                 populateIssueTypeDropdown(issueTypes);
             } else {
                 console.error('❌ Failed to load issue types. Status:', response.status);
+                issueTypeSelect.innerHTML = '<option value="">Error loading work types</option>';
             }
         } catch (error) {
             console.error('❌ Error loading issue types:', error);
+            issueTypeSelect.innerHTML = '<option value="">Error loading work types</option>';
         }
     }
 
@@ -247,24 +335,29 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     async function loadPriorityOptions() {
         const prioritySelect = document.getElementById('global-modal-issuePriority');
-        if (!prioritySelect) {
-            console.warn('⚠️ Priority dropdown (#global-modal-issuePriority) not found');
+        if (!prioritySelect) return;
+
+        if (modalCache.priorities) {
+            populatePriorityDropdown(modalCache.priorities);
             return;
         }
 
         try {
+            prioritySelect.innerHTML = '<option value="">Loading priorities...</option>';
             const prioritiesUrl = getApiUrl('/api/v1/priorities');
             console.log('🔄 Fetching priorities from:', prioritiesUrl);
 
             const response = await fetch(prioritiesUrl);
             if (response.ok) {
-                const priorities = await response.json();
-                populatePriorityDropdown(priorities);
+                modalCache.priorities = await response.json();
+                populatePriorityDropdown(modalCache.priorities);
             } else {
                 console.error('❌ Failed to load priorities. Status:', response.status);
+                prioritySelect.innerHTML = '<option value="">Error loading priorities</option>';
             }
         } catch (error) {
             console.error('❌ Error loading priorities:', error);
+            prioritySelect.innerHTML = '<option value="">Error loading priorities</option>';
         }
     }
 
@@ -538,26 +631,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const preProjectKey = trigger.dataset.projectKey;
 
                 modal.show();
-
-                // Load data when modal opens
-                loadCreateIssueModalData().then(() => {
-                    // Pre-select project if specified
-                    if (preProjectId || preProjectKey) {
-                        const projectSelect = document.getElementById('global-modal-issueProject');
-                        if (projectSelect) {
-                            if (preProjectId) {
-                                projectSelect.value = preProjectId;
-                            } else if (preProjectKey) {
-                                // Find option with matching key
-                                const option = Array.from(projectSelect.options).find(opt => opt.dataset.projectKey === preProjectKey);
-                                if (option) projectSelect.value = option.value;
-                            }
-
-                            // Trigger change event to load issue types
-                            projectSelect.dispatchEvent(new Event('change'));
-                        }
-                    }
-                });
+                // Data loading is handled by the show.bs.modal event listener
             }
         });
         console.log('✅ Global click listener attached for .open-create-issue-modal');
@@ -579,9 +653,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Load data when modal opens
-        createIssueModal.addEventListener('show.bs.modal', function () {
+        createIssueModal.addEventListener('show.bs.modal', function (event) {
             console.log('📖 [CREATE-ISSUE-MODAL] Modal opening - loading data');
-            loadCreateIssueModalData();
+
+            // Check if triggered by a button with data attributes
+            const trigger = event.relatedTarget || document.activeElement;
+            const preProjectId = trigger?.dataset?.projectId;
+            const preProjectKey = trigger?.dataset?.projectKey;
+
+            // FIX: Reset form if not in edit mode (clears previous data on re-open)
+            if (!isEditMode) {
+                resetModal();
+            }
+
+            loadCreateIssueModalData().then(() => {
+                // Pre-select project if specified
+                if (preProjectId || preProjectKey) {
+                    const projectSelect = document.getElementById('global-modal-issueProject');
+                    if (projectSelect) {
+                        if (preProjectId) {
+                            projectSelect.value = preProjectId;
+                        } else if (preProjectKey) {
+                            const option = Array.from(projectSelect.options).find(opt => opt.dataset.projectKey === preProjectKey);
+                            if (option) projectSelect.value = option.value;
+                        }
+                        projectSelect.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
 
             // Clear selected files
             selectedFiles.clear();

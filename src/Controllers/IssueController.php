@@ -218,6 +218,25 @@ class IssueController extends Controller
 
             Session::flash('error', $e->getMessage());
             $this->redirect(url("/issue/{$issueKey}/edit"));
+        } catch (\Exception $e) {
+            // Log error
+            error_log("Issue update failed: " . $e->getMessage());
+            $logFile = __DIR__ . '/../../public/debug_log.txt';
+            $logMsg = function ($msg) use ($logFile) {
+                file_put_contents($logFile, date('[Y-m-d H:i:s] ') . $msg . "\n", FILE_APPEND);
+            };
+            $logMsg("ERROR: Issue update failed: " . $e->getMessage());
+            $logMsg("TRACE: " . $e->getTraceAsString());
+
+            if ($request->wantsJson()) {
+                $this->json([
+                    'success' => false,
+                    'error' => 'Failed to update issue. Please try again. (' . $e->getMessage() . ')'
+                ], 500);
+            }
+
+            Session::flash('error', 'An unexpected error occurred: ' . $e->getMessage());
+            $this->redirect(url("/issue/{$issueKey}/edit"));
         }
     }
 
@@ -745,11 +764,18 @@ class IssueController extends Controller
             ], 422);
 
         } catch (\Exception $e) {
-            // General error
+            // Log error
             error_log("Issue creation failed: " . $e->getMessage());
+            $logFile = __DIR__ . '/../../public/debug_log.txt';
+            $logMsg = function ($msg) use ($logFile) {
+                file_put_contents($logFile, date('[Y-m-d H:i:s] ') . $msg . "\n", FILE_APPEND);
+            };
+            $logMsg("ERROR: Issue creation failed: " . $e->getMessage());
+            $logMsg("TRACE: " . $e->getTraceAsString());
+            
             $this->json([
                 'success' => false,
-                'error' => 'Failed to create issue. Please try again.'
+                'error' => 'Failed to create issue. Please try again. (' . $e->getMessage() . ')'
             ], 500);
         }
     }

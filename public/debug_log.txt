@@ -2619,3 +2619,230 @@
     [priority_id] => 3
 )
 
+[2026-02-03 08:44:26] IssueController::store called.
+[2026-02-03 08:44:26] FILES: Array
+(
+)
+
+[2026-02-03 08:44:26] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Show Report does not display correct information for selected record in Constant Configuration
+    [description] => <p data-start="131" data-end="188"><strong data-start="131" data-end="142">Path :-</strong><br data-start="142" data-end="145">Payroll &rarr; Master &rarr; Constant Configuration</p>
+<p data-start="190" data-end="217"><strong data-start="190" data-end="215">Steps to reproduce :-</strong></p>
+<ol data-start="218" data-end="358">
+<li data-start="218" data-end="280">
+<p data-start="221" data-end="280">Navigate to <strong data-start="233" data-end="278">Payroll &rarr; Master &rarr; Constant Configuration</strong></p>
+</li>
+<li data-start="281" data-end="317">
+<p data-start="284" data-end="317">select all records</p>
+</li>
+<li data-start="318" data-end="358">
+<p data-start="321" data-end="358">Click on the <strong data-start="334" data-end="349">Show Report</strong> button</p>
+</li>
+</ol>
+<p data-start="360" data-end="504"><strong data-start="360" data-end="382">Expected result :-</strong><br data-start="382" data-end="385">The report should display <strong data-start="411" data-end="447">correct and complete information</strong> related to the selected constant configuration record.</p>
+<p data-start="506" data-end="640"><strong data-start="506" data-end="526">Actual result :-</strong><br data-start="526" data-end="529">After clicking <strong data-start="544" data-end="559">Show Report</strong>, the report information is <strong data-start="587" data-end="613">not displayed properly</strong> for the selected record.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-03 08:47:46] IssueController::store called.
+[2026-02-03 08:47:46] FILES: Array
+(
+)
+
+[2026-02-03 08:47:46] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Changed On date not updated after editing record in Earning Heads
+    [description] => <p data-start="119" data-end="167"><strong data-start="119" data-end="130">Path :-</strong><br data-start="130" data-end="133">Payroll &rarr; Master &rarr; Earning Heads</p>
+<p data-start="169" data-end="196"><strong data-start="169" data-end="194">Steps to reproduce :-</strong></p>
+<ol data-start="197" data-end="404">
+<li data-start="197" data-end="250">
+<p data-start="200" data-end="250">Navigate to <strong data-start="212" data-end="248">Payroll &rarr; Master &rarr; Earning Heads</strong></p>
+</li>
+<li data-start="251" data-end="282">
+<p data-start="254" data-end="282">Select any existing record</p>
+</li>
+<li data-start="283" data-end="305">
+<p data-start="286" data-end="305">Click on <strong data-start="295" data-end="303">Edit</strong></p>
+</li>
+<li data-start="306" data-end="355">
+<p data-start="309" data-end="355">Modify any field and click <strong data-start="336" data-end="353">Update / Save</strong></p>
+</li>
+<li data-start="356" data-end="404">
+<p data-start="359" data-end="404">Observe the <strong data-start="371" data-end="385">Changed On</strong> date in the grid</p>
+</li>
+</ol>
+<p data-start="406" data-end="525"><strong data-start="406" data-end="428">Expected result :-</strong><br data-start="428" data-end="431">The <strong data-start="435" data-end="449">Changed On</strong> date should be updated automatically after editing and saving the record.</p>
+<p data-start="527" data-end="634"><strong data-start="527" data-end="547">Actual result :-</strong><br data-start="547" data-end="550">After editing and updating the record, the <strong data-start="593" data-end="607">Changed On</strong> date is <strong data-start="616" data-end="631">not updated</strong>.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-03 08:51:44] IssueController::store called.
+[2026-02-03 08:51:44] FILES: Array
+(
+)
+
+[2026-02-03 08:51:44] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Female Amount and Limit Amount not visible in Edit/View Professional Tax Slab
+    [description] => <p data-start="117" data-end="185"><strong data-start="117" data-end="128">Path :-</strong><br data-start="128" data-end="131">Payroll &rarr; Govt Rate Settings &rarr; Professional Tax Slab</p>
+<p data-start="187" data-end="214"><strong data-start="187" data-end="212">Steps to reproduce :-</strong></p>
+<ol data-start="215" data-end="398">
+<li data-start="215" data-end="288">
+<p data-start="218" data-end="288">Navigate to <strong data-start="230" data-end="286">Payroll &rarr; Govt Rate Settings &rarr; Professional Tax Slab</strong></p>
+</li>
+<li data-start="289" data-end="320">
+<p data-start="292" data-end="320">Select any existing record</p>
+</li>
+<li data-start="321" data-end="355">
+<p data-start="324" data-end="355">Click on <strong data-start="333" data-end="341">Edit</strong> or <strong data-start="345" data-end="353">View</strong></p>
+</li>
+<li data-start="356" data-end="398">
+<p data-start="359" data-end="398">Observe the <strong data-start="371" data-end="381">Female</strong> section fields</p>
+</li>
+</ol>
+<p data-start="400" data-end="544"><strong data-start="400" data-end="422">Expected result :-</strong><br data-start="422" data-end="425"><strong data-start="425" data-end="435">Amount</strong> and <strong data-start="440" data-end="456">Limit Amount</strong> values for the <strong data-start="472" data-end="482">Female</strong> field should be displayed correctly in Edit and View modes.</p>
+<p data-start="546" data-end="689"><strong data-start="546" data-end="566">Actual result :-</strong><br data-start="566" data-end="569">In Edit or View mode, <strong data-start="591" data-end="601">Amount</strong> and <strong data-start="606" data-end="622">Limit Amount</strong> fields for the <strong data-start="638" data-end="648">Female</strong> section are <strong data-start="661" data-end="686">not displayed (blank)</strong>.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-03 09:00:08] IssueController::store called.
+[2026-02-03 09:00:08] FILES: Array
+(
+)
+
+[2026-02-03 09:00:08] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee Contribution and PF On Amount not visible in Edit/View Provident Fund Rate
+    [description] => <p data-start="132" data-end="198"><strong data-start="132" data-end="143">Path :-</strong><br data-start="143" data-end="146">Payroll &rarr; Govt Rate Settings &rarr; Provident Fund Rate</p>
+<p data-start="200" data-end="227"><strong data-start="200" data-end="225">Steps to reproduce :-</strong></p>
+<ol data-start="228" data-end="406">
+<li data-start="228" data-end="299">
+<p data-start="231" data-end="299">Navigate to <strong data-start="243" data-end="297">Payroll &rarr; Govt Rate Settings &rarr; Provident Fund Rate</strong></p>
+</li>
+<li data-start="300" data-end="331">
+<p data-start="303" data-end="331">Select any existing record</p>
+</li>
+<li data-start="332" data-end="366">
+<p data-start="335" data-end="366">Click on <strong data-start="344" data-end="352">Edit</strong> or <strong data-start="356" data-end="364">View</strong></p>
+</li>
+<li data-start="367" data-end="406">
+<p data-start="370" data-end="406">Observe the record details section</p>
+</li>
+</ol>
+<p data-start="408" data-end="550"><strong data-start="408" data-end="430">Expected result :-</strong><br data-start="430" data-end="433"><strong data-start="433" data-end="458">Employee Contribution</strong> and <strong data-start="463" data-end="479">PF On Amount</strong> values should be displayed correctly in <strong data-start="520" data-end="528">Edit</strong> and <strong data-start="533" data-end="541">View</strong> modes.</p>
+<p data-start="552" data-end="707"><strong data-start="552" data-end="572">Actual result :-</strong><br data-start="572" data-end="575">In Edit or View mode, <strong data-start="597" data-end="622">Employee Contribution</strong> and <strong data-start="627" data-end="643">PF On Amount</strong> fields are <strong data-start="655" data-end="670">not visible</strong> in the record information section.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-03 09:02:21] IssueController::store called.
+[2026-02-03 09:02:21] FILES: Array
+(
+)
+
+[2026-02-03 09:02:21] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Amount not visible in Edit/View Earning Head Wise Amount
+    [description] => <p data-start="108" data-end="176"><strong data-start="108" data-end="119">Path :-</strong><br data-start="119" data-end="122">Payroll &rarr; Earning Details &rarr; Earning Head Wise Amount</p>
+<p data-start="178" data-end="205"><strong data-start="178" data-end="203">Steps to reproduce :-</strong></p>
+<ol data-start="206" data-end="380">
+<li data-start="206" data-end="279">
+<p data-start="209" data-end="279">Navigate to <strong data-start="221" data-end="277">Payroll &rarr; Earning Details &rarr; Earning Head Wise Amount</strong></p>
+</li>
+<li data-start="280" data-end="311">
+<p data-start="283" data-end="311">Select any existing record</p>
+</li>
+<li data-start="312" data-end="346">
+<p data-start="315" data-end="346">Click on <strong data-start="324" data-end="332">Edit</strong> or <strong data-start="336" data-end="344">View</strong></p>
+</li>
+<li data-start="347" data-end="380">
+<p data-start="350" data-end="380">Observe the <strong data-start="362" data-end="372">Amount</strong> field</p>
+</li>
+</ol>
+<p data-start="382" data-end="491"><strong data-start="382" data-end="404">Expected result :-</strong><br data-start="404" data-end="407">The <strong data-start="411" data-end="421">Amount</strong> value should be displayed correctly in <strong data-start="461" data-end="469">Edit</strong> and <strong data-start="474" data-end="482">View</strong> modes.</p>
+<p data-start="493" data-end="588"><strong data-start="493" data-end="513">Actual result :-</strong><br data-start="513" data-end="516">In Edit or View mode, the <strong data-start="542" data-end="552">Amount</strong> field is <strong data-start="562" data-end="585">not visible / blank</strong>.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-03 09:05:09] IssueController::store called.
+[2026-02-03 09:05:09] FILES: Array
+(
+)
+
+[2026-02-03 09:05:09] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Update button not working in Earning Head Wise Percentage
+    [description] => <p data-start="128" data-end="200"><strong data-start="128" data-end="139">Path :-</strong><br data-start="139" data-end="142">Payroll &rarr; Earning Details &rarr; Earning Head Wise Percentage</p>
+<p data-start="202" data-end="229"><strong data-start="202" data-end="227">Steps to reproduce :-</strong></p>
+<ol data-start="230" data-end="420">
+<li data-start="230" data-end="307">
+<p data-start="233" data-end="307">Navigate to <strong data-start="245" data-end="305">Payroll &rarr; Earning Details &rarr; Earning Head Wise Percentage</strong></p>
+</li>
+<li data-start="308" data-end="339">
+<p data-start="311" data-end="339">Select any existing record</p>
+</li>
+<li data-start="340" data-end="362">
+<p data-start="343" data-end="362">Click on <strong data-start="352" data-end="360">Edit</strong></p>
+</li>
+<li data-start="363" data-end="384">
+<p data-start="366" data-end="384">Modify any field</p>
+</li>
+<li data-start="385" data-end="420">
+<p data-start="388" data-end="420">Click on the <strong data-start="401" data-end="411">Update</strong> button</p>
+</li>
+</ol>
+<p data-start="422" data-end="528"><strong data-start="422" data-end="444">Expected result :-</strong><br data-start="444" data-end="447">The record should be <strong data-start="468" data-end="492">updated successfully</strong> after clicking the Update button.</p>
+<p data-start="530" data-end="625"><strong data-start="530" data-end="550">Actual result :-</strong><br data-start="550" data-end="553">The <strong data-start="557" data-end="588">Update button does not work</strong> and the record is <strong data-start="607" data-end="622">not updated</strong>.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-03 09:07:40] IssueController::store called.
+[2026-02-03 09:07:40] FILES: Array
+(
+)
+
+[2026-02-03 09:07:40] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Percentage not visible in Edit/Delete Earning Head Wise Percentage
+    [description] => <p data-start="126" data-end="198"><strong data-start="126" data-end="137">Path :-</strong><br data-start="137" data-end="140">Payroll &rarr; Earning Details &rarr; Earning Head Wise Percentage</p>
+<p data-start="200" data-end="227"><strong data-start="200" data-end="225">Steps to reproduce :-</strong></p>
+<ol data-start="228" data-end="414">
+<li data-start="228" data-end="305">
+<p data-start="231" data-end="305">Navigate to <strong data-start="243" data-end="303">Payroll &rarr; Earning Details &rarr; Earning Head Wise Percentage</strong></p>
+</li>
+<li data-start="306" data-end="337">
+<p data-start="309" data-end="337">Select any existing record</p>
+</li>
+<li data-start="338" data-end="374">
+<p data-start="341" data-end="374">Click on <strong data-start="350" data-end="358">Edit</strong> or <strong data-start="362" data-end="372">Delete</strong></p>
+</li>
+<li data-start="375" data-end="414">
+<p data-start="378" data-end="414">Observe the record details section</p>
+</li>
+</ol>
+<p data-start="416" data-end="547"><strong data-start="416" data-end="438">Expected result :-</strong><br data-start="438" data-end="441">The <strong data-start="445" data-end="459">Percentage</strong> value should be displayed correctly in the record details for Edit or Delete actions.</p>
+<p data-start="549" data-end="672"><strong data-start="549" data-end="569">Actual result :-</strong><br data-start="569" data-end="572">In Edit or Delete mode, the <strong data-start="600" data-end="614">Percentage</strong> field is <strong data-start="624" data-end="647">not visible / blank</strong> in the record details.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+

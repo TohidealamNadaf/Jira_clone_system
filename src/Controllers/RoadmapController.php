@@ -139,8 +139,10 @@ class RoadmapController extends Controller
             'end_date' => $request->input('end_date'),
         ];
 
-        // Get roadmap data
-        $roadmapItems = $this->roadmapService->getProjectRoadmap($project['id'], array_filter($filters));
+        // Get roadmap data (GOALS + ORPHANED ITEMS)
+        $goals = $this->roadmapService->getProjectGoals($project['id'], array_filter($filters));
+        $orphanedItems = $this->roadmapService->getOrphanedItems($project['id'], array_filter($filters));
+        
         $summary = $this->roadmapService->getRoadmapSummary($project['id']);
         $timeline = $this->roadmapService->getTimelineRange($project['id']);
         $atRiskItems = $this->roadmapService->checkRiskStatus($project['id']);
@@ -166,7 +168,8 @@ class RoadmapController extends Controller
         if ($request->wantsJson()) {
             $this->json([
                 'project' => $project,
-                'roadmap_items' => $roadmapItems,
+                'goals' => $goals,
+                'orphaned_items' => $orphanedItems,
                 'summary' => $summary,
                 'timeline' => $timeline,
                 'at_risk_items' => $atRiskItems,
@@ -175,7 +178,8 @@ class RoadmapController extends Controller
 
         return $this->view('projects.roadmap', [
             'project' => $project,
-            'roadmapItems' => $roadmapItems,
+            'goals' => $goals,
+            'orphanedItems' => $orphanedItems,
             'summary' => $summary,
             'timeline' => $timeline,
             'atRiskItems' => $atRiskItems,
@@ -184,6 +188,169 @@ class RoadmapController extends Controller
             'issues' => $issues,
             'filters' => $filters,
         ]);
+    }
+
+    /**
+     * Store new roadmap goal
+     */
+    public function storeGoal(Request $request): void
+    {
+        $key = $request->param('key');
+        $project = $this->projectService->getProjectByKey($key);
+
+        if (!$project) {
+            abort(404, 'Project not found');
+        }
+
+        $this->authorize('issues.create', $project['id']);
+
+        if ($request->wantsJson() || $request->isJson()) {
+            $data = $request->validateApi([
+                'title' => 'required|max:255',
+                'description' => 'nullable|max:5000',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date',
+                'status' => 'required|in:planned,in_progress,achieved,missed',
+                'color' => 'nullable|regex:/^#[0-9A-Fa-f]{6}$/',
+            ]);
+        } else {
+            $data = $request->validate([
+                'title' => 'required|max:255',
+                'description' => 'nullable|max:5000',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date',
+                'status' => 'required|in:planned,in_progress,achieved,missed',
+                'color' => 'nullable|regex:/^#[0-9A-Fa-f]{6}$/',
+            ]);
+        }
+
+        try {
+            $goal = $this->roadmapService->createRoadmapGoal(
+                $project['id'],
+                $data,
+                $this->userId()
+            );
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'goal' => $goal], 201);
+            }
+
+            $this->redirectWith(
+                url("/projects/{$key}/roadmap"),
+                'success',
+                'Roadmap goal created successfully.'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            $this->redirectWith(
+                url("/projects/{$key}/roadmap"),
+                'error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Update roadmap goal
+     */
+    public function updateGoal(Request $request): void
+    {
+        $goalId = (int) $request->param('goalId');
+        // Simple check, real app should verify ownership/access via goal -> project
+        // Assuming we pass projectId or verify it in service/middleware
+        // For now, let's just fetch it to redirect back
+        $goal = Database::selectOne("SELECT * FROM roadmap_goals WHERE id = ?", [$goalId]);
+        if (!$goal) abort(404, 'Goal not found');
+        
+        $project = $this->projectService->getProjectById($goal['project_id']);
+        $this->authorize('issues.edit', $project['id']);
+
+        if ($request->wantsJson() || $request->isJson()) {
+            $data = $request->validateApi([
+                'title' => 'nullable|max:255',
+                'description' => 'nullable|max:5000',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+                'status' => 'nullable|in:planned,in_progress,achieved,missed',
+                'color' => 'nullable|regex:/^#[0-9A-Fa-f]{6}$/',
+            ]);
+        } else {
+            $data = $request->validate([
+                'title' => 'nullable|max:255',
+                'description' => 'nullable|max:5000',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+                'status' => 'nullable|in:planned,in_progress,achieved,missed',
+                'color' => 'nullable|regex:/^#[0-9A-Fa-f]{6}$/',
+            ]);
+        }
+
+        try {
+            $updated = $this->roadmapService->updateRoadmapGoal(
+                $goalId,
+                $data
+            );
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true, 'goal' => $updated]);
+            }
+
+            $this->redirectWith(
+                url("/projects/{$project['key']}/roadmap"),
+                'success',
+                'Roadmap goal updated successfully.'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 422);
+            }
+
+            $this->redirectWith(
+                url("/projects/{$project['key']}/roadmap"),
+                'error',
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Delete roadmap goal
+     */
+    public function destroyGoal(Request $request): void
+    {
+        $goalId = (int) $request->param('goalId');
+        $goal = Database::selectOne("SELECT * FROM roadmap_goals WHERE id = ?", [$goalId]);
+        if (!$goal) abort(404, 'Goal not found');
+
+        $project = $this->projectService->getProjectById($goal['project_id']);
+        $this->authorize('issues.delete', $project['id']);
+
+        try {
+            $this->roadmapService->deleteRoadmapGoal($goalId);
+
+            if ($request->wantsJson()) {
+                $this->json(['success' => true]);
+            }
+
+            $this->redirectWith(
+                url("/projects/{$project['key']}/roadmap"),
+                'success',
+                'Roadmap goal deleted successfully.'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                $this->json(['error' => $e->getMessage()], 500);
+            }
+
+            $this->redirectWith(
+                url("/projects/{$project['key']}/roadmap"),
+                'error',
+                $e->getMessage()
+            );
+        }
     }
 
     /**
@@ -212,6 +379,7 @@ class RoadmapController extends Controller
                 'priority' => 'nullable|in:low,medium,high,critical',
                 'progress' => 'nullable|integer|min:0|max:100',
                 'owner_id' => 'nullable|integer',
+                'goal_id' => 'nullable|integer',
                 'color' => 'nullable|regex:/^#[0-9A-Fa-f]{6}$/',
                 'sprint_ids' => 'nullable|array',
                 'issue_ids' => 'nullable|array',
@@ -227,6 +395,7 @@ class RoadmapController extends Controller
                 'priority' => 'nullable|in:low,medium,high,critical',
                 'progress' => 'nullable|integer|min:0|max:100',
                 'owner_id' => 'nullable|integer',
+                'goal_id' => 'nullable|integer',
                 'color' => 'nullable|regex:/^#[0-9A-Fa-f]{6}$/',
                 'sprint_ids' => 'nullable|array',
                 'issue_ids' => 'nullable|array',
@@ -295,6 +464,7 @@ class RoadmapController extends Controller
             'status' => 'nullable|in:planned,in_progress,on_track,at_risk,delayed,completed',
             'priority' => 'nullable|in:low,medium,high,critical',
             'owner_id' => 'nullable|integer',
+            'goal_id' => 'nullable|integer',
             'color' => 'nullable|regex:/^#[0-9A-Fa-f]{6}$/',
             'sprint_ids' => 'nullable|array',
             'issue_ids' => 'nullable|array',
@@ -393,12 +563,23 @@ class RoadmapController extends Controller
             'end_date' => $request->input('end_date'),
         ];
 
-        $items = $this->roadmapService->getProjectRoadmap($project['id'], array_filter($filters));
+        // Retrieve goals and orphaned items
+        $goals = $this->roadmapService->getProjectGoals($project['id'], array_filter($filters));
+        $orphanedItems = $this->roadmapService->getOrphanedItems($project['id'], array_filter($filters));
+        
+        $allItems = $orphanedItems;
+        foreach ($goals as $goal) {
+            foreach ($goal['items'] as $item) {
+                $allItems[] = $item;
+            }
+        }
 
         $this->json([
             'success' => true,
-            'items' => $items,
-            'count' => count($items),
+            'items' => $allItems,
+            'goals' => $goals,
+            'orphaned_items' => $orphanedItems,
+            'count' => count($allItems),
         ]);
     }
 

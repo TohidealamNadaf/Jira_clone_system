@@ -83,6 +83,10 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->post('/projects/{key}/roadmap', [RoadmapController::class, 'store'])->name('projects.roadmap.store');
     $router->put('/projects/{key}/roadmap/{itemId}', [RoadmapController::class, 'update'])->name('projects.roadmap.update');
     $router->delete('/projects/{key}/roadmap/{itemId}', [RoadmapController::class, 'destroy'])->name('projects.roadmap.destroy');
+    // Roadmap Goals
+    $router->post('/projects/{key}/roadmap/goals', [RoadmapController::class, 'storeGoal'])->name('projects.roadmap.goals.store');
+    $router->put('/projects/{key}/roadmap/goals/{goalId}', [RoadmapController::class, 'updateGoal'])->name('projects.roadmap.goals.update');
+    $router->delete('/projects/{key}/roadmap/goals/{goalId}', [RoadmapController::class, 'destroyGoal'])->name('projects.roadmap.goals.destroy');
     $router->get('/projects/{key}/settings', [ProjectController::class, 'settings'])->name('projects.settings');
     $router->put('/projects/{key}', [ProjectController::class, 'update'])->name('projects.update');
     $router->delete('/projects/{key}', [ProjectController::class, 'destroy'])->name('projects.destroy');

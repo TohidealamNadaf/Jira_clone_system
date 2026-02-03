@@ -23,7 +23,13 @@
                 <label class="filter-label">Project</label>
                 <select class="filter-select" id="projectFilter">
                     <option value="">All Projects</option>
-                    <?php foreach ($projects ?? [] as $proj): ?>
+                    <?php 
+                    $selectedProjectKey = '';
+                    foreach ($projects ?? [] as $proj): 
+                        if (($selectedProject ?? 0) == $proj['id']) {
+                            $selectedProjectKey = $proj['key'];
+                        }
+                    ?>
                     <option value="<?= $proj['id'] ?>" <?= ($selectedProject ?? 0) == $proj['id'] ? 'selected' : '' ?>>
                         <?= e($proj['name']) ?>
                     </option>
@@ -37,11 +43,15 @@
     <div class="content-area">
         <!-- Quick Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card">
+            <?php 
+            $projectParam = $selectedProjectKey ? '?project=' . urlencode($selectedProjectKey) : '?';
+            $inProgressUrl = url('/search' . $projectParam . ($selectedProjectKey ? '&' : '') . 'status[]=In+Progress');
+            ?>
+            <a href="<?= url('/search' . $projectParam) ?>" class="stat-card">
                 <div class="stat-label">Total Issues</div>
                 <div class="stat-value" id="totalIssues"><?= e($stats['total_issues'] ?? 0) ?></div>
                 <div class="stat-icon">📋</div>
-            </div>
+            </a>
             
             <div class="stat-card">
                 <div class="stat-label">Completed</div>
@@ -49,11 +59,11 @@
                 <div class="stat-icon">✓</div>
             </div>
             
-            <div class="stat-card">
+            <a href="<?= $inProgressUrl ?>" class="stat-card">
                 <div class="stat-label">In Progress</div>
                 <div class="stat-value stat-value-warning" id="inProgress"><?= e($stats['in_progress'] ?? 0) ?></div>
                 <div class="stat-icon">⚙️</div>
-            </div>
+            </a>
             
             <div class="stat-card">
                 <div class="stat-label">Avg. Velocity</div>
@@ -447,12 +457,15 @@
     transition: all var(--transition);
     overflow: hidden;
     cursor: pointer;
+    text-decoration: none;
+    color: inherit;
 }
 
 .stat-card:hover {
     box-shadow: var(--shadow-lg);
     transform: translateY(-3px);
     border-left-color: var(--jira-blue-dark);
+    color: inherit;
 }
 
 .stat-card::before {

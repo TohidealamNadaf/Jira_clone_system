@@ -2385,3 +2385,150 @@
     [priority_id] => 2
 )
 
+[2026-02-03 04:52:00] IssueController::store called.
+[2026-02-03 04:52:00] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => monthly_attendance.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => monthly_attendance.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php4485.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 299307
+                )
+
+        )
+
+)
+
+[2026-02-03 04:52:00] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Imported Excel data is not displayed in Monthly Attendance screen
+    [description] => <p data-start="337" data-end="550">After importing the monthly attendance Excel file, the system does not display the imported data in the Monthly Attendance screen. Only the column headers are visible and no data rows are shown.</p>
+<p data-start="660" data-end="685"><strong data-start="660" data-end="683">Steps to Reproduce:</strong></p>
+<ol data-start="686" data-end="901">
+<li data-start="686" data-end="751">
+<p data-start="689" data-end="751">Navigate to Time Office &rarr; Transactions &rarr; Monthly Import File</p>
+</li>
+<li data-start="752" data-end="784">
+<p data-start="755" data-end="784">Select the attendance month</p>
+</li>
+<li data-start="785" data-end="815">
+<p data-start="788" data-end="815">Upload a valid Excel file</p>
+</li>
+<li data-start="816" data-end="836">
+<p data-start="819" data-end="836">Click on Submit</p>
+</li>
+<li data-start="837" data-end="901">
+<p data-start="840" data-end="901">Navigate to Time Office &rarr; Transactions &rarr; Monthly Attendance</p>
+</li>
+</ol>
+<p data-start="903" data-end="1017"><strong data-start="903" data-end="923">Expected Result:</strong><br data-start="923" data-end="926">The system should display all imported attendance records in the Monthly Attendance screen.</p>
+<p data-start="1019" data-end="1107"><strong data-start="1019" data-end="1037">Actual Result:</strong><br data-start="1037" data-end="1040">The system displays only column headers with no data records shown.</p>
+<p data-start="552" data-end="572">&nbsp;</p>
+    [assignee_id] => 24
+    [priority_id] => 1
+    [start_date] => 2026-02-03
+)
+
+[2026-02-03 04:52:02] Processing file: monthly_attendance.png
+[2026-02-03 04:52:02] File uploaded successfully. Path: uploads/attachments/2026/02/86e2b7f7ac32735facbfe0dcf9ccfcdd.png
+[2026-02-03 04:52:02] Database insert success.
+[2026-02-03 04:54:12] IssueController::store called.
+[2026-02-03 04:54:12] FILES: Array
+(
+    [attachments] => Array
+        (
+            [name] => Array
+                (
+                    [0] => monthly_attendance.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => monthly_attendance.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => C:\xampp11\tmp\php4A97.tmp
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 299307
+                )
+
+        )
+
+)
+
+[2026-02-03 04:54:12] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Monthly Attendance page title is not visible
+    [description] => <p data-start="280" data-end="428"><strong data-start="280" data-end="296">Description:</strong><br data-start="296" data-end="299">On the Monthly Attendance page, the page title is hidden and not displayed to the user, which affects page clarity and usability.</p>
+<p data-start="430" data-end="450"><strong data-start="430" data-end="448">Preconditions:</strong></p>
+<ul data-start="451" data-end="495">
+<li data-start="451" data-end="495">
+<p data-start="453" data-end="495">User is logged in with valid credentials</p>
+</li>
+</ul>
+<p data-start="497" data-end="522"><strong data-start="497" data-end="520">Steps to Reproduce:</strong></p>
+<ol data-start="523" data-end="658">
+<li data-start="523" data-end="553">
+<p data-start="526" data-end="553">Log in to the application</p>
+</li>
+<li data-start="554" data-end="618">
+<p data-start="557" data-end="618">Navigate to Time Office &rarr; Transactions &rarr; Monthly Attendance</p>
+</li>
+<li data-start="619" data-end="658">
+<p data-start="622" data-end="658">Observe the page header/title area</p>
+</li>
+</ol>
+<p data-start="660" data-end="766"><strong data-start="660" data-end="680">Expected Result:</strong><br data-start="680" data-end="683">The Monthly Attendance page title should be clearly visible at the top of the page.</p>
+<p data-start="660" data-end="766"><strong data-start="768" data-end="786">Actual Result:</strong><br data-start="786" data-end="789">The page title is hidden and not visible on the Monthly Attendance screen.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+    [start_date] => 2026-02-03
+)
+
+[2026-02-03 04:54:12] Processing file: monthly_attendance.png
+[2026-02-03 04:54:12] File uploaded successfully. Path: uploads/attachments/2026/02/6421688f0e84f6582c032e3134d54a86.png
+[2026-02-03 04:54:12] Database insert success.

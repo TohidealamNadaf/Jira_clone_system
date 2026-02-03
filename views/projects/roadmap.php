@@ -916,6 +916,40 @@ function calculateBarWidth($item, $timeline)
         color: var(--jira-gray);
         margin-top: 2px;
     }
+
+    .goal-row {
+        background-color: var(--jira-light);
+        border-bottom: 2px solid var(--jira-border);
+    }
+    
+    .goal-row .gantt-info {
+        font-weight: 700;
+        color: var(--jira-blue-dark);
+    }
+
+    .goal-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .goal-row:hover .goal-actions {
+        opacity: 1;
+    }
+
+    .btn-icon-sm {
+        padding: 4px;
+        border: none;
+        background: none;
+        color: var(--jira-gray);
+        cursor: pointer;
+    }
+    
+    .btn-icon-sm:hover {
+        color: var(--jira-blue);
+    }
 </style>
 
 <div class="page-wrapper">
@@ -936,6 +970,9 @@ function calculateBarWidth($item, $timeline)
         </div>
         <div class="header-actions">
             <?php if (can('issues.create', $project['id'])): ?>
+                <button class="btn-action" onclick="showCreateGoalModal()">
+                    <i class="bi bi-flag"></i> Add Goal
+                </button>
                 <button class="btn-action primary" onclick="showCreateItemModal()">
                     <i class="bi bi-plus-lg"></i> Add Item
                 </button>
@@ -1016,55 +1053,112 @@ function calculateBarWidth($item, $timeline)
         <!-- Gantt Table -->
         <div class="gantt-wrapper">
             <div class="gantt-header">📊 Timeline</div>
-            <?php if (!empty($roadmapItems)): ?>
+            <?php if (!empty($goals) || !empty($orphanedItems)): ?>
                 <div class="gantt-container">
-                    <?php foreach ($roadmapItems as $item): ?>
-                        <div class="gantt-row">
+                    <!-- GOALS LIST -->
+                    <?php foreach ($goals ?? [] as $goal): ?>
+                        <div class="gantt-row goal-row">
                             <div class="gantt-info">
-                                <div class="gantt-icon <?= htmlspecialchars($item['type']) ?>">
-                                    <?= htmlspecialchars(strtoupper(substr($item['type'], 0, 1))) ?>
-                                </div>
+                                <div class="gantt-icon" style="background-color: <?= $goal['color'] ?>; width: 20px; height: 20px; font-size: 10px;">G</div>
                                 <div>
-                                    <div class="gantt-title" onclick="showItemDetail(<?= intval($item['id']) ?>)">
-                                        <?= htmlspecialchars($item['title']) ?>
+                                    <div class="gantt-title" onclick="editGoal(<?= intval($goal['id']) ?>)">
+                                        <?= htmlspecialchars($goal['title']) ?>
                                     </div>
                                     <div class="gantt-meta">
-                                        <?= date('M d', strtotime($item['start_date'])) ?> -
-                                        <?= date('M d', strtotime($item['end_date'])) ?> •
-                                        <?= intval($item['progress_percentage'] ?? $item['progress']['percentage'] ?? 0) ?>%
+                                        <?= date('M d', strtotime($goal['start_date'])) ?> - <?= date('M d', strtotime($goal['end_date'])) ?> • <?= $goal['progress_percentage'] ?? 0 ?>%
                                     </div>
                                 </div>
+                                <?php if (can('issues.edit', $project['id'])): ?>
+                                <div class="goal-actions">
+                                    <button class="btn-icon-sm" onclick="editGoal(<?= intval($goal['id']) ?>)" title="Edit Goal"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn-icon-sm" onclick="showCreateItemModal(<?= intval($goal['id']) ?>)" title="Add Item to Goal"><i class="bi bi-plus"></i></button>
+                                </div>
+                                <?php endif; ?>
                             </div>
-
                             <div class="gantt-timeline">
-                                <div class="gantt-bar <?= htmlspecialchars($item['status']) ?>"
-                                    style="width: <?= calculateBarWidth($item, $timeline) ?>%"
-                                    title="<?= htmlspecialchars($item['title']) ?>"
-                                    onclick="showItemDetail(<?= intval($item['id']) ?>)">
-                                    <div class="gantt-progress"
-                                        style="width: <?= intval($item['progress_percentage'] ?? $item['progress']['percentage'] ?? 0) ?>%">
-                                    </div>
-                                    <span style="position: relative; z-index: 2;">
-                                        <?= date('M d', strtotime($item['start_date'])) ?>
-                                    </span>
+                                <!-- Goal Timeline Bar (optional, distinct style) -->
+                                <div class="gantt-bar" 
+                                     style="background-color: <?= $goal['color'] ?>; opacity: 0.8; width: <?= calculateBarWidth($goal, $timeline) ?>%;"
+                                     title="<?= htmlspecialchars($goal['title']) ?>">
+                                     <span style="color: white; font-size: 10px;"><?= htmlspecialchars($goal['title']) ?></span>
                                 </div>
-                            </div>
-
-                            <div class="gantt-status">
-                                <span class="status-badge <?= htmlspecialchars($item['status']) ?>">
-                                    <?= str_replace('_', ' ', htmlspecialchars($item['status'])) ?>
-                                </span>
                             </div>
                         </div>
+
+                        <!-- ITEMS UNDER GOAL -->
+                        <?php foreach ($goal['items'] as $item): ?>
+                            <?= renderRoadmapItemRow($item, $timeline) ?>
+                        <?php endforeach; ?>
                     <?php endforeach; ?>
+
+                    <!-- ORPHANED ITEMS -->
+                    <?php if (!empty($orphanedItems)): ?>
+                        <?php if (!empty($goals)) : ?>
+                        <div class="gantt-row goal-row" style="background: #f4f5f7;">
+                            <div class="gantt-info">
+                                <span style="font-weight: 600; font-size: 12px; color: #626F86;">Unassigned Activities</span>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php foreach ($orphanedItems as $item): ?>
+                           <?= renderRoadmapItemRow($item, $timeline) ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state-icon">📋</div>
                     <div class="empty-state-title">No roadmap items</div>
-                    <div class="empty-state-text">Create your first roadmap item to get started</div>
+                    <div class="empty-state-text">Create a Goal or Item to get started</div>
                 </div>
             <?php endif; ?>
+
+            <?php
+            function renderRoadmapItemRow($item, $timeline) {
+                ob_start();
+            ?>
+                <div class="gantt-row">
+                    <div class="gantt-info" style="padding-left: 32px;"> <!-- Indent for hierarchy -->
+                        <div class="gantt-icon <?= htmlspecialchars($item['type']) ?>">
+                            <?= htmlspecialchars(strtoupper(substr($item['type'], 0, 1))) ?>
+                        </div>
+                        <div>
+                            <div class="gantt-title" onclick="showItemDetail(<?= intval($item['id']) ?>)">
+                                <?= htmlspecialchars($item['title']) ?>
+                            </div>
+                            <div class="gantt-meta">
+                                <?= date('M d', strtotime($item['start_date'])) ?> -
+                                <?= date('M d', strtotime($item['end_date'])) ?> •
+                                <?= intval($item['progress_percentage'] ?? $item['progress']['percentage'] ?? 0) ?>%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gantt-timeline">
+                        <div class="gantt-bar <?= htmlspecialchars($item['status']) ?>"
+                            style="width: <?= calculateBarWidth($item, $timeline) ?>%"
+                            title="<?= htmlspecialchars($item['title']) ?>"
+                            onclick="showItemDetail(<?= intval($item['id']) ?>)">
+                            <div class="gantt-progress"
+                                style="width: <?= intval($item['progress_percentage'] ?? $item['progress']['percentage'] ?? 0) ?>%">
+                            </div>
+                            <span style="position: relative; z-index: 2;">
+                                <?= date('M d', strtotime($item['start_date'])) ?>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="gantt-status">
+                        <span class="status-badge <?= htmlspecialchars($item['status']) ?>">
+                            <?= str_replace('_', ' ', htmlspecialchars($item['status'])) ?>
+                        </span>
+                    </div>
+                </div>
+            <?php
+                return ob_get_clean();
+            }
+            ?>
         </div>
     </div>
 </div>
@@ -1094,6 +1188,17 @@ function calculateBarWidth($item, $timeline)
                 <div class="form-group">
                     <label for="item_description">Description</label>
                     <textarea id="item_description" placeholder="Optional description or notes"></textarea>
+                </div>
+
+                <!-- Goal Selection -->
+                <div class="form-group">
+                    <label for="item_goal">Link to Goal</label>
+                    <select id="item_goal">
+                        <option value="">No Goal (Unassigned)</option>
+                        <?php foreach ($goals ?? [] as $g): ?>
+                            <option value="<?= $g['id'] ?>"><?= htmlspecialchars($g['title']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <!-- Type and Status -->
@@ -1158,7 +1263,150 @@ function calculateBarWidth($item, $timeline)
     </div>
 </div>
 
+<!-- Modal for Creating Roadmap Goal -->
+<div class="modal-overlay" id="createGoalModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h2>Add Roadmap Goal</h2>
+            <button class="modal-close" type="button" onclick="closeCreateGoalModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-error" id="goalModalError"></div>
+            <div id="createGoalForm">
+                <input type="hidden" id="goal_project_id" value="<?= intval($project['id']) ?>">
+                
+                <div class="form-group">
+                    <label for="goal_title">Title <span class="required">*</span></label>
+                    <input type="text" id="goal_title" placeholder="Enter goal title" maxlength="255">
+                </div>
+
+                <div class="form-group">
+                    <label for="goal_description">Description</label>
+                    <textarea id="goal_description" placeholder="Describe the high-level goal"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal_start_date">Start Date <span class="required">*</span></label>
+                        <input type="date" id="goal_start_date">
+                    </div>
+                    <div class="form-group">
+                        <label for="goal_end_date">End Date <span class="required">*</span></label>
+                        <input type="date" id="goal_end_date">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal_status">Status</label>
+                        <select id="goal_status">
+                            <option value="planned">Planned</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="achieved">Achieved</option>
+                            <option value="missed">Missed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal_color">Color</label>
+                        <input type="color" id="goal_color" value="#8b1956" style="width: 100%; height: 38px; padding: 2px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" type="button" onclick="closeCreateGoalModal()">Cancel</button>
+            <button class="btn-submit" type="button" onclick="submitCreateGoal(event)">Create Goal</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // Goal Modal Functions
+    function showCreateGoalModal() {
+        const modal = document.getElementById('createGoalModal');
+        const errorDiv = document.getElementById('goalModalError');
+        
+        errorDiv.classList.remove('show');
+        errorDiv.textContent = '';
+        
+        document.getElementById('goal_title').value = '';
+        document.getElementById('goal_description').value = '';
+        document.getElementById('goal_status').value = 'planned';
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('goal_start_date').value = today;
+        document.getElementById('goal_end_date').value = today;
+        
+        modal.classList.add('active');
+    }
+
+    function closeCreateGoalModal() {
+        document.getElementById('createGoalModal').classList.remove('active');
+    }
+
+    function submitCreateGoal(event) {
+        const btn = event.target;
+        const errorDiv = document.getElementById('goalModalError');
+        const title = document.getElementById('goal_title').value.trim();
+        const start = document.getElementById('goal_start_date').value;
+        const end = document.getElementById('goal_end_date').value;
+        
+        if (!title || !start || !end) {
+            errorDiv.textContent = 'Please fill in all required fields';
+            errorDiv.classList.add('show');
+            return;
+        }
+
+        if (new Date(start) > new Date(end)) {
+            errorDiv.textContent = 'Start date cannot be after end date';
+            errorDiv.classList.add('show');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+
+        const data = {
+            title: title,
+            description: document.getElementById('goal_description').value,
+            start_date: start,
+            end_date: end,
+            status: document.getElementById('goal_status').value,
+            color: document.getElementById('goal_color').value
+        };
+
+        const csrfToken = document.getElementById('csrf_token').value;
+        
+        fetch('<?= url("/projects/{$project['key']}/roadmap/goals") ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success || res.goal) {
+                window.location.reload();
+            } else {
+                throw new Error(res.error || 'Failed to create goal');
+            }
+        })
+        .catch(err => {
+            errorDiv.textContent = err.message;
+            errorDiv.classList.add('show');
+            btn.disabled = false;
+            btn.textContent = 'Create Goal';
+        });
+    }
+
+    function editGoal(goalId) {
+        // TODO: Implement Edit Goal Modal
+        alert('Edit Goal functionality coming soon (ID: ' + goalId + ')');
+    }
+
 
 
     function showCreateItemModal() {
@@ -1182,6 +1430,12 @@ function calculateBarWidth($item, $timeline)
         document.getElementById('item_type').value = '';
         document.getElementById('item_status').value = '';
         document.getElementById('item_progress').value = '0';
+        document.getElementById('item_goal').value = '';
+
+        // If goalId provided, pre-select it
+        if (arguments.length > 0 && arguments[0]) {
+             document.getElementById('item_goal').value = arguments[0];
+        }
 
         // Set default dates to today
         const today = new Date().toISOString().split('T')[0];
@@ -1295,7 +1549,8 @@ function calculateBarWidth($item, $timeline)
             status: status,
             start_date: startDate,
             end_date: endDate,
-            progress: prog
+            progress: prog,
+            goal_id: document.getElementById('item_goal').value
         }));
 
         fetch('<?= url("/projects/{$project['key']}/roadmap") ?>', {
@@ -1313,7 +1568,8 @@ function calculateBarWidth($item, $timeline)
                 status: status,
                 start_date: startDate,
                 end_date: endDate,
-                progress: prog
+                progress: prog,
+                goal_id: document.getElementById('item_goal').value
             })
         })
             .then(response => {

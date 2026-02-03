@@ -14,10 +14,129 @@ class RoadmapService
     /**
      * Get all roadmap items for a project with full details
      */
+    /**
+     * Get all roadmap goals for a project with their items
+     */
+    public function getProjectGoals(int $projectId, array $filters = []): array
+    {
+        $goals = Database::select(
+            "SELECT * FROM roadmap_goals 
+             WHERE project_id = ? 
+             ORDER BY start_date ASC, sort_order ASC",
+            [$projectId]
+        );
+        
+        // Fetch items for each goal
+        foreach ($goals as &$goal) {
+            $goalFilters = array_merge($filters, ['goal_id' => $goal['id']]);
+            $goal['items'] = $this->getProjectRoadmap($projectId, $goalFilters);
+            
+            // Calculate goal progress based on items
+            $totalProgress = 0;
+            $itemCount = count($goal['items']);
+            if ($itemCount > 0) {
+                foreach ($goal['items'] as $item) {
+                    $totalProgress += $item['progress_percentage'];
+                }
+                $goal['progress_percentage'] = (int) round($totalProgress / $itemCount);
+            } else {
+                $goal['progress_percentage'] = 0;
+            }
+        }
+        
+        return $goals;
+    }
+
+    /**
+     * Get roadmap items not assigned to any goal
+     */
+    public function getOrphanedItems(int $projectId, array $filters = []): array
+    {
+        // Add condition to filter items with null goal_id
+        // Since getProjectRoadmap builds the query based on filters, we can't easily inject "goal_id IS NULL" unless we handle it there.
+        // Let's modify getProjectRoadmap to accept goal_id filter allowing null.
+        return $this->getProjectRoadmap($projectId, array_merge($filters, ['goal_id' => 'NULL']));
+    }
+
+    /**
+     * Create new roadmap goal
+     */
+    public function createRoadmapGoal(int $projectId, array $data, int $userId): array
+    {
+        if (strtotime($data['start_date']) > strtotime($data['end_date'])) {
+            throw new \InvalidArgumentException('Start date must be before end date');
+        }
+
+        $insertData = [
+            'project_id' => $projectId,
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'start_date' => $data['start_date'],
+            'end_date' => $data['end_date'],
+            'status' => $data['status'] ?? 'planned',
+            'color' => $data['color'] ?? '#8b1956',
+            'created_by' => $userId,
+        ];
+
+        $goalId = Database::insert('roadmap_goals', $insertData);
+        
+        return Database::selectOne("SELECT * FROM roadmap_goals WHERE id = ?", [$goalId]);
+    }
+
+    /**
+     * Update roadmap goal
+     */
+    public function updateRoadmapGoal(int $goalId, array $data): array
+    {
+        if (!empty($data['start_date']) && !empty($data['end_date'])) {
+            if (strtotime($data['start_date']) > strtotime($data['end_date'])) {
+                throw new \InvalidArgumentException('Start date must be before end date');
+            }
+        }
+
+        $updateData = array_filter([
+            'title' => $data['title'] ?? null,
+            'description' => $data['description'] ?? null,
+            'start_date' => $data['start_date'] ?? null,
+            'end_date' => $data['end_date'] ?? null,
+            'status' => $data['status'] ?? null,
+            'color' => $data['color'] ?? null,
+        ], fn($v) => $v !== null);
+
+        if (!empty($updateData)) {
+            Database::update('roadmap_goals', $updateData, 'id = ?', [$goalId]);
+        }
+
+        return Database::selectOne("SELECT * FROM roadmap_goals WHERE id = ?", [$goalId]);
+    }
+
+    /**
+     * Delete roadmap goal
+     */
+    public function deleteRoadmapGoal(int $goalId): bool
+    {
+        return Database::delete('roadmap_goals', 'id = ?', [$goalId]) > 0;
+    }
+
+    /* ... existing methods ... */
+
+    /**
+     * Get all roadmap items for a project with full details
+     */
     public function getProjectRoadmap(int $projectId, array $filters = []): array
     {
         $where = ['ri.project_id = ?'];
         $params = [$projectId];
+
+        // Filter by goal_id
+        if (array_key_exists('goal_id', $filters)) {
+            if ($filters['goal_id'] === 'NULL') {
+                $where[] = 'ri.goal_id IS NULL';
+            } else {
+                $where[] = 'ri.goal_id = ?';
+                $params[] = $filters['goal_id'];
+            }
+        }
 
         // Filter by status
         if (!empty($filters['status'])) {
@@ -56,13 +175,15 @@ class RoadmapService
                     creator.display_name as created_by_name,
                     COUNT(DISTINCT ris.sprint_id) as sprint_count,
                     COUNT(DISTINCT rdi.id) as dependency_count,
-                    COUNT(DISTINCT roi.issue_id) as issue_count
+                    COUNT(DISTINCT roi.issue_id) as issue_count,
+                    rg.title as goal_title, rg.color as goal_color
              FROM roadmap_items ri
              LEFT JOIN users u ON ri.owner_id = u.id
              LEFT JOIN users creator ON ri.created_by = creator.id
              LEFT JOIN roadmap_item_sprints ris ON ri.id = ris.roadmap_item_id
              LEFT JOIN roadmap_dependencies rdi ON ri.id = rdi.item_id
              LEFT JOIN roadmap_item_issues roi ON ri.id = roi.roadmap_item_id
+             LEFT JOIN roadmap_goals rg ON ri.goal_id = rg.id
              WHERE $whereClause
              GROUP BY ri.id
              ORDER BY ri.start_date ASC, ri.sort_order ASC",
@@ -163,6 +284,7 @@ class RoadmapService
 
         $insertData = [
             'project_id' => $projectId,
+            'goal_id' => $data['goal_id'] ?? null,
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'type' => $data['type'] ?? 'feature',
@@ -177,7 +299,8 @@ class RoadmapService
         ];
 
         $itemId = Database::insert('roadmap_items', $insertData);
-
+        
+        // ... rest of the method (linking sprints, issues, dependencies)
         // Link sprints if provided
         if (!empty($data['sprint_ids'])) {
             foreach ((array) $data['sprint_ids'] as $sprintId) {
@@ -225,6 +348,7 @@ class RoadmapService
         }
 
         $updateData = array_filter([
+            'goal_id' => array_key_exists('goal_id', $data) ? $data['goal_id'] : null, // Handle null explicitly if key exists
             'title' => $data['title'] ?? null,
             'description' => $data['description'] ?? null,
             'type' => $data['type'] ?? null,
@@ -234,10 +358,16 @@ class RoadmapService
             'priority' => $data['priority'] ?? null,
             'owner_id' => $data['owner_id'] ?? null,
             'color' => $data['color'] ?? null,
-        ], fn($v) => $v !== null);
+        ], fn($k) => $k === 'goal_id' || $data[$k] !== null, ARRAY_FILTER_USE_KEY);
 
         if (!empty($updateData)) {
-            Database::update('roadmap_items', $updateData, 'id = ?', [$itemId]);
+            // Filter null values for non-goal_id fields again to be safe, but array_filter above with key check is complex.
+            // Simplified:
+            $finalUpdate = [];
+            foreach ($updateData as $k => $v) {
+                if ($k === 'goal_id' || $v !== null) $finalUpdate[$k] = $v;
+            }
+            Database::update('roadmap_items', $finalUpdate, 'id = ?', [$itemId]);
         }
 
         // Update sprint links if provided

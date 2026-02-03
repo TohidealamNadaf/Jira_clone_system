@@ -36,11 +36,12 @@ class RealtimeNotifications {
         // Request browser notification permission
         this.requestBrowserNotificationPermission();
 
-        // Load recent notifications on init
-        this.loadRecentNotifications();
-
-        // Start SSE stream
-        this.connectToStream();
+        // Load recent notifications FIRST, then connect to stream
+        // This ensures we have the correct lastEventId to avoid re-fetching old notifications
+        this.loadRecentNotifications().finally(() => {
+            // Start SSE stream
+            this.connectToStream();
+        });
 
         // Setup UI elements
         this.setupUI();
@@ -65,7 +66,6 @@ class RealtimeNotifications {
             }
         });
 
-        // Setup audio context on first user gesture
         // Setup audio context on first user gesture
         const initAudio = () => {
             if (!this.audioContext) {
@@ -94,6 +94,44 @@ class RealtimeNotifications {
         document.addEventListener('keydown', initAudio);
 
         console.log('✅ [REALTIME] Notification system initialized');
+    }
+
+    // ... (lines 99-357 unchanged)
+
+    /**
+     * Load recent notifications on init
+     * Returns Promise
+     */
+    loadRecentNotifications() {
+        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
+        const url = basePath.replace(/\/$/, '') + '/api/v1/notifications?limit=10';
+
+        return fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const notifications = data.data || data.notifications || [];
+                if (notifications.length > 0) {
+                    this.lastEventId = Math.max(...notifications.map(n => n.id)) || 0;
+                    console.log(`📥 [REALTIME] Loaded ${notifications.length} recent notifications (lastId: ${this.lastEventId})`);
+
+                    const panelContent = document.getElementById('notificationList');
+                    if (panelContent) {
+                        panelContent.innerHTML = notifications.map(n => this.renderNotificationItem(n)).join('');
+                    }
+                } else {
+                    const panelContent = document.getElementById('notificationList');
+                    if (panelContent) {
+                        panelContent.innerHTML = '<div class="px-3 py-3 text-center text-muted"><small>No notifications</small></div>';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('❌ [REALTIME] Error loading notifications:', err);
+                const panelContent = document.getElementById('notificationList');
+                if (panelContent) {
+                    panelContent.innerHTML = '<div class="px-3 py-3 text-center text-danger"><small>Error loading</small></div>';
+                }
+            });
     }
 
     /**
@@ -252,11 +290,11 @@ class RealtimeNotifications {
             <a href="${actionUrl}" class="dropdown-item d-flex align-items-start gap-2 py-2" 
                style="text-decoration: none;" data-notification-id="${n.id}">
                 <div style="flex: 1; border-left: 3px solid ${isRead ? 'transparent' : 'var(--jira-blue)'}; padding-left: 8px;">
-                    <div class="small fw-semibold text-dark">${this.escapeHtml(title)}</div>
-                    <div class="text-muted" style="font-size: 12px;">
+                    <div class="fw-semibold text-dark mb-1">${this.escapeHtml(title)}</div>
+                    <div class="text-secondary small mb-1">
                         ${message ? this.escapeHtml(message).substring(0, 60) + (message.length > 60 ? '...' : '') : ''}
                     </div>
-                    <div class="text-muted" style="font-size: 11px; margin-top: 4px;">
+                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">
                         ${this.getTimeAgo(timestamp)}
                     </div>
                 </div>
@@ -325,6 +363,8 @@ class RealtimeNotifications {
 
     /**
      * Update notification panel if open
+     */
+    updateNotificationPanel(data) {
         const panel = document.getElementById('notificationDropdown');
         if (!panel) return;
 
@@ -341,13 +381,13 @@ class RealtimeNotifications {
             if (emptyMsg && (emptyMsg.textContent.includes('No notifications') || emptyMsg.textContent.includes('Loading...'))) {
                 panelContent.innerHTML = '';
             }
-            
+
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = this.renderNotificationItem(data);
             const notificationElement = tempDiv.firstElementChild;
-            
+
             panelContent.insertBefore(notificationElement, panelContent.firstChild);
-            
+
             // Limit to 10 items in dropdown
             while (panelContent.children.length > 10) {
                 panelContent.lastElementChild.remove();
@@ -355,40 +395,7 @@ class RealtimeNotifications {
         }
     }
 
-    /**
-     * Load recent notifications on init
-     */
-    loadRecentNotifications() {
-        const basePath = document.querySelector('meta[name="app-base-path"]')?.content || '/';
-        const url = basePath.replace(/\/$/, '') + '/api/v1/notifications?limit=10';
 
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                const notifications = data.data || data.notifications || [];
-                if (notifications.length > 0) {
-                    this.lastEventId = Math.max(...notifications.map(n => n.id)) || 0;
-                    console.log(`📥 [REALTIME] Loaded ${notifications.length} recent notifications (lastId: ${this.lastEventId})`);
-
-                    const panelContent = document.getElementById('notificationList');
-                    if (panelContent) {
-                        panelContent.innerHTML = notifications.map(n => this.renderNotificationItem(n)).join('');
-                    }
-                } else {
-                    const panelContent = document.getElementById('notificationList');
-                    if (panelContent) {
-                        panelContent.innerHTML = '<div class="px-3 py-3 text-center text-muted"><small>No notifications</small></div>';
-                    }
-                }
-            })
-            .catch(err => {
-                console.error('❌ [REALTIME] Error loading notifications:', err);
-                const panelContent = document.getElementById('notificationList');
-                if (panelContent) {
-                    panelContent.innerHTML = '<div class="px-3 py-3 text-center text-danger"><small>Error loading</small></div>';
-                }
-            });
-    }
 
     /**
      * Setup UI elements (badge, dropdown, etc.)

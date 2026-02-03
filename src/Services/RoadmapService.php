@@ -245,7 +245,7 @@ class RoadmapService
              LEFT JOIN issue_types it ON i.issue_type_id = it.id
              LEFT JOIN statuses s ON i.status_id = s.id
              LEFT JOIN users u ON i.assignee_id = u.id
-             WHERE roi.roadmap_item_id = ?
+             WHERE roi.roadmap_item_id = ? AND i.is_deleted = 0
              ORDER BY i.issue_key ASC",
             [$item['id']]
         );

@@ -1037,17 +1037,18 @@ class NotificationService
             ];
 
             // Send email via EmailService
-            $sent = $emailService->sendTemplate(
-                $userEmail,
-                $template,
-                $templateData
-            );
+            // $sent = $emailService->sendTemplate(
+            //     $userEmail,
+            //     $template,
+            //     $templateData
+            // );
+            $sent = false; // Defer sending for now to avoid blocking
 
             // Record delivery attempt in database
             Database::insert('notification_deliveries', [
                 'notification_id' => $notification['id'],
                 'channel' => 'email',
-                'status' => $sent ? 'sent' : 'failed',
+                'status' => 'pending',
                 'retry_count' => 0,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);

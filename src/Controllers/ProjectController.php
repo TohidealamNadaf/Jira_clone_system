@@ -157,25 +157,25 @@ class ProjectController extends Controller
         // Get project statistics
         $stats = [
             'total_issues' => (int) Database::selectValue(
-                "SELECT COUNT(*) FROM issues WHERE project_id = ?",
+                "SELECT COUNT(*) FROM issues WHERE project_id = ? AND is_deleted = 0",
                 [$project['id']]
             ),
             'open_issues' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues i 
                  JOIN statuses s ON i.status_id = s.id 
-                 WHERE i.project_id = ? AND s.category = 'todo'",
+                 WHERE i.project_id = ? AND s.category = 'todo' AND i.is_deleted = 0",
                 [$project['id']]
             ),
             'in_progress' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues i 
                  JOIN statuses s ON i.status_id = s.id 
-                 WHERE i.project_id = ? AND s.category = 'in_progress'",
+                 WHERE i.project_id = ? AND s.category = 'in_progress' AND i.is_deleted = 0",
                 [$project['id']]
             ),
             'done_issues' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues i 
                  JOIN statuses s ON i.status_id = s.id 
-                 WHERE i.project_id = ? AND s.category = 'done'",
+                 WHERE i.project_id = ? AND s.category = 'done' AND i.is_deleted = 0",
                 [$project['id']]
             ),
         ];
@@ -190,7 +190,7 @@ class ProjectController extends Controller
              LEFT JOIN issue_types it ON i.issue_type_id = it.id
              LEFT JOIN statuses s ON i.status_id = s.id
              LEFT JOIN users a ON i.assignee_id = a.id
-             WHERE i.project_id = ?
+             WHERE i.project_id = ? AND i.is_deleted = 0
              ORDER BY i.updated_at DESC
              LIMIT 10",
             [$project['id']]
@@ -283,7 +283,7 @@ class ProjectController extends Controller
              LEFT JOIN statuses s ON i.status_id = s.id
              LEFT JOIN issue_priorities ip ON i.priority_id = ip.id
              LEFT JOIN users a ON i.assignee_id = a.id
-             WHERE i.project_id = ? AND (i.sprint_id IS NULL OR i.sprint_id = 0)
+             WHERE i.project_id = ? AND (i.sprint_id IS NULL OR i.sprint_id = 0) AND i.is_deleted = 0
              ORDER BY i.issue_number ASC",
             [$project['id']]
         );
@@ -453,7 +453,7 @@ class ProjectController extends Controller
              LEFT JOIN statuses s ON i.status_id = s.id
              LEFT JOIN issue_priorities ip ON i.priority_id = ip.id
              LEFT JOIN users a ON i.assignee_id = a.id
-             WHERE i.project_id = ?
+             WHERE i.project_id = ? AND i.is_deleted = 0
              ORDER BY s.sort_order ASC, i.issue_number ASC",
             [$project['id']]
         );
@@ -477,19 +477,19 @@ class ProjectController extends Controller
         // Basic stats for reports
         $stats = [
             'total_issues' => (int) Database::selectValue(
-                "SELECT COUNT(*) FROM issues WHERE project_id = ?",
+                "SELECT COUNT(*) FROM issues WHERE project_id = ? AND is_deleted = 0",
                 [$project['id']]
             ),
             'resolved_issues' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues i 
                  JOIN statuses s ON i.status_id = s.id 
-                 WHERE i.project_id = ? AND s.category = 'done'",
+                 WHERE i.project_id = ? AND s.category = 'done' AND i.is_deleted = 0",
                 [$project['id']]
             ),
             'open_issues' => (int) Database::selectValue(
                 "SELECT COUNT(*) FROM issues i 
                  JOIN statuses s ON i.status_id = s.id 
-                 WHERE i.project_id = ? AND s.category = 'todo'",
+                 WHERE i.project_id = ? AND s.category = 'todo' AND i.is_deleted = 0",
                 [$project['id']]
             ),
         ];

@@ -2846,3 +2846,2527 @@
     [priority_id] => 3
 )
 
+[2026-02-04 06:02:12] IssueController::store called.
+[2026-02-04 06:02:12] FILES: Array
+(
+)
+
+[2026-02-04 06:02:12] POST: Array
+(
+    [project_id] => 13
+    [issue_type_id] => 4
+    [summary] => chat sequence is not as per our regular whatapp
+    [description] => 
+    [assignee_id] => 29
+    [priority_id] => 2
+)
+
+[2026-02-04 06:06:30] IssueController::store called.
+[2026-02-04 06:06:30] FILES: Array
+(
+)
+
+[2026-02-04 06:06:30] POST: Array
+(
+    [project_id] => 13
+    [issue_type_id] => 1
+    [summary] => Multiple file should be send
+    [description] => 
+    [assignee_id] => 29
+    [priority_id] => 3
+)
+
+[2026-02-04 06:08:38] IssueController::store called.
+[2026-02-04 06:08:38] FILES: Array
+(
+)
+
+[2026-02-04 06:08:38] POST: Array
+(
+    [project_id] => 13
+    [issue_type_id] => 4
+    [summary] => the message read sign is not realtime
+    [description] => <p>When Users sends message, and another person is not online and after he logged in the message who sent, not show mark of read after refereshing it shows.</p>
+)
+
+[2026-02-04 07:29:05] IssueController::store called.
+[2026-02-04 07:29:05] FILES: Array
+(
+)
+
+[2026-02-04 07:29:05] POST: Array
+(
+    [project_id] => 13
+    [issue_type_id] => 1
+    [summary] => Requirement: Message, Files Forward Functionality
+    [description] => <p>User must be able to forward message to another existing ID or Person in the system</p>
+    [assignee_id] => 29
+    [priority_id] => 1
+)
+
+[2026-02-05 05:49:35] IssueController::store called.
+[2026-02-05 05:49:35] FILES: Array
+(
+)
+
+[2026-02-05 05:49:35] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => "Retiring Date” field in Add Employee Rate form is not enforced as mandatory.
+    [description] => <p data-start="215" data-end="289"><strong data-start="215" data-end="224">Path:</strong><br data-start="224" data-end="227">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="291" data-end="316"><strong data-start="291" data-end="314">Steps to Reproduce:</strong></p>
+<ol data-start="317" data-end="516">
+<li data-start="317" data-end="370">
+<p data-start="320" data-end="370">Navigate to Employee Management &rarr; Employee Rate.</p>
+</li>
+<li data-start="371" data-end="419">
+<p data-start="374" data-end="419">Click &ldquo;Add Employee Rate&rdquo; to open the form.</p>
+</li>
+<li data-start="420" data-end="463">
+<p data-start="423" data-end="463">Leave the &ldquo;Retiring Date&rdquo; field empty.</p>
+</li>
+<li data-start="464" data-end="516">
+<p data-start="467" data-end="516">Fill other mandatory fields and click &ldquo;Submit.&rdquo;</p>
+</li>
+</ol>
+<p data-start="518" data-end="644"><strong data-start="518" data-end="538">Expected Result:</strong><br data-start="538" data-end="541">The form should prevent submission and display an error indicating that &ldquo;Retiring Date&rdquo; is mandatory.</p>
+<p data-start="646" data-end="744"><strong data-start="646" data-end="664">Actual Result:</strong><br data-start="664" data-end="667">The form is submitted successfully even when &ldquo;Retiring Date&rdquo; is left empty.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 05:53:53] IssueController::store called.
+[2026-02-05 05:53:53] FILES: Array
+(
+)
+
+[2026-02-05 05:53:53] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Joining Date” field in Employee form allows future dates.
+    [description] => <p data-start="150" data-end="219"><strong data-start="150" data-end="159">Path:</strong><br data-start="159" data-end="162">Employee Management &rarr; Employee &rarr; Add/Edit Employee form</p>
+<p data-start="221" data-end="246"><strong data-start="221" data-end="244">Steps to Reproduce:</strong></p>
+<ol data-start="247" data-end="386">
+<li data-start="247" data-end="275">
+<p data-start="250" data-end="275">Open the Employee form.</p>
+</li>
+<li data-start="276" data-end="348">
+<p data-start="279" data-end="348">Enter a future date (e.g., 15/12/2035) in the &ldquo;Joining Date&rdquo; field.</p>
+</li>
+<li data-start="349" data-end="386">
+<p data-start="352" data-end="386">Attempt to save/submit the form.</p>
+</li>
+</ol>
+<p data-start="388" data-end="482"><strong data-start="388" data-end="408">Expected Result:</strong><br data-start="408" data-end="411">The system should reject future dates and display a validation error.</p>
+<p data-start="484" data-end="569"><strong data-start="484" data-end="502">Actual Result:</strong><br data-start="502" data-end="505">The system accepts the future date and allows form submission.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 05:56:04] IssueController::store called.
+[2026-02-05 05:56:04] FILES: Array
+(
+)
+
+[2026-02-05 05:56:04] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => “Appointment Date” field in Employee form allows future dates.
+    [description] => <p data-start="150" data-end="208"><strong data-start="150" data-end="159">Path:</strong><br data-start="159" data-end="162">Employee Management &rarr; Employee &rarr; Employee form</p>
+<p data-start="210" data-end="235"><strong data-start="210" data-end="233">Steps to Reproduce:</strong></p>
+<ol data-start="236" data-end="361">
+<li data-start="236" data-end="264">
+<p data-start="239" data-end="264">Open the Employee form.</p>
+</li>
+<li data-start="265" data-end="341">
+<p data-start="268" data-end="341">Enter a future date (e.g., 01/01/2030) in the &ldquo;Appointment Date&rdquo; field.</p>
+</li>
+<li data-start="342" data-end="361">
+<p data-start="345" data-end="361">Submit the form.</p>
+</li>
+</ol>
+<p data-start="363" data-end="481"><strong data-start="363" data-end="383">Expected Result:</strong><br data-start="383" data-end="386">The system should display an error message and prevent submission for future appointment dates.</p>
+<p data-start="483" data-end="578"><strong data-start="483" data-end="501">Actual Result:</strong><br data-start="501" data-end="504">The system accepts the future appointment date and allows form submission.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 05:58:29] IssueController::store called.
+[2026-02-05 05:58:29] FILES: Array
+(
+)
+
+[2026-02-05 05:58:29] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Retiring Date is neither auto-calculated nor validated after entering Joining Date in Employee form.
+    [description] => <p data-start="204" data-end="264"><strong data-start="204" data-end="213">Path:</strong><br data-start="213" data-end="216">Employee Management &rarr; Employee &rarr; Employee form</p>
+<p data-start="266" data-end="291"><strong data-start="266" data-end="289">Steps to Reproduce:</strong></p>
+<ol data-start="292" data-end="464">
+<li data-start="292" data-end="320">
+<p data-start="295" data-end="320">Open the Employee form.</p>
+</li>
+<li data-start="321" data-end="366">
+<p data-start="324" data-end="366">Enter a Joining Date (e.g., 01/01/2000).</p>
+</li>
+<li data-start="367" data-end="404">
+<p data-start="370" data-end="404">Observe the Retiring Date field.</p>
+</li>
+<li data-start="405" data-end="464">
+<p data-start="408" data-end="464">Submit the form without manually entering Retiring Date.</p>
+</li>
+</ol>
+<p data-start="466" data-end="622"><strong data-start="466" data-end="486">Expected Result:</strong><br data-start="486" data-end="489">Retiring Date should be auto-calculated based on HR rules after entering Joining Date and should be mandatory before form submission.</p>
+<p data-start="624" data-end="775"><strong data-start="624" data-end="642">Actual Result:</strong><br data-start="642" data-end="645">Retiring Date is not auto-filled and the form allows submission without any validation, even though the field is marked mandatory.as</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:03:38] IssueController::store called.
+[2026-02-05 06:03:38] FILES: Array
+(
+)
+
+[2026-02-05 06:03:38] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee form allows Retiring Date earlier than Joining Date without validation.
+    [description] => <p data-start="189" data-end="249"><strong data-start="189" data-end="198">Path:</strong><br data-start="198" data-end="201">Employee Management &rarr; Employee &rarr; Employee form</p>
+<p data-start="251" data-end="276"><strong data-start="251" data-end="274">Steps to Reproduce:</strong></p>
+<ol data-start="277" data-end="435">
+<li data-start="277" data-end="305">
+<p data-start="280" data-end="305">Open the Employee form.</p>
+</li>
+<li data-start="306" data-end="338">
+<p data-start="309" data-end="338">Enter a valid Joining Date.</p>
+</li>
+<li data-start="339" data-end="415">
+<p data-start="342" data-end="415">Enter a Retiring Date earlier than the Joining Date (e.g., 01/01/1990).</p>
+</li>
+<li data-start="416" data-end="435">
+<p data-start="419" data-end="435">Submit the form.</p>
+</li>
+</ol>
+<p data-start="437" data-end="576"><strong data-start="437" data-end="457">Expected Result:</strong><br data-start="457" data-end="460">The system should prevent submission and display a validation error when Retiring Date is earlier than Joining Date.</p>
+<p data-start="578" data-end="692"><strong data-start="578" data-end="596">Actual Result:</strong><br data-start="596" data-end="599">There is no validation for Retiring Date and the form allows submission with an invalid date.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:06:38] IssueController::store called.
+[2026-02-05 06:06:38] FILES: Array
+(
+)
+
+[2026-02-05 06:06:38] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => PAN field in Employee Statutory tab does not validate PAN number format.
+    [description] => <p data-start="84" data-end="171"><strong data-start="173" data-end="182">Path:</strong></p>
+<p data-start="173" data-end="233">Employee Management &rarr; Employee &rarr; Statutory tab</p>
+<p data-start="235" data-end="260"><strong data-start="235" data-end="258">Steps to Reproduce:</strong></p>
+<ol data-start="261" data-end="401">
+<li data-start="261" data-end="289">
+<p data-start="264" data-end="289">Open the Employee form.</p>
+</li>
+<li data-start="290" data-end="325">
+<p data-start="293" data-end="325">Navigate to the Statutory tab.</p>
+</li>
+<li data-start="326" data-end="373">
+<p data-start="329" data-end="373">Enter an invalid PAN number (e.g., 12345).</p>
+</li>
+<li data-start="374" data-end="401">
+<p data-start="377" data-end="401">Save or submit the form.</p>
+</li>
+</ol>
+<p data-start="403" data-end="505"><strong data-start="403" data-end="423">Expected Result:</strong><br data-start="423" data-end="426">The system should display a PAN format validation error and prevent submission.</p>
+<p data-start="507" data-end="609"><strong data-start="507" data-end="525">Actual Result:</strong><br data-start="525" data-end="528">There is no validation for the PAN number, and the system accepts an invalid PAN.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:14:20] IssueController::store called.
+[2026-02-05 06:14:20] FILES: Array
+(
+)
+
+[2026-02-05 06:14:20] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Aadhar number length validation is missing in the Family Details tab of Employee Management module.
+    [description] => <p data-start="211" data-end="274"><strong data-start="211" data-end="220">Path:</strong><br data-start="220" data-end="223">Employee Management &rarr; Employee &rarr; Family Details tab</p>
+<p data-start="276" data-end="301"><strong data-start="276" data-end="299">Steps to Reproduce:</strong></p>
+<ol data-start="302" data-end="534">
+<li data-start="302" data-end="332">
+<p data-start="305" data-end="332">Login to the application.</p>
+</li>
+<li data-start="333" data-end="381">
+<p data-start="336" data-end="381">Navigate to <strong data-start="348" data-end="371">Employee Management</strong> module.</p>
+</li>
+<li data-start="382" data-end="415">
+<p data-start="385" data-end="415">Open an <strong data-start="393" data-end="405">Employee</strong> record.</p>
+</li>
+<li data-start="416" data-end="454">
+<p data-start="419" data-end="454">Go to the <strong data-start="429" data-end="447">Family Details</strong> tab.</p>
+</li>
+<li data-start="455" data-end="506">
+<p data-start="458" data-end="506">Enter an invalid Aadhar number (e.g., <code data-start="496" data-end="502">1234</code>).</p>
+</li>
+<li data-start="507" data-end="534">
+<p data-start="510" data-end="534">Save or submit the form.</p>
+</li>
+</ol>
+<p data-start="536" data-end="668"><strong data-start="536" data-end="556">Expected Result:</strong><br data-start="556" data-end="559">The system should display an error message indicating that the Aadhar number must be a valid 12-digit number.</p>
+<p data-start="670" data-end="783"><strong data-start="670" data-end="688">Actual Result:</strong><br data-start="688" data-end="691">No validation message is displayed, and the system allows entry of an invalid Aadhar number.</p>
+<p data-start="785" data-end="805">&nbsp;</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:17:39] IssueController::store called.
+[2026-02-05 06:17:39] FILES: Array
+(
+)
+
+[2026-02-05 06:17:39] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Bank Account Number field accepts non-numeric characters in the Bank Details tab of Employee Management module.
+    [description] => <p data-start="205" data-end="266"><strong data-start="205" data-end="214">Path:</strong><br data-start="214" data-end="217">Employee Management &rarr; Employee &rarr; Bank Details tab</p>
+<p data-start="268" data-end="293"><strong data-start="268" data-end="291">Steps to Reproduce:</strong></p>
+<ol data-start="294" data-end="566">
+<li data-start="294" data-end="324">
+<p data-start="297" data-end="324">Login to the application.</p>
+</li>
+<li data-start="325" data-end="373">
+<p data-start="328" data-end="373">Navigate to <strong data-start="340" data-end="363">Employee Management</strong> module.</p>
+</li>
+<li data-start="374" data-end="407">
+<p data-start="377" data-end="407">Open an <strong data-start="385" data-end="397">Employee</strong> record.</p>
+</li>
+<li data-start="408" data-end="444">
+<p data-start="411" data-end="444">Go to the <strong data-start="421" data-end="437">Bank Details</strong> tab.</p>
+</li>
+<li data-start="445" data-end="538">
+<p data-start="448" data-end="538">Enter alphabets or alphanumeric characters in the Account Number field (e.g., <code data-start="526" data-end="534">ABC123</code>).</p>
+</li>
+<li data-start="539" data-end="566">
+<p data-start="542" data-end="566">Save or submit the form.</p>
+</li>
+</ol>
+<p data-start="568" data-end="724"><strong data-start="568" data-end="588">Expected Result:</strong><br data-start="588" data-end="591">The system should reject non-numeric input and display a validation message allowing only numeric values for the Bank Account Number.</p>
+<p data-start="726" data-end="854"><strong data-start="726" data-end="744">Actual Result:</strong><br data-start="744" data-end="747">The system allows alphabets and alphanumeric characters in the Account Number field without any validation.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:21:13] IssueController::store called.
+[2026-02-05 06:21:13] FILES: Array
+(
+)
+
+[2026-02-05 06:21:13] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee list is not sorted correctly when sorting by Employee ID.
+    [description] => <div class="relative basis-auto flex-col -mb-(--composer-overlap-px) [--composer-overlap-px:28px] grow flex">
+<div class="flex flex-col text-sm pb-25">
+<article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" dir="auto" tabindex="-1" data-turn-id="request-WEB:9f82854b-acf5-42a2-bafb-3d18a40450ec-2" data-testid="conversation-turn-6" data-scroll-anchor="true" data-turn="assistant">
+<div class="text-base my-auto mx-auto pb-10 [--thread-content-margin:--spacing(4)] @w-sm/main:[--thread-content-margin:--spacing(6)] @w-lg/main:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)">
+<div class="[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1">
+<div class="flex max-w-full flex-col grow">
+<div class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1" dir="auto" data-message-author-role="assistant" data-message-id="cc76b835-b7bb-464e-b085-45b580c0a35b" data-message-model-slug="gpt-5-2">
+<div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]">
+<div class="markdown prose dark:prose-invert w-full wrap-break-word dark markdown-new-styling">
+<p data-start="166" data-end="224"><strong data-start="166" data-end="175">Path:</strong><br data-start="175" data-end="178">Employee Management &rarr; Employee &rarr; Employee List</p>
+<p data-start="226" data-end="251"><strong data-start="226" data-end="249">Steps to Reproduce:</strong></p>
+<ol data-start="252" data-end="436">
+<li data-start="252" data-end="282">
+<p data-start="255" data-end="282">Login to the application.</p>
+</li>
+<li data-start="283" data-end="331">
+<p data-start="286" data-end="331">Navigate to <strong data-start="298" data-end="321">Employee Management</strong> module.</p>
+</li>
+<li data-start="332" data-end="369">
+<p data-start="335" data-end="369">Open the <strong data-start="344" data-end="356">Employee</strong> list view.</p>
+</li>
+<li data-start="370" data-end="436">
+<p data-start="373" data-end="436">Click on the <strong data-start="386" data-end="401">Employee ID</strong> column header to sort the records.</p>
+</li>
+</ol>
+<p data-start="438" data-end="583"><strong data-start="438" data-end="458">Expected Result:</strong><br data-start="458" data-end="461">Employee records should be sorted correctly in ascending/descending <strong data-start="529" data-end="548">numerical order</strong> based on the complete Employee ID.</p>
+<p data-start="585" data-end="741"><strong data-start="585" data-end="603">Actual Result:</strong><br data-start="603" data-end="606">The system sorts records only by the first numeric digit of the Employee ID instead of the full number, resulting in incorrect sorting.</p>
+<p data-start="772" data-end="896" data-is-last-node="" data-is-only-node="">&nbsp;</p>
+</div>
+</div>
+</div>
+</div>
+<div class="z-0 flex min-h-[46px] justify-start">&nbsp;</div>
+<div class="mt-3 w-full empty:hidden">
+<div class="text-center">&nbsp;</div>
+</div>
+</div>
+</div>
+</article>
+</div>
+<div class="pointer-events-none h-px w-px absolute bottom-0" aria-hidden="true" data-edge="true">&nbsp;</div>
+</div>
+<div id="thread-bottom-container" class="sticky bottom-0 group/thread-bottom-container relative isolate z-10 w-full basis-auto has-data-has-thread-error:pt-2 has-data-has-thread-error:[box-shadow:var(--sharp-edge-bottom-shadow)] md:border-transparent md:pt-0 dark:border-white/20 md:dark:border-transparent print:hidden content-fade single-line flex flex-col">
+<div class="relative h-0">
+<div>&nbsp;</div>
+</div>
+<div id="thread-bottom">
+<div class="text-base mx-auto [--thread-content-margin:--spacing(4)] @w-sm/main:[--thread-content-margin:--spacing(6)] @w-lg/main:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)">
+<div class="[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 mb-4">
+<div class="flex justify-center empty:hidden">&nbsp;</div>
+<div class="pointer-events-auto relative z-1 flex h-(--composer-container-height,100%) max-w-full flex-(--composer-container-flex,1) flex-col">&nbsp;</div>
+</div>
+</div>
+</div>
+</div>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 06:23:45] IssueController::store called.
+[2026-02-05 06:23:45] FILES: Array
+(
+)
+
+[2026-02-05 06:23:45] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee details page displays incorrect date values when viewing employee information.
+    [description] => <p data-start="181" data-end="263"><strong data-start="181" data-end="190">Path:</strong><br data-start="190" data-end="193">Employee Management &rarr; Employee &rarr; Employee List &rarr; View Employee Details</p>
+<p data-start="265" data-end="290"><strong data-start="265" data-end="288">Steps to Reproduce:</strong></p>
+<ol data-start="291" data-end="499">
+<li data-start="291" data-end="321">
+<p data-start="294" data-end="321">Login to the application.</p>
+</li>
+<li data-start="322" data-end="370">
+<p data-start="325" data-end="370">Navigate to <strong data-start="337" data-end="360">Employee Management</strong> module.</p>
+</li>
+<li data-start="371" data-end="417">
+<p data-start="374" data-end="417">Ensure an employee record already exists.</p>
+</li>
+<li data-start="418" data-end="451">
+<p data-start="421" data-end="451">Go to the <strong data-start="431" data-end="448">Employee List</strong>.</p>
+</li>
+<li data-start="452" data-end="499">
+<p data-start="455" data-end="499">Click on the <strong data-start="468" data-end="476">View</strong> icon for any employee.</p>
+</li>
+</ol>
+<p data-start="501" data-end="633"><strong data-start="501" data-end="521">Expected Result:</strong><br data-start="521" data-end="524">Employee details should be displayed correctly, including all date fields matching the originally saved data.</p>
+<p data-start="635" data-end="759"><strong data-start="635" data-end="653">Actual Result:</strong><br data-start="653" data-end="656">Employee details are displayed, but the date values are changed and do not match the saved information.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:28:46] IssueController::store called.
+[2026-02-05 06:28:46] FILES: Array
+(
+)
+
+[2026-02-05 06:28:46] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Retirement Date is defaulted to the same value as Joining Date on the Employee View page.
+    [description] => <p data-start="206" data-end="288"><strong data-start="206" data-end="215">Path:</strong><br data-start="215" data-end="218">Employee Management &rarr; Employee &rarr; Employee List &rarr; View Employee Details</p>
+<p data-start="290" data-end="315"><strong data-start="290" data-end="313">Steps to Reproduce:</strong></p>
+<ol data-start="316" data-end="534">
+<li data-start="316" data-end="346">
+<p data-start="319" data-end="346">Login to the application.</p>
+</li>
+<li data-start="347" data-end="395">
+<p data-start="350" data-end="395">Navigate to <strong data-start="362" data-end="385">Employee Management</strong> module.</p>
+</li>
+<li data-start="396" data-end="428">
+<p data-start="399" data-end="428">Open the <strong data-start="408" data-end="425">Employee List</strong>.</p>
+</li>
+<li data-start="429" data-end="477">
+<p data-start="432" data-end="477">Click on the <strong data-start="445" data-end="453">View</strong> icon for an employee.</p>
+</li>
+<li data-start="478" data-end="534">
+<p data-start="481" data-end="534">Compare the <strong data-start="493" data-end="509">Joining Date</strong> and <strong data-start="514" data-end="533">Retirement Date</strong>.</p>
+</li>
+</ol>
+<p data-start="536" data-end="655"><strong data-start="536" data-end="556">Expected Result:</strong><br data-start="556" data-end="559">Retirement Date should not be the same as Joining Date and should follow defined business rules.</p>
+<p data-start="657" data-end="744"><strong data-start="657" data-end="675">Actual Result:</strong><br data-start="675" data-end="678">Retirement Date is displayed as the same date as the Joining Date.</p>
+<p data-start="746" data-end="766">&nbsp;</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:30:14] IssueController::store called.
+[2026-02-05 06:30:14] FILES: Array
+(
+)
+
+[2026-02-05 06:30:14] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee record is not deleted from the system even though the Delete API returns a successful response.
+    [description] => <p data-start="218" data-end="276"><strong data-start="218" data-end="227">Path:</strong><br data-start="227" data-end="230">Employee Management &rarr; Employee &rarr; Employee List</p>
+<p data-start="278" data-end="303"><strong data-start="278" data-end="301">Steps to Reproduce:</strong></p>
+<ol data-start="304" data-end="541">
+<li data-start="304" data-end="358">
+<p data-start="307" data-end="358">Login to the application with delete permissions.</p>
+</li>
+<li data-start="359" data-end="407">
+<p data-start="362" data-end="407">Navigate to <strong data-start="374" data-end="397">Employee Management</strong> module.</p>
+</li>
+<li data-start="408" data-end="440">
+<p data-start="411" data-end="440">Open the <strong data-start="420" data-end="437">Employee List</strong>.</p>
+</li>
+<li data-start="441" data-end="491">
+<p data-start="444" data-end="491">Click on the <strong data-start="457" data-end="467">Delete</strong> icon for an employee.</p>
+</li>
+<li data-start="492" data-end="541">
+<p data-start="495" data-end="541">Confirm the delete action by clicking <strong data-start="533" data-end="540">Yes</strong>.</p>
+</li>
+</ol>
+<p data-start="543" data-end="682"><strong data-start="543" data-end="563">Expected Result:</strong><br data-start="563" data-end="566">The employee record should be deleted successfully, and the UI should be updated to remove the record from the list.</p>
+<p data-start="684" data-end="857"><strong data-start="684" data-end="702">Actual Result:</strong><br data-start="702" data-end="705">The Delete API call returns a <strong data-start="735" data-end="754">201 status code</strong>, indicating success, but the employee record is not deleted from the system and the UI is not updated.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:32:12] IssueController::store called.
+[2026-02-05 06:32:12] FILES: Array
+(
+)
+
+[2026-02-05 06:32:12] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System allows selection of a future Date of Birth in the Family tab.
+    [description] => <p data-start="172" data-end="227"><strong data-start="172" data-end="181">Path:</strong><br data-start="181" data-end="184">Employee Management &rarr; Employee &rarr; Family tab</p>
+<p data-start="229" data-end="254"><strong data-start="229" data-end="252">Steps to Reproduce:</strong></p>
+<ol data-start="255" data-end="486">
+<li data-start="255" data-end="285">
+<p data-start="258" data-end="285">Login to the application.</p>
+</li>
+<li data-start="286" data-end="334">
+<p data-start="289" data-end="334">Navigate to <strong data-start="301" data-end="324">Employee Management</strong> module.</p>
+</li>
+<li data-start="335" data-end="368">
+<p data-start="338" data-end="368">Open an <strong data-start="346" data-end="358">Employee</strong> record.</p>
+</li>
+<li data-start="369" data-end="399">
+<p data-start="372" data-end="399">Go to the <strong data-start="382" data-end="392">Family</strong> tab.</p>
+</li>
+<li data-start="400" data-end="455">
+<p data-start="403" data-end="455">Enter a future Date of Birth (e.g., <code data-start="439" data-end="451">01/01/2030</code>).</p>
+</li>
+<li data-start="456" data-end="486">
+<p data-start="459" data-end="486">Save or submit the details.</p>
+</li>
+</ol>
+<p data-start="488" data-end="605"><strong data-start="488" data-end="508">Expected Result:</strong><br data-start="508" data-end="511">The system should display an error message and should not allow saving a future Date of Birth.</p>
+<p data-start="607" data-end="735"><strong data-start="607" data-end="625">Actual Result:</strong><br data-start="625" data-end="628">A validation error message is shown, but the system still allows selection/entry of a future Date of Birth.</p>
+<p data-start="737" data-end="757">&nbsp;</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:34:18] IssueController::store called.
+[2026-02-05 06:34:18] FILES: Array
+(
+)
+
+[2026-02-05 06:34:18] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Photo upload field accepts unsupported file formats in the Official Details tab.
+    [description] => <p data-start="181" data-end="246"><strong data-start="181" data-end="190">Path:</strong><br data-start="190" data-end="193">Employee Management &rarr; Employee &rarr; Official Details tab</p>
+<p data-start="248" data-end="273"><strong data-start="248" data-end="271">Steps to Reproduce:</strong></p>
+<ol data-start="274" data-end="514">
+<li data-start="274" data-end="304">
+<p data-start="277" data-end="304">Login to the application.</p>
+</li>
+<li data-start="305" data-end="353">
+<p data-start="308" data-end="353">Navigate to <strong data-start="320" data-end="343">Employee Management</strong> module.</p>
+</li>
+<li data-start="354" data-end="387">
+<p data-start="357" data-end="387">Open an <strong data-start="365" data-end="377">Employee</strong> record.</p>
+</li>
+<li data-start="388" data-end="428">
+<p data-start="391" data-end="428">Go to the <strong data-start="401" data-end="421">Official Details</strong> tab.</p>
+</li>
+<li data-start="429" data-end="514">
+<p data-start="432" data-end="514">Attempt to upload an invalid file format (e.g., <code data-start="480" data-end="486">.pdf</code>) in the photo upload field.</p>
+</li>
+</ol>
+<p data-start="516" data-end="635"><strong data-start="516" data-end="536">Expected Result:</strong><br data-start="536" data-end="539">The system should reject unsupported file formats and display an appropriate validation message.</p>
+<p data-start="637" data-end="723"><strong data-start="637" data-end="655">Actual Result:</strong><br data-start="655" data-end="658">The system accepts the <code data-start="681" data-end="687">.pdf</code> file format without any validation.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:35:56] IssueController::store called.
+[2026-02-05 06:35:56] FILES: Array
+(
+)
+
+[2026-02-05 06:35:56] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Photo upload size validation is not working correctly in the Official Details tab
+    [description] => <p data-start="86" data-end="183"><strong data-start="185" data-end="194">Path:</strong><br data-start="194" data-end="197">Employee Management &rarr; Employee &rarr; Official Details tab</p>
+<p data-start="252" data-end="277"><strong data-start="252" data-end="275">Steps to Reproduce:</strong></p>
+<ol data-start="278" data-end="475">
+<li data-start="278" data-end="308">
+<p data-start="281" data-end="308">Login to the application.</p>
+</li>
+<li data-start="309" data-end="357">
+<p data-start="312" data-end="357">Navigate to <strong data-start="324" data-end="347">Employee Management</strong> module.</p>
+</li>
+<li data-start="358" data-end="391">
+<p data-start="361" data-end="391">Open an <strong data-start="369" data-end="381">Employee</strong> record.</p>
+</li>
+<li data-start="392" data-end="432">
+<p data-start="395" data-end="432">Go to the <strong data-start="405" data-end="425">Official Details</strong> tab.</p>
+</li>
+<li data-start="433" data-end="475">
+<p data-start="436" data-end="475">Upload a large image file (e.g., 10MB).</p>
+</li>
+</ol>
+<p data-start="477" data-end="611"><strong data-start="477" data-end="497">Expected Result:</strong><br data-start="497" data-end="500">The system should display an error message and restrict uploading images exceeding the allowed file size limit.</p>
+<p data-start="613" data-end="729"><strong data-start="613" data-end="631">Actual Result:</strong><br data-start="631" data-end="634">An error message is displayed, but the system still allows the large image file to be uploaded.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 06:37:49] IssueController::store called.
+[2026-02-05 06:37:49] FILES: Array
+(
+)
+
+[2026-02-05 06:37:49] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Pagination displays mismatched employee records when navigating between pages.b
+    [description] => <p data-start="206" data-end="264"><strong data-start="206" data-end="215">Path:</strong><br data-start="215" data-end="218">Employee Management &rarr; Employee &rarr; Employee List</p>
+<p data-start="266" data-end="291"><strong data-start="266" data-end="289">Steps to Reproduce:</strong></p>
+<ol data-start="292" data-end="514">
+<li data-start="292" data-end="322">
+<p data-start="295" data-end="322">Login to the application.</p>
+</li>
+<li data-start="323" data-end="371">
+<p data-start="326" data-end="371">Navigate to <strong data-start="338" data-end="361">Employee Management</strong> module.</p>
+</li>
+<li data-start="372" data-end="416">
+<p data-start="375" data-end="416">Ensure multiple employee records exist.</p>
+</li>
+<li data-start="417" data-end="449">
+<p data-start="420" data-end="449">Open the <strong data-start="429" data-end="446">Employee List</strong>.</p>
+</li>
+<li data-start="450" data-end="514">
+<p data-start="453" data-end="514">Navigate from <strong data-start="467" data-end="487">Page 1 to Page 2</strong> using pagination controls.</p>
+</li>
+</ol>
+<p data-start="516" data-end="642"><strong data-start="516" data-end="536">Expected Result:</strong><br data-start="536" data-end="539">Correct and corresponding employee records should be displayed for each page based on pagination logic.</p>
+<p data-start="644" data-end="791"><strong data-start="644" data-end="662">Actual Result:</strong><br data-start="662" data-end="665">Mismatch in employee records is observed when navigating between pages; records displayed do not match the expected page data.</p>
+    [assignee_id] => 24
+    [priority_id] => 4
+)
+
+[2026-02-05 06:41:04] IssueController::store called.
+[2026-02-05 06:41:04] FILES: Array
+(
+)
+
+[2026-02-05 06:41:04] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Passing Year field accepts a future year in the Education tab.
+    [description] => <p data-start="175" data-end="233"><strong data-start="175" data-end="184">Path:</strong><br data-start="184" data-end="187">Employee Management &rarr; Employee &rarr; Education tab</p>
+<p data-start="235" data-end="260"><strong data-start="235" data-end="258">Steps to Reproduce:</strong></p>
+<ol data-start="261" data-end="488">
+<li data-start="261" data-end="291">
+<p data-start="264" data-end="291">Login to the application.</p>
+</li>
+<li data-start="292" data-end="340">
+<p data-start="295" data-end="340">Navigate to <strong data-start="307" data-end="330">Employee Management</strong> module.</p>
+</li>
+<li data-start="341" data-end="374">
+<p data-start="344" data-end="374">Open an <strong data-start="352" data-end="364">Employee</strong> record.</p>
+</li>
+<li data-start="375" data-end="408">
+<p data-start="378" data-end="408">Go to the <strong data-start="388" data-end="401">Education</strong> tab.</p>
+</li>
+<li data-start="409" data-end="457">
+<p data-start="412" data-end="457">Enter a future passing year (e.g., <code data-start="447" data-end="453">2030</code>).</p>
+</li>
+<li data-start="458" data-end="488">
+<p data-start="461" data-end="488">Save or submit the details.</p>
+</li>
+</ol>
+<p data-start="490" data-end="608"><strong data-start="490" data-end="510">Expected Result:</strong><br data-start="510" data-end="513">The system should display a validation error and should not allow saving a future passing year.</p>
+<p data-start="610" data-end="709"><strong data-start="610" data-end="628">Actual Result:</strong><br data-start="628" data-end="631">The system accepts a future passing year without showing any validation error</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 06:42:40] IssueController::store called.
+[2026-02-05 06:42:40] FILES: Array
+(
+)
+
+[2026-02-05 06:42:40] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Duplicate employee records can be created during edit even though duplication is prevented during employee creation.
+    [description] => <p data-start="219" data-end="293"><strong data-start="219" data-end="228">Path:</strong><br data-start="228" data-end="231">Employee Management &rarr; Employee &rarr; Employee List &rarr; Edit Employee</p>
+<p data-start="295" data-end="320"><strong data-start="295" data-end="318">Steps to Reproduce:</strong></p>
+<ol data-start="321" data-end="695">
+<li data-start="321" data-end="351">
+<p data-start="324" data-end="351">Login to the application.</p>
+</li>
+<li data-start="352" data-end="400">
+<p data-start="355" data-end="400">Navigate to <strong data-start="367" data-end="390">Employee Management</strong> module.</p>
+</li>
+<li data-start="401" data-end="457">
+<p data-start="404" data-end="457">Ensure at least one employee record already exists.</p>
+</li>
+<li data-start="458" data-end="547">
+<p data-start="461" data-end="547">Create a new employee with unique details (duplication is correctly prevented here).</p>
+</li>
+<li data-start="548" data-end="605">
+<p data-start="551" data-end="605">Open an existing employee record and click <strong data-start="594" data-end="602">Edit</strong>.</p>
+</li>
+<li data-start="606" data-end="674">
+<p data-start="609" data-end="674">Modify the employee details to match another existing employee.</p>
+</li>
+<li data-start="675" data-end="695">
+<p data-start="678" data-end="695">Save the changes.</p>
+</li>
+</ol>
+<p data-start="697" data-end="875"><strong data-start="697" data-end="717">Expected Result:</strong><br data-start="717" data-end="720">The system should prevent saving duplicate employee records during both <strong data-start="792" data-end="804">creation</strong> and <strong data-start="809" data-end="817">edit</strong> operations and display an appropriate validation message.</p>
+<p data-start="877" data-end="1037"><strong data-start="877" data-end="895">Actual Result:</strong><br data-start="895" data-end="898">The system prevents duplicate entries during employee creation but allows duplicate employee details to be saved during the edit operation.</p>
+    [assignee_id] => 24
+    [priority_id] => 1
+)
+
+[2026-02-05 06:44:30] IssueController::store called.
+[2026-02-05 06:44:30] FILES: Array
+(
+)
+
+[2026-02-05 06:44:30] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System throws a 500 error when updating Employee Name with a valid value.
+    [description] => <p data-start="173" data-end="247"><strong data-start="173" data-end="182">Path:</strong><br data-start="182" data-end="185">Employee Management &rarr; Employee &rarr; Employee List &rarr; Edit Employee</p>
+<p data-start="249" data-end="274"><strong data-start="249" data-end="272">Steps to Reproduce:</strong></p>
+<ol data-start="275" data-end="533">
+<li data-start="275" data-end="305">
+<p data-start="278" data-end="305">Login to the application.</p>
+</li>
+<li data-start="306" data-end="354">
+<p data-start="309" data-end="354">Navigate to <strong data-start="321" data-end="344">Employee Management</strong> module.</p>
+</li>
+<li data-start="355" data-end="387">
+<p data-start="358" data-end="387">Open the <strong data-start="367" data-end="384">Employee List</strong>.</p>
+</li>
+<li data-start="388" data-end="436">
+<p data-start="391" data-end="436">Click on the <strong data-start="404" data-end="412">Edit</strong> icon for an employee.</p>
+</li>
+<li data-start="437" data-end="510">
+<p data-start="440" data-end="510">Change the <strong data-start="451" data-end="468">Employee Name</strong> to a valid value (e.g., <code data-start="493" data-end="506">Rahul Patil</code>).</p>
+</li>
+<li data-start="511" data-end="533">
+<p data-start="514" data-end="533">Submit the changes.</p>
+</li>
+</ol>
+<p data-start="535" data-end="621"><strong data-start="535" data-end="555">Expected Result:</strong><br data-start="555" data-end="558">Employee name should be updated successfully without any error.</p>
+<p data-start="623" data-end="774"><strong data-start="623" data-end="641">Actual Result:</strong><br data-start="641" data-end="644">The system displays a <strong data-start="666" data-end="695">500 Internal Server Error</strong> with the message <strong data-start="713" data-end="735">&ldquo;Unexpected Error&rdquo;</strong>, and the employee name is not updated.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:46:06] IssueController::store called.
+[2026-02-05 06:46:06] FILES: Array
+(
+)
+
+[2026-02-05 06:46:06] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System throws a 500 error when updating Joining Date with a valid past date
+    [description] => <p data-start="197" data-end="271"><strong data-start="197" data-end="206">Path:</strong><br data-start="206" data-end="209">Employee Management &rarr; Employee &rarr; Employee List &rarr; Edit Employee</p>
+<p data-start="273" data-end="298"><strong data-start="273" data-end="296">Steps to Reproduce:</strong></p>
+<ol data-start="299" data-end="559">
+<li data-start="299" data-end="329">
+<p data-start="302" data-end="329">Login to the application.</p>
+</li>
+<li data-start="330" data-end="378">
+<p data-start="333" data-end="378">Navigate to <strong data-start="345" data-end="368">Employee Management</strong> module.</p>
+</li>
+<li data-start="379" data-end="411">
+<p data-start="382" data-end="411">Open the <strong data-start="391" data-end="408">Employee List</strong>.</p>
+</li>
+<li data-start="412" data-end="460">
+<p data-start="415" data-end="460">Click on the <strong data-start="428" data-end="436">Edit</strong> icon for an employee.</p>
+</li>
+<li data-start="461" data-end="536">
+<p data-start="464" data-end="536">Update the <strong data-start="475" data-end="491">Joining Date</strong> to a valid past date (e.g., <code data-start="520" data-end="532">01/01/2015</code>).</p>
+</li>
+<li data-start="537" data-end="559">
+<p data-start="540" data-end="559">Submit the changes.</p>
+</li>
+</ol>
+<p data-start="561" data-end="646"><strong data-start="561" data-end="581">Expected Result:</strong><br data-start="581" data-end="584">Joining Date should be updated successfully without any error.</p>
+<p data-start="648" data-end="798"><strong data-start="648" data-end="666">Actual Result:</strong><br data-start="666" data-end="669">The system displays a <strong data-start="691" data-end="720">500 Internal Server Error</strong> with the message <strong data-start="738" data-end="760">&ldquo;Unexpected Error&rdquo;</strong>, and the Joining Date is not updated.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:49:31] IssueController::store called.
+[2026-02-05 06:49:31] FILES: Array
+(
+)
+
+[2026-02-05 06:49:31] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Mandatory fields validation is missing on submit in the Statutory & Bank Details tab.
+    [description] => <p data-start="202" data-end="298"><strong data-start="202" data-end="211">Path:</strong><br data-start="211" data-end="214">Employee Management &rarr; Employee &rarr; Edit/Create Employee &rarr; Statutory &amp; Bank Details tab</p>
+<p data-start="300" data-end="325"><strong data-start="300" data-end="323">Steps to Reproduce:</strong></p>
+<ol data-start="326" data-end="578">
+<li data-start="326" data-end="356">
+<p data-start="329" data-end="356">Login to the application.</p>
+</li>
+<li data-start="357" data-end="405">
+<p data-start="360" data-end="405">Navigate to <strong data-start="372" data-end="395">Employee Management</strong> module.</p>
+</li>
+<li data-start="406" data-end="462">
+<p data-start="409" data-end="462">Open <strong data-start="414" data-end="433">Create Employee</strong> or <strong data-start="437" data-end="454">Edit Employee</strong> page.</p>
+</li>
+<li data-start="463" data-end="511">
+<p data-start="466" data-end="511">Go to the <strong data-start="476" data-end="504">Statutory &amp; Bank Details</strong> tab.</p>
+</li>
+<li data-start="512" data-end="578">
+<p data-start="515" data-end="578">Click <strong data-start="521" data-end="531">Submit</strong> without entering any data in mandatory fields.</p>
+</li>
+</ol>
+<p data-start="580" data-end="708"><strong data-start="580" data-end="600">Expected Result:</strong><br data-start="600" data-end="603">The system should block the submit action and display validation error messages for all mandatory fields.</p>
+<p data-start="710" data-end="805"><strong data-start="710" data-end="728">Actual Result:</strong><br data-start="728" data-end="731">The data is submitted successfully without any mandatory field validation.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:52:07] IssueController::store called.
+[2026-02-05 06:52:07] FILES: Array
+(
+)
+
+[2026-02-05 06:52:07] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Submission is allowed even when mandatory validation errors exist in Statutory & Bank Details.
+    [description] => <p data-start="226" data-end="322"><strong data-start="226" data-end="235">Path:</strong><br data-start="235" data-end="238">Employee Management &rarr; Employee &rarr; Edit/Create Employee &rarr; Statutory &amp; Bank Details tab</p>
+<p data-start="324" data-end="349"><strong data-start="324" data-end="347">Steps to Reproduce:</strong></p>
+<ol data-start="350" data-end="630">
+<li data-start="350" data-end="380">
+<p data-start="353" data-end="380">Login to the application.</p>
+</li>
+<li data-start="381" data-end="429">
+<p data-start="384" data-end="429">Navigate to <strong data-start="396" data-end="419">Employee Management</strong> module.</p>
+</li>
+<li data-start="430" data-end="486">
+<p data-start="433" data-end="486">Open <strong data-start="438" data-end="457">Create Employee</strong> or <strong data-start="461" data-end="478">Edit Employee</strong> page.</p>
+</li>
+<li data-start="487" data-end="535">
+<p data-start="490" data-end="535">Go to the <strong data-start="500" data-end="528">Statutory &amp; Bank Details</strong> tab.</p>
+</li>
+<li data-start="536" data-end="570">
+<p data-start="539" data-end="570">Leave mandatory fields blank.</p>
+</li>
+<li data-start="571" data-end="630">
+<p data-start="574" data-end="630">Click <strong data-start="580" data-end="587">Add</strong> (if applicable) and then click <strong data-start="619" data-end="629">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="632" data-end="781"><strong data-start="632" data-end="652">Expected Result:</strong><br data-start="652" data-end="655">The system should block the submit action until all mandatory field errors are resolved and display clear validation messages.</p>
+<p data-start="783" data-end="896"><strong data-start="783" data-end="801">Actual Result:</strong><br data-start="801" data-end="804">Submit action is allowed even though mandatory fields are blank and validation errors exist.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:54:10] IssueController::store called.
+[2026-02-05 06:54:10] FILES: Array
+(
+)
+
+[2026-02-05 06:54:10] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Mandatory field validation is missing when using the Add option across multiple employee detail sections.
+    [description] => <p data-start="242" data-end="396"><strong data-start="242" data-end="251">Path:</strong><br data-start="251" data-end="254">Employee Management &rarr; Employee &rarr;<br data-start="286" data-end="289">Family Details / Authorization Details / Education Details / Previous Employment / Statutory &amp; Bank Details</p>
+<p data-start="398" data-end="423"><strong data-start="398" data-end="421">Steps to Reproduce:</strong></p>
+<ol data-start="424" data-end="774">
+<li data-start="424" data-end="454">
+<p data-start="427" data-end="454">Login to the application.</p>
+</li>
+<li data-start="455" data-end="503">
+<p data-start="458" data-end="503">Navigate to <strong data-start="470" data-end="493">Employee Management</strong> module.</p>
+</li>
+<li data-start="504" data-end="536">
+<p data-start="507" data-end="536">Open the <strong data-start="516" data-end="528">Employee</strong> page.</p>
+</li>
+<li data-start="537" data-end="713">
+<p data-start="540" data-end="578">Go to any of the following sections:</p>
+<ul data-start="582" data-end="713">
+<li data-start="582" data-end="600">
+<p data-start="584" data-end="600">Family Details</p>
+</li>
+<li data-start="604" data-end="629">
+<p data-start="606" data-end="629">Authorization Details</p>
+</li>
+<li data-start="633" data-end="654">
+<p data-start="635" data-end="654">Education Details</p>
+</li>
+<li data-start="658" data-end="681">
+<p data-start="660" data-end="681">Previous Employment</p>
+</li>
+<li data-start="685" data-end="713">
+<p data-start="687" data-end="713">Statutory &amp; Bank Details</p>
+</li>
+</ul>
+</li>
+<li data-start="714" data-end="774">
+<p data-start="717" data-end="774">Click on <strong data-start="726" data-end="733">Add</strong> without entering any data in the fields.</p>
+</li>
+</ol>
+<p data-start="776" data-end="920"><strong data-start="776" data-end="796">Expected Result:</strong><br data-start="796" data-end="799">The system should display validation error messages and should not allow adding records without filling mandatory fields.</p>
+<p data-start="922" data-end="1060"><strong data-start="922" data-end="940">Actual Result:</strong><br data-start="940" data-end="943">The record is added successfully even when all fields are left blank, and no validation error messages are displayed.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 06:58:31] IssueController::store called.
+[2026-02-05 06:58:31] FILES: Array
+(
+)
+
+[2026-02-05 06:58:31] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Submit action allows saving records even when mandatory field validation errors are present after using the Add button.
+    [description] => <p data-start="240" data-end="394"><strong data-start="240" data-end="249">Path:</strong><br data-start="249" data-end="252">Employee Management &rarr; Employee &rarr;<br data-start="284" data-end="287">Family Details / Authorization Details / Education Details / Previous Employment / Statutory &amp; Bank Details</p>
+<p data-start="396" data-end="421"><strong data-start="396" data-end="419">Steps to Reproduce:</strong></p>
+<ol data-start="422" data-end="831">
+<li data-start="422" data-end="452">
+<p data-start="425" data-end="452">Login to the application.</p>
+</li>
+<li data-start="453" data-end="501">
+<p data-start="456" data-end="501">Navigate to <strong data-start="468" data-end="491">Employee Management</strong> module.</p>
+</li>
+<li data-start="502" data-end="533">
+<p data-start="505" data-end="533">Open an <strong data-start="513" data-end="525">Employee</strong> page.</p>
+</li>
+<li data-start="534" data-end="617">
+<p data-start="537" data-end="617">Go to the <strong data-start="547" data-end="565">Family Details</strong> tab (same issue applicable to other detail tabs).</p>
+</li>
+<li data-start="618" data-end="670">
+<p data-start="621" data-end="670">Enter partial data (e.g., Relation = <em data-start="658" data-end="666">Father</em>).</p>
+</li>
+<li data-start="671" data-end="769">
+<p data-start="674" data-end="769">Click on the <strong data-start="687" data-end="694">Add</strong> button &mdash; validation messages are displayed for missing mandatory fields.</p>
+</li>
+<li data-start="770" data-end="831">
+<p data-start="773" data-end="831">Without resolving all validation errors, click <strong data-start="820" data-end="830">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="833" data-end="955"><strong data-start="833" data-end="853">Expected Result:</strong><br data-start="853" data-end="856">The system should block the submit action until all mandatory field validation errors are resolved.</p>
+<p data-start="957" data-end="1080"><strong data-start="957" data-end="975">Actual Result:</strong><br data-start="975" data-end="978">The system allows submitting the data even though some fields still display validation error messages.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:00:30] IssueController::store called.
+[2026-02-05 07:00:30] FILES: Array
+(
+)
+
+[2026-02-05 07:00:30] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Authorization details can be submitted even when mandatory validation errors exist.
+    [description] => <div class="flex flex-col text-sm pb-25">
+<article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" dir="auto" tabindex="-1" data-turn-id="request-WEB:9f82854b-acf5-42a2-bafb-3d18a40450ec-23" data-testid="conversation-turn-48" data-scroll-anchor="true" data-turn="assistant">
+<div class="text-base my-auto mx-auto pb-10 [--thread-content-margin:--spacing(4)] @w-sm/main:[--thread-content-margin:--spacing(6)] @w-lg/main:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)">
+<div class="[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1">
+<div class="flex max-w-full flex-col grow">
+<div class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1" dir="auto" data-message-author-role="assistant" data-message-id="efb8557a-ec44-44d1-a6ad-951f0d30f649" data-message-model-slug="gpt-5-2">
+<div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]">
+<div class="markdown prose dark:prose-invert w-full wrap-break-word dark markdown-new-styling">
+<p data-start="215" data-end="285"><strong data-start="215" data-end="224">Path:</strong><br data-start="224" data-end="227">Employee Management &rarr; Employee &rarr; Authorization Details tab</p>
+<p data-start="287" data-end="312"><strong data-start="287" data-end="310">Steps to Reproduce:</strong></p>
+<ol data-start="313" data-end="636">
+<li data-start="313" data-end="343">
+<p data-start="316" data-end="343">Login to the application.</p>
+</li>
+<li data-start="344" data-end="392">
+<p data-start="347" data-end="392">Navigate to <strong data-start="359" data-end="382">Employee Management</strong> module.</p>
+</li>
+<li data-start="393" data-end="426">
+<p data-start="396" data-end="426">Open an <strong data-start="404" data-end="416">Employee</strong> record.</p>
+</li>
+<li data-start="427" data-end="472">
+<p data-start="430" data-end="472">Go to the <strong data-start="440" data-end="465">Authorization Details</strong> tab.</p>
+</li>
+<li data-start="473" data-end="527">
+<p data-start="476" data-end="527">Click on <strong data-start="485" data-end="492">Add</strong> without selecting any authority.</p>
+</li>
+<li data-start="528" data-end="575">
+<p data-start="531" data-end="575">Mandatory validation message is displayed.</p>
+</li>
+<li data-start="576" data-end="636">
+<p data-start="579" data-end="636">Without resolving the validation error, click <strong data-start="625" data-end="635">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="638" data-end="786"><strong data-start="638" data-end="658">Expected Result:</strong><br data-start="658" data-end="661">The system should block the submit action until the mandatory authority field is selected and validation errors are resolved.</p>
+<p data-start="788" data-end="942"><strong data-start="788" data-end="806">Actual Result:</strong><br data-start="806" data-end="809">The system shows a mandatory validation message at the Add level but still allows submission of the data without selecting authority.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="z-0 flex min-h-[46px] justify-start">&nbsp;</div>
+<div class="mt-3 w-full empty:hidden">
+<div class="text-center">&nbsp;</div>
+</div>
+</div>
+</div>
+</article>
+</div>
+<div class="pointer-events-none h-px w-px absolute bottom-0" aria-hidden="true" data-edge="true">&nbsp;</div>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:03:25] IssueController::store called.
+[2026-02-05 07:03:25] FILES: Array
+(
+)
+
+[2026-02-05 07:03:25] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Submit action allows saving employee data even when invalid authorization data exists
+    [description] => <p data-start="217" data-end="283"><strong data-start="217" data-end="226">Path:</strong><br data-start="226" data-end="229">Employee Management &rarr; Employee &rarr; Authorization Details</p>
+<p data-start="285" data-end="310"><strong data-start="285" data-end="308">Steps to Reproduce:</strong></p>
+<ol data-start="311" data-end="510">
+<li data-start="311" data-end="341">
+<p data-start="314" data-end="341">Login to the application.</p>
+</li>
+<li data-start="342" data-end="390">
+<p data-start="345" data-end="390">Navigate to <strong data-start="357" data-end="380">Employee Management</strong> module.</p>
+</li>
+<li data-start="391" data-end="424">
+<p data-start="394" data-end="424">Open an <strong data-start="402" data-end="414">Employee</strong> record.</p>
+</li>
+<li data-start="425" data-end="489">
+<p data-start="428" data-end="489">Ensure <strong data-start="435" data-end="479">invalid or incomplete authorization data</strong> exists.</p>
+</li>
+<li data-start="490" data-end="510">
+<p data-start="493" data-end="510">Click <strong data-start="499" data-end="509">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="512" data-end="660"><strong data-start="512" data-end="532">Expected Result:</strong><br data-start="532" data-end="535">The system should block the submit action when invalid authorization data exists and display appropriate validation messages.</p>
+<p data-start="662" data-end="765"><strong data-start="662" data-end="680">Actual Result:</strong><br data-start="680" data-end="683">The submit action is successful even though invalid authorization data is present.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:04:54] IssueController::store called.
+[2026-02-05 07:04:54] FILES: Array
+(
+)
+
+[2026-02-05 07:04:54] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Passing Year value changes after adding Education details even when valid data is entered.
+    [description] => <p data-start="220" data-end="286"><strong data-start="220" data-end="229">Path:</strong><br data-start="229" data-end="232">Employee Management &rarr; Employee &rarr; Education Details tab</p>
+<p data-start="288" data-end="313"><strong data-start="288" data-end="311">Steps to Reproduce:</strong></p>
+<ol data-start="314" data-end="568">
+<li data-start="314" data-end="344">
+<p data-start="317" data-end="344">Login to the application.</p>
+</li>
+<li data-start="345" data-end="393">
+<p data-start="348" data-end="393">Navigate to <strong data-start="360" data-end="383">Employee Management</strong> module.</p>
+</li>
+<li data-start="394" data-end="427">
+<p data-start="397" data-end="427">Open an <strong data-start="405" data-end="417">Employee</strong> record.</p>
+</li>
+<li data-start="428" data-end="469">
+<p data-start="431" data-end="469">Go to the <strong data-start="441" data-end="462">Education Details</strong> tab.</p>
+</li>
+<li data-start="470" data-end="568">
+<p data-start="473" data-end="568">Click on <strong data-start="482" data-end="489">Add</strong> after entering all required fields with valid data (including Passing Year).</p>
+</li>
+</ol>
+<p data-start="570" data-end="709"><strong data-start="570" data-end="590">Expected Result:</strong><br data-start="590" data-end="593">The entered education details, including the <strong data-start="638" data-end="654">Passing Year</strong>, should be saved and displayed correctly in the table.</p>
+<p data-start="711" data-end="859"><strong data-start="711" data-end="729">Actual Result:</strong><br data-start="729" data-end="732">All entered data is displayed in the table, but the <strong data-start="784" data-end="828">Passing Year value changes automatically</strong> after clicking the Add button.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:15:00] IssueController::store called.
+[2026-02-05 07:15:00] FILES: Array
+(
+)
+
+[2026-02-05 07:15:00] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Retiring Date is marked as mandatory but form allows submission without entering it.
+    [description] => <p data-start="204" data-end="276"><strong data-start="204" data-end="213">Path:</strong><br data-start="213" data-end="216">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="278" data-end="303"><strong data-start="278" data-end="301">Steps to Reproduce:</strong></p>
+<ol data-start="304" data-end="613">
+<li data-start="304" data-end="334">
+<p data-start="307" data-end="334">Login to the application.</p>
+</li>
+<li data-start="335" data-end="383">
+<p data-start="338" data-end="383">Navigate to <strong data-start="350" data-end="373">Employee Management</strong> module.</p>
+</li>
+<li data-start="384" data-end="420">
+<p data-start="387" data-end="420">Open <strong data-start="392" data-end="409">Employee Rate</strong> section.</p>
+</li>
+<li data-start="421" data-end="474">
+<p data-start="424" data-end="474">Click on <strong data-start="433" data-end="454">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="475" data-end="546">
+<p data-start="478" data-end="546">Observe that <strong data-start="491" data-end="508">Retiring Date</strong> is marked as a mandatory field (*).</p>
+</li>
+<li data-start="547" data-end="592">
+<p data-start="550" data-end="592">Leave the <strong data-start="560" data-end="577">Retiring Date</strong> field blank.</p>
+</li>
+<li data-start="593" data-end="613">
+<p data-start="596" data-end="613">Click <strong data-start="602" data-end="612">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="615" data-end="756"><strong data-start="615" data-end="635">Expected Result:</strong><br data-start="635" data-end="638">The system should block form submission and display a validation error indicating that <strong data-start="725" data-end="742">Retiring Date</strong> is mandatory.</p>
+<p data-start="758" data-end="892"><strong data-start="758" data-end="776">Actual Result:</strong><br data-start="776" data-end="779">The form is submitted successfully even though the <strong data-start="830" data-end="847">Retiring Date</strong> field is marked as mandatory and left blank.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:19:13] IssueController::store called.
+[2026-02-05 07:19:13] FILES: Array
+(
+)
+
+[2026-02-05 07:19:13] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Effective Date is marked as mandatory but the Employee Rate form allows submission without entering it.
+    [description] => <p data-start="112" data-end="230">&nbsp;</p>
+<p data-start="232" data-end="304"><strong data-start="232" data-end="241">Path:</strong><br data-start="241" data-end="244">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="306" data-end="331"><strong data-start="306" data-end="329">Steps to Reproduce:</strong></p>
+<ol data-start="332" data-end="574">
+<li data-start="332" data-end="362">
+<p data-start="335" data-end="362">Login to the application.</p>
+</li>
+<li data-start="363" data-end="411">
+<p data-start="366" data-end="411">Navigate to <strong data-start="378" data-end="401">Employee Management</strong> module.</p>
+</li>
+<li data-start="412" data-end="452">
+<p data-start="415" data-end="452">Open the <strong data-start="424" data-end="441">Employee Rate</strong> section.</p>
+</li>
+<li data-start="453" data-end="506">
+<p data-start="456" data-end="506">Click on <strong data-start="465" data-end="486">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="507" data-end="553">
+<p data-start="510" data-end="553">Leave the <strong data-start="520" data-end="538">Effective Date</strong> field blank.</p>
+</li>
+<li data-start="554" data-end="574">
+<p data-start="557" data-end="574">Click <strong data-start="563" data-end="573">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="576" data-end="719"><strong data-start="576" data-end="596">Expected Result:</strong><br data-start="596" data-end="599">The system should display a validation error and block submission when the mandatory <strong data-start="684" data-end="702">Effective Date</strong> is not provided.</p>
+<p data-start="721" data-end="846"><strong data-start="721" data-end="739">Actual Result:</strong><br data-start="739" data-end="742">The form is submitted successfully even though the <strong data-start="793" data-end="811">Effective Date</strong> field is mandatory and left blank.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:21:00] IssueController::store called.
+[2026-02-05 07:21:00] FILES: Array
+(
+)
+
+[2026-02-05 07:21:00] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee Rate form accepts a future Effective Date.
+    [description] => <p data-start="178" data-end="250"><strong data-start="178" data-end="187">Path:</strong><br data-start="187" data-end="190">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="252" data-end="277"><strong data-start="252" data-end="275">Steps to Reproduce:</strong></p>
+<ol data-start="278" data-end="534">
+<li data-start="278" data-end="308">
+<p data-start="281" data-end="308">Login to the application.</p>
+</li>
+<li data-start="309" data-end="357">
+<p data-start="312" data-end="357">Navigate to <strong data-start="324" data-end="347">Employee Management</strong> module.</p>
+</li>
+<li data-start="358" data-end="398">
+<p data-start="361" data-end="398">Open the <strong data-start="370" data-end="387">Employee Rate</strong> section.</p>
+</li>
+<li data-start="399" data-end="452">
+<p data-start="402" data-end="452">Click on <strong data-start="411" data-end="432">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="453" data-end="513">
+<p data-start="456" data-end="513">Enter a future <strong data-start="471" data-end="489">Effective Date</strong> (e.g., <code data-start="497" data-end="509">01/01/2035</code>).</p>
+</li>
+<li data-start="514" data-end="534">
+<p data-start="517" data-end="534">Click <strong data-start="523" data-end="533">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="536" data-end="660"><strong data-start="536" data-end="556">Expected Result:</strong><br data-start="556" data-end="559">The system should reject a future Effective Date and display an appropriate validation error message.</p>
+<p data-start="662" data-end="764"><strong data-start="662" data-end="680">Actual Result:</strong><br data-start="680" data-end="683">The system accepts the future Effective Date and allows the form to be submitted.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:22:39] IssueController::store called.
+[2026-02-05 07:22:39] FILES: Array
+(
+)
+
+[2026-02-05 07:22:39] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Basic Amount field accepts non-numeric characters in the Employee Rate form.
+    [description] => <p data-start="202" data-end="274"><strong data-start="202" data-end="211">Path:</strong><br data-start="211" data-end="214">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="276" data-end="301"><strong data-start="276" data-end="299">Steps to Reproduce:</strong></p>
+<ol data-start="302" data-end="585">
+<li data-start="302" data-end="332">
+<p data-start="305" data-end="332">Login to the application.</p>
+</li>
+<li data-start="333" data-end="381">
+<p data-start="336" data-end="381">Navigate to <strong data-start="348" data-end="371">Employee Management</strong> module.</p>
+</li>
+<li data-start="382" data-end="422">
+<p data-start="385" data-end="422">Open the <strong data-start="394" data-end="411">Employee Rate</strong> section.</p>
+</li>
+<li data-start="423" data-end="476">
+<p data-start="426" data-end="476">Click on <strong data-start="435" data-end="456">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="477" data-end="554">
+<p data-start="480" data-end="554">Enter alphabetic characters in the <strong data-start="515" data-end="531">Basic Amount</strong> field (e.g., <code data-start="545" data-end="550">ABC</code>).</p>
+</li>
+<li data-start="555" data-end="585">
+<p data-start="558" data-end="585">Attempt to submit the form.</p>
+</li>
+</ol>
+<p data-start="587" data-end="723"><strong data-start="587" data-end="607">Expected Result:</strong><br data-start="607" data-end="610">The system should restrict input to numeric values only and display a validation error message for invalid input.</p>
+<p data-start="725" data-end="840"><strong data-start="725" data-end="743">Actual Result:</strong><br data-start="743" data-end="746">The system accepts alphabetic characters in the <strong data-start="794" data-end="810">Basic Amount</strong> field without any validation.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:24:00] IssueController::store called.
+[2026-02-05 07:24:00] FILES: Array
+(
+)
+
+[2026-02-05 07:24:00] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Basic Amount field accepts negative values in the Employee Rate form.
+    [description] => <p data-start="196" data-end="268"><strong data-start="196" data-end="205">Path:</strong><br data-start="205" data-end="208">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="270" data-end="295"><strong data-start="270" data-end="293">Steps to Reproduce:</strong></p>
+<ol data-start="296" data-end="576">
+<li data-start="296" data-end="326">
+<p data-start="299" data-end="326">Login to the application.</p>
+</li>
+<li data-start="327" data-end="375">
+<p data-start="330" data-end="375">Navigate to <strong data-start="342" data-end="365">Employee Management</strong> module.</p>
+</li>
+<li data-start="376" data-end="416">
+<p data-start="379" data-end="416">Open the <strong data-start="388" data-end="405">Employee Rate</strong> section.</p>
+</li>
+<li data-start="417" data-end="470">
+<p data-start="420" data-end="470">Click on <strong data-start="429" data-end="450">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="471" data-end="545">
+<p data-start="474" data-end="545">Enter a negative value in the <strong data-start="504" data-end="520">Basic Amount</strong> field (e.g., <code data-start="534" data-end="541">-5000</code>).</p>
+</li>
+<li data-start="546" data-end="576">
+<p data-start="549" data-end="576">Attempt to submit the form.</p>
+</li>
+</ol>
+<p data-start="578" data-end="712"><strong data-start="578" data-end="598">Expected Result:</strong><br data-start="598" data-end="601">The system should reject negative values for the <strong data-start="650" data-end="666">Basic Amount</strong> field and display a validation error message.</p>
+<p data-start="714" data-end="823"><strong data-start="714" data-end="732">Actual Result:</strong><br data-start="732" data-end="735">The system accepts negative values in the <strong data-start="777" data-end="793">Basic Amount</strong> field without any validation.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:25:55] IssueController::store called.
+[2026-02-05 07:25:55] FILES: Array
+(
+)
+
+[2026-02-05 07:25:55] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Eligibility Factor field accepts invalid values outside the allowed range in the Employee Rate form.
+    [description] => <p data-start="227" data-end="299"><strong data-start="227" data-end="236">Path:</strong><br data-start="236" data-end="239">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="301" data-end="326"><strong data-start="301" data-end="324">Steps to Reproduce:</strong></p>
+<ol data-start="327" data-end="612">
+<li data-start="327" data-end="357">
+<p data-start="330" data-end="357">Login to the application.</p>
+</li>
+<li data-start="358" data-end="406">
+<p data-start="361" data-end="406">Navigate to <strong data-start="373" data-end="396">Employee Management</strong> module.</p>
+</li>
+<li data-start="407" data-end="447">
+<p data-start="410" data-end="447">Open the <strong data-start="419" data-end="436">Employee Rate</strong> section.</p>
+</li>
+<li data-start="448" data-end="501">
+<p data-start="451" data-end="501">Click on <strong data-start="460" data-end="481">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="502" data-end="592">
+<p data-start="505" data-end="592">Enter a value greater than the allowed range in <strong data-start="553" data-end="575">Eligibility Factor</strong> (e.g., <code data-start="583" data-end="588">1.5</code>).</p>
+</li>
+<li data-start="593" data-end="612">
+<p data-start="596" data-end="612">Submit the form.</p>
+</li>
+</ol>
+<p data-start="614" data-end="755"><strong data-start="614" data-end="634">Expected Result:</strong><br data-start="634" data-end="637">The system should display a validation error and restrict the <strong data-start="699" data-end="721">Eligibility Factor</strong> value to the defined valid range.</p>
+<p data-start="757" data-end="885"><strong data-start="757" data-end="775">Actual Result:</strong><br data-start="775" data-end="778">The system accepts invalid values (e.g., <code data-start="819" data-end="822">0</code> or values beyond the allowed range) without proper validation.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 07:27:20] IssueController::store called.
+[2026-02-05 07:27:20] FILES: Array
+(
+)
+
+[2026-02-05 07:27:20] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Retiring Date field is not validated as mandatory in the Employee Rate form.
+    [description] => <p data-start="203" data-end="275"><strong data-start="203" data-end="212">Path:</strong><br data-start="212" data-end="215">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="277" data-end="302"><strong data-start="277" data-end="300">Steps to Reproduce:</strong></p>
+<ol data-start="303" data-end="544">
+<li data-start="303" data-end="333">
+<p data-start="306" data-end="333">Login to the application.</p>
+</li>
+<li data-start="334" data-end="382">
+<p data-start="337" data-end="382">Navigate to <strong data-start="349" data-end="372">Employee Management</strong> module.</p>
+</li>
+<li data-start="383" data-end="423">
+<p data-start="386" data-end="423">Open the <strong data-start="395" data-end="412">Employee Rate</strong> section.</p>
+</li>
+<li data-start="424" data-end="477">
+<p data-start="427" data-end="477">Click on <strong data-start="436" data-end="457">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="478" data-end="523">
+<p data-start="481" data-end="523">Leave the <strong data-start="491" data-end="508">Retiring Date</strong> field blank.</p>
+</li>
+<li data-start="524" data-end="544">
+<p data-start="527" data-end="544">Click <strong data-start="533" data-end="543">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="546" data-end="683"><strong data-start="546" data-end="566">Expected Result:</strong><br data-start="566" data-end="569">The system should display a validation error and prevent form submission when the <strong data-start="651" data-end="668">Retiring Date</strong> is left blank.</p>
+<p data-start="685" data-end="820"><strong data-start="685" data-end="703">Actual Result:</strong><br data-start="703" data-end="706">No validation message is displayed, and the form is submitted successfully without entering the <strong data-start="802" data-end="819">Retiring Date</strong>.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:28:47] IssueController::store called.
+[2026-02-05 07:28:47] FILES: Array
+(
+)
+
+[2026-02-05 07:28:47] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee Rate form allows Retiring Date earlier than the Effective Date.
+    [description] => <p data-start="198" data-end="270"><strong data-start="198" data-end="207">Path:</strong><br data-start="207" data-end="210">Employee Management &rarr; Employee Rate &rarr; Add Employee Rate form</p>
+<p data-start="272" data-end="297"><strong data-start="272" data-end="295">Steps to Reproduce:</strong></p>
+<ol data-start="298" data-end="617">
+<li data-start="298" data-end="328">
+<p data-start="301" data-end="328">Login to the application.</p>
+</li>
+<li data-start="329" data-end="377">
+<p data-start="332" data-end="377">Navigate to <strong data-start="344" data-end="367">Employee Management</strong> module.</p>
+</li>
+<li data-start="378" data-end="418">
+<p data-start="381" data-end="418">Open the <strong data-start="390" data-end="407">Employee Rate</strong> section.</p>
+</li>
+<li data-start="419" data-end="472">
+<p data-start="422" data-end="472">Click on <strong data-start="431" data-end="452">Add Employee Rate</strong> to open the form.</p>
+</li>
+<li data-start="473" data-end="511">
+<p data-start="476" data-end="511">Enter a valid <strong data-start="490" data-end="508">Effective Date</strong>.</p>
+</li>
+<li data-start="512" data-end="596">
+<p data-start="515" data-end="596">Enter a <strong data-start="523" data-end="540">Retiring Date</strong> earlier than the Effective Date (e.g., <code data-start="580" data-end="592">01/01/2000</code>).</p>
+</li>
+<li data-start="597" data-end="617">
+<p data-start="600" data-end="617">Click <strong data-start="606" data-end="616">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="619" data-end="790"><strong data-start="619" data-end="639">Expected Result:</strong><br data-start="639" data-end="642">The system should prevent saving the record and display a validation error stating that the <strong data-start="734" data-end="789">Retiring Date must be later than the Effective Date</strong>.</p>
+<p data-start="792" data-end="916"><strong data-start="792" data-end="810">Actual Result:</strong><br data-start="810" data-end="813">The system accepts a Retiring Date earlier than the Effective Date and allows the form to be submitted.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 07:30:31] IssueController::store called.
+[2026-02-05 07:30:31] FILES: Array
+(
+)
+
+[2026-02-05 07:30:31] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Invalid Retiring Date is displayed while viewing Employee Rate details when the date was saved as blank.
+    [description] => <p data-start="231" data-end="320"><strong data-start="231" data-end="240">Path:</strong><br data-start="240" data-end="243">Employee Management &rarr; Employee Rate &rarr; Employee Rate List &rarr; View Employee Rate</p>
+<p data-start="322" data-end="347"><strong data-start="322" data-end="345">Steps to Reproduce:</strong></p>
+<ol data-start="348" data-end="614">
+<li data-start="348" data-end="378">
+<p data-start="351" data-end="378">Login to the application.</p>
+</li>
+<li data-start="379" data-end="427">
+<p data-start="382" data-end="427">Navigate to <strong data-start="394" data-end="417">Employee Management</strong> module.</p>
+</li>
+<li data-start="428" data-end="468">
+<p data-start="431" data-end="468">Open the <strong data-start="440" data-end="457">Employee Rate</strong> section.</p>
+</li>
+<li data-start="469" data-end="559">
+<p data-start="472" data-end="559">Ensure an Employee Rate record exists with <strong data-start="515" data-end="543">Retiring Date left blank</strong> while adding.</p>
+</li>
+<li data-start="560" data-end="614">
+<p data-start="563" data-end="614">Select the record and click on the <strong data-start="598" data-end="606">View</strong> option.</p>
+</li>
+</ol>
+<p data-start="616" data-end="790"><strong data-start="616" data-end="636">Expected Result:</strong><br data-start="636" data-end="639">Employee Rate details should be displayed correctly, and the <strong data-start="700" data-end="717">Retiring Date</strong> should remain blank or show a valid default value as per business rules.</p>
+<p data-start="792" data-end="922"><strong data-start="792" data-end="810">Actual Result:</strong><br data-start="810" data-end="813">The system allows saving a blank Retiring Date, but while viewing the record it displays an <strong data-start="905" data-end="921">invalid date</strong>.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:16:56] IssueController::store called.
+[2026-02-05 08:16:56] FILES: Array
+(
+)
+
+[2026-02-05 08:16:56] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Delete Employee Rate action causes unusually long page load time.
+    [description] => <p data-start="192" data-end="260"><strong data-start="192" data-end="201">Path:</strong><br data-start="201" data-end="204">Employee Management &rarr; Employee Rate &rarr; Employee Rate List</p>
+<p data-start="262" data-end="287"><strong data-start="262" data-end="285">Steps to Reproduce:</strong></p>
+<ol data-start="288" data-end="543">
+<li data-start="288" data-end="318">
+<p data-start="291" data-end="318">Login to the application.</p>
+</li>
+<li data-start="319" data-end="367">
+<p data-start="322" data-end="367">Navigate to <strong data-start="334" data-end="357">Employee Management</strong> module.</p>
+</li>
+<li data-start="368" data-end="408">
+<p data-start="371" data-end="408">Open the <strong data-start="380" data-end="397">Employee Rate</strong> section.</p>
+</li>
+<li data-start="409" data-end="452">
+<p data-start="412" data-end="452">Ensure an Employee Rate record exists.</p>
+</li>
+<li data-start="453" data-end="500">
+<p data-start="456" data-end="500">Select the record and click on <strong data-start="487" data-end="497">Delete</strong>.</p>
+</li>
+<li data-start="501" data-end="543">
+<p data-start="504" data-end="543">Confirm the action by clicking <strong data-start="535" data-end="542">Yes</strong>.</p>
+</li>
+</ol>
+<p data-start="545" data-end="699"><strong data-start="545" data-end="565">Expected Result:</strong><br data-start="565" data-end="568">The selected Employee Rate record should be deleted successfully, and the page should refresh or respond within an acceptable time.</p>
+<p data-start="701" data-end="831"><strong data-start="701" data-end="719">Actual Result:</strong><br data-start="719" data-end="722">After clicking the Delete option, the page takes an unusually long time to load, causing a delay in response.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:21:30] IssueController::store called.
+[2026-02-05 08:21:30] FILES: Array
+(
+)
+
+[2026-02-05 08:21:30] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Print functionality fails to generate Employee Rate report.
+    [description] => <p data-start="186" data-end="254"><strong data-start="186" data-end="195">Path:</strong><br data-start="195" data-end="198">Employee Management &rarr; Employee Rate &rarr; Employee Rate List</p>
+<p data-start="256" data-end="281"><strong data-start="256" data-end="279">Steps to Reproduce:</strong></p>
+<ol data-start="282" data-end="495">
+<li data-start="282" data-end="312">
+<p data-start="285" data-end="312">Login to the application.</p>
+</li>
+<li data-start="313" data-end="361">
+<p data-start="316" data-end="361">Navigate to <strong data-start="328" data-end="351">Employee Management</strong> module.</p>
+</li>
+<li data-start="362" data-end="402">
+<p data-start="365" data-end="402">Open the <strong data-start="374" data-end="391">Employee Rate</strong> section.</p>
+</li>
+<li data-start="403" data-end="446">
+<p data-start="406" data-end="446">Ensure an Employee Rate record exists.</p>
+</li>
+<li data-start="447" data-end="495">
+<p data-start="450" data-end="495">Click on the <strong data-start="463" data-end="472">Print</strong> option for the record.</p>
+</li>
+</ol>
+<p data-start="497" data-end="610"><strong data-start="497" data-end="517">Expected Result:</strong><br data-start="517" data-end="520">The system should open a print preview and generate the Employee Rate report successfully.</p>
+<p data-start="612" data-end="735"><strong data-start="612" data-end="630">Actual Result:</strong><br data-start="630" data-end="633">The system fails to generate the report and displays an error message indicating a processing failure.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 08:28:59] IssueController::store called.
+[2026-02-05 08:28:59] FILES: Array
+(
+)
+
+[2026-02-05 08:28:59] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Action buttons (Create, Edit, Delete, View, Print) are not fixed and become inaccessible while scrolling the Employee Grid.(For all Modules)
+    [description] => <p data-start="265" data-end="312"><strong data-start="265" data-end="274">Path:</strong><br data-start="274" data-end="277">Employee Management &rarr; Employee Grid</p>
+<p data-start="314" data-end="339"><strong data-start="314" data-end="337">Steps to Reproduce:</strong></p>
+<ol data-start="340" data-end="610">
+<li data-start="340" data-end="370">
+<p data-start="343" data-end="370">Login to the application.</p>
+</li>
+<li data-start="371" data-end="419">
+<p data-start="374" data-end="419">Navigate to <strong data-start="386" data-end="409">Employee Management</strong> module.</p>
+</li>
+<li data-start="420" data-end="495">
+<p data-start="423" data-end="495">Open the <strong data-start="432" data-end="449">Employee Grid</strong> where multiple employee records are listed.</p>
+</li>
+<li data-start="496" data-end="531">
+<p data-start="499" data-end="531">Scroll down the employee list.</p>
+</li>
+<li data-start="532" data-end="610">
+<p data-start="535" data-end="610">Observe the behavior of action buttons (Create, Edit, Delete, View, Print).</p>
+</li>
+</ol>
+<p data-start="612" data-end="811"><strong data-start="612" data-end="632">Expected Result:</strong><br data-start="632" data-end="635">All action buttons (Create, Edit, Delete, View, Print) should remain <strong data-start="704" data-end="746">fixed and easily accessible at the top</strong> of the grid while scrolling, especially for long employee lists.</p>
+<p data-start="813" data-end="963"><strong data-start="813" data-end="831">Actual Result:</strong><br data-start="831" data-end="834">All action buttons scroll along with the grid and move out of view, making them inaccessible when the user scrolls down the list.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:32:37] IssueController::store called.
+[2026-02-05 08:32:37] FILES: Array
+(
+)
+
+[2026-02-05 08:32:37] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Mandatory fields are not visually indicated with an asterisk (*) on forms across multiple pages, causing confusion about required inputs.
+    [description] => <p data-start="585" data-end="610"><strong data-start="585" data-end="608">Path:</strong></p>
+<p data-start="585" data-end="610">&nbsp;Login &rarr; Dashboard &rarr; Any Module &rarr; Create / Edit Form</p>
+<p data-start="585" data-end="610"><strong data-start="585" data-end="608">Steps to Reproduce:</strong></p>
+<ol data-start="611" data-end="812">
+<li data-start="611" data-end="641">
+<p data-start="614" data-end="641">Login to the application.</p>
+</li>
+<li data-start="642" data-end="736">
+<p data-start="645" data-end="736">Navigate to any module with a data entry form (e.g., Employee Form, Employee Rate, etc.).</p>
+</li>
+<li data-start="737" data-end="771">
+<p data-start="740" data-end="771">Open the Create or Edit form.</p>
+</li>
+<li data-start="772" data-end="812">
+<p data-start="775" data-end="812">Observe the field labels on the form.</p>
+</li>
+</ol>
+<p data-start="814" data-end="932"><strong data-start="814" data-end="834">Expected Result:</strong><br data-start="834" data-end="837">All mandatory fields should be clearly marked with an asterisk (*) to indicate required inputs.</p>
+<p data-start="934" data-end="1053"><strong data-start="934" data-end="952">Actual Result:</strong><br data-start="952" data-end="955">Mandatory fields are not marked with an asterisk (*), making it unclear which fields are required.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:35:25] IssueController::store called.
+[2026-02-05 08:35:25] FILES: Array
+(
+)
+
+[2026-02-05 08:35:25] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Print functionality fails to generate report and shows processing error in Employee Management – Prefix module.
+    [description] => <p data-start="257" data-end="305"><strong data-start="257" data-end="266">Path:</strong><br data-start="266" data-end="269">Employee Management &rarr; Prefix &rarr; Print</p>
+<p data-start="307" data-end="332"><strong data-start="307" data-end="330">Steps to Reproduce:</strong></p>
+<ol data-start="333" data-end="479">
+<li data-start="333" data-end="381">
+<p data-start="336" data-end="381">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="382" data-end="411">
+<p data-start="385" data-end="411">Open the Prefix section.</p>
+</li>
+<li data-start="412" data-end="445">
+<p data-start="415" data-end="445">Ensure prefix records exist.</p>
+</li>
+<li data-start="446" data-end="479">
+<p data-start="449" data-end="479">Click on the <strong data-start="462" data-end="471">Print</strong> option.</p>
+</li>
+</ol>
+<p data-start="481" data-end="597"><strong data-start="481" data-end="501">Expected Result:</strong><br data-start="501" data-end="504">Print preview should open successfully and the report should be generated without any errors.</p>
+<p data-start="599" data-end="752"><strong data-start="599" data-end="617">Actual Result:</strong><br data-start="617" data-end="620">On clicking the Print option, the system fails to generate the report and displays an error message indicating a processing failure.</p>
+    [assignee_id] => 24
+    [priority_id] => 4
+)
+
+[2026-02-05 08:37:39] IssueController::store called.
+[2026-02-05 08:37:39] FILES: Array
+(
+)
+
+[2026-02-05 08:37:39] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Duplicate Caste Name validation is not working in Employee Management – Caste module, allowing duplicate entries.
+    [description] => <p data-start="227" data-end="266"><strong data-start="227" data-end="236">Path:</strong><br data-start="236" data-end="239">Employee Management &rarr; Caste</p>
+<p data-start="268" data-end="293"><strong data-start="268" data-end="291">Steps to Reproduce:</strong></p>
+<ol data-start="294" data-end="491">
+<li data-start="294" data-end="342">
+<p data-start="297" data-end="342">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="343" data-end="371">
+<p data-start="346" data-end="371">Open the Caste section.</p>
+</li>
+<li data-start="372" data-end="429">
+<p data-start="375" data-end="429">Ensure a Caste name already exists (e.g., <strong data-start="417" data-end="425">Koli</strong>).</p>
+</li>
+<li data-start="430" data-end="467">
+<p data-start="433" data-end="467">Enter the same Caste name again.</p>
+</li>
+<li data-start="468" data-end="491">
+<p data-start="471" data-end="491">Click on <strong data-start="480" data-end="490">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="493" data-end="613"><strong data-start="493" data-end="513">Expected Result:</strong><br data-start="513" data-end="516">System should display a duplicate validation message and prevent saving the duplicate Caste name.</p>
+<p data-start="615" data-end="723"><strong data-start="615" data-end="633">Actual Result:</strong><br data-start="633" data-end="636">System allows duplicate Caste names to be saved without showing any validation message.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:39:25] IssueController::store called.
+[2026-02-05 08:39:25] FILES: Array
+(
+)
+
+[2026-02-05 08:39:25] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Deleting an existing Caste record causes unusually long page loading time in Employee Management – Caste module.
+    [description] => <p data-start="217" data-end="256"><strong data-start="217" data-end="226">Path:</strong><br data-start="226" data-end="229">Employee Management &rarr; Caste</p>
+<p data-start="258" data-end="283"><strong data-start="258" data-end="281">Steps to Reproduce:</strong></p>
+<ol data-start="284" data-end="478">
+<li data-start="284" data-end="332">
+<p data-start="287" data-end="332">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="333" data-end="361">
+<p data-start="336" data-end="361">Open the Caste section.</p>
+</li>
+<li data-start="362" data-end="396">
+<p data-start="365" data-end="396">Ensure a Caste record exists.</p>
+</li>
+<li data-start="397" data-end="420">
+<p data-start="400" data-end="420">Select the record.</p>
+</li>
+<li data-start="421" data-end="446">
+<p data-start="424" data-end="446">Click on <strong data-start="433" data-end="443">Delete</strong>.</p>
+</li>
+<li data-start="447" data-end="478">
+<p data-start="450" data-end="478">Confirm by clicking <strong data-start="470" data-end="477">Yes</strong>.</p>
+</li>
+</ol>
+<p data-start="480" data-end="604"><strong data-start="480" data-end="500">Expected Result:</strong><br data-start="500" data-end="503">Caste record should be deleted successfully and the page should load within acceptable response time.</p>
+<p data-start="606" data-end="733"><strong data-start="606" data-end="624">Actual Result:</strong><br data-start="624" data-end="627">After clicking on the Delete option for an existing record, the page takes an unusually long time to load.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:40:54] IssueController::store called.
+[2026-02-05 08:40:54] FILES: Array
+(
+)
+
+[2026-02-05 08:40:54] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Print functionality fails to generate report and shows processing error in Employee Management – Caste module.
+    [description] => <p data-start="200" data-end="247"><strong data-start="200" data-end="209">Path:</strong><br data-start="209" data-end="212">Employee Management &rarr; Caste &rarr; Print</p>
+<p data-start="249" data-end="274"><strong data-start="249" data-end="272">Steps to Reproduce:</strong></p>
+<ol data-start="275" data-end="419">
+<li data-start="275" data-end="323">
+<p data-start="278" data-end="323">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="324" data-end="352">
+<p data-start="327" data-end="352">Open the Caste section.</p>
+</li>
+<li data-start="353" data-end="385">
+<p data-start="356" data-end="385">Ensure caste records exist.</p>
+</li>
+<li data-start="386" data-end="419">
+<p data-start="389" data-end="419">Click on the <strong data-start="402" data-end="411">Print</strong> option.</p>
+</li>
+</ol>
+<p data-start="421" data-end="505"><strong data-start="421" data-end="441">Expected Result:</strong><br data-start="441" data-end="444">Print preview should open successfully displaying caste data.</p>
+<p data-start="507" data-end="660"><strong data-start="507" data-end="525">Actual Result:</strong><br data-start="525" data-end="528">On clicking the Print option, the system fails to generate the report and displays an error message indicating a processing failure.</p>
+    [assignee_id] => 24
+    [priority_id] => 4
+)
+
+[2026-02-05 08:44:21] IssueController::store called.
+[2026-02-05 08:44:21] FILES: Array
+(
+)
+
+[2026-02-05 08:44:21] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Duplicate City validation fails in Employee Management – City module, allowing same City under the same State
+    [description] => <p data-start="83" data-end="208"><strong data-start="210" data-end="219">Path:</strong><br data-start="219" data-end="222">Employee Management &rarr; City</p>
+<p data-start="250" data-end="275"><strong data-start="250" data-end="273">Steps to Reproduce:</strong></p>
+<ol data-start="276" data-end="525">
+<li data-start="276" data-end="324">
+<p data-start="279" data-end="324">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="325" data-end="352">
+<p data-start="328" data-end="352">Open the City section.</p>
+</li>
+<li data-start="353" data-end="450">
+<p data-start="356" data-end="450">Ensure a City record already exists with a specific State (e.g., <strong data-start="421" data-end="446">Kolhapur, Maharashtra</strong>).</p>
+</li>
+<li data-start="451" data-end="501">
+<p data-start="454" data-end="501">Enter the same City name with the same State.</p>
+</li>
+<li data-start="502" data-end="525">
+<p data-start="505" data-end="525">Click on <strong data-start="514" data-end="524">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="527" data-end="662"><strong data-start="527" data-end="547">Expected Result:</strong><br data-start="547" data-end="550">System should display a duplicate validation message and prevent saving the duplicate City under the same State.</p>
+<p data-start="664" data-end="744"><strong data-start="664" data-end="682">Actual Result:</strong><br data-start="682" data-end="685">System allows duplications; no validation message is shown.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:46:36] IssueController::store called.
+[2026-02-05 08:46:36] FILES: Array
+(
+)
+
+[2026-02-05 08:46:36] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Employee Form UI in Employee Management module is inconsistent with other master modules.
+    [description] => <p data-start="178" data-end="225"><strong data-start="178" data-end="187">Path:</strong><br data-start="187" data-end="190">Employee Management &rarr; Employee Form</p>
+<p data-start="227" data-end="252"><strong data-start="227" data-end="250">Steps to Reproduce:</strong></p>
+<ol data-start="253" data-end="386">
+<li data-start="253" data-end="301">
+<p data-start="256" data-end="301">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="302" data-end="330">
+<p data-start="305" data-end="330">Open the Employee Form.</p>
+</li>
+<li data-start="331" data-end="386">
+<p data-start="334" data-end="386">Compare the UI patterns with other master modules.</p>
+</li>
+</ol>
+<p data-start="388" data-end="507"><strong data-start="388" data-end="408">Expected Result:</strong><br data-start="408" data-end="411">Employee Form UI should be consistent with the design and patterns used in other master modules.</p>
+<p data-start="509" data-end="581"><strong data-start="509" data-end="527">Actual Result:</strong><br data-start="527" data-end="530">Employee Form UI differs from other master modules.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 08:49:00] IssueController::store called.
+[2026-02-05 08:49:00] FILES: Array
+(
+)
+
+[2026-02-05 08:49:00] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Checkbox toggle functionality in Employee Management – Caste module does not work on Add and Edit screens.
+    [description] => <p data-start="320" data-end="372"><strong data-start="320" data-end="329">Path:</strong><br data-start="329" data-end="332">Employee Management &rarr; Caste &rarr; Add / Edit</p>
+<p data-start="374" data-end="399"><strong data-start="374" data-end="397">Steps to Reproduce:</strong></p>
+<ol data-start="400" data-end="695">
+<li data-start="400" data-end="534">
+<p data-start="403" data-end="420"><strong data-start="403" data-end="418">Add Screen:</strong></p>
+<ul data-start="424" data-end="534">
+<li data-start="424" data-end="442">
+<p data-start="426" data-end="442">Click <strong data-start="432" data-end="439">Add</strong>.</p>
+</li>
+<li data-start="446" data-end="467">
+<p data-start="448" data-end="467">Enter Caste Name.</p>
+</li>
+<li data-start="471" data-end="493">
+<p data-start="473" data-end="493">Select a checkbox.</p>
+</li>
+<li data-start="497" data-end="534">
+<p data-start="499" data-end="534">Click again on the same checkbox.</p>
+</li>
+</ul>
+</li>
+<li data-start="536" data-end="695">
+<p data-start="539" data-end="557"><strong data-start="539" data-end="555">Edit Screen:</strong></p>
+<ul data-start="561" data-end="695">
+<li data-start="561" data-end="597">
+<p data-start="563" data-end="597">Select an existing Caste record.</p>
+</li>
+<li data-start="601" data-end="620">
+<p data-start="603" data-end="620">Click <strong data-start="609" data-end="617">Edit</strong>.</p>
+</li>
+<li data-start="624" data-end="672">
+<p data-start="626" data-end="672">Try to uncheck an already selected checkbox.</p>
+</li>
+<li data-start="676" data-end="695">
+<p data-start="678" data-end="695">Click <strong data-start="684" data-end="694">Submit</strong>.</p>
+</li>
+</ul>
+</li>
+</ol>
+<p data-start="697" data-end="719"><strong data-start="697" data-end="717">Expected Result:</strong></p>
+<ul data-start="720" data-end="865">
+<li data-start="720" data-end="784">
+<p data-start="722" data-end="784">Checkbox should toggle OFF when clicked again on Add screen.</p>
+</li>
+<li data-start="785" data-end="865">
+<p data-start="787" data-end="865">On Edit screen, user should be able to unselect the checkbox and save changes.</p>
+</li>
+</ul>
+<p data-start="867" data-end="887"><strong data-start="867" data-end="885">Actual Result:</strong></p>
+<ul data-start="888" data-end="1055">
+<li data-start="888" data-end="958">
+<p data-start="890" data-end="958">On Add screen, checkbox remains selected and cannot be unselected.</p>
+</li>
+<li data-start="959" data-end="1055">
+<p data-start="961" data-end="1055">&nbsp;</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 08:50:38] IssueController::store called.
+[2026-02-05 08:50:38] FILES: Array
+(
+)
+
+[2026-02-05 08:50:38] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Print functionality fails to generate report and shows processing error in Employee Management – City module.
+    [description] => <p data-start="199" data-end="245"><strong data-start="199" data-end="208">Path:</strong><br data-start="208" data-end="211">Employee Management &rarr; City &rarr; Print</p>
+<p data-start="247" data-end="272"><strong data-start="247" data-end="270">Steps to Reproduce:</strong></p>
+<ol data-start="273" data-end="415">
+<li data-start="273" data-end="321">
+<p data-start="276" data-end="321">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="322" data-end="349">
+<p data-start="325" data-end="349">Open the City section.</p>
+</li>
+<li data-start="350" data-end="381">
+<p data-start="353" data-end="381">Ensure city records exist.</p>
+</li>
+<li data-start="382" data-end="415">
+<p data-start="385" data-end="415">Click on the <strong data-start="398" data-end="407">Print</strong> option.</p>
+</li>
+</ol>
+<p data-start="417" data-end="500"><strong data-start="417" data-end="437">Expected Result:</strong><br data-start="437" data-end="440">Print preview should open successfully displaying city data.</p>
+<p data-start="502" data-end="655"><strong data-start="502" data-end="520">Actual Result:</strong><br data-start="520" data-end="523">On clicking the Print option, the system fails to generate the report and displays an error message indicating a processing failure.</p>
+    [assignee_id] => 24
+    [priority_id] => 4
+)
+
+[2026-02-05 08:58:14] IssueController::store called.
+[2026-02-05 08:58:14] FILES: Array
+(
+)
+
+[2026-02-05 08:58:14] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Duplicate Relation validation fails in Employee Management – Relation module, allowing duplicate entries.
+    [description] => <p data-start="196" data-end="240"><strong data-start="196" data-end="205">Path:</strong><br data-start="205" data-end="208">Employee Management &rarr; Relation</p>
+<p data-start="242" data-end="267"><strong data-start="242" data-end="265">Steps to Reproduce:</strong></p>
+<ol data-start="268" data-end="471">
+<li data-start="268" data-end="316">
+<p data-start="271" data-end="316">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="317" data-end="348">
+<p data-start="320" data-end="348">Open the Relation section.</p>
+</li>
+<li data-start="349" data-end="407">
+<p data-start="352" data-end="407">Ensure a Relation already exists (e.g., <strong data-start="392" data-end="403">Brother</strong>).</p>
+</li>
+<li data-start="408" data-end="448">
+<p data-start="411" data-end="448">Enter the same Relation name again.</p>
+</li>
+<li data-start="449" data-end="471">
+<p data-start="452" data-end="471">Click <strong data-start="458" data-end="468">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="473" data-end="593"><strong data-start="473" data-end="493">Expected Result:</strong><br data-start="493" data-end="496">System should display a duplicate validation message and prevent saving the duplicate Relation.</p>
+<p data-start="595" data-end="677"><strong data-start="595" data-end="613">Actual Result:</strong><br data-start="613" data-end="616">System allows duplications; no validation message is shown.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:09:55] IssueController::store called.
+[2026-02-05 09:09:55] FILES: Array
+(
+)
+
+[2026-02-05 09:09:55] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Deleting an existing Qualification record causes unusually long page loading time in Employee Management – Qualification module.
+    [description] => <p data-start="219" data-end="268"><strong data-start="219" data-end="228">Path:</strong><br data-start="228" data-end="231">Employee Management &rarr; Qualification</p>
+<p data-start="270" data-end="295"><strong data-start="270" data-end="293">Steps to Reproduce:</strong></p>
+<ol data-start="296" data-end="505">
+<li data-start="296" data-end="344">
+<p data-start="299" data-end="344">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="345" data-end="381">
+<p data-start="348" data-end="381">Open the Qualification section.</p>
+</li>
+<li data-start="382" data-end="424">
+<p data-start="385" data-end="424">Ensure a Qualification record exists.</p>
+</li>
+<li data-start="425" data-end="448">
+<p data-start="428" data-end="448">Select the record.</p>
+</li>
+<li data-start="449" data-end="471">
+<p data-start="452" data-end="471">Click <strong data-start="458" data-end="468">Delete</strong>.</p>
+</li>
+<li data-start="472" data-end="505">
+<p data-start="475" data-end="505">Confirm by clicking <strong data-start="495" data-end="502">Yes</strong>.</p>
+</li>
+</ol>
+<p data-start="507" data-end="642"><strong data-start="507" data-end="527">Expected Result:</strong><br data-start="527" data-end="530">Qualification record should be deleted successfully, and the page should load within acceptable response time.</p>
+<p data-start="644" data-end="770"><strong data-start="644" data-end="662">Actual Result:</strong><br data-start="662" data-end="665">After clicking the Delete option for an existing record, the page takes an unusually long time to load.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:18:02] IssueController::store called.
+[2026-02-05 09:18:02] FILES: Array
+(
+)
+
+[2026-02-05 09:18:02] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Mandatory validation for Pay Structure Name is not working in Employee Management – Pay Structure module.
+    [description] => <p data-start="195" data-end="250"><strong data-start="195" data-end="204">Path:</strong><br data-start="204" data-end="207">Employee Management &rarr; Pay Structure &rarr; Add</p>
+<p data-start="252" data-end="277"><strong data-start="252" data-end="275">Steps to Reproduce:</strong></p>
+<ol data-start="278" data-end="438">
+<li data-start="278" data-end="326">
+<p data-start="281" data-end="326">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="327" data-end="364">
+<p data-start="330" data-end="364">Open the Pay Structure Add form.</p>
+</li>
+<li data-start="365" data-end="415">
+<p data-start="368" data-end="415">Leave the <strong data-start="378" data-end="400">Pay Structure Name</strong> field blank.</p>
+</li>
+<li data-start="416" data-end="438">
+<p data-start="419" data-end="438">Click <strong data-start="425" data-end="435">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="440" data-end="567"><strong data-start="440" data-end="460">Expected Result:</strong><br data-start="460" data-end="463">System should display a validation message and prevent saving the record without a Pay Structure Name.</p>
+<p data-start="569" data-end="697"><strong data-start="569" data-end="587">Actual Result:</strong><br data-start="587" data-end="590">No validation message is shown, and the record is saved successfully even though the Name field is blank.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:19:35] IssueController::store called.
+[2026-02-05 09:19:35] FILES: Array
+(
+)
+
+[2026-02-05 09:19:35] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Mandatory selection of at least one Earning Head is not enforced in Employee Management – Pay Structure module.
+    [description] => <p data-start="201" data-end="256"><strong data-start="201" data-end="210">Path:</strong><br data-start="210" data-end="213">Employee Management &rarr; Pay Structure &rarr; Add</p>
+<p data-start="258" data-end="283"><strong data-start="258" data-end="281">Steps to Reproduce:</strong></p>
+<ol data-start="284" data-end="494">
+<li data-start="284" data-end="332">
+<p data-start="287" data-end="332">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="333" data-end="370">
+<p data-start="336" data-end="370">Open the Pay Structure Add form.</p>
+</li>
+<li data-start="371" data-end="423">
+<p data-start="374" data-end="423">Enter <strong data-start="380" data-end="402">Pay Structure Name</strong> (e.g., <strong data-start="410" data-end="419">BASIC</strong>).</p>
+</li>
+<li data-start="424" data-end="471">
+<p data-start="427" data-end="471">Do not select any Earning Head checkboxes.</p>
+</li>
+<li data-start="472" data-end="494">
+<p data-start="475" data-end="494">Click <strong data-start="481" data-end="491">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="496" data-end="615"><strong data-start="496" data-end="516">Expected Result:</strong><br data-start="516" data-end="519">System should display a validation message requiring at least one Earning Head to be selected.</p>
+<p data-start="617" data-end="747"><strong data-start="617" data-end="635">Actual Result:</strong><br data-start="635" data-end="638">Validation message is shown, but system behavior does not correctly enforce the business rule (Fail noted).</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:24:56] IssueController::store called.
+[2026-02-05 09:24:56] FILES: Array
+(
+)
+
+[2026-02-05 09:24:56] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => System does not validate unselecting all Earning Heads during Edit in Employee Management – Pay Structure module.
+    [description] => <p data-start="203" data-end="259"><strong data-start="203" data-end="212">Path:</strong><br data-start="212" data-end="215">Employee Management &rarr; Pay Structure &rarr; Edit</p>
+<p data-start="261" data-end="286"><strong data-start="261" data-end="284">Steps to Reproduce:</strong></p>
+<ol data-start="287" data-end="495">
+<li data-start="287" data-end="335">
+<p data-start="290" data-end="335">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="336" data-end="372">
+<p data-start="339" data-end="372">Open the Pay Structure section.</p>
+</li>
+<li data-start="373" data-end="430">
+<p data-start="376" data-end="430">Select an existing Pay Structure and click <strong data-start="419" data-end="427">Edit</strong>.</p>
+</li>
+<li data-start="431" data-end="472">
+<p data-start="434" data-end="472">Uncheck all Earning Head checkboxes.</p>
+</li>
+<li data-start="473" data-end="495">
+<p data-start="476" data-end="495">Click <strong data-start="482" data-end="492">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="497" data-end="620"><strong data-start="497" data-end="517">Expected Result:</strong><br data-start="517" data-end="520">System should display a validation message preventing submission when no Earning Head is selected.</p>
+<p data-start="622" data-end="741"><strong data-start="622" data-end="640">Actual Result:</strong><br data-start="640" data-end="643">System does not show any validation and allows submission even when no Earning Head is selected.</p>
+    [assignee_id] => 24
+    [priority_id] => 1
+)
+
+[2026-02-05 09:27:48] IssueController::store called.
+[2026-02-05 09:27:48] FILES: Array
+(
+)
+
+[2026-02-05 09:27:48] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Designation sorting by Serial No is not working correctly in Employee Management – Designation module.
+    [description] => <p data-start="195" data-end="242"><strong data-start="195" data-end="204">Path:</strong><br data-start="204" data-end="207">Employee Management &rarr; Designation</p>
+<p data-start="244" data-end="269"><strong data-start="244" data-end="267">Steps to Reproduce:</strong></p>
+<ol data-start="270" data-end="476">
+<li data-start="270" data-end="318">
+<p data-start="273" data-end="318">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="319" data-end="353">
+<p data-start="322" data-end="353">Open the Designation section.</p>
+</li>
+<li data-start="354" data-end="421">
+<p data-start="357" data-end="421">Ensure multiple designation records exist with Serial Numbers.</p>
+</li>
+<li data-start="422" data-end="476">
+<p data-start="425" data-end="476">Click on the <strong data-start="438" data-end="451">Serial No</strong> column header to sort.</p>
+</li>
+</ol>
+<p data-start="478" data-end="598"><strong data-start="478" data-end="498">Expected Result:</strong><br data-start="498" data-end="501">Records should sort correctly in ascending or descending order based on the full Serial Number.</p>
+<p data-start="600" data-end="739"><strong data-start="600" data-end="618">Actual Result:</strong><br data-start="618" data-end="621">The system sorts only by the first digit of the Serial Number, not the entire number, resulting in improper sorting.</p>
+    [assignee_id] => 24
+    [priority_id] => 4
+)
+
+[2026-02-05 09:30:06] IssueController::store called.
+[2026-02-05 09:30:06] FILES: Array
+(
+)
+
+[2026-02-05 09:30:06] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Serial Number is not displayed in Edit and View modes in Employee Management – Designation module.
+    [description] => <p data-start="311" data-end="372"><strong data-start="311" data-end="320">Path:</strong><br data-start="320" data-end="323">Employee Management &rarr; Designation &rarr; Edit / View</p>
+<p data-start="374" data-end="399"><strong data-start="374" data-end="397">Steps to Reproduce:</strong></p>
+<ol data-start="400" data-end="707">
+<li data-start="400" data-end="448">
+<p data-start="403" data-end="448">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="449" data-end="482">
+<p data-start="452" data-end="482">Open the Designation master.</p>
+</li>
+<li data-start="483" data-end="535">
+<p data-start="486" data-end="535">Select an existing record with a Serial Number.</p>
+</li>
+<li data-start="536" data-end="622">
+<p data-start="539" data-end="622"><strong data-start="539" data-end="553">Edit Mode:</strong> Click <strong data-start="560" data-end="568">Edit</strong> &ndash; Serial No. field should be visible and prefilled.</p>
+</li>
+<li data-start="623" data-end="707">
+<p data-start="626" data-end="707"><strong data-start="626" data-end="640">View Mode:</strong> Click <strong data-start="647" data-end="655">View</strong> &ndash; Serial No. should be visible in read-only mode.</p>
+</li>
+</ol>
+<p data-start="709" data-end="731"><strong data-start="709" data-end="729">Expected Result:</strong></p>
+<ul data-start="732" data-end="862">
+<li data-start="732" data-end="798">
+<p data-start="734" data-end="798">Serial No. field should be visible and prefilled in Edit mode.</p>
+</li>
+<li data-start="799" data-end="862">
+<p data-start="801" data-end="862">Serial No. should be visible in read-only mode during View.</p>
+</li>
+</ul>
+<p data-start="864" data-end="884"><strong data-start="864" data-end="882">Actual Result:</strong></p>
+<ul data-start="885" data-end="976">
+<li data-start="885" data-end="930">
+<p data-start="887" data-end="930">Serial Number does not show in Edit mode.</p>
+</li>
+<li data-start="931" data-end="976">
+<p data-start="933" data-end="976">Serial Number does not show in View mode.</p>
+</li>
+</ul>
+    [assignee_id] => 24
+    [priority_id] => 1
+)
+
+[2026-02-05 09:36:03] IssueController::store called.
+[2026-02-05 09:36:03] FILES: Array
+(
+)
+
+[2026-02-05 09:36:03] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Future date is allowed in Left Date field in Employee Management – Left Employee module.
+    [description] => <p data-start="180" data-end="235"><strong data-start="180" data-end="189">Path:</strong><br data-start="189" data-end="192">Employee Management &rarr; Left Employee &rarr; Add</p>
+<p data-start="237" data-end="262"><strong data-start="237" data-end="260">Steps to Reproduce:</strong></p>
+<ol data-start="263" data-end="444">
+<li data-start="263" data-end="311">
+<p data-start="266" data-end="311">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="312" data-end="349">
+<p data-start="315" data-end="349">Open the Left Employee Add form.</p>
+</li>
+<li data-start="350" data-end="421">
+<p data-start="353" data-end="421">Enter a future date in the <strong data-start="380" data-end="393">Left Date</strong> field (e.g., 31/12/2030).</p>
+</li>
+<li data-start="422" data-end="444">
+<p data-start="425" data-end="444">Click <strong data-start="431" data-end="441">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="446" data-end="540"><strong data-start="446" data-end="466">Expected Result:</strong><br data-start="466" data-end="469">System should restrict future dates and display a validation message.</p>
+<p data-start="542" data-end="616"><strong data-start="542" data-end="560">Actual Result:</strong><br data-start="560" data-end="563">System accepts future dates in the Left Date field.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:37:28] IssueController::store called.
+[2026-02-05 09:37:28] FILES: Array
+(
+)
+
+[2026-02-05 09:37:28] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Left Employee appears in Employee dropdown even after marking as left in Employee Management – Left Employee module.
+    [description] => <p data-start="208" data-end="287"><strong data-start="208" data-end="217">Path:</strong><br data-start="217" data-end="220">Employee Management &rarr; Left Employee &rarr; Employee dropdown elsewhere</p>
+<p data-start="289" data-end="314"><strong data-start="289" data-end="312">Steps to Reproduce:</strong></p>
+<ol data-start="315" data-end="457">
+<li data-start="315" data-end="363">
+<p data-start="318" data-end="363">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="364" data-end="398">
+<p data-start="367" data-end="398">Mark an employee as <strong data-start="387" data-end="395">Left</strong>.</p>
+</li>
+<li data-start="399" data-end="457">
+<p data-start="402" data-end="457">Open any Employee dropdown in other modules or forms.</p>
+</li>
+</ol>
+<p data-start="459" data-end="551"><strong data-start="459" data-end="479">Expected Result:</strong><br data-start="479" data-end="482">Employee marked as left should not appear in any Employee dropdown.</p>
+<p data-start="553" data-end="639"><strong data-start="553" data-end="571">Actual Result:</strong><br data-start="571" data-end="574">Left employee&rsquo;s name is still visible in the Employee dropdown.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:38:22] IssueController::store called.
+[2026-02-05 09:38:22] FILES: Array
+(
+)
+
+[2026-02-05 09:38:22] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Edit action does not load all data correctly for Left Employee in Employee Management – Left Employee module.
+    [description] => <p data-start="201" data-end="257"><strong data-start="201" data-end="210">Path:</strong><br data-start="210" data-end="213">Employee Management &rarr; Left Employee &rarr; Edit</p>
+<p data-start="259" data-end="284"><strong data-start="259" data-end="282">Steps to Reproduce:</strong></p>
+<ol data-start="285" data-end="437">
+<li data-start="285" data-end="333">
+<p data-start="288" data-end="333">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="334" data-end="370">
+<p data-start="337" data-end="370">Open the Left Employee section.</p>
+</li>
+<li data-start="371" data-end="416">
+<p data-start="374" data-end="416">Select an existing Left Employee record.</p>
+</li>
+<li data-start="417" data-end="437">
+<p data-start="420" data-end="437">Click <strong data-start="426" data-end="434">Edit</strong>.</p>
+</li>
+</ol>
+<p data-start="439" data-end="552"><strong data-start="439" data-end="459">Expected Result:</strong><br data-start="459" data-end="462">All previously saved data for the selected record should populate correctly in the form.</p>
+<p data-start="554" data-end="652"><strong data-start="554" data-end="572">Actual Result:</strong><br data-start="572" data-end="575">Edit action opens the record, but some fields are missing or not populated.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:40:05] IssueController::store called.
+[2026-02-05 09:40:05] FILES: Array
+(
+)
+
+[2026-02-05 09:40:05] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Deleting a Left Employee record causes unusually long page loading time in Employee Management – Left Employee module.
+    [description] => <p data-start="210" data-end="268"><strong data-start="210" data-end="219">Path:</strong><br data-start="219" data-end="222">Employee Management &rarr; Left Employee &rarr; Delete</p>
+<p data-start="270" data-end="295"><strong data-start="270" data-end="293">Steps to Reproduce:</strong></p>
+<ol data-start="296" data-end="484">
+<li data-start="296" data-end="344">
+<p data-start="299" data-end="344">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="345" data-end="381">
+<p data-start="348" data-end="381">Open the Left Employee section.</p>
+</li>
+<li data-start="382" data-end="427">
+<p data-start="385" data-end="427">Select an existing Left Employee record.</p>
+</li>
+<li data-start="428" data-end="450">
+<p data-start="431" data-end="450">Click <strong data-start="437" data-end="447">Delete</strong>.</p>
+</li>
+<li data-start="451" data-end="484">
+<p data-start="454" data-end="484">Confirm by clicking <strong data-start="474" data-end="481">Yes</strong>.</p>
+</li>
+</ol>
+<p data-start="486" data-end="621"><strong data-start="486" data-end="506">Expected Result:</strong><br data-start="506" data-end="509">Left Employee record should be deleted successfully, and the page should load within acceptable response time.</p>
+<p data-start="623" data-end="738"><strong data-start="623" data-end="641">Actual Result:</strong><br data-start="641" data-end="644">After clicking Delete for an existing record, the page takes an unusually long time to load.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:41:25] IssueController::store called.
+[2026-02-05 09:41:25] FILES: Array
+(
+)
+
+[2026-02-05 09:41:25] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Some data vanishes when editing a Left Employee record in Employee Management – Left Employee module.
+    [description] => <p data-start="193" data-end="249"><strong data-start="193" data-end="202">Path:</strong><br data-start="202" data-end="205">Employee Management &rarr; Left Employee &rarr; Edit</p>
+<p data-start="251" data-end="276"><strong data-start="251" data-end="274">Steps to Reproduce:</strong></p>
+<ol data-start="277" data-end="461">
+<li data-start="277" data-end="325">
+<p data-start="280" data-end="325">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="326" data-end="362">
+<p data-start="329" data-end="362">Open the Left Employee section.</p>
+</li>
+<li data-start="363" data-end="413">
+<p data-start="366" data-end="413">Select an existing record and click <strong data-start="402" data-end="410">Edit</strong>.</p>
+</li>
+<li data-start="414" data-end="461">
+<p data-start="417" data-end="461">Observe all fields after the record loads.</p>
+</li>
+</ol>
+<p data-start="463" data-end="568"><strong data-start="463" data-end="483">Expected Result:</strong><br data-start="483" data-end="486">All previously saved fields should remain intact and visible on the Edit screen.</p>
+<p data-start="570" data-end="659"><strong data-start="570" data-end="588">Actual Result:</strong><br data-start="588" data-end="591">Some fields partially vanish after loading the record for editing.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:42:56] IssueController::store called.
+[2026-02-05 09:42:56] FILES: Array
+(
+)
+
+[2026-02-05 09:42:56] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Mandatory validation for Bank Group Name is not working in Employee Management – Bank Group module.
+    [description] => <p data-start="188" data-end="240"><strong data-start="188" data-end="197">Path:</strong><br data-start="197" data-end="200">Employee Management &rarr; Bank Group &rarr; Add</p>
+<p data-start="242" data-end="267"><strong data-start="242" data-end="265">Steps to Reproduce:</strong></p>
+<ol data-start="268" data-end="422">
+<li data-start="268" data-end="316">
+<p data-start="271" data-end="316">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="317" data-end="351">
+<p data-start="320" data-end="351">Open the Bank Group Add form.</p>
+</li>
+<li data-start="352" data-end="399">
+<p data-start="355" data-end="399">Leave the <strong data-start="365" data-end="384">Bank Group Name</strong> field blank.</p>
+</li>
+<li data-start="400" data-end="422">
+<p data-start="403" data-end="422">Click <strong data-start="409" data-end="419">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="424" data-end="545"><strong data-start="424" data-end="444">Expected Result:</strong><br data-start="444" data-end="447">System should display a validation message and prevent submission when Bank Group Name is blank.</p>
+<p data-start="547" data-end="643"><strong data-start="547" data-end="565">Actual Result:</strong><br data-start="565" data-end="568">System allows submission even when Bank Group Name is blank (Fail noted).</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:46:40] IssueController::store called.
+[2026-02-05 09:46:40] FILES: Array
+(
+)
+
+[2026-02-05 09:46:40] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => IFSC code validation is not working in Employee Management – Payment Bank module.
+    [description] => <p data-start="170" data-end="224"><strong data-start="170" data-end="179">Path:</strong><br data-start="179" data-end="182">Employee Management &rarr; Payment Bank &rarr; Add</p>
+<p data-start="226" data-end="251"><strong data-start="226" data-end="249">Steps to Reproduce:</strong></p>
+<ol data-start="252" data-end="412">
+<li data-start="252" data-end="300">
+<p data-start="255" data-end="300">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="301" data-end="337">
+<p data-start="304" data-end="337">Open the Payment Bank Add form.</p>
+</li>
+<li data-start="338" data-end="389">
+<p data-start="341" data-end="389">Enter an invalid IFSC code (e.g., <strong data-start="375" data-end="385">ABC123</strong>).</p>
+</li>
+<li data-start="390" data-end="412">
+<p data-start="393" data-end="412">Click <strong data-start="399" data-end="409">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="414" data-end="525"><strong data-start="414" data-end="434">Expected Result:</strong><br data-start="434" data-end="437">System should display a validation message indicating the IFSC code format is invalid.</p>
+<p data-start="527" data-end="625"><strong data-start="527" data-end="545">Actual Result:</strong><br data-start="545" data-end="548">There is no validation for the IFSC code, and the system allows submission.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 09:50:04] IssueController::store called.
+[2026-02-05 09:50:04] FILES: Array
+(
+)
+
+[2026-02-05 09:50:04] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Previously saved data is not displayed on Edit in Employee Management – Payment Bank module.
+    [description] => <p data-start="181" data-end="236"><strong data-start="181" data-end="190">Path:</strong><br data-start="190" data-end="193">Employee Management &rarr; Payment Bank &rarr; Edit</p>
+<p data-start="238" data-end="263"><strong data-start="238" data-end="261">Steps to Reproduce:</strong></p>
+<ol data-start="264" data-end="447">
+<li data-start="264" data-end="312">
+<p data-start="267" data-end="312">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="313" data-end="348">
+<p data-start="316" data-end="348">Open the Payment Bank section.</p>
+</li>
+<li data-start="349" data-end="399">
+<p data-start="352" data-end="399">Select an existing record and click <strong data-start="388" data-end="396">Edit</strong>.</p>
+</li>
+<li data-start="400" data-end="447">
+<p data-start="403" data-end="447">Observe all fields after the record loads.</p>
+</li>
+</ol>
+<p data-start="449" data-end="537"><strong data-start="449" data-end="469">Expected Result:</strong><br data-start="469" data-end="472">All previously saved data should be visible on the Edit screen.</p>
+<p data-start="539" data-end="611"><strong data-start="539" data-end="557">Actual Result:</strong><br data-start="557" data-end="560">All saved data is not visible on the Edit screen.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:51:22] IssueController::store called.
+[2026-02-05 09:51:22] FILES: Array
+(
+)
+
+[2026-02-05 09:51:22] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Bank Name column displays branch name instead of actual bank name in Employee Management – Payment Bank module.
+    [description] => <p data-start="200" data-end="262"><strong data-start="200" data-end="209">Path:</strong><br data-start="209" data-end="212">Employee Management &rarr; Payment Bank &rarr; Smart Table</p>
+<p data-start="264" data-end="289"><strong data-start="264" data-end="287">Steps to Reproduce:</strong></p>
+<ol data-start="290" data-end="440">
+<li data-start="290" data-end="342">
+<p data-start="293" data-end="342">Navigate to Employee Management &rarr; Payment Bank.</p>
+</li>
+<li data-start="343" data-end="382">
+<p data-start="346" data-end="382">Ensure Payment Bank records exist.</p>
+</li>
+<li data-start="383" data-end="440">
+<p data-start="386" data-end="440">Observe the <strong data-start="398" data-end="411">Bank Name</strong> column in the smart table.</p>
+</li>
+</ol>
+<p data-start="442" data-end="563"><strong data-start="442" data-end="462">Expected Result:</strong><br data-start="462" data-end="465">Bank Name column should display the actual bank name along with the system-autofilled bank code.</p>
+<p data-start="565" data-end="699"><strong data-start="565" data-end="583">Actual Result:</strong><br data-start="583" data-end="586">Bank Name column displays the branch name with the system-autofilled bank code instead of the actual bank name.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:53:21] IssueController::store called.
+[2026-02-05 09:53:21] FILES: Array
+(
+)
+
+[2026-02-05 09:53:21] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Previously saved data vanishes on Edit in Employee Management – Insurance Companies module.
+    [description] => <p data-start="180" data-end="242"><strong data-start="180" data-end="189">Path:</strong><br data-start="189" data-end="192">Employee Management &rarr; Insurance Companies &rarr; Edit</p>
+<p data-start="244" data-end="269"><strong data-start="244" data-end="267">Steps to Reproduce:</strong></p>
+<ol data-start="270" data-end="447">
+<li data-start="270" data-end="318">
+<p data-start="273" data-end="318">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="319" data-end="361">
+<p data-start="322" data-end="361">Open the Insurance Companies section.</p>
+</li>
+<li data-start="362" data-end="412">
+<p data-start="365" data-end="412">Select an existing record and click <strong data-start="401" data-end="409">Edit</strong>.</p>
+</li>
+<li data-start="413" data-end="447">
+<p data-start="416" data-end="447">Observe the prefilled fields.</p>
+</li>
+</ol>
+<p data-start="449" data-end="546"><strong data-start="449" data-end="469">Expected Result:</strong><br data-start="469" data-end="472">All previously saved fields should retain their data on the Edit screen.</p>
+<p data-start="548" data-end="637"><strong data-start="548" data-end="566">Actual Result:</strong><br data-start="566" data-end="569">After clicking Edit, some previously saved information disappears.</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
+[2026-02-05 09:57:08] IssueController::store called.
+[2026-02-05 09:57:08] FILES: Array
+(
+)
+
+[2026-02-05 09:57:08] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Company Name field accepts only whitespace in Employee Management – Insurance Companies module.
+    [description] => <p data-start="184" data-end="245"><strong data-start="184" data-end="193">Path:</strong><br data-start="193" data-end="196">Employee Management &rarr; Insurance Companies &rarr; Add</p>
+<p data-start="247" data-end="272"><strong data-start="247" data-end="270">Steps to Reproduce:</strong></p>
+<ol data-start="273" data-end="442">
+<li data-start="273" data-end="321">
+<p data-start="276" data-end="321">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="322" data-end="365">
+<p data-start="325" data-end="365">Open the Insurance Companies Add form.</p>
+</li>
+<li data-start="366" data-end="419">
+<p data-start="369" data-end="419">Enter only spaces in the <strong data-start="394" data-end="410">Company Name</strong> field.</p>
+</li>
+<li data-start="420" data-end="442">
+<p data-start="423" data-end="442">Click <strong data-start="429" data-end="439">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="444" data-end="562"><strong data-start="444" data-end="464">Expected Result:</strong><br data-start="464" data-end="467">System should display a validation error and prevent submission when only spaces are entered.</p>
+<p data-start="564" data-end="671"><strong data-start="564" data-end="582">Actual Result:</strong><br data-start="582" data-end="585">System accepts spaces and allows submission instead of showing a validation message.</p>
+    [assignee_id] => 24
+    [priority_id] => 3
+)
+
+[2026-02-05 09:58:48] IssueController::store called.
+[2026-02-05 09:58:48] FILES: Array
+(
+)
+
+[2026-02-05 09:58:48] POST: Array
+(
+    [project_id] => 9
+    [issue_type_id] => 4
+    [summary] => Finance Institute record cannot be saved with only mandatory fields in Employee Management – Finance Institutes module.
+    [description] => <p data-start="208" data-end="268"><strong data-start="208" data-end="217">Path:</strong><br data-start="217" data-end="220">Employee Management &rarr; Finance Institutes &rarr; Add</p>
+<p data-start="270" data-end="295"><strong data-start="270" data-end="293">Steps to Reproduce:</strong></p>
+<ol data-start="296" data-end="469">
+<li data-start="296" data-end="344">
+<p data-start="299" data-end="344">Navigate to the Employee Management module.</p>
+</li>
+<li data-start="345" data-end="387">
+<p data-start="348" data-end="387">Open the Finance Institutes Add form.</p>
+</li>
+<li data-start="388" data-end="446">
+<p data-start="391" data-end="446">Fill only the mandatory fields (e.g., <strong data-start="429" data-end="442">Bank Name</strong>).</p>
+</li>
+<li data-start="447" data-end="469">
+<p data-start="450" data-end="469">Click <strong data-start="456" data-end="466">Submit</strong>.</p>
+</li>
+</ol>
+<p data-start="471" data-end="565"><strong data-start="471" data-end="491">Expected Result:</strong><br data-start="491" data-end="494">System should allow submission when only mandatory fields are filled.</p>
+<p data-start="567" data-end="665"><strong data-start="567" data-end="585">Actual Result:</strong><br data-start="585" data-end="588">System does not allow submission even when all mandatory fields are filled.</p>
+<p data-start="567" data-end="665">&nbsp;</p>
+    [assignee_id] => 24
+    [priority_id] => 2
+)
+
